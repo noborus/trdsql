@@ -15,10 +15,17 @@ import (
 )
 
 func rowimport(db *sql.DB, table string, columns string, row []string) {
-	sql := "INSERT INTO " + table + " (" + columns + ") VALUES ('" + strings.Join(row, "','") + "');"
-	_, err := db.Exec(sql)
+	place := make([]string, len(row))
+	list := make([]interface{}, len(row))
+	for i := 0; i < len(row); i++ {
+		place[i] = "?"
+		list[i] = row[i]
+	}
+	sqlstr := "INSERT INTO " + table + " (" + columns + ") VALUES (" + strings.Join(place, ",") + ");"
+	_, err := db.Exec(sqlstr, list...)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(row)
+		log.Println(err)
 	}
 }
 
@@ -68,6 +75,11 @@ func getTable(sqlNode sqlparser.SQLNode) string {
 	return tablename
 }
 
+func escapetable(oldname string) (newname string) {
+	newname = "`" + oldname + "`"
+	return newname
+}
+
 func prerewrite(sqlstr string, oldname string, newname string) (rewrite string) {
 	rewrite = strings.Replace(sqlstr, oldname, newname, -1)
 	return rewrite
@@ -75,7 +87,6 @@ func prerewrite(sqlstr string, oldname string, newname string) (rewrite string) 
 
 func rewriteTable(tree sqlparser.SQLNode, tablename string) string {
 	rewriter := func(origin []byte) []byte {
-		fmt.Println("element:", string(origin))
 		s := string(origin)
 		if s == tablename {
 			s = "_"
@@ -89,7 +100,7 @@ func rewriteTable(tree sqlparser.SQLNode, tablename string) string {
 func dbconnect() *sql.DB {
 	db, err := sql.Open("sqlite3", ":memory:")
 	if err != nil {
-		fmt.Println("ERROR:", err)
+		log.Fatal(err)
 	}
 	return db
 }
@@ -97,7 +108,7 @@ func dbconnect() *sql.DB {
 func dbdisconnect(db *sql.DB) {
 	err := db.Close()
 	if err != nil {
-		fmt.Println("ERROR:", err)
+		log.Fatal(err)
 	}
 }
 
@@ -110,20 +121,20 @@ func dbcreate(db *sql.DB, table string, header []string) {
 	fmt.Println("CREATE TABLE", table, "(", c, ")")
 	_, err := db.Exec("CREATE TABLE " + table + "(" + c + ")")
 	if err != nil {
-		fmt.Println("ERROR:", err)
+		log.Fatal(err)
 	}
 }
 
-func dbselect(db *sql.DB, sqlstr string) {
-	fmt.Println(sqlstr)
+func dbselect(db *sql.DB, writer *csv.Writer, sqlstr string) {
 	rows, err := db.Query(sqlstr)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("SQL SELECT:", sqlstr)
+		log.Fatal(err)
 	}
 	defer rows.Close()
 	columns, err := rows.Columns()
 	if err != nil {
-		fmt.Println("ERROR:", err)
+		log.Fatal(err)
 	}
 	values := make([]sql.RawBytes, len(columns))
 	results := make([]string, len(columns))
@@ -134,31 +145,44 @@ func dbselect(db *sql.DB, sqlstr string) {
 	for rows.Next() {
 		err = rows.Scan(scanArgs...)
 		if err != nil {
-			fmt.Println(err)
+			log.Fatal(err)
 		}
 		for i, col := range values {
 			results[i] = string(col)
 		}
-		result := strings.Join(results, ",")
-		fmt.Println(result)
+		writer.Write(results)
+		writer.Flush()
 	}
+}
+
+func sqlparse(sqlstr string) []string {
+	sqla := strings.Split(sqlstr, " ")
+	tablename := []string{}
+	for i := 0; i < len(sqla); i++ {
+		if element := strings.ToUpper(sqla[i]); element == "FROM" || element == "JOIN" {
+			for i++; sqla[i] == ""; i++ {
+				/* skip */
+			}
+			tablename = append(tablename, sqla[i])
+		}
+	}
+	return tablename
 }
 
 func main() {
 	sqlstr := os.Args[1]
-	fmt.Println("sql:", sqlstr)
-	tree, _ := sqlparser.Parse(sqlstr)
-	tablename := getTable(tree)
-	rtable := strings.Replace(tablename, ".", "_", -1)
-	fmt.Println("rewrite:", tablename, rtable)
-	sqlr := prerewrite(sqlstr, tablename, rtable)
-	fmt.Println("sql:", sqlr)
-
-	header, reader := csvRead(tablename)
-
+	writer := csv.NewWriter(os.Stdout)
+	writer.Comma = ','
+	tablename := sqlparse(sqlstr)
 	db := dbconnect()
-	dbcreate(db, rtable, header)
-	csvimport(db, reader, rtable, header)
-	dbselect(db, sqlr)
-	dbdisconnect(db)
+	defer dbdisconnect(db)
+
+	for i := 0; i < len(tablename); i++ {
+		rtable := escapetable(tablename[i])
+		sqlstr = prerewrite(sqlstr, tablename[i], rtable)
+		header, reader := csvRead(tablename[i])
+		dbcreate(db, rtable, header)
+		csvimport(db, reader, rtable, header)
+	}
+	dbselect(db, writer, sqlstr)
 }
