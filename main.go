@@ -3,7 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/csv"
-	"fmt"
+	_ "fmt"
 	"io"
 	"log"
 	"os"
@@ -121,17 +121,18 @@ func dbcreate(db *sql.DB, table string, header []string) {
 		columns[i] = "c" + strconv.Itoa(i+1) + " text"
 	}
 	c := strings.Join(columns, ",")
-	fmt.Println("CREATE TABLE", table, "(", c, ")")
-	_, err := db.Exec("CREATE TABLE " + table + "(" + c + ")")
+	sqlstr := "CREATE TABLE " + table + " ( " + c + " )"
+	log.Println(sqlstr)
+	_, err := db.Exec(sqlstr)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 func dbselect(db *sql.DB, writer *csv.Writer, sqlstr string) {
+	log.Println(sqlstr)
 	rows, err := db.Query(sqlstr)
 	if err != nil {
-		log.Println("SQL SELECT:", sqlstr)
 		log.Fatal(err)
 	}
 	defer rows.Close()
@@ -178,10 +179,10 @@ func main() {
 	defer dbdisconnect(db)
 
 	tablenames := sqlparse(sqlstr)
-	for i := 0; i < len(tablenames); i++ {
-		rtable := escapetable(tablenames[i])
-		sqlstr = rewrite(sqlstr, tablenames[i], rtable)
-		header, reader := csvRead(tablenames[i])
+	for _, tablename := range tablenames {
+		rtable := escapetable(tablename)
+		sqlstr = rewrite(sqlstr, tablename, rtable)
+		header, reader := csvRead(tablename)
 		dbcreate(db, rtable, header)
 		csvimport(db, reader, rtable, header)
 	}
