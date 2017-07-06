@@ -161,7 +161,7 @@ func dbselect(db *sql.DB, writer *csv.Writer, sqlstr string) {
 
 func sqlparse(sqlstr string) []string {
 	word := strings.Fields(sqlstr)
-	tablenames := []string{}
+	tablenames := make([]string, 0, 1)
 	for i := 0; i < len(word); i++ {
 		if element := strings.ToUpper(word[i]); element == "FROM" || element == "JOIN" {
 			tablenames = append(tablenames, word[i+1])
