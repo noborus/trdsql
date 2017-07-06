@@ -1,8 +1,6 @@
 package main
 
 import (
-	"database/sql"
-	"encoding/csv"
 	"flag"
 	"io"
 	"log"
@@ -10,35 +8,34 @@ import (
 	"strconv"
 	"strings"
 
+	"database/sql"
+	"encoding/csv"
+
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/xwb1989/sqlparser"
 )
 
-func rowimport(db *sql.DB, table string, columns string, row []string) {
-	place := make([]string, len(row))
-	list := make([]interface{}, len(row))
-	for i := 0; i < len(row); i++ {
-		place[i] = "?"
-		list[i] = row[i]
-	}
+func rowimport(db *sql.DB, table string, columns string, place []string, list []interface{}) {
 	sqlstr := "INSERT INTO " + table + " (" + columns + ") VALUES (" + strings.Join(place, ",") + ");"
 	_, err := db.Exec(sqlstr, list...)
 	if err != nil {
-		log.Println(row, err)
+		log.Println(sqlstr, err)
 	}
-}
-
-func columnNames(row []string) string {
-	columns := make([]string, len(row))
-	for i := 0; i < len(row); i++ {
-		columns[i] = "c" + strconv.Itoa(i+1)
-	}
-	return strings.Join(columns, ",")
 }
 
 func csvImport(db *sql.DB, reader *csv.Reader, table string, header []string) {
-	columns := columnNames(header)
-	rowimport(db, table, columns, header)
+	columns := make([]string, len(header))
+	place := make([]string, len(header))
+	list := make([]interface{}, len(header))
+
+	for i := range header {
+		columns[i] = "c" + strconv.Itoa(i+1)
+		place[i] = "?"
+		list[i] = header[i]
+	}
+	columName := strings.Join(columns, ",")
+	rowimport(db, table, columName, place, list)
+
 	for {
 		record, err := reader.Read()
 		if err == io.EOF {
@@ -48,7 +45,10 @@ func csvImport(db *sql.DB, reader *csv.Reader, table string, header []string) {
 				log.Fatal("ERROR: ", err)
 			}
 		}
-		rowimport(db, table, columns, record)
+		for i := range header {
+			list[i] = record[i]
+		}
+		rowimport(db, table, columName, place, list)
 	}
 }
 
@@ -135,6 +135,10 @@ func dbCreate(db *sql.DB, table string, header []string) {
 }
 
 func dbSelect(db *sql.DB, writer *csv.Writer, sqlstr string) {
+	sqlstr = strings.TrimSpace(sqlstr)
+	if sqlstr == "" {
+		log.Fatal("ERROR: no SQL statement")
+	}
 	log.Println(sqlstr)
 	rows, err := db.Query(sqlstr)
 	if err != nil {
@@ -214,6 +218,7 @@ func main() {
 		sqlstr = rewrite(sqlstr, tablename, rtable)
 		reader := csvOpen(tablename)
 		reader.Comma = readerComma
+		reader.FieldsPerRecord = -1
 		header := csvRead(reader)
 		dbCreate(db, rtable, header)
 		csvImport(db, reader, rtable, header)
