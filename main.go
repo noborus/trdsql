@@ -239,12 +239,12 @@ func main() {
 
 	tablenames := sqlparse(sqlstr)
 	for _, tablename := range tablenames {
-		rtable := escapetable(tablename)
-		sqlstr = rewrite(sqlstr, tablename, rtable)
 		reader, err := csvOpen(tablename)
 		if err != nil {
 			continue
 		}
+		rtable := escapetable(tablename)
+		sqlstr = rewrite(sqlstr, tablename, rtable)
 		reader.Comma = readerComma
 		reader.FieldsPerRecord = -1
 		header := csvRead(reader)
