@@ -21,11 +21,10 @@ var (
 	dbdsn    string
 )
 
-func rowimport(db *sql.DB, table string, columns string, place []string, list []interface{}) {
-	sqlstr := "INSERT INTO " + table + " (" + columns + ") VALUES (" + strings.Join(place, ",") + ");"
-	_, err := db.Exec(sqlstr, list...)
+func rowimport(stmt *sql.Stmt, list []interface{}) {
+	_, err := stmt.Exec(list...)
 	if err != nil {
-		log.Println(sqlstr, err)
+		log.Println(err)
 	}
 }
 
@@ -43,8 +42,13 @@ func csvImport(db *sql.DB, reader *csv.Reader, table string, header []string) {
 		}
 		list[i] = header[i]
 	}
-	columName := strings.Join(columns, ",")
-	rowimport(db, table, columName, place, list)
+	columnName := strings.Join(columns, ",")
+	sqlstr := "INSERT INTO " + table + " (" + columnName + ") VALUES (" + strings.Join(place, ",") + ");"
+	stmt, err := db.Prepare(sqlstr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	rowimport(stmt, list)
 
 	for {
 		record, err := reader.Read()
@@ -58,7 +62,7 @@ func csvImport(db *sql.DB, reader *csv.Reader, table string, header []string) {
 		for i := range header {
 			list[i] = record[i]
 		}
-		rowimport(db, table, columName, place, list)
+		rowimport(stmt, list)
 	}
 }
 
