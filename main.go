@@ -11,8 +11,14 @@ import (
 	"database/sql"
 	"encoding/csv"
 
+	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/xwb1989/sqlparser"
+)
+
+var (
+	dbdriver string
+	dbdsn    string
 )
 
 func rowimport(db *sql.DB, table string, columns string, place []string, list []interface{}) {
@@ -30,7 +36,11 @@ func csvImport(db *sql.DB, reader *csv.Reader, table string, header []string) {
 
 	for i := range header {
 		columns[i] = "c" + strconv.Itoa(i+1)
-		place[i] = "?"
+		if dbdriver == "postgres" {
+			place[i] = "$" + strconv.Itoa(i+1)
+		} else {
+			place[i] = "?"
+		}
 		list[i] = header[i]
 	}
 	columName := strings.Join(columns, ",")
@@ -52,7 +62,7 @@ func csvImport(db *sql.DB, reader *csv.Reader, table string, header []string) {
 	}
 }
 
-func csvOpen(filename string) *csv.Reader {
+func csvOpen(filename string) (*csv.Reader, error) {
 	var file *os.File
 	var err error
 	if filename == "-" {
@@ -63,11 +73,12 @@ func csvOpen(filename string) *csv.Reader {
 		}
 		file, err = os.Open(filename)
 		if err != nil {
-			log.Fatal("ERROR: ", err)
+			// log.Fatal("ERROR: ", err)
+			return nil, err
 		}
 	}
 	reader := csv.NewReader(file)
-	return reader
+	return reader, err
 }
 
 func csvRead(reader *csv.Reader) (header []string) {
@@ -80,10 +91,18 @@ func csvRead(reader *csv.Reader) (header []string) {
 }
 
 func escapetable(oldname string) (newname string) {
-	if oldname[0] != '`' {
-		newname = "`" + oldname + "`"
+	if dbdriver == "postgres" {
+		if oldname[0] != '"' {
+			newname = "\"" + oldname + "\""
+		} else {
+			newname = oldname
+		}
 	} else {
-		newname = oldname
+		if oldname[0] != '`' {
+			newname = "`" + oldname + "`"
+		} else {
+			newname = oldname
+		}
 	}
 	return newname
 }
@@ -105,8 +124,8 @@ func rewriteTable(tree sqlparser.SQLNode, tablename string) string {
 	return sqlparser.String(tree)
 }
 
-func dbConnect() *sql.DB {
-	db, err := sql.Open("sqlite3", ":memory:")
+func dbConnect(driver, dsn string) *sql.DB {
+	db, err := sql.Open(driver, dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -126,7 +145,7 @@ func dbCreate(db *sql.DB, table string, header []string) {
 		columns[i] = "c" + strconv.Itoa(i+1) + " text"
 	}
 	c := strings.Join(columns, ",")
-	sqlstr := "CREATE TABLE " + table + " ( " + c + " )"
+	sqlstr := "CREATE TEMP TABLE " + table + " ( " + c + " )"
 	log.Println(sqlstr)
 	_, err := db.Exec(sqlstr)
 	if err != nil {
@@ -195,6 +214,8 @@ func main() {
 		inSep  string
 		outSep string
 	)
+	flag.StringVar(&dbdriver, "dbdriver", "sqlite3", "database driver.")
+	flag.StringVar(&dbdsn, "dbdsn", ":memory:", "database connection option.")
 	flag.StringVar(&inSep, "input-delimiter", ",", "Field delimiter for input.")
 	flag.StringVar(&inSep, "d", ",", "Field delimiter for input.")
 	flag.StringVar(&outSep, "output-delimiter", ",", "Field delimiter for output.")
@@ -209,14 +230,17 @@ func main() {
 	writer.Comma = getSeparator(outSep)
 	readerComma := getSeparator(inSep)
 
-	db := dbConnect()
+	db := dbConnect(dbdriver, dbdsn)
 	defer dbDisconnect(db)
 
 	tablenames := sqlparse(sqlstr)
 	for _, tablename := range tablenames {
 		rtable := escapetable(tablename)
 		sqlstr = rewrite(sqlstr, tablename, rtable)
-		reader := csvOpen(tablename)
+		reader, err := csvOpen(tablename)
+		if err != nil {
+			continue
+		}
 		reader.Comma = readerComma
 		reader.FieldsPerRecord = -1
 		header := csvRead(reader)
