@@ -154,7 +154,6 @@ func dbCreate(db *sql.DB, table string, header []string) {
 		sqlstr = "CREATE TEMPORARY TABLE "
 	} else {
 		sqlstr = "CREATE TABLE "
-
 	}
 	sqlstr = sqlstr + table + " ( " + strings.Join(columns, ",") + " );"
 	log.Println(sqlstr)
@@ -226,7 +225,7 @@ func main() {
 		outSep string
 	)
 	flag.StringVar(&dbdriver, "dbdriver", "sqlite3", "database driver.")
-	flag.StringVar(&dbdsn, "dbdsn", ":memory:", "database connection option.")
+	flag.StringVar(&dbdsn, "dbdsn", "", "database connection option.")
 	flag.StringVar(&inSep, "input-delimiter", ",", "Field delimiter for input.")
 	flag.StringVar(&inSep, "d", ",", "Field delimiter for input.")
 	flag.StringVar(&outSep, "output-delimiter", ",", "Field delimiter for output.")
@@ -241,6 +240,11 @@ func main() {
 	writer.Comma = getSeparator(outSep)
 	readerComma := getSeparator(inSep)
 
+	if dbdsn == "" {
+		if dbdriver == "sqlite3" {
+			dbdsn = ":memory:"
+		}
+	}
 	db := dbConnect(dbdriver, dbdsn)
 	defer dbDisconnect(db)
 
