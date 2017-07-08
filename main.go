@@ -11,6 +11,7 @@ import (
 	"database/sql"
 	"encoding/csv"
 
+	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/xwb1989/sqlparser"
@@ -32,7 +33,6 @@ func csvImport(db *sql.DB, reader *csv.Reader, table string, header []string) {
 	columns := make([]string, len(header))
 	place := make([]string, len(header))
 	list := make([]interface{}, len(header))
-
 	for i := range header {
 		columns[i] = "c" + strconv.Itoa(i+1)
 		if dbdriver == "postgres" {
@@ -42,11 +42,10 @@ func csvImport(db *sql.DB, reader *csv.Reader, table string, header []string) {
 		}
 		list[i] = header[i]
 	}
-	columnName := strings.Join(columns, ",")
-	sqlstr := "INSERT INTO " + table + " (" + columnName + ") VALUES (" + strings.Join(place, ",") + ");"
+	sqlstr := "INSERT INTO " + table + " (" + strings.Join(columns, ",") + ") VALUES (" + strings.Join(place, ",") + ");"
 	stmt, err := db.Prepare(sqlstr)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("ISNERT:", err)
 	}
 	rowimport(stmt, list)
 
@@ -144,16 +143,24 @@ func dbDisconnect(db *sql.DB) {
 }
 
 func dbCreate(db *sql.DB, table string, header []string) {
+	var sqlstr string
 	columns := make([]string, len(header))
 	for i := 0; i < len(header); i++ {
 		columns[i] = "c" + strconv.Itoa(i+1) + " text"
 	}
-	c := strings.Join(columns, ",")
-	sqlstr := "CREATE TEMP TABLE " + table + " ( " + c + " )"
+	if dbdriver == "postgres" {
+		sqlstr = "CREATE TEMP TABLE "
+	} else if dbdriver == "mysql" {
+		sqlstr = "CREATE TEMPORARY TABLE "
+	} else {
+		sqlstr = "CREATE TABLE "
+
+	}
+	sqlstr = sqlstr + table + " ( " + strings.Join(columns, ",") + " );"
 	log.Println(sqlstr)
 	_, err := db.Exec(sqlstr)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("CREATE:", err)
 	}
 }
 
