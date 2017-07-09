@@ -1,0 +1,6 @@
+package: github.com/noborus/csvq
+import:
+- package: github.com/go-sql-driver/mysql
+- package: github.com/lib/pq
+- package: github.com/mattn/go-sqlite3
+- package: github.com/xwb1989/sqlparser
