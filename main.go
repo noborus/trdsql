@@ -2,17 +2,15 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"os"
-	"path/filepath"
-	"runtime"
 	"strconv"
 	"strings"
 
 	"database/sql"
 	"encoding/csv"
-	"encoding/json"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -217,32 +215,6 @@ func getSeparator(sepString string) (sepRune rune) {
 	return sepRune
 }
 
-type target struct {
-	Name string `json:"name"`
-	Dsn  string `json:"dsn"`
-}
-type config struct {
-	Dbdriver string   `json:"dbdriver"`
-	Target   []target `json:"target"`
-}
-
-func loadConfig() (*config, error) {
-	home := os.Getenv("HOME")
-	if home == "" && runtime.GOOS == "windows" {
-		home = os.Getenv("APPDATA")
-	}
-	fname := filepath.Join(home, ".config", "csvq", "config.json")
-	log.Println(fname)
-	f, err := os.Open(fname)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	var cfg config
-	err = json.NewDecoder(f).Decode(&cfg)
-	return &cfg, err
-}
-
 func main() {
 	var (
 		odbdriver string
@@ -257,6 +229,16 @@ func main() {
 	} else {
 		dbdriver = cfg.Dbdriver
 	}
+
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, `
+Usage: %s [OPTIONS] [SQL]
+
+Options:
+`, os.Args[0])
+		flag.PrintDefaults()
+	}
+
 	flag.StringVar(&odbdriver, "dbdriver", "", "database driver. default sqlite3")
 	flag.StringVar(&odbdsn, "dbdsn", "", "database connection option.")
 	flag.StringVar(&inSep, "input-delimiter", ",", "Field delimiter for input.")
