@@ -5,11 +5,14 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 
 	"database/sql"
 	"encoding/csv"
+	"encoding/json"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -148,11 +151,8 @@ func dbCreate(db *sql.DB, table string, header []string) {
 	for i := 0; i < len(header); i++ {
 		columns[i] = "c" + strconv.Itoa(i+1) + " text"
 	}
-	if dbdriver == "sqlite3" {
-		sqlstr = "CREATE TABLE "
-	} else {
-		sqlstr = "CREATE TEMPORARY TABLE "
-	}
+	temp := "TEMPORARY"
+	sqlstr = "CREATE " + temp + " TABLE "
 	sqlstr = sqlstr + table + " ( " + strings.Join(columns, ",") + " );"
 	log.Println(sqlstr)
 	_, err := db.Exec(sqlstr)
@@ -217,18 +217,59 @@ func getSeparator(sepString string) (sepRune rune) {
 	return sepRune
 }
 
+type target struct {
+	Name string `json:"name"`
+	Dsn  string `json:"dsn"`
+}
+type config struct {
+	Dbdriver string   `json:"dbdriver"`
+	Target   []target `json:"target"`
+}
+
+func loadConfig() (*config, error) {
+	home := os.Getenv("HOME")
+	if home == "" && runtime.GOOS == "windows" {
+		home = os.Getenv("APPDATA")
+	}
+	fname := filepath.Join(home, ".config", "csvq", "config.json")
+	log.Println(fname)
+	f, err := os.Open(fname)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	var cfg config
+	err = json.NewDecoder(f).Decode(&cfg)
+	return &cfg, err
+}
+
 func main() {
 	var (
-		inSep  string
-		outSep string
+		odbdriver string
+		odbdsn    string
+		inSep     string
+		outSep    string
 	)
-	flag.StringVar(&dbdriver, "dbdriver", "sqlite3", "database driver.")
-	flag.StringVar(&dbdsn, "dbdsn", "", "database connection option.")
+	dbdriver = "sqlite3"
+	cfg, err := loadConfig()
+	if err != nil {
+		log.Println("no config")
+	} else {
+		dbdriver = cfg.Dbdriver
+	}
+	flag.StringVar(&odbdriver, "dbdriver", "", "database driver. default sqlite3")
+	flag.StringVar(&odbdsn, "dbdsn", "", "database connection option.")
 	flag.StringVar(&inSep, "input-delimiter", ",", "Field delimiter for input.")
 	flag.StringVar(&inSep, "d", ",", "Field delimiter for input.")
 	flag.StringVar(&outSep, "output-delimiter", ",", "Field delimiter for output.")
 	flag.StringVar(&outSep, "D", ",", "Field delimiter for output.")
 	flag.Parse()
+	if odbdriver != "" {
+		dbdriver = odbdriver
+	}
+	if odbdsn != "" {
+		dbdsn = odbdsn
+	}
 	if len(flag.Args()) == 0 {
 		flag.Usage()
 		os.Exit(2)
@@ -237,8 +278,13 @@ func main() {
 	writer := csv.NewWriter(os.Stdout)
 	writer.Comma = getSeparator(outSep)
 	readerComma := getSeparator(inSep)
-
 	if dbdsn == "" {
+		for _, c := range cfg.Target {
+			if dbdriver == c.Name {
+				log.Println(c.Name, c.Dsn)
+				dbdsn = c.Dsn
+			}
+		}
 		if dbdriver == "sqlite3" {
 			dbdsn = ":memory:"
 		}
