@@ -148,12 +148,10 @@ func dbCreate(db *sql.DB, table string, header []string) {
 	for i := 0; i < len(header); i++ {
 		columns[i] = "c" + strconv.Itoa(i+1) + " text"
 	}
-	if dbdriver == "postgres" {
-		sqlstr = "CREATE TEMP TABLE "
-	} else if dbdriver == "mysql" {
-		sqlstr = "CREATE TEMPORARY TABLE "
-	} else {
+	if dbdriver == "sqlite3" {
 		sqlstr = "CREATE TABLE "
+	} else {
+		sqlstr = "CREATE TEMPORARY TABLE "
 	}
 	sqlstr = sqlstr + table + " ( " + strings.Join(columns, ",") + " );"
 	log.Println(sqlstr)
