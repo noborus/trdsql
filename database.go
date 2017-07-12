@@ -27,7 +27,7 @@ func rowImport(stmt *sql.Stmt, list []interface{}) {
 	}
 }
 
-func csvImport(db DDB, reader *csv.Reader, table string, header []string) {
+func dbImport(db DDB, reader *csv.Reader, table string, header []string) {
 	columns := make([]string, len(header))
 	place := make([]string, len(header))
 	list := make([]interface{}, len(header))

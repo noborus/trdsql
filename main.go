@@ -100,7 +100,7 @@ Options:
 		reader.FieldsPerRecord = -1
 		header := csvRead(reader)
 		dbCreate(db, rtable, header)
-		csvImport(db, reader, rtable, header)
+		dbImport(db, reader, rtable, header)
 	}
 	dbSelect(db, writer, sqlstr)
 }
