@@ -69,7 +69,7 @@ Options:
 		os.Exit(2)
 	}
 	sqlstr := flag.Args()[0]
-	if dbdsn == "" {
+	if dbdsn == "" && cfg != nil {
 		for _, c := range cfg.Target {
 			if dbdriver == c.Name {
 				log.Println(c.Name, c.Dsn)
@@ -86,7 +86,7 @@ Options:
 	readerComma := getSeparator(inSep)
 
 	db := dbConnect(dbdriver, dbdsn)
-	defer dbDisconnect(db)
+	defer db.dbDisconnect()
 
 	tablenames := sqlparse(sqlstr)
 	for _, tablename := range tablenames {
@@ -99,8 +99,8 @@ Options:
 		reader.Comma = readerComma
 		reader.FieldsPerRecord = -1
 		header := csvRead(reader)
-		dbCreate(db, rtable, header)
-		dbImport(db, reader, rtable, header)
+		db.dbCreate(rtable, header)
+		db.dbImport(reader, rtable, header)
 	}
-	dbSelect(db, writer, sqlstr)
+	db.dbSelect(writer, sqlstr)
 }

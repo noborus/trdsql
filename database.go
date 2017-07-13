@@ -27,7 +27,7 @@ func rowImport(stmt *sql.Stmt, list []interface{}) {
 	}
 }
 
-func dbImport(db DDB, reader *csv.Reader, table string, header []string) {
+func (db DDB) dbImport(reader *csv.Reader, table string, header []string) {
 	columns := make([]string, len(header))
 	place := make([]string, len(header))
 	list := make([]interface{}, len(header))
@@ -75,14 +75,14 @@ func dbConnect(driver, dsn string) DDB {
 	return db
 }
 
-func dbDisconnect(ddb DDB) {
-	err := ddb.Close()
+func (db DDB) dbDisconnect() {
+	err := db.Close()
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func dbCreate(db DDB, table string, header []string) {
+func (db DDB) dbCreate(table string, header []string) {
 	var sqlstr string
 	columns := make([]string, len(header))
 	for i := 0; i < len(header); i++ {
@@ -98,7 +98,7 @@ func dbCreate(db DDB, table string, header []string) {
 	}
 }
 
-func dbSelect(db DDB, writer *csv.Writer, sqlstr string) {
+func (db DDB) dbSelect(writer *csv.Writer, sqlstr string) {
 	sqlstr = strings.TrimSpace(sqlstr)
 	if sqlstr == "" {
 		log.Fatal("ERROR: no SQL statement")
