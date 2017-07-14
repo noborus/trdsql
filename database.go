@@ -106,12 +106,12 @@ func (db DDB) dbSelect(writer *csv.Writer, sqlstr string) {
 	log.Println(sqlstr)
 	rows, err := db.Query(sqlstr)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Query: ", err)
 	}
 	defer rows.Close()
 	columns, err := rows.Columns()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("ROWS: ", err)
 	}
 	values := make([]sql.RawBytes, len(columns))
 	results := make([]string, len(columns))

@@ -15,6 +15,7 @@ func (csvq CSVQ) Run(args []string) int {
 		inSep     string
 		outSep    string
 	)
+	flags := flag.NewFlagSet("csvq", flag.ContinueOnError)
 	dbdriver := "sqlite3"
 	dbdsn := ""
 	cfgfile := configOpen()
@@ -23,34 +24,33 @@ func (csvq CSVQ) Run(args []string) int {
 		fmt.Printf("err:%s", cfg.Dbdriver)
 		dbdriver = cfg.Dbdriver
 	}
-
-	flag.Usage = func() {
+	flags.Usage = func() {
 		fmt.Fprintf(os.Stderr, `
 Usage: %s [OPTIONS] [SQL]
 
 Options:
 `, os.Args[0])
-		flag.PrintDefaults()
+		flags.PrintDefaults()
 	}
 
-	flag.StringVar(&odbdriver, "dbdriver", "", "database driver. default sqlite3")
-	flag.StringVar(&odbdsn, "dbdsn", "", "database connection option.")
-	flag.StringVar(&inSep, "input-delimiter", ",", "Field delimiter for input.")
-	flag.StringVar(&inSep, "d", ",", "Field delimiter for input.")
-	flag.StringVar(&outSep, "output-delimiter", ",", "Field delimiter for output.")
-	flag.StringVar(&outSep, "D", ",", "Field delimiter for output.")
-	flag.Parse()
+	flags.StringVar(&odbdriver, "dbdriver", "", "database driver. default sqlite3")
+	flags.StringVar(&odbdsn, "dbdsn", "", "database connection option.")
+	flags.StringVar(&inSep, "input-delimiter", ",", "Field delimiter for input.")
+	flags.StringVar(&inSep, "d", ",", "Field delimiter for input.")
+	flags.StringVar(&outSep, "output-delimiter", ",", "Field delimiter for output.")
+	flags.StringVar(&outSep, "D", ",", "Field delimiter for output.")
+	flags.Parse(args[1:])
 	if odbdriver != "" {
 		dbdriver = odbdriver
 	}
 	if odbdsn != "" {
 		dbdsn = odbdsn
 	}
-	if len(flag.Args()) == 0 {
-		flag.Usage()
+	if len(flags.Args()) == 0 {
+		flags.Usage()
 		return (2)
 	}
-	sqlstr := flag.Args()[0]
+	sqlstr := flags.Args()[0]
 	if dbdsn == "" && cfg != nil {
 		for _, c := range cfg.Target {
 			if dbdriver == c.Name {

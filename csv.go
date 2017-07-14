@@ -18,6 +18,9 @@ func csvOpen(filename string) (*csv.Reader, error) {
 		if filename[0] == '`' {
 			filename = strings.Replace(filename, "`", "", 2)
 		}
+		if filename[0] == '"' {
+			filename = strings.Replace(filename, "\"", "", 2)
+		}
 		file, err = os.Open(filename)
 		if err != nil {
 			// log.Fatal("ERROR: ", err)
