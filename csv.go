@@ -42,7 +42,7 @@ func getSeparator(sepString string) (sepRune rune) {
 	sepString = `'` + sepString + `'`
 	sepRunes, err := strconv.Unquote(sepString)
 	if err != nil {
-		fmt.Println(sepString, ": ", err)
+		fmt.Fprintf(os.Stderr, "getSeparator: %s", err)
 	} else {
 		sepRune = ([]rune(sepRunes))[0]
 	}

@@ -148,3 +148,19 @@ func escapetable(db DDB, oldname string) (newname string) {
 	}
 	return newname
 }
+
+func rewrite(sqlstr string, oldname string, newname string) (rewrite string) {
+	rewrite = strings.Replace(sqlstr, oldname, newname, -1)
+	return rewrite
+}
+
+func sqlparse(sqlstr string) []string {
+	word := strings.Fields(sqlstr)
+	tablenames := make([]string, 0, 1)
+	for i := 0; i < len(word); i++ {
+		if element := strings.ToUpper(word[i]); element == "FROM" || element == "JOIN" {
+			tablenames = append(tablenames, word[i+1])
+		}
+	}
+	return tablenames
+}

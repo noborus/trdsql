@@ -2,7 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"log"
+	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -12,24 +13,33 @@ type target struct {
 	Name string `json:"name"`
 	Dsn  string `json:"dsn"`
 }
+
 type config struct {
 	Dbdriver string   `json:"dbdriver"`
 	Target   []target `json:"target"`
 }
 
-func loadConfig() (*config, error) {
+func configOpen() (cfg io.Reader) {
 	home := os.Getenv("HOME")
 	if home == "" && runtime.GOOS == "windows" {
 		home = os.Getenv("APPDATA")
 	}
 	fname := filepath.Join(home, ".config", "csvq", "config.json")
-	log.Println(fname)
-	f, err := os.Open(fname)
+	cfg, err := os.Open(fname)
 	if err != nil {
-		return nil, err
+		return nil
 	}
-	defer f.Close()
-	var cfg config
-	err = json.NewDecoder(f).Decode(&cfg)
-	return &cfg, err
+	return cfg
+}
+
+func loadConfig(cfg io.Reader) (*config, error) {
+	var conf config
+	if cfg == nil {
+		return &conf, errors.New("no file")
+	}
+	err := json.NewDecoder(cfg).Decode(&conf)
+	if err != nil {
+		return &conf, errors.New("config error")
+	}
+	return &conf, nil
 }
