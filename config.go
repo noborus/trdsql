@@ -9,14 +9,15 @@ import (
 	"runtime"
 )
 
-type target struct {
-	Name string `json:"name"`
-	Dsn  string `json:"dsn"`
+type Database struct {
+	Name     string `json:"name"`
+	Dbdriver string `json:"dbdriver"`
+	Dsn      string `json:"dsn"`
 }
 
 type config struct {
-	Dbdriver string   `json:"dbdriver"`
-	Target   []target `json:"target"`
+	Db       string     `json:"db"`
+	Database []Database `json:"database"`
 }
 
 func configOpen() (cfg io.Reader) {
@@ -32,14 +33,14 @@ func configOpen() (cfg io.Reader) {
 	return cfg
 }
 
-func loadConfig(cfg io.Reader) (*config, error) {
-	var conf config
-	if cfg == nil {
-		return &conf, errors.New("no file")
+func loadConfig(conf io.Reader) (*config, error) {
+	var cfg config
+	if conf == nil {
+		return &cfg, errors.New("no file")
 	}
-	err := json.NewDecoder(cfg).Decode(&conf)
+	err := json.NewDecoder(conf).Decode(&cfg)
 	if err != nil {
-		return &conf, errors.New("config error")
+		return &cfg, errors.New("config error")
 	}
-	return &conf, nil
+	return &cfg, nil
 }

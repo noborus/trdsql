@@ -8,6 +8,7 @@ import (
 	"os"
 )
 
+// Run is main routine.
 func (csvq CSVQ) Run(args []string) int {
 	var (
 		odbdriver string
@@ -19,11 +20,7 @@ func (csvq CSVQ) Run(args []string) int {
 	dbdriver := "sqlite3"
 	dbdsn := ""
 	cfgfile := configOpen()
-	cfg, err := loadConfig(cfgfile)
-	if err == nil {
-		fmt.Printf("err:%s", cfg.Dbdriver)
-		dbdriver = cfg.Dbdriver
-	}
+	cfg, _ := loadConfig(cfgfile)
 	flags.Usage = func() {
 		fmt.Fprintf(os.Stderr, `
 Usage: %s [OPTIONS] [SQL]
@@ -33,6 +30,7 @@ Options:
 		flags.PrintDefaults()
 	}
 
+	flags.StringVar(&cfg.Db, "db", cfg.Db, "db of the configuration file")
 	flags.StringVar(&odbdriver, "dbdriver", "", "database driver. default sqlite3")
 	flags.StringVar(&odbdsn, "dbdsn", "", "database connection option.")
 	flags.StringVar(&inSep, "input-delimiter", ",", "Field delimiter for input.")
@@ -40,51 +38,74 @@ Options:
 	flags.StringVar(&outSep, "output-delimiter", ",", "Field delimiter for output.")
 	flags.StringVar(&outSep, "D", ",", "Field delimiter for output.")
 	flags.Parse(args[1:])
+	if len(flags.Args()) == 0 {
+		flags.Usage()
+		return (2)
+	}
+	sqlstr := flags.Args()[0]
+	if cfg.Db != "" {
+		for _, c := range cfg.Database {
+			if cfg.Db == c.Name {
+				dbdriver = c.Dbdriver
+				dbdsn = c.Dsn
+			}
+		}
+	}
 	if odbdriver != "" {
 		dbdriver = odbdriver
 	}
 	if odbdsn != "" {
 		dbdsn = odbdsn
 	}
-	if len(flags.Args()) == 0 {
-		flags.Usage()
-		return (2)
-	}
-	sqlstr := flags.Args()[0]
-	if dbdsn == "" && cfg != nil {
-		for _, c := range cfg.Target {
-			if dbdriver == c.Name {
-				log.Println(c.Name, c.Dsn)
-				dbdsn = c.Dsn
-			}
-		}
-		if dbdriver == "sqlite3" {
-			dbdsn = ":memory:"
-		}
+	if dbdriver == "sqlite3" && dbdsn == "" {
+		dbdsn = ":memory:"
 	}
 
-	writer := csv.NewWriter(csvq.outStream)
-	writer.Comma = getSeparator(outSep)
-	readerComma := getSeparator(inSep)
-
-	db := Connect(dbdriver, dbdsn)
+	readerComma, err := getSeparator(inSep)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Printf("driver: %s, dsn: %s", dbdriver, dbdsn)
+	db, err := Connect(dbdriver, dbdsn)
+	if err != nil {
+		log.Println("ERROR: ", err)
+		return 1
+	}
 	defer db.Disconnect()
 
 	tablenames := sqlparse(sqlstr)
+	if len(tablenames) == 0 {
+		log.Println("ERROR: table not found")
+		return 1
+	}
+	var reader *csv.Reader
+	var header []string
 	for _, tablename := range tablenames {
-		reader, err := csvOpen(tablename)
+		reader, err = csvOpen(tablename)
 		if err != nil {
+			// no file
 			continue
 		}
-		rtable := escapetable(db, tablename)
+		rtable := db.escapetable(tablename)
 		sqlstr = rewrite(sqlstr, tablename, rtable)
 		reader.Comma = readerComma
-		reader.FieldsPerRecord = -1 // no check count
-		reader.TrimLeadingSpace = true
-		header := headerRead(reader)
+		header, err = headerRead(reader)
+		if err != nil {
+			log.Println(err)
+			return 1
+		}
 		db.Create(rtable, header)
 		db.Import(reader, rtable, header)
 	}
-	db.Select(writer, sqlstr)
+	writer := csv.NewWriter(csvq.outStream)
+	writer.Comma, err = getSeparator(outSep)
+	if err != nil {
+		log.Println(err)
+	}
+	err = db.Select(writer, sqlstr)
+	if err != nil {
+		log.Println(err)
+		return 1
+	}
 	return 0
 }

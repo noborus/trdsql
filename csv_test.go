@@ -7,13 +7,15 @@ import (
 )
 
 func IsSeparator(s string) bool {
-	if getSeparator(s) > 0 {
+	r, _ := getSeparator(s)
+	if r > 0 {
 		return true
 	}
 	return false
 }
 func IsNotSeparator() bool {
-	if getSeparator("false") == ',' {
+	r, _ := getSeparator("false")
+	if r == ',' {
 		return true
 	}
 	return false
@@ -48,7 +50,7 @@ func TestCsvRead(t *testing.T) {
 	1,2,3
 	`
 	s := strings.NewReader(csvStream)
-	c := headerRead(csv.NewReader(s))
+	c, _ := headerRead(csv.NewReader(s))
 	if c[0] != "a" {
 
 	}

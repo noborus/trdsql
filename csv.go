@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -23,31 +22,31 @@ func csvOpen(filename string) (*csv.Reader, error) {
 		}
 		file, err = os.Open(filename)
 		if err != nil {
-			// log.Fatal("ERROR: ", err)
 			return nil, err
 		}
 	}
 	reader := csv.NewReader(file)
+	reader.FieldsPerRecord = -1 // no check count
+	reader.TrimLeadingSpace = true
+
 	return reader, err
 }
 
-func headerRead(reader *csv.Reader) (header []string) {
+func headerRead(reader *csv.Reader) ([]string, error) {
 	var err error
+	var header []string
 	header, err = reader.Read()
-	if err != nil {
-		log.Fatal("ERROR: ", err)
-	}
-	return header
+	return header, err
 }
 
-func getSeparator(sepString string) (sepRune rune) {
-	sepRune = ','
+func getSeparator(sepString string) (rune, error) {
+	var sepRune rune = ','
 	sepString = `'` + sepString + `'`
 	sepRunes, err := strconv.Unquote(sepString)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "getSeparator: %s\n", err)
+		return sepRune, fmt.Errorf("ERROR getSeparator: %s:%s", err, sepString)
 	} else {
 		sepRune = ([]rune(sepRunes))[0]
 	}
-	return sepRune
+	return sepRune, err
 }

@@ -3,6 +3,8 @@ package main
 import (
 	"database/sql"
 	"encoding/csv"
+	"errors"
+	"fmt"
 	"io"
 	"log"
 	"strconv"
@@ -27,7 +29,7 @@ func rowImport(stmt *sql.Stmt, list []interface{}) {
 	}
 }
 
-func (db DDB) Import(reader *csv.Reader, table string, header []string) {
+func (db DDB) Import(reader *csv.Reader, table string, header []string) error {
 	columns := make([]string, len(header))
 	place := make([]string, len(header))
 	list := make([]interface{}, len(header))
@@ -43,7 +45,7 @@ func (db DDB) Import(reader *csv.Reader, table string, header []string) {
 	sqlstr := "INSERT INTO " + table + " (" + strings.Join(columns, ",") + ") VALUES (" + strings.Join(place, ",") + ");"
 	stmt, err := db.Prepare(sqlstr)
 	if err != nil {
-		log.Fatal("ISNERT:", err)
+		return fmt.Errorf("ERROR INSERT: %s", err)
 	}
 	rowImport(stmt, list)
 
@@ -53,7 +55,7 @@ func (db DDB) Import(reader *csv.Reader, table string, header []string) {
 			break
 		} else {
 			if err != nil {
-				log.Fatal("ERROR: ", err)
+				return fmt.Errorf("ERROR Read: %s", err)
 			}
 		}
 		for i := range header {
@@ -61,28 +63,24 @@ func (db DDB) Import(reader *csv.Reader, table string, header []string) {
 		}
 		rowImport(stmt, list)
 	}
+	return nil
 }
 
-func Connect(driver, dsn string) DDB {
+func Connect(driver, dsn string) (DDB, error) {
 	var db DDB
 	var err error
 	db.dbdriver = driver
 	db.dbdsn = dsn
 	db.DB, err = sql.Open(driver, dsn)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return db
+	return db, err
 }
 
-func (db DDB) Disconnect() {
+func (db DDB) Disconnect() error {
 	err := db.Close()
-	if err != nil {
-		log.Fatal(err)
-	}
+	return err
 }
 
-func (db DDB) Create(table string, header []string) {
+func (db DDB) Create(table string, header []string) error {
 	var sqlstr string
 	columns := make([]string, len(header))
 	for i := 0; i < len(header); i++ {
@@ -93,25 +91,23 @@ func (db DDB) Create(table string, header []string) {
 	sqlstr = sqlstr + table + " ( " + strings.Join(columns, ",") + " );"
 	log.Println(sqlstr)
 	_, err := db.Exec(sqlstr)
-	if err != nil {
-		log.Fatal("CREATE:", err)
-	}
+	return err
 }
 
-func (db DDB) Select(writer *csv.Writer, sqlstr string) {
+func (db DDB) Select(writer *csv.Writer, sqlstr string) error {
 	sqlstr = strings.TrimSpace(sqlstr)
 	if sqlstr == "" {
-		log.Fatal("ERROR: no SQL statement")
+		return errors.New("ERROR: no SQL statement")
 	}
-	log.Println(sqlstr)
+	//	log.Println(sqlstr)
 	rows, err := db.Query(sqlstr)
 	if err != nil {
-		log.Fatal("Query: ", err)
+		return fmt.Errorf("ERROR: %s [%s]", err, sqlstr)
 	}
 	defer rows.Close()
 	columns, err := rows.Columns()
 	if err != nil {
-		log.Fatal("ROWS: ", err)
+		return fmt.Errorf("ERROR: Rows %s", err)
 	}
 	values := make([]sql.RawBytes, len(columns))
 	results := make([]string, len(columns))
@@ -122,17 +118,18 @@ func (db DDB) Select(writer *csv.Writer, sqlstr string) {
 	for rows.Next() {
 		err = rows.Scan(scanArgs...)
 		if err != nil {
-			log.Fatal(err)
+			return fmt.Errorf("ERROR: %s", err)
 		}
 		for i, col := range values {
 			results[i] = string(col)
 		}
 		writer.Write(results)
-		writer.Flush()
 	}
+	writer.Flush()
+	return nil
 }
 
-func escapetable(db DDB, oldname string) (newname string) {
+func (db DDB) escapetable(oldname string) (newname string) {
 	if db.dbdriver == "postgres" {
 		if oldname[0] != '"' {
 			newname = "\"" + oldname + "\""
@@ -155,11 +152,13 @@ func rewrite(sqlstr string, oldname string, newname string) (rewrite string) {
 }
 
 func sqlparse(sqlstr string) []string {
+	var tablenames []string
 	word := strings.Fields(sqlstr)
-	tablenames := make([]string, 0, 1)
 	for i := 0; i < len(word); i++ {
 		if element := strings.ToUpper(word[i]); element == "FROM" || element == "JOIN" {
-			tablenames = append(tablenames, word[i+1])
+			if (i + 1) < len(word) {
+				tablenames = append(tablenames, word[i+1])
+			}
 		}
 	}
 	return tablenames
