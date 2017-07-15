@@ -80,6 +80,7 @@ Options:
 		sqlstr = rewrite(sqlstr, tablename, rtable)
 		reader.Comma = readerComma
 		reader.FieldsPerRecord = -1 // no check count
+		reader.TrimLeadingSpace = true
 		header := headerRead(reader)
 		db.Create(rtable, header)
 		db.Import(reader, rtable, header)
