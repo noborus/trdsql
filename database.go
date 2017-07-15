@@ -129,7 +129,8 @@ func (db DDB) Select(writer *csv.Writer, sqlstr string) error {
 	return nil
 }
 
-func (db DDB) escapetable(oldname string) (newname string) {
+func (db DDB) escapetable(oldname string) string {
+	var newname string
 	if db.dbdriver == "postgres" {
 		if oldname[0] != '"' {
 			newname = "\"" + oldname + "\""

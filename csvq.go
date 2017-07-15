@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 var debug = debugT(false)
@@ -58,6 +59,10 @@ Options:
 		debug = true
 	}
 	sqlstr := flags.Args()[0]
+	if strings.HasSuffix(sqlstr, ";") {
+		sqlstr = sqlstr[:len(sqlstr)-1]
+	}
+
 	if cfg.Db != "" {
 		for _, c := range cfg.Database {
 			if cfg.Db == c.Name {
