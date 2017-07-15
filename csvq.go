@@ -67,8 +67,8 @@ Options:
 	writer.Comma = getSeparator(outSep)
 	readerComma := getSeparator(inSep)
 
-	db := dbConnect(dbdriver, dbdsn)
-	defer db.dbDisconnect()
+	db := Connect(dbdriver, dbdsn)
+	defer db.Disconnect()
 
 	tablenames := sqlparse(sqlstr)
 	for _, tablename := range tablenames {
@@ -79,11 +79,11 @@ Options:
 		rtable := escapetable(db, tablename)
 		sqlstr = rewrite(sqlstr, tablename, rtable)
 		reader.Comma = readerComma
-		reader.FieldsPerRecord = -1
-		header := csvRead(reader)
-		db.dbCreate(rtable, header)
-		db.dbImport(reader, rtable, header)
+		reader.FieldsPerRecord = -1 // no check count
+		header := headerRead(reader)
+		db.Create(rtable, header)
+		db.Import(reader, rtable, header)
 	}
-	db.dbSelect(writer, sqlstr)
+	db.Select(writer, sqlstr)
 	return 0
 }

@@ -31,7 +31,7 @@ func csvOpen(filename string) (*csv.Reader, error) {
 	return reader, err
 }
 
-func csvRead(reader *csv.Reader) (header []string) {
+func headerRead(reader *csv.Reader) (header []string) {
 	var err error
 	header, err = reader.Read()
 	if err != nil {

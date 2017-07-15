@@ -27,7 +27,7 @@ func rowImport(stmt *sql.Stmt, list []interface{}) {
 	}
 }
 
-func (db DDB) dbImport(reader *csv.Reader, table string, header []string) {
+func (db DDB) Import(reader *csv.Reader, table string, header []string) {
 	columns := make([]string, len(header))
 	place := make([]string, len(header))
 	list := make([]interface{}, len(header))
@@ -63,7 +63,7 @@ func (db DDB) dbImport(reader *csv.Reader, table string, header []string) {
 	}
 }
 
-func dbConnect(driver, dsn string) DDB {
+func Connect(driver, dsn string) DDB {
 	var db DDB
 	var err error
 	db.dbdriver = driver
@@ -75,21 +75,21 @@ func dbConnect(driver, dsn string) DDB {
 	return db
 }
 
-func (db DDB) dbDisconnect() {
+func (db DDB) Disconnect() {
 	err := db.Close()
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func (db DDB) dbCreate(table string, header []string) {
+func (db DDB) Create(table string, header []string) {
 	var sqlstr string
 	columns := make([]string, len(header))
 	for i := 0; i < len(header); i++ {
 		columns[i] = "c" + strconv.Itoa(i+1) + " text"
+		// columns[i] = "\"" + header[i] + "\"" + " text"
 	}
-	temp := "TEMPORARY"
-	sqlstr = "CREATE " + temp + " TABLE "
+	sqlstr = "CREATE TEMPORARY TABLE "
 	sqlstr = sqlstr + table + " ( " + strings.Join(columns, ",") + " );"
 	log.Println(sqlstr)
 	_, err := db.Exec(sqlstr)
@@ -98,7 +98,7 @@ func (db DDB) dbCreate(table string, header []string) {
 	}
 }
 
-func (db DDB) dbSelect(writer *csv.Writer, sqlstr string) {
+func (db DDB) Select(writer *csv.Writer, sqlstr string) {
 	sqlstr = strings.TrimSpace(sqlstr)
 	if sqlstr == "" {
 		log.Fatal("ERROR: no SQL statement")

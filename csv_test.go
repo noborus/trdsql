@@ -48,7 +48,7 @@ func TestCsvRead(t *testing.T) {
 	1,2,3
 	`
 	s := strings.NewReader(csvStream)
-	c := csvRead(csv.NewReader(s))
+	c := headerRead(csv.NewReader(s))
 	if c[0] != "a" {
 
 	}
