@@ -8,6 +8,16 @@ import (
 	"os"
 )
 
+var debug = debugT(false)
+
+type debugT bool
+
+func (d debugT) Printf(format string, args ...interface{}) {
+	if d {
+		log.Printf(format, args...)
+	}
+}
+
 // Run is main routine.
 func (csvq CSVQ) Run(args []string) int {
 	var (
@@ -15,6 +25,7 @@ func (csvq CSVQ) Run(args []string) int {
 		odbdsn    string
 		inSep     string
 		outSep    string
+		odebug    bool
 	)
 	flags := flag.NewFlagSet("csvq", flag.ContinueOnError)
 	dbdriver := "sqlite3"
@@ -37,10 +48,14 @@ Options:
 	flags.StringVar(&inSep, "d", ",", "Field delimiter for input.")
 	flags.StringVar(&outSep, "output-delimiter", ",", "Field delimiter for output.")
 	flags.StringVar(&outSep, "D", ",", "Field delimiter for output.")
+	flags.BoolVar(&odebug, "debug", false, "debug print.")
 	flags.Parse(args[1:])
 	if len(flags.Args()) == 0 {
 		flags.Usage()
 		return (2)
+	}
+	if odebug {
+		debug = true
 	}
 	sqlstr := flags.Args()[0]
 	if cfg.Db != "" {
@@ -65,7 +80,7 @@ Options:
 	if err != nil {
 		log.Println(err)
 	}
-	log.Printf("driver: %s, dsn: %s", dbdriver, dbdsn)
+	debug.Printf("driver: %s, dsn: %s", dbdriver, dbdsn)
 	db, err := Connect(dbdriver, dbdsn)
 	if err != nil {
 		log.Println("ERROR: ", err)

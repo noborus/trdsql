@@ -89,7 +89,7 @@ func (db DDB) Create(table string, header []string) error {
 	}
 	sqlstr = "CREATE TEMPORARY TABLE "
 	sqlstr = sqlstr + table + " ( " + strings.Join(columns, ",") + " );"
-	log.Println(sqlstr)
+	debug.Printf(sqlstr)
 	_, err := db.Exec(sqlstr)
 	return err
 }
@@ -99,7 +99,7 @@ func (db DDB) Select(writer *csv.Writer, sqlstr string) error {
 	if sqlstr == "" {
 		return errors.New("ERROR: no SQL statement")
 	}
-	//	log.Println(sqlstr)
+	debug.Printf(sqlstr)
 	rows, err := db.Query(sqlstr)
 	if err != nil {
 		return fmt.Errorf("ERROR: %s [%s]", err, sqlstr)
