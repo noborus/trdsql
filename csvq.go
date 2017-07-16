@@ -95,8 +95,8 @@ Options:
 
 	tablenames := sqlparse(sqlstr)
 	if len(tablenames) == 0 {
-		log.Println("ERROR: table not found")
-		return 1
+		// withou FROM clause. ex. SELECT 1+1;
+		debug.Printf("table not found\n")
 	}
 	var reader *csv.Reader
 	var header []string
