@@ -26,6 +26,8 @@ func (csvq CSVQ) Run(args []string) int {
 		odbdsn    string
 		inSep     string
 		outSep    string
+		ihead     bool
+		ohead     bool
 		odebug    bool
 	)
 	flags := flag.NewFlagSet("csvq", flag.ContinueOnError)
@@ -49,6 +51,8 @@ Options:
 	flags.StringVar(&inSep, "d", ",", "Field delimiter for input.")
 	flags.StringVar(&outSep, "output-delimiter", ",", "Field delimiter for output.")
 	flags.StringVar(&outSep, "D", ",", "Field delimiter for output.")
+	flags.BoolVar(&ihead, "H", false, "The first line is the cvs header.")
+	flags.BoolVar(&ohead, "output-header", false, "Output header.")
 	flags.BoolVar(&odebug, "debug", false, "debug print.")
 	flags.Parse(args[1:])
 	if len(flags.Args()) == 0 {
@@ -114,15 +118,20 @@ Options:
 			log.Println(err)
 			return 1
 		}
-		db.Create(rtable, header)
-		db.Import(reader, rtable, header)
+		db.Create(rtable, header, ihead)
+		db, err = db.ImportPrepare(rtable, header, ihead)
+		if err != nil {
+			log.Println(err)
+			return 1
+		}
+		db.Import(reader, header, ihead)
 	}
 	writer := csv.NewWriter(csvq.outStream)
 	writer.Comma, err = getSeparator(outSep)
 	if err != nil {
 		log.Println(err)
 	}
-	err = db.Select(writer, sqlstr)
+	err = db.Select(writer, sqlstr, ohead)
 	if err != nil {
 		log.Println(err)
 		return 1
