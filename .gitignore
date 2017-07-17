@@ -3,7 +3,7 @@
 *.dll
 *.so
 *.dylib
-csvq
+trdsql
 
 # Test binary, build with `go test -c`
 *.test
