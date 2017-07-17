@@ -1,0 +1,20 @@
+{
+    "db": "ndb",
+    "database": [
+	{
+	    "name": "sdb",
+	    "dbdriver": "sqlite3",
+	    "dsn": ""
+	},
+	{
+	    "Name": "pdb",
+	    "dbdriver": "postgres",
+	    "dsn": "user=test dbname=test"
+	},
+	{
+	    "Name": "mdb",
+	    "dbdriver": "mysql",
+	    "dsn": "user:password@/dbname"
+	}
+    ]
+}
