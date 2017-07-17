@@ -16,15 +16,15 @@ var tcsv = []string{
 
 func TestRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	csvq := &CSVQ{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
 	for _, c := range tcsv {
 		sql := "SELECT * FROM testdata/" + c
-		args := []string{"csvq", sql}
-		if csvq.Run(args) != 0 {
-			t.Errorf("csvq error.")
+		args := []string{"trdsql", sql}
+		if trdsql.Run(args) != 0 {
+			t.Errorf("trdsql error.")
 		}
 		if outStream.String() == "" {
-			t.Fatalf("csvq error :%s", csvq.outStream)
+			t.Fatalf("trdsql error :%s", trdsql.outStream)
 		}
 	}
 }
@@ -32,15 +32,15 @@ func TestRun(t *testing.T) {
 /*
 func TestPgRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	csvq := &CSVQ{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
 	for _, c := range tcsv {
 		sql := "SELECT * FROM testdata/" + c
-		args := []string{"csvq", "-dbdriver", "postgres", sql}
-		if csvq.Run(args) != 0 {
-			t.Errorf("csvq error.")
+		args := []string{"trdsql", "-dbdriver", "postgres", sql}
+		if trdsql.Run(args) != 0 {
+			t.Errorf("trdsql error.")
 		}
 		if outStream.String() == "" {
-			t.Fatalf("csvq error :%s", csvq.outStream)
+			t.Fatalf("trdsql error :%s", trdsql.outStream)
 		}
 	}
 }

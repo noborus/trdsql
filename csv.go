@@ -40,13 +40,10 @@ func headerRead(reader *csv.Reader) ([]string, error) {
 }
 
 func getSeparator(sepString string) (rune, error) {
-	var sepRune rune = ','
-	sepString = `'` + sepString + `'`
-	sepRunes, err := strconv.Unquote(sepString)
+	sepRunes, err := strconv.Unquote(`'` + sepString + `'`)
 	if err != nil {
-		return sepRune, fmt.Errorf("ERROR getSeparator: %s:%s", err, sepString)
-	} else {
-		sepRune = ([]rune(sepRunes))[0]
+		return ',', fmt.Errorf("ERROR getSeparator: %s:%s", err, sepString)
 	}
+	sepRune := ([]rune(sepRunes))[0]
 	return sepRune, err
 }

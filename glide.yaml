@@ -1,4 +1,4 @@
-package: github.com/noborus/csvq
+package: github.com/noborus/trdsql
 import:
 - package: github.com/go-sql-driver/mysql
 - package: github.com/lib/pq

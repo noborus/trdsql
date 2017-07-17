@@ -5,12 +5,12 @@ import (
 	"os"
 )
 
-// CSVQ is output stream define
-type CSVQ struct {
+// TRDSQL is output stream define
+type TRDSQL struct {
 	outStream, errStream io.Writer
 }
 
 func main() {
-	csvq := &CSVQ{outStream: os.Stdout, errStream: os.Stderr}
-	os.Exit(csvq.Run(os.Args))
+	trdsql := &TRDSQL{outStream: os.Stdout, errStream: os.Stderr}
+	os.Exit(trdsql.Run(os.Args))
 }

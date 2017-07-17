@@ -25,7 +25,7 @@ func configOpen() (cfg io.Reader) {
 	if home == "" && runtime.GOOS == "windows" {
 		home = os.Getenv("APPDATA")
 	}
-	fname := filepath.Join(home, ".config", "csvq", "config.json")
+	fname := filepath.Join(home, ".config", "trdsql", "config.json")
 	cfg, err := os.Open(fname)
 	if err != nil {
 		return nil
