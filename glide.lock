@@ -1,5 +1,5 @@
-hash: 2ec5d8b9b9ade61d3501440aa79c0885cd55b4edab536163604814a497e56eb5
-updated: 2017-07-10T01:02:03.891792612+09:00
+hash: 2e7ed37e01e3613dfb91c5e8e244f0be81fce54237d9815d8dd52ae38e3fcf35
+updated: 2017-07-17T13:22:01.251958689+09:00
 imports:
 - name: github.com/go-sql-driver/mysql
   version: a0583e0143b1624142adab07e0e97fe106d99561
@@ -11,13 +11,8 @@ imports:
   version: ca5e3819723d8eeaf170ad510e7da1d6d2e94a08
 - name: github.com/xwb1989/sqlparser
   version: a9cdf22bd561e715bba34ee228cb1c06bfa2719c
-  subpackages:
-  - dependency/bson
-  - dependency/bytes2
-  - dependency/hack
-  - dependency/sqltypes
 - name: golang.org/x/net
-  version: 054b33e6527139ad5b1ec2f6232c3b175bd9a30c
+  version: b3756b4b77d7b13260a0a2ec658753cf48922eac
   subpackages:
   - context
 testImports: []
