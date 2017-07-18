@@ -7,4 +7,4 @@ install:
   - go get github.com/Masterminds/glide
 
 script:
-- go test $(glide novendor)
+  - go test $(glide novendor)
