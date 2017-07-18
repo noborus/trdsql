@@ -199,7 +199,7 @@ Unix like.
 $HOME/.config/trdsql/config.json
 ```
 
-If you put the setting in [config.json.sample](config.json)  you can specify the name with -db.
+If you put the setting in [config.json](config.json.sample)  you can specify the name with -db.
 
 ```
 $ trdsql --debug -db pdb "SELECT * FROM test.csv"
