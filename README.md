@@ -1,4 +1,7 @@
 # trdsql
+
+[![Build Status](https://travis-ci.org/noborus/trdsql.svg?branch=master)](https://travis-ci.org/noborus/trdsql)
+
 A tool that can execute SQL queries on csv.
 It is a tool like [q](https://github.com/harelba/q) , [textql](https://github.com/dinedal/textql) and others.
 
