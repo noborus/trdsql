@@ -1,5 +1,5 @@
 {
-    "db": "ndb",
+    "db": "pdb",
     "database": [
 	{
 	    "name": "sdb",
