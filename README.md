@@ -31,6 +31,8 @@ Options:
     	Field delimiter for input. (default ",")
   -ih
     	The first line is interpreted as column names.
+  -is int
+      Skip header row.
   -od string
     	Field delimiter for output. (default ",")
   -oh
@@ -113,13 +115,13 @@ $ trdsql "SELECT u.c1,u.c2,h.c2 FROM user.csv as u LEFT JOIN hist.csv as h ON(u.
 
 When using PostgreSQL, specify postgres for dbdriver and connection information for dbdsn.
 
-```
+```sh
 $ trdsql -dbdriver postgres -dbdsn "dbname=test" "SELECT count(*) FROM test.csv "
 ```
 
 #### Function
 The PostgreSQL driver can use the window function.
-```
+```sh
 $ trdsql -dbdriver postgres -dbdsn "dbname=test" "SELECT row_number() OVER (ORDER BY c2),c1,c2 FROM test.csv"
 ```
 ```
@@ -129,7 +131,7 @@ $ trdsql -dbdriver postgres -dbdsn "dbname=test" "SELECT row_number() OVER (ORDE
 ```
 
 You can also use the generate_series function.
-```
+```sh
 $ trdsql -dbdriver postgres -dbdsn "dbname=test" "SELECT generate_series(1,3);"
 ```
 ```
@@ -138,7 +140,7 @@ $ trdsql -dbdriver postgres -dbdsn "dbname=test" "SELECT generate_series(1,3);"
 3
 ```
 **Note:** Type casting may be necessary in some cases.
-```
+```sh
 $ trdsql -dbdriver postgres -dbdsn "dbname=test" "SELECT generate_series('2017-07-18 00:00'::timestamp,'2017-07-20 00:00'::timestamp, '24 hours')::text;"
 ```
 ```
@@ -163,7 +165,7 @@ $ psql test -c "SELECT * FROM colors"
 
 Join table and CSV file.
 
-```
+```sh
 $ trdsql -dbdriver postgres -dbdsn "dbname=test" "SELECT t.c1,t.c2,c.name FROM test.csv AS t LEFT JOIN colors AS c ON (t.c1::int = c.id)"
 ```
 
@@ -178,7 +180,7 @@ $ trdsql -dbdriver postgres -dbdsn "dbname=test" "SELECT t.c1,t.c2,c.name FROM t
 
 When using MySQL, specify mysql for dbdriver and connection information for dbdsn.
 
-```
+```sh
 $ trdsql -dbdriver mysql -dbdsn "user:password@/test" "SELECT GROUP_CONCAT(c2 ORDER BY c2 DESC) FROM testdata/test.csv"
 ```
 
@@ -186,7 +188,7 @@ $ trdsql -dbdriver mysql -dbdsn "user:password@/test" "SELECT GROUP_CONCAT(c2 OR
 "g,d,a"
 ```
 
-```
+```sh
 $ trdsql -dbdriver mysql -dbdsn "user:password@/test" "SELECT c1, SHA2(c2,224) FROM test.csv"
 ```
 
@@ -209,7 +211,7 @@ $HOME/.config/trdsql/config.json
 
 If you put the setting in [config.json](config.json.sample)  you can specify the name with -db.
 
-```
+```sh
 $ trdsql --debug -db pdb "SELECT * FROM test.csv"
 ```
 ```

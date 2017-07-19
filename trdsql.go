@@ -55,7 +55,7 @@ Options:
 	flags.StringVar(&outSep, "od", ",", "Field delimiter for output.")
 	flags.BoolVar(&ihead, "ih", false, "The first line is interpreted as column names.")
 	flags.BoolVar(&ohead, "oh", false, "Output column name as header.")
-	flags.IntVar(&iskip, "is", 0, "Skip header.")
+	flags.IntVar(&iskip, "is", 0, "Skip header row.")
 	flags.BoolVar(&version, "version", false, "display version information.")
 	flags.BoolVar(&odebug, "debug", false, "debug print.")
 	flags.Parse(args[1:])
