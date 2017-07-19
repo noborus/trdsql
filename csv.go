@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func csvOpen(filename string) (*csv.Reader, error) {
+func csvOpen(filename string, skip int) (*csv.Reader, error) {
 	var file *os.File
 	var err error
 	if filename == "-" {
@@ -28,7 +28,9 @@ func csvOpen(filename string) (*csv.Reader, error) {
 	reader := csv.NewReader(file)
 	reader.FieldsPerRecord = -1 // no check count
 	reader.TrimLeadingSpace = true
-
+	for i := 0; i < skip; i++ {
+		reader.Read()
+	}
 	return reader, err
 }
 

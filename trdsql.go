@@ -31,6 +31,7 @@ func (trdsql TRDSQL) Run(args []string) int {
 		outSep    string
 		ihead     bool
 		ohead     bool
+		iskip     int
 		odebug    bool
 	)
 	flags := flag.NewFlagSet("trdsql", flag.ContinueOnError)
@@ -54,6 +55,7 @@ Options:
 	flags.StringVar(&outSep, "od", ",", "Field delimiter for output.")
 	flags.BoolVar(&ihead, "ih", false, "The first line is interpreted as column names.")
 	flags.BoolVar(&ohead, "oh", false, "Output column name as header.")
+	flags.IntVar(&iskip, "is", 0, "Skip header.")
 	flags.BoolVar(&version, "version", false, "display version information.")
 	flags.BoolVar(&odebug, "debug", false, "debug print.")
 	flags.Parse(args[1:])
@@ -111,7 +113,7 @@ Options:
 	var reader *csv.Reader
 	var header []string
 	for _, tablename := range tablenames {
-		reader, err = csvOpen(tablename)
+		reader, err = csvOpen(tablename, iskip)
 		if err != nil {
 			// no file
 			continue
