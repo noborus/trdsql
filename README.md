@@ -7,7 +7,7 @@ It is a tool like [q](https://github.com/harelba/q) , [textql](https://github.co
 
 The difference from these tools is that the syntax of PostgreSQL or MySQL can be used.
 
-You need to prepare a database server, if you want to use PostgreSQL or MySQL syntax.
+You need to prepare a database server if you want to use PostgreSQL or MySQL syntax.
 
 ## INSTALL
 
@@ -20,7 +20,7 @@ Usage: trdsql [OPTIONS] [SQL(SELECT...)]
 
 Options:
   -db string
-    	Specify db name of the setting.
+    	Specify DB name of the setting.
   -dbdriver string
     	database driver. default sqlite3
   -dbdsn string
@@ -34,21 +34,21 @@ Options:
   -od string
     	Field delimiter for output. (default ",")
   -oh
-    	Output column name as header.
+    	Output column name as a header.
   -version
     	display version information.
 ```
 
 ## Example
 
-There is a csv file.
+There is a CSV file.
 ```csv
 1,Orange
 2,Melon
 3,Apple
 ```
 
-You can specify the csv file in the SQL FROM clause.
+You can specify the CSV file in the SQL FROM clause.
 
 ```sh
 $ trdsql "SELECT * FROM test.csv"
@@ -146,7 +146,7 @@ $ trdsql -dbdriver postgres -dbdsn "dbname=test" "SELECT generate_series('2017-0
 2017-07-19 00:00:00
 2017-07-20 00:00:00
 ```
-#### Join table and csv file is possible.
+#### Join table and CSV file is possible.
 
 Test database has a colors table.
 ```
@@ -161,7 +161,7 @@ $ psql test -c "SELECT * FROM colors"
 (3 rows)
 ```
 
-Join table and csv file.
+Join table and CSV file.
 
 ```
 $ trdsql -dbdriver postgres -dbdsn "dbname=test" "SELECT t.c1,t.c2,c.name FROM test.csv AS t LEFT JOIN colors AS c ON (t.c1::int = c.id)"
@@ -177,6 +177,14 @@ $ trdsql -dbdriver postgres -dbdsn "dbname=test" "SELECT t.c1,t.c2,c.name FROM t
 ### MySQL
 
 When using MySQL, specify mysql for dbdriver and connection information for dbdsn.
+
+```
+$ trdsql -dbdriver mysql -dbdsn "user:password@/test" "SELECT GROUP_CONCAT(c2 ORDER BY c2 DESC) FROM testdata/test.csv"
+```
+
+```
+"g,d,a"
+```
 
 ```
 $ trdsql -dbdriver mysql -dbdsn "user:password@/test" "SELECT c1, SHA2(c2,224) FROM test.csv"
