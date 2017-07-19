@@ -17,9 +17,9 @@ import (
 
 // DDB is *sql.DB wrapper.
 type DDB struct {
-	dbdriver string
-	dbdsn    string
-	escape   string
+	driver string
+	dsn    string
+	escape string
 	*sql.DB
 	stmt *sql.Stmt
 }
@@ -40,7 +40,7 @@ func (db DDB) ImportPrepare(table string, header []string, head bool) (DDB, erro
 		} else {
 			columns[i] = "c" + strconv.Itoa(i+1)
 		}
-		if db.dbdriver == "postgres" {
+		if db.driver == "postgres" {
 			place[i] = "$" + strconv.Itoa(i+1)
 		} else {
 			place[i] = "?"
@@ -85,8 +85,8 @@ func (db DDB) Import(reader *csv.Reader, header []string, head bool) error {
 func Connect(driver, dsn string) (DDB, error) {
 	var db DDB
 	var err error
-	db.dbdriver = driver
-	db.dbdsn = dsn
+	db.driver = driver
+	db.dsn = dsn
 	if driver == "postgres" {
 		db.escape = "\""
 	} else {

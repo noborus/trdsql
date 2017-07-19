@@ -24,19 +24,19 @@ func (d debugT) Printf(format string, args ...interface{}) {
 // Run is main routine.
 func (trdsql TRDSQL) Run(args []string) int {
 	var (
-		version   bool
-		odbdriver string
-		odbdsn    string
-		inSep     string
-		outSep    string
-		ihead     bool
-		ohead     bool
-		iskip     int
-		odebug    bool
+		version bool
+		odriver string
+		odsn    string
+		inSep   string
+		outSep  string
+		ihead   bool
+		ohead   bool
+		iskip   int
+		odebug  bool
 	)
 	flags := flag.NewFlagSet("trdsql", flag.ContinueOnError)
-	dbdriver := "sqlite3"
-	dbdsn := ""
+	driver := "sqlite3"
+	dsn := ""
 	cfgfile := configOpen()
 	cfg, _ := loadConfig(cfgfile)
 	flags.Usage = func() {
@@ -49,8 +49,8 @@ Options:
 	}
 
 	flags.StringVar(&cfg.Db, "db", cfg.Db, "Specify db name of the setting.")
-	flags.StringVar(&odbdriver, "dbdriver", "", "database driver. default sqlite3")
-	flags.StringVar(&odbdsn, "dbdsn", "", "database connection option.")
+	flags.StringVar(&odriver, "driver", "", "database driver. default sqlite3")
+	flags.StringVar(&odsn, "dsn", "", "database connection option.")
 	flags.StringVar(&inSep, "id", ",", "Field delimiter for input.")
 	flags.StringVar(&outSep, "od", ",", "Field delimiter for output.")
 	flags.BoolVar(&ihead, "ih", false, "The first line is interpreted as column names.")
@@ -76,29 +76,29 @@ Options:
 	}
 
 	if cfg.Db != "" {
-		for _, c := range cfg.Database {
-			if cfg.Db == c.Name {
-				dbdriver = c.Dbdriver
-				dbdsn = c.Dsn
-			}
+		if cfg.Database[cfg.Db].Driver == "" {
+			debug.Printf("ERROR: db[%s] does not found", cfg.Db)
+		} else {
+			driver = cfg.Database[cfg.Db].Driver
+			dsn = cfg.Database[cfg.Db].Dsn
 		}
 	}
-	if odbdriver != "" {
-		dbdriver = odbdriver
+	if odriver != "" {
+		driver = odriver
 	}
-	if odbdsn != "" {
-		dbdsn = odbdsn
+	if odsn != "" {
+		dsn = odsn
 	}
-	if dbdriver == "sqlite3" && dbdsn == "" {
-		dbdsn = ":memory:"
+	if driver == "sqlite3" && dsn == "" {
+		dsn = ":memory:"
 	}
 
 	readerComma, err := getSeparator(inSep)
 	if err != nil {
 		log.Println(err)
 	}
-	debug.Printf("driver: %s, dsn: %s", dbdriver, dbdsn)
-	db, err := Connect(dbdriver, dbdsn)
+	debug.Printf("driver: %s, dsn: %s", driver, dsn)
+	db, err := Connect(driver, dsn)
 	if err != nil {
 		log.Println("ERROR: ", err)
 		return 1

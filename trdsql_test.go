@@ -35,7 +35,7 @@ func TestPgRun(t *testing.T) {
 	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
 	for _, c := range tcsv {
 		sql := "SELECT * FROM testdata/" + c
-		args := []string{"trdsql", "-dbdriver", "postgres", sql}
+		args := []string{"trdsql", "-driver", "postgres", sql}
 		if trdsql.Run(args) != 0 {
 			t.Errorf("trdsql error.")
 		}

@@ -20,23 +20,23 @@ Usage: trdsql [OPTIONS] [SQL(SELECT...)]
 
 Options:
   -db string
-    	Specify DB name of the setting.
-  -dbdriver string
-    	database driver. default sqlite3
-  -dbdsn string
-    	database connection option.
+    	Specify db name of the setting.
   -debug
     	debug print.
+  -driver string
+    	database driver. default sqlite3
+  -dsn string
+    	database connection option.
   -id string
     	Field delimiter for input. (default ",")
   -ih
     	The first line is interpreted as column names.
   -is int
-      Skip header row.
+    	Skip header row.
   -od string
     	Field delimiter for output. (default ",")
   -oh
-    	Output column name as a header.
+    	Output column name as header.
   -version
     	display version information.
 ```
@@ -101,7 +101,6 @@ hist.csv
 2,2017-7-11
 ```
 
-Only LEFT JOIN is supported by default (SQLite)
 ```sh
 $ trdsql "SELECT u.c1,u.c2,h.c2 FROM user.csv as u LEFT JOIN hist.csv as h ON(u.c1=h.c1)"
 ```
@@ -113,16 +112,16 @@ $ trdsql "SELECT u.c1,u.c2,h.c2 FROM user.csv as u LEFT JOIN hist.csv as h ON(u.
 
 ### PostgreSQL
 
-When using PostgreSQL, specify postgres for dbdriver and connection information for dbdsn.
+When using PostgreSQL, specify postgres for driver and connection information for dsn.
 
 ```sh
-$ trdsql -dbdriver postgres -dbdsn "dbname=test" "SELECT count(*) FROM test.csv "
+$ trdsql -driver postgres -dsn "dbname=test" "SELECT count(*) FROM test.csv "
 ```
 
 #### Function
 The PostgreSQL driver can use the window function.
 ```sh
-$ trdsql -dbdriver postgres -dbdsn "dbname=test" "SELECT row_number() OVER (ORDER BY c2),c1,c2 FROM test.csv"
+$ trdsql -driver postgres -dsn "dbname=test" "SELECT row_number() OVER (ORDER BY c2),c1,c2 FROM test.csv"
 ```
 ```
 1,3,Apple
@@ -132,7 +131,7 @@ $ trdsql -dbdriver postgres -dbdsn "dbname=test" "SELECT row_number() OVER (ORDE
 
 You can also use the generate_series function.
 ```sh
-$ trdsql -dbdriver postgres -dbdsn "dbname=test" "SELECT generate_series(1,3);"
+$ trdsql -driver postgres -dsn "dbname=test" "SELECT generate_series(1,3);"
 ```
 ```
 1
@@ -141,7 +140,7 @@ $ trdsql -dbdriver postgres -dbdsn "dbname=test" "SELECT generate_series(1,3);"
 ```
 **Note:** Type casting may be necessary in some cases.
 ```sh
-$ trdsql -dbdriver postgres -dbdsn "dbname=test" "SELECT generate_series('2017-07-18 00:00'::timestamp,'2017-07-20 00:00'::timestamp, '24 hours')::text;"
+$ trdsql -driver postgres -dsn "dbname=test" "SELECT generate_series('2017-07-18 00:00'::timestamp,'2017-07-20 00:00'::timestamp, '24 hours')::text;"
 ```
 ```
 2017-07-18 00:00:00
@@ -166,7 +165,7 @@ $ psql test -c "SELECT * FROM colors"
 Join table and CSV file.
 
 ```sh
-$ trdsql -dbdriver postgres -dbdsn "dbname=test" "SELECT t.c1,t.c2,c.name FROM test.csv AS t LEFT JOIN colors AS c ON (t.c1::int = c.id)"
+$ trdsql -driver postgres -dsn "dbname=test" "SELECT t.c1,t.c2,c.name FROM test.csv AS t LEFT JOIN colors AS c ON (t.c1::int = c.id)"
 ```
 
 ```
@@ -178,10 +177,10 @@ $ trdsql -dbdriver postgres -dbdsn "dbname=test" "SELECT t.c1,t.c2,c.name FROM t
 
 ### MySQL
 
-When using MySQL, specify mysql for dbdriver and connection information for dbdsn.
+When using MySQL, specify mysql for driver and connection information for dsn.
 
 ```sh
-$ trdsql -dbdriver mysql -dbdsn "user:password@/test" "SELECT GROUP_CONCAT(c2 ORDER BY c2 DESC) FROM testdata/test.csv"
+$ trdsql -driver mysql -dsn "user:password@/test" "SELECT GROUP_CONCAT(c2 ORDER BY c2 DESC) FROM testdata/test.csv"
 ```
 
 ```
@@ -189,7 +188,7 @@ $ trdsql -dbdriver mysql -dbdsn "user:password@/test" "SELECT GROUP_CONCAT(c2 OR
 ```
 
 ```sh
-$ trdsql -dbdriver mysql -dbdsn "user:password@/test" "SELECT c1, SHA2(c2,224) FROM test.csv"
+$ trdsql -driver mysql -dsn "user:password@/test" "SELECT c1, SHA2(c2,224) FROM test.csv"
 ```
 
 ```

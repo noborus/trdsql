@@ -9,15 +9,14 @@ import (
 	"runtime"
 )
 
-type Database struct {
-	Name     string `json:"name"`
-	Dbdriver string `json:"dbdriver"`
-	Dsn      string `json:"dsn"`
+type database struct {
+	Driver string `json:"driver"`
+	Dsn    string `json:"dsn"`
 }
 
 type config struct {
-	Db       string     `json:"db"`
-	Database []Database `json:"database"`
+	Db       string              `json:"db"`
+	Database map[string]database `json:"database"`
 }
 
 func configOpen() (cfg io.Reader) {

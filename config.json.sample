@@ -1,19 +1,16 @@
 {
     "db": "pdb",
-    "database": [
-	{
-	    "name": "sdb",
-	    "dbdriver": "sqlite3",
+    "database":
+	"sdb": {
+	    "driver": "sqlite3",
 	    "dsn": ""
 	},
-	{
-	    "Name": "pdb",
-	    "dbdriver": "postgres",
+	"pdb": {
+	    "driver": "postgres",
 	    "dsn": "user=test dbname=test"
 	},
-	{
-	    "Name": "mdb",
-	    "dbdriver": "mysql",
+	"mdb": {
+	    "driver": "mysql",
 	    "dsn": "user:password@/dbname"
 	}
     ]
