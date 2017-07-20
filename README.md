@@ -138,15 +138,7 @@ $ trdsql -driver postgres -dsn "dbname=test" "SELECT generate_series(1,3);"
 2
 3
 ```
-**Note:** Type casting may be necessary in some cases.
-```sh
-$ trdsql -driver postgres -dsn "dbname=test" "SELECT generate_series('2017-07-18 00:00'::timestamp,'2017-07-20 00:00'::timestamp, '24 hours')::text;"
-```
-```
-2017-07-18 00:00:00
-2017-07-19 00:00:00
-2017-07-20 00:00:00
-```
+
 #### Join table and CSV file is possible.
 
 Test database has a colors table.

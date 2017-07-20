@@ -136,9 +136,9 @@ func (db DDB) Select(writer *csv.Writer, sqlstr string, head bool) error {
 	if head {
 		writer.Write(columns)
 	}
-	values := make([]sql.RawBytes, len(columns))
+	values := make([]interface{}, len(columns))
 	results := make([]string, len(columns))
-	scanArgs := make([]interface{}, len(values))
+	scanArgs := make([]interface{}, len(columns))
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
@@ -148,7 +148,12 @@ func (db DDB) Select(writer *csv.Writer, sqlstr string, head bool) error {
 			return fmt.Errorf("ERROR: %s", err)
 		}
 		for i, col := range values {
-			results[i] = string(col)
+			b, ok := col.([]byte)
+			if ok {
+				results[i] = string(b)
+			} else {
+				results[i] = fmt.Sprint(col)
+			}
 		}
 		writer.Write(results)
 	}
