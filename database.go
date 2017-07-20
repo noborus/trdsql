@@ -118,16 +118,28 @@ func (db DDB) Create(table string, header []string, head bool) error {
 	return err
 }
 
-func (db DDB) Select(writer *csv.Writer, sqlstr string, head bool) error {
+func (db DDB) Output(writer *csv.Writer, sqlstr string, head bool) error {
+	rows, err := db.Select(sqlstr)
+	if err != nil {
+		return err
+	}
+	return db.RowsWrite(writer, rows, head)
+}
+
+func (db DDB) Select(sqlstr string) (*sql.Rows, error) {
 	sqlstr = strings.TrimSpace(sqlstr)
 	if sqlstr == "" {
-		return errors.New("ERROR: no SQL statement")
+		return nil, errors.New("ERROR: no SQL statement")
 	}
 	debug.Printf(sqlstr)
 	rows, err := db.Query(sqlstr)
 	if err != nil {
-		return fmt.Errorf("ERROR: %s [%s]", err, sqlstr)
+		return rows, fmt.Errorf("ERROR: %s [%s]", err, sqlstr)
 	}
+	return rows, nil
+}
+
+func (db DDB) RowsWrite(writer *csv.Writer, rows *sql.Rows, head bool) error {
 	defer rows.Close()
 	columns, err := rows.Columns()
 	if err != nil {

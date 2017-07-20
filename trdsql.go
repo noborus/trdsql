@@ -143,7 +143,7 @@ func (trdsql TRDSQL) write(db DDB, sqlstr string) int {
 	if err != nil {
 		log.Println(err)
 	}
-	err = db.Select(writer, sqlstr, trdsql.outHeader)
+	err = db.Output(writer, sqlstr, trdsql.outHeader)
 	if err != nil {
 		log.Println(err)
 		return 1
