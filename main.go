@@ -7,7 +7,10 @@ import (
 
 // TRDSQL is output stream define
 type TRDSQL struct {
-	outStream, errStream io.Writer
+	outStream io.Writer
+	errStream io.Writer
+	outHeader bool
+	outSep    string
 }
 
 func main() {

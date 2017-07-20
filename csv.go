@@ -29,7 +29,8 @@ func csvOpen(filename string, skip int) (*csv.Reader, error) {
 	reader.FieldsPerRecord = -1 // no check count
 	reader.TrimLeadingSpace = true
 	for i := 0; i < skip; i++ {
-		reader.Read()
+		r, _ := reader.Read()
+		debug.Printf("Skip row:%s\n", strings.Join(r, " "))
 	}
 	return reader, err
 }

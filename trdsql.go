@@ -28,9 +28,7 @@ func (trdsql TRDSQL) Run(args []string) int {
 		odriver string
 		odsn    string
 		inSep   string
-		outSep  string
 		ihead   bool
-		ohead   bool
 		iskip   int
 		odebug  bool
 	)
@@ -52,9 +50,9 @@ Options:
 	flags.StringVar(&odriver, "driver", "", "database driver. default sqlite3")
 	flags.StringVar(&odsn, "dsn", "", "database connection option.")
 	flags.StringVar(&inSep, "id", ",", "Field delimiter for input.")
-	flags.StringVar(&outSep, "od", ",", "Field delimiter for output.")
+	flags.StringVar(&trdsql.outSep, "od", ",", "Field delimiter for output.")
 	flags.BoolVar(&ihead, "ih", false, "The first line is interpreted as column names.")
-	flags.BoolVar(&ohead, "oh", false, "Output column name as header.")
+	flags.BoolVar(&trdsql.outHeader, "oh", false, "Output column name as header.")
 	flags.IntVar(&iskip, "is", 0, "Skip header row.")
 	flags.BoolVar(&version, "version", false, "display version information.")
 	flags.BoolVar(&odebug, "debug", false, "debug print.")
@@ -70,7 +68,7 @@ Options:
 	if odebug {
 		debug = true
 	}
-	sqlstr := flags.Args()[0]
+	sqlstr := strings.Join(flags.Args(), " ")
 	if strings.HasSuffix(sqlstr, ";") {
 		sqlstr = sqlstr[:len(sqlstr)-1]
 	}
@@ -134,12 +132,18 @@ Options:
 		}
 		db.Import(reader, header, ihead)
 	}
+
+	return trdsql.write(db, sqlstr)
+}
+
+func (trdsql TRDSQL) write(db DDB, sqlstr string) int {
+	var err error
 	writer := csv.NewWriter(trdsql.outStream)
-	writer.Comma, err = getSeparator(outSep)
+	writer.Comma, err = getSeparator(trdsql.outSep)
 	if err != nil {
 		log.Println(err)
 	}
-	err = db.Select(writer, sqlstr, ohead)
+	err = db.Select(writer, sqlstr, trdsql.outHeader)
 	if err != nil {
 		log.Println(err)
 		return 1
