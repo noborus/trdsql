@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -30,6 +31,7 @@ func (trdsql TRDSQL) Run(args []string) int {
 		inSep   string
 		ihead   bool
 		iskip   int
+		query   string
 		odebug  bool
 	)
 	flags := flag.NewFlagSet("trdsql", flag.ContinueOnError)
@@ -54,6 +56,7 @@ Options:
 	flags.BoolVar(&ihead, "ih", false, "The first line is interpreted as column names.")
 	flags.BoolVar(&trdsql.outHeader, "oh", false, "Output column name as header.")
 	flags.IntVar(&iskip, "is", 0, "Skip header row.")
+	flags.StringVar(&query, "q", "", "Read query from the provided filename.")
 	flags.BoolVar(&version, "version", false, "display version information.")
 	flags.BoolVar(&odebug, "debug", false, "debug print.")
 	flags.Parse(args[1:])
@@ -61,14 +64,24 @@ Options:
 		fmt.Println(VERSION)
 		return (0)
 	}
-	if len(flags.Args()) == 0 {
+	var sqlstr string
+	if query != "" {
+		bq, err := ioutil.ReadFile(query)
+		if err != nil {
+			log.Println("ERROR: ", err)
+			return (1)
+		}
+		sqlstr = string(bq)
+	} else {
+		sqlstr = strings.Join(flags.Args(), " ")
+	}
+	if len(sqlstr) == 0 {
 		flags.Usage()
 		return (2)
 	}
 	if odebug {
 		debug = true
 	}
-	sqlstr := strings.Join(flags.Args(), " ")
 	if strings.HasSuffix(sqlstr, ";") {
 		sqlstr = sqlstr[:len(sqlstr)-1]
 	}

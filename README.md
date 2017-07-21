@@ -37,6 +37,8 @@ Options:
     	Field delimiter for output. (default ",")
   -oh
     	Output column name as header.
+  -q string
+    	Read query from the provided filename.
   -version
     	display version information.
 ```
@@ -55,6 +57,12 @@ You can specify the CSV file in the SQL FROM clause.
 
 ```sh
 $ trdsql "SELECT * FROM test.csv"
+```
+
+You can also save the SQL in a file and specify the file.
+
+```sh
+$ trdsql -q test.sql
 ```
 
 SQL function
