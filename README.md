@@ -10,9 +10,9 @@ The difference from these tools is that the syntax of PostgreSQL or MySQL can be
 You need to prepare a database server if you want to use PostgreSQL or MySQL syntax.
 
 ## INSTALL
-
+```
 go get -u github.com/noborus/trdsql
-
+```
 ## Usage
 
 ```
@@ -43,7 +43,8 @@ Options:
 
 ## Example
 
-There is a CSV file.
+test.csv file.
+
 ```csv
 1,Orange
 2,Melon
