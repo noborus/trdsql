@@ -24,7 +24,7 @@ Options:
   -debug
     	debug print.
   -driver string
-    	database driver. default sqlite3
+    	database driver.  [ mysql | postgres | sqlite3 ]
   -dsn string
     	database connection option.
   -id string
