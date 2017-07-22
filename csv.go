@@ -5,7 +5,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 )
 
@@ -34,15 +33,6 @@ func csvheader(reader *csv.Reader) ([]string, error) {
 	var header []string
 	header, err = reader.Read()
 	return header, err
-}
-
-func getSeparator(sepString string) (rune, error) {
-	sepRunes, err := strconv.Unquote(`'` + sepString + `'`)
-	if err != nil {
-		return ',', fmt.Errorf("ERROR getSeparator: %s:%s", err, sepString)
-	}
-	sepRune := ([]rune(sepRunes))[0]
-	return sepRune, err
 }
 
 func (trdsql TRDSQL) csvReader(db *DDB, sqlstr string, tablenames []string) (string, int) {

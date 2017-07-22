@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -120,13 +121,14 @@ Options:
 		// without FROM clause. ex. SELECT 1+1;
 		debug.Printf("table not found\n")
 	}
-	trdsql.inSep = inSep
-	trdsql.ihead = ihead
 	trdsql.iskip = iskip
 	var r int
 	if iltsv {
+		trdsql.inSep = "\t"
 		sqlstr, r = trdsql.ltsvReader(db, sqlstr, tablenames)
 	} else {
+		trdsql.inSep = inSep
+		trdsql.ihead = ihead
 		sqlstr, r = trdsql.csvReader(db, sqlstr, tablenames)
 	}
 	if r != 0 {
@@ -137,6 +139,15 @@ Options:
 	}
 	return trdsql.csvWrite(db, sqlstr)
 
+}
+
+func getSeparator(sepString string) (rune, error) {
+	sepRunes, err := strconv.Unquote(`'` + sepString + `'`)
+	if err != nil {
+		return ',', fmt.Errorf("ERROR getSeparator: %s:%s", err, sepString)
+	}
+	sepRune := ([]rune(sepRunes))[0]
+	return sepRune, err
 }
 
 func tFileOpen(filename string) (*os.File, error) {
