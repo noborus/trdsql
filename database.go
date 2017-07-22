@@ -31,7 +31,7 @@ func rowImport(stmt *sql.Stmt, list []interface{}) {
 	}
 }
 
-func (db DDB) ImportPrepare(table string, header []string, head bool) (DDB, error) {
+func (db *DDB) ImportPrepare(table string, header []string, head bool) error {
 	columns := make([]string, len(header))
 	place := make([]string, len(header))
 	for i := range header {
@@ -50,13 +50,14 @@ func (db DDB) ImportPrepare(table string, header []string, head bool) (DDB, erro
 	debug.Printf(sqlstr)
 	var err error
 	db.stmt, err = db.Prepare(sqlstr)
+
 	if err != nil {
-		return db, fmt.Errorf("ERROR INSERT Prepare: %s", err)
+		return fmt.Errorf("ERROR INSERT Prepare: %s", err)
 	}
-	return db, nil
+	return nil
 }
 
-func (db DDB) Import(reader *csv.Reader, header []string, head bool) error {
+func (db *DDB) Import(reader *csv.Reader, header []string, head bool) error {
 	list := make([]interface{}, len(header))
 	for i := range header {
 		list[i] = header[i]
@@ -82,9 +83,12 @@ func (db DDB) Import(reader *csv.Reader, header []string, head bool) error {
 	return nil
 }
 
-func Connect(driver, dsn string) (DDB, error) {
+func Connect(driver, dsn string) (*DDB, error) {
 	var db DDB
 	var err error
+	if driver == "sqlite3" && dsn == "" {
+		dsn = ":memory:"
+	}
 	db.driver = driver
 	db.dsn = dsn
 	if driver == "postgres" {
@@ -93,15 +97,15 @@ func Connect(driver, dsn string) (DDB, error) {
 		db.escape = "`"
 	}
 	db.DB, err = sql.Open(driver, dsn)
-	return db, err
+	return &db, err
 }
 
-func (db DDB) Disconnect() error {
+func (db *DDB) Disconnect() error {
 	err := db.Close()
 	return err
 }
 
-func (db DDB) Create(table string, header []string, head bool) error {
+func (db *DDB) Create(table string, header []string, head bool) error {
 	var sqlstr string
 	columns := make([]string, len(header))
 	for i := 0; i < len(header); i++ {
@@ -118,7 +122,7 @@ func (db DDB) Create(table string, header []string, head bool) error {
 	return err
 }
 
-func (db DDB) Output(writer *csv.Writer, sqlstr string, head bool) error {
+func (db *DDB) Output(writer *csv.Writer, sqlstr string, head bool) error {
 	rows, err := db.Select(sqlstr)
 	if err != nil {
 		return err
@@ -126,7 +130,7 @@ func (db DDB) Output(writer *csv.Writer, sqlstr string, head bool) error {
 	return db.RowsWrite(writer, rows, head)
 }
 
-func (db DDB) Select(sqlstr string) (*sql.Rows, error) {
+func (db *DDB) Select(sqlstr string) (*sql.Rows, error) {
 	sqlstr = strings.TrimSpace(sqlstr)
 	if sqlstr == "" {
 		return nil, errors.New("ERROR: no SQL statement")
@@ -139,7 +143,7 @@ func (db DDB) Select(sqlstr string) (*sql.Rows, error) {
 	return rows, nil
 }
 
-func (db DDB) RowsWrite(writer *csv.Writer, rows *sql.Rows, head bool) error {
+func (db *DDB) RowsWrite(writer *csv.Writer, rows *sql.Rows, head bool) error {
 	defer rows.Close()
 	columns, err := rows.Columns()
 	if err != nil {
@@ -173,7 +177,7 @@ func (db DDB) RowsWrite(writer *csv.Writer, rows *sql.Rows, head bool) error {
 	return nil
 }
 
-func (db DDB) escapetable(oldname string) string {
+func (db *DDB) escapetable(oldname string) string {
 	var newname string
 	if oldname[0] != db.escape[0] {
 		newname = db.escape + oldname + db.escape

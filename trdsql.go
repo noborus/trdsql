@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/csv"
 	"flag"
 	"fmt"
@@ -32,11 +33,11 @@ func (trdsql TRDSQL) Run(args []string) int {
 		ihead   bool
 		iskip   int
 		query   string
+		driver  string
+		dsn     string
 		odebug  bool
 	)
 	flags := flag.NewFlagSet("trdsql", flag.ContinueOnError)
-	driver := "sqlite3"
-	dsn := ""
 	cfgfile := configOpen()
 	cfg, _ := loadConfig(cfgfile)
 	flags.Usage = func() {
@@ -49,7 +50,7 @@ Options:
 	}
 
 	flags.StringVar(&cfg.Db, "db", cfg.Db, "Specify db name of the setting.")
-	flags.StringVar(&odriver, "driver", "", "database driver. default sqlite3")
+	flags.StringVar(&odriver, "driver", "", "database driver.  [ "+strings.Join(sql.Drivers(), " | ")+" ]")
 	flags.StringVar(&odsn, "dsn", "", "database connection option.")
 	flags.StringVar(&inSep, "id", ",", "Field delimiter for input.")
 	flags.StringVar(&trdsql.outSep, "od", ",", "Field delimiter for output.")
@@ -100,9 +101,6 @@ Options:
 	if odsn != "" {
 		dsn = odsn
 	}
-	if driver == "sqlite3" && dsn == "" {
-		dsn = ":memory:"
-	}
 
 	readerComma, err := getSeparator(inSep)
 	if err != nil {
@@ -138,7 +136,7 @@ Options:
 			return 1
 		}
 		db.Create(rtable, header, ihead)
-		db, err = db.ImportPrepare(rtable, header, ihead)
+		err = db.ImportPrepare(rtable, header, ihead)
 		if err != nil {
 			log.Println(err)
 			return 1
@@ -149,7 +147,7 @@ Options:
 	return trdsql.write(db, sqlstr)
 }
 
-func (trdsql TRDSQL) write(db DDB, sqlstr string) int {
+func (trdsql TRDSQL) write(db *DDB, sqlstr string) int {
 	var err error
 	writer := csv.NewWriter(trdsql.outStream)
 	writer.Comma, err = getSeparator(trdsql.outSep)
