@@ -178,7 +178,7 @@ $ trdsql -driver postgres -dsn "dbname=test" "SELECT t.c1,t.c2,c.name FROM test.
 You can also use "CREATE TABLE ... AS SELECT...".
 
 ```sh
-$ trdsql 0driver postgres "CREATE TABLE fruits (id, name) AS SELECT c1::int ,c2 FROM fruits.csv "
+$ trdsql -driver postgres -dns "dbname=test" "CREATE TABLE fruits (id, name) AS SELECT c1::int, c2 FROM fruits.csv "
 ```
 
 ```sh
