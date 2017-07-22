@@ -50,7 +50,7 @@ Options:
 	}
 
 	flags.StringVar(&cfg.Db, "db", cfg.Db, "Specify db name of the setting.")
-	flags.StringVar(&odriver, "driver", "", "database driver.  [ "+strings.Join(sql.Drivers(), " | ")+" ]")
+	flags.StringVar(&odriver, "driver", "sqlite3", "database driver.  [ "+strings.Join(sql.Drivers(), " | ")+" ]")
 	flags.StringVar(&odsn, "dsn", "", "database connection option.")
 	flags.StringVar(&inSep, "id", ",", "Field delimiter for input.")
 	flags.StringVar(&trdsql.outSep, "od", ",", "Field delimiter for output.")
