@@ -175,6 +175,21 @@ $ trdsql -driver postgres -dsn "dbname=test" "SELECT t.c1,t.c2,c.name FROM test.
 3,Apple,red
 ```
 
+You can also use "CREATE TABLE ... AS SELECT...".
+
+```sh
+$ trdsql 0driver postgres "CREATE TABLE fruits (id, name) AS SELECT c1::int ,c2 FROM fruits.csv "
+```
+
+```sh
+$ psql -c "SELECT * FROM fruits;"
+ id |  name  
+----+--------
+  1 | Orange
+  2 | Melon
+  3 | Apple
+(3 rows)
+```
 
 ### MySQL
 
@@ -212,7 +227,7 @@ $HOME/.config/trdsql/config.json
 If you put the setting in [config.json](config.json.sample)  you can specify the name with -db.
 
 ```sh
-$ trdsql --debug -db pdb "SELECT * FROM test.csv"
+$ trdsql -debug -db pdb "SELECT * FROM test.csv"
 ```
 ```
 2017/07/18 02:27:47 driver: postgres, dsn: user=test dbname=test
