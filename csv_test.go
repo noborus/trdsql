@@ -31,14 +31,14 @@ func TestGetSeparator(t *testing.T) {
 }
 
 func TestStdinCsvOpen(t *testing.T) {
-	_, error := csvOpen("-", 0)
+	_, error := csvOpen("-", ",", 0)
 	if error != nil {
 		t.Error(`Stdin csvOpen error`)
 	}
 }
 
 func TestFileCsvOpen(t *testing.T) {
-	f, _ := csvOpen("`not_file_dummy.csv`", 0)
+	f, _ := csvOpen("`not_file_dummy.csv`", ",", 0)
 	if f != nil {
 		t.Error(`not_file_dummy.csv Open error`)
 	}

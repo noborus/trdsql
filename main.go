@@ -9,6 +9,9 @@ import (
 type TRDSQL struct {
 	outStream io.Writer
 	errStream io.Writer
+	inSep     string
+	ihead     bool
+	iskip     int
 	outHeader bool
 	outSep    string
 }

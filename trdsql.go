@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"encoding/csv"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -104,10 +103,6 @@ Options:
 		dsn = odsn
 	}
 
-	readerComma, err := getSeparator(inSep)
-	if err != nil {
-		log.Println(err)
-	}
 	debug.Printf("driver: %s, dsn: %s", driver, dsn)
 	db, err := Connect(driver, dsn)
 	if err != nil {
@@ -121,45 +116,12 @@ Options:
 		// withou FROM clause. ex. SELECT 1+1;
 		debug.Printf("table not found\n")
 	}
-	var reader *csv.Reader
-	var header []string
-	for _, tablename := range tablenames {
-		reader, err = csvOpen(tablename, iskip)
-		if err != nil {
-			// no file
-			continue
-		}
-		rtable := db.escapetable(tablename)
-		sqlstr = rewrite(sqlstr, tablename, rtable)
-		reader.Comma = readerComma
-		header, err = headerRead(reader)
-		if err != nil {
-			log.Println(err)
-			return 1
-		}
-		db.Create(rtable, header, ihead)
-		err = db.ImportPrepare(rtable, header, ihead)
-		if err != nil {
-			log.Println(err)
-			return 1
-		}
-		db.Import(reader, header, ihead)
+	trdsql.inSep = inSep
+	trdsql.ihead = ihead
+	trdsql.iskip = iskip
+	sqlstr, r := trdsql.csvReader(db, sqlstr, tablenames)
+	if r != 0 {
+		return r
 	}
-
-	return trdsql.write(db, sqlstr)
-}
-
-func (trdsql TRDSQL) write(db *DDB, sqlstr string) int {
-	var err error
-	writer := csv.NewWriter(trdsql.outStream)
-	writer.Comma, err = getSeparator(trdsql.outSep)
-	if err != nil {
-		log.Println(err)
-	}
-	err = db.Output(writer, sqlstr, trdsql.outHeader)
-	if err != nil {
-		log.Println(err)
-		return 1
-	}
-	return 0
+	return trdsql.csvWrite(db, sqlstr)
 }
