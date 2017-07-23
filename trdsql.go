@@ -7,10 +7,11 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
-const VERSION = `0.1.2`
+const VERSION = `0.2.0`
 
 var debug = debugT(false)
 
@@ -28,12 +29,14 @@ func (trdsql TRDSQL) Run(args []string) int {
 		version bool
 		odriver string
 		odsn    string
+		iltsv   bool
 		inSep   string
 		ihead   bool
 		iskip   int
 		query   string
 		driver  string
 		dsn     string
+		oltsv   bool
 		odebug  bool
 	)
 	flags := flag.NewFlagSet("trdsql", flag.ContinueOnError)
@@ -53,9 +56,11 @@ Options:
 	flags.StringVar(&cfg.Db, "db", cfg.Db, "Specify db name of the setting.")
 	flags.StringVar(&odriver, "driver", "", "database driver.  [ "+strings.Join(sql.Drivers(), " | ")+" ]")
 	flags.StringVar(&odsn, "dsn", "", "database connection option.")
+	flags.BoolVar(&iltsv, "iltsv", false, "LTSV format for input.")
 	flags.StringVar(&inSep, "id", ",", "Field delimiter for input.")
 	flags.StringVar(&trdsql.outSep, "od", ",", "Field delimiter for output.")
 	flags.BoolVar(&ihead, "ih", false, "The first line is interpreted as column names.")
+	flags.BoolVar(&oltsv, "oltsv", false, "LTSV format for output.")
 	flags.BoolVar(&trdsql.outHeader, "oh", false, "Output column name as header.")
 	flags.IntVar(&iskip, "is", 0, "Skip header row.")
 	flags.StringVar(&query, "q", "", "Read query from the provided filename.")
@@ -113,15 +118,47 @@ Options:
 
 	tablenames := sqlparse(sqlstr)
 	if len(tablenames) == 0 {
-		// withou FROM clause. ex. SELECT 1+1;
+		// without FROM clause. ex. SELECT 1+1;
 		debug.Printf("table not found\n")
 	}
-	trdsql.inSep = inSep
-	trdsql.ihead = ihead
 	trdsql.iskip = iskip
-	sqlstr, r := trdsql.csvReader(db, sqlstr, tablenames)
+	var r int
+	if iltsv {
+		trdsql.inSep = "\t"
+		sqlstr, r = trdsql.ltsvReader(db, sqlstr, tablenames)
+	} else {
+		trdsql.inSep = inSep
+		trdsql.ihead = ihead
+		sqlstr, r = trdsql.csvReader(db, sqlstr, tablenames)
+	}
 	if r != 0 {
 		return r
 	}
+	if oltsv {
+		return trdsql.ltsvWrite(db, sqlstr)
+	}
 	return trdsql.csvWrite(db, sqlstr)
+
+}
+
+func getSeparator(sepString string) (rune, error) {
+	sepRunes, err := strconv.Unquote(`'` + sepString + `'`)
+	if err != nil {
+		return ',', fmt.Errorf("ERROR getSeparator: %s:%s", err, sepString)
+	}
+	sepRune := ([]rune(sepRunes))[0]
+	return sepRune, err
+}
+
+func tFileOpen(filename string) (*os.File, error) {
+	if filename == "-" {
+		return os.Stdin, nil
+	}
+	if filename[0] == '`' {
+		filename = strings.Replace(filename, "`", "", 2)
+	}
+	if filename[0] == '"' {
+		filename = strings.Replace(filename, "\"", "", 2)
+	}
+	return os.Open(filename)
 }

@@ -13,6 +13,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/najeira/ltsv"
 )
 
 // DDB is *sql.DB wrapper.
@@ -57,7 +58,7 @@ func (db *DDB) ImportPrepare(table string, header []string, head bool) error {
 	return nil
 }
 
-func (db *DDB) Import(reader *csv.Reader, header []string, head bool) error {
+func (db *DDB) csvImport(reader *csv.Reader, header []string, head bool) error {
 	list := make([]interface{}, len(header))
 	for i := range header {
 		list[i] = header[i]
@@ -77,6 +78,30 @@ func (db *DDB) Import(reader *csv.Reader, header []string, head bool) error {
 		}
 		for i := range header {
 			list[i] = record[i]
+		}
+		rowImport(db.stmt, list)
+	}
+	return nil
+}
+
+func (db *DDB) ltsvImport(reader *ltsv.Reader, first map[string]string, header []string) error {
+	list := make([]interface{}, len(header))
+	for i := range header {
+		list[i] = first[header[i]]
+	}
+	rowImport(db.stmt, list)
+
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		} else {
+			if err != nil {
+				return fmt.Errorf("ERROR Read: %s", err)
+			}
+		}
+		for i := range header {
+			list[i] = record[header[i]]
 		}
 		rowImport(db.stmt, list)
 	}
@@ -122,14 +147,6 @@ func (db *DDB) Create(table string, header []string, head bool) error {
 	return err
 }
 
-func (db *DDB) Output(writer *csv.Writer, sqlstr string, head bool) error {
-	rows, err := db.Select(sqlstr)
-	if err != nil {
-		return err
-	}
-	return db.RowsWrite(writer, rows, head)
-}
-
 func (db *DDB) Select(sqlstr string) (*sql.Rows, error) {
 	sqlstr = strings.TrimSpace(sqlstr)
 	if sqlstr == "" {
@@ -141,40 +158,6 @@ func (db *DDB) Select(sqlstr string) (*sql.Rows, error) {
 		return rows, fmt.Errorf("ERROR: %s [%s]", err, sqlstr)
 	}
 	return rows, nil
-}
-
-func (db *DDB) RowsWrite(writer *csv.Writer, rows *sql.Rows, head bool) error {
-	defer rows.Close()
-	columns, err := rows.Columns()
-	if err != nil {
-		return fmt.Errorf("ERROR: Rows %s", err)
-	}
-	if head {
-		writer.Write(columns)
-	}
-	values := make([]interface{}, len(columns))
-	results := make([]string, len(columns))
-	scanArgs := make([]interface{}, len(columns))
-	for i := range values {
-		scanArgs[i] = &values[i]
-	}
-	for rows.Next() {
-		err = rows.Scan(scanArgs...)
-		if err != nil {
-			return fmt.Errorf("ERROR: %s", err)
-		}
-		for i, col := range values {
-			b, ok := col.([]byte)
-			if ok {
-				results[i] = string(b)
-			} else {
-				results[i] = fmt.Sprint(col)
-			}
-		}
-		writer.Write(results)
-	}
-	writer.Flush()
-	return nil
 }
 
 func (db *DDB) escapetable(oldname string) string {

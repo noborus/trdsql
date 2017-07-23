@@ -2,7 +2,8 @@
 
 [![Build Status](https://travis-ci.org/noborus/trdsql.svg?branch=master)](https://travis-ci.org/noborus/trdsql)
 
-A tool that can execute SQL queries on csv.
+A tool that can execute SQL queries on CSV and  [LTSV](http://ltsv.org/).
+
 It is a tool like [q](https://github.com/harelba/q) , [textql](https://github.com/dinedal/textql) and others.
 
 The difference from these tools is that the syntax of PostgreSQL or MySQL can be used.
@@ -31,12 +32,16 @@ Options:
     	Field delimiter for input. (default ",")
   -ih
     	The first line is interpreted as column names.
+  -iltsv
+    	LTSV format for input.
   -is int
     	Skip header row.
   -od string
     	Field delimiter for output. (default ",")
   -oh
     	Output column name as header.
+  -oltsv
+    	LTSV format for output.
   -q string
     	Read query from the provided filename.
   -version
@@ -65,7 +70,69 @@ You can also save the SQL in a file and specify the file.
 $ trdsql -q test.sql
 ```
 
-SQL function
+### TSV
+
+For a TAB delimited CSV file(TSV), specify option -id "\\t"
+
+```
+1	Orange
+2	Melon
+3	Apple
+```
+
+```sh
+$ trdsql -id "\t" "SELECT * FROM test-tab.csv"
+```
+
+If you want to use it for output, specify -od "\\t".
+
+```sh
+$ trdsql -od "\t" "SELECT * FROM test.csv"
+```
+```
+1	Orange
+2	Melon
+3	Apple
+```
+
+### LTSV
+
+For LTSV files, specify option -iltsv.
+
+sample.ltsv
+```
+id:1	name:Orange	price:50
+id:2	name:Melon	price:500
+id:3	name:Apple	price:100
+```
+
+```sh
+$ trdsql -iltsv "SELECT * FROM sample.ltsv"
+```
+
+```
+1,Orange,50
+2,Melon,500
+3,Apple,100
+```
+
+**Note:** Only the columns in the first row are targeted.
+
+If you want to use it for output, specify -oltsv.
+
+```sh
+$ trdsql -iltsv -oltsv "SELECT * FROM sample.ltsv"
+```
+
+```
+id:1	name:Orange	price:50
+id:2	name:Melon	price:500
+name:Apple	price:100	id:3
+```
+
+**Note:** LTSV does not keep the output order of the columns
+
+### SQL function
 
 ```sh
 $ trdsql "SELECT count(*) FROM test.csv"
@@ -94,6 +161,8 @@ PID,TTY,TIME,CMD
 17815,pts/22,00:00:00,ps
 17816,pts/22,00:00:00,trdsql
 ```
+
+### JOIN
 
 You can also JOIN.
 
@@ -224,7 +293,31 @@ Unix like.
 $HOME/.config/trdsql/config.json
 ```
 
-If you put the setting in [config.json](config.json.sample)  you can specify the name with -db.
+ sample: [config.json](config.json.sample)
+
+```json
+{
+  "db": "pdb",
+  "database": {
+    "sdb": {
+      "driver": "sqlite3",
+      "dsn": ""
+    },
+    "pdb": {
+      "driver": "postgres",
+      "dsn": "user=test dbname=test"
+    },
+    "mdb": {
+      "driver": "mysql",
+      "dsn": "user:password@/dbname"
+    }
+  }
+}
+```
+
+The default database is an entry of "db".
+
+If you put the setting in you can specify the name with -db.
 
 ```sh
 $ trdsql -debug -db pdb "SELECT * FROM test.csv"

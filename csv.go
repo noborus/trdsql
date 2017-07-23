@@ -1,30 +1,18 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/csv"
 	"fmt"
 	"log"
-	"os"
-	"strconv"
 	"strings"
 )
 
 func csvOpen(filename string, delimiter string, skip int) (*csv.Reader, error) {
-	var file *os.File
-	var err error
-	if filename == "-" {
-		file = os.Stdin
-	} else {
-		if filename[0] == '`' {
-			filename = strings.Replace(filename, "`", "", 2)
-		}
-		if filename[0] == '"' {
-			filename = strings.Replace(filename, "\"", "", 2)
-		}
-		file, err = os.Open(filename)
-		if err != nil {
-			return nil, err
-		}
+
+	file, err := tFileOpen(filename)
+	if err != nil {
+		return nil, err
 	}
 	reader := csv.NewReader(file)
 	reader.FieldsPerRecord = -1 // no check count
@@ -40,20 +28,11 @@ func csvOpen(filename string, delimiter string, skip int) (*csv.Reader, error) {
 	return reader, err
 }
 
-func headerRead(reader *csv.Reader) ([]string, error) {
+func csvheader(reader *csv.Reader) ([]string, error) {
 	var err error
 	var header []string
 	header, err = reader.Read()
 	return header, err
-}
-
-func getSeparator(sepString string) (rune, error) {
-	sepRunes, err := strconv.Unquote(`'` + sepString + `'`)
-	if err != nil {
-		return ',', fmt.Errorf("ERROR getSeparator: %s:%s", err, sepString)
-	}
-	sepRune := ([]rune(sepRunes))[0]
-	return sepRune, err
 }
 
 func (trdsql TRDSQL) csvReader(db *DDB, sqlstr string, tablenames []string) (string, int) {
@@ -66,7 +45,7 @@ func (trdsql TRDSQL) csvReader(db *DDB, sqlstr string, tablenames []string) (str
 		}
 		rtable := db.escapetable(tablename)
 		sqlstr = rewrite(sqlstr, tablename, rtable)
-		header, err = headerRead(reader)
+		header, err = csvheader(reader)
 		if err != nil {
 			log.Println(err)
 			return sqlstr, 1
@@ -77,7 +56,7 @@ func (trdsql TRDSQL) csvReader(db *DDB, sqlstr string, tablenames []string) (str
 			log.Println(err)
 			return sqlstr, 1
 		}
-		db.Import(reader, header, trdsql.ihead)
+		db.csvImport(reader, header, trdsql.ihead)
 	}
 	return sqlstr, 0
 }
@@ -89,10 +68,49 @@ func (trdsql TRDSQL) csvWrite(db *DDB, sqlstr string) int {
 	if err != nil {
 		log.Println(err)
 	}
-	err = db.Output(writer, sqlstr, trdsql.outHeader)
+	rows, err := db.Select(sqlstr)
+	if err != nil {
+		log.Println(err)
+		return 1
+	}
+	err = db.csvRowsWrite(writer, rows, trdsql.outHeader)
 	if err != nil {
 		log.Println(err)
 		return 1
 	}
 	return 0
+}
+
+func (db *DDB) csvRowsWrite(writer *csv.Writer, rows *sql.Rows, head bool) error {
+	defer rows.Close()
+	columns, err := rows.Columns()
+	if err != nil {
+		return fmt.Errorf("ERROR: Rows %s", err)
+	}
+	if head {
+		writer.Write(columns)
+	}
+	values := make([]interface{}, len(columns))
+	results := make([]string, len(columns))
+	scanArgs := make([]interface{}, len(columns))
+	for i := range values {
+		scanArgs[i] = &values[i]
+	}
+	for rows.Next() {
+		err = rows.Scan(scanArgs...)
+		if err != nil {
+			return fmt.Errorf("ERROR: %s", err)
+		}
+		for i, col := range values {
+			b, ok := col.([]byte)
+			if ok {
+				results[i] = string(b)
+			} else {
+				results[i] = fmt.Sprint(col)
+			}
+		}
+		writer.Write(results)
+	}
+	writer.Flush()
+	return nil
 }
