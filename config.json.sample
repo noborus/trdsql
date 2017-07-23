@@ -1,17 +1,17 @@
 {
-    "db": "pdb",
-    "database":
-	"sdb": {
-	    "driver": "sqlite3",
-	    "dsn": ""
-	},
-	"pdb": {
-	    "driver": "postgres",
-	    "dsn": "user=test dbname=test"
-	},
-	"mdb": {
-	    "driver": "mysql",
-	    "dsn": "user:password@/dbname"
-	}
-    ]
+  "db": "pdb",
+  "database": {
+    "sdb": {
+      "driver": "sqlite3",
+      "dsn": ""
+    },
+    "pdb": {
+      "driver": "postgres",
+      "dsn": "user=test dbname=test"
+    },
+    "mdb": {
+      "driver": "mysql",
+      "dsn": "user:password@/dbname"
+    }
+  }
 }

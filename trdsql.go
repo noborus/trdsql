@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-const VERSION = `0.1.2`
+const VERSION = `0.2.0`
 
 var debug = debugT(false)
 
