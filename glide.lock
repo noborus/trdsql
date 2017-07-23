@@ -1,5 +1,5 @@
-hash: b917f8e9d52e25a81644bddc6955482709318a6fa1e9e43dd551f0e7d51db9cd
-updated: 2017-07-22T22:21:04.977770456+09:00
+hash: 0d0433f2b4fd252b6ac707f1e79fca7d281f3244a61ee3bcddb8f93a14003f4d
+updated: 2017-07-24T02:01:32.594875928+09:00
 imports:
 - name: github.com/go-sql-driver/mysql
   version: a0583e0143b1624142adab07e0e97fe106d99561
@@ -7,10 +7,14 @@ imports:
   version: dd1fe2071026ce53f36a39112e645b4d4f5793a4
   subpackages:
   - oid
+- name: github.com/mattn/go-runewidth
+  version: 97311d9f7767e3d6f422ea06661bc2c7a19e8a5d
 - name: github.com/mattn/go-sqlite3
   version: ca5e3819723d8eeaf170ad510e7da1d6d2e94a08
 - name: github.com/najeira/ltsv
   version: 40eb84a5b5d21afa8f26f357445d910c62011166
+- name: github.com/olekukonko/tablewriter
+  version: be5337e7b39e64e5f91445ce7e721888dbab7387
 - name: github.com/xwb1989/sqlparser
   version: a9cdf22bd561e715bba34ee228cb1c06bfa2719c
 - name: golang.org/x/net
