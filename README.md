@@ -162,13 +162,6 @@ You can also output Markdown.
 |  2 | Melon  |
 |  3 | Apple  |
 ```
-↓
-| C1 |   C2   |
-|----|--------|
-|  1 | Orange |
-|  2 | Melon  |
-|  3 | Apple  |
-
 
 ### SQL function
 
