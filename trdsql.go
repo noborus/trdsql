@@ -63,6 +63,7 @@ Options:
 	flags.BoolVar(&ihead, "ih", false, "The first line is interpreted as column names.")
 	flags.BoolVar(&oltsv, "oltsv", false, "LTSV format for output.")
 	flags.BoolVar(&otw, "otw", false, "Table Writer format for output.")
+	flags.BoolVar(&trdsql.omd, "omd", false, "Mark Down format for output.")
 	flags.BoolVar(&trdsql.outHeader, "oh", false, "Output column name as header.")
 	flags.IntVar(&iskip, "is", 0, "Skip header row.")
 	flags.StringVar(&query, "q", "", "Read query from the provided filename.")
@@ -138,7 +139,7 @@ Options:
 	}
 	if oltsv {
 		return trdsql.ltsvWrite(db, sqlstr)
-	} else if otw {
+	} else if trdsql.omd || otw {
 		return trdsql.twWrite(db, sqlstr)
 	}
 	return trdsql.csvWrite(db, sqlstr)
