@@ -1,7 +1,11 @@
 language: go
 
+os:
+  - linux
+  - osx
+
 go:
-  - 1.8
+  - tip
 
 before_install:
   - go get github.com/Masterminds/glide

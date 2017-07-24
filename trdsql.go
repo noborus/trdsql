@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-const VERSION = `0.2.0`
+const VERSION = `0.2.1`
 
 var debug = debugT(false)
 
@@ -37,6 +37,7 @@ func (trdsql TRDSQL) Run(args []string) int {
 		driver  string
 		dsn     string
 		oltsv   bool
+		otw     bool
 		odebug  bool
 	)
 	flags := flag.NewFlagSet("trdsql", flag.ContinueOnError)
@@ -61,6 +62,8 @@ Options:
 	flags.StringVar(&trdsql.outSep, "od", ",", "Field delimiter for output.")
 	flags.BoolVar(&ihead, "ih", false, "The first line is interpreted as column names.")
 	flags.BoolVar(&oltsv, "oltsv", false, "LTSV format for output.")
+	flags.BoolVar(&otw, "otw", false, "Table Writer format for output.")
+	flags.BoolVar(&trdsql.omd, "omd", false, "Mark Down format for output.")
 	flags.BoolVar(&trdsql.outHeader, "oh", false, "Output column name as header.")
 	flags.IntVar(&iskip, "is", 0, "Skip header row.")
 	flags.StringVar(&query, "q", "", "Read query from the provided filename.")
@@ -136,6 +139,8 @@ Options:
 	}
 	if oltsv {
 		return trdsql.ltsvWrite(db, sqlstr)
+	} else if trdsql.omd || otw {
+		return trdsql.twWrite(db, sqlstr)
 	}
 	return trdsql.csvWrite(db, sqlstr)
 

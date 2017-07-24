@@ -5,3 +5,4 @@ import:
 - package: github.com/mattn/go-sqlite3
 - package: github.com/xwb1989/sqlparser
 - package: github.com/najeira/ltsv
+- package: github.com/olekukonko/tablewriter

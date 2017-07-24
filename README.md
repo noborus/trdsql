@@ -42,6 +42,10 @@ Options:
     	Output column name as header.
   -oltsv
     	LTSV format for output.
+  -omd
+    	Mark Down format for output.
+  -omd
+    	Table Writer format for output.
   -q string
     	Read query from the provided filename.
   -version
@@ -131,6 +135,40 @@ name:Apple	price:100	id:3
 ```
 
 **Note:** LTSV does not keep the output order of the columns
+
+### TableWriter & MarkDown (output only)
+
+You can output ASCII table using [tablewriter](https://github.com/olekukonko/tablewriter).
+
+```sh
+$ trdsql -otw "SELECT * FROM test.csv"
+```
+```
++----+--------+
+| C1 |   C2   |
++----+--------+
+|  1 | Orange |
+|  2 | Melon  |
+|  3 | Apple  |
++----+--------+
+```
+
+You can also output Markdown.
+
+```
+| C1 |   C2   |
+|----|--------|
+|  1 | Orange |
+|  2 | Melon  |
+|  3 | Apple  |
+```
+↓
+| C1 |   C2   |
+|----|--------|
+|  1 | Orange |
+|  2 | Melon  |
+|  3 | Apple  |
+
 
 ### SQL function
 

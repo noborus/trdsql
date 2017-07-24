@@ -13,6 +13,7 @@ type TRDSQL struct {
 	ihead     bool
 	iskip     int
 	outHeader bool
+	omd       bool
 	outSep    string
 }
 
