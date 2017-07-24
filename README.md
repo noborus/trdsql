@@ -155,6 +155,9 @@ $ trdsql -otw "SELECT * FROM test.csv"
 
 You can also output Markdown.
 
+```sh
+$ trdsql -omd "SELECT * FROM test.csv"
+```
 ```
 | C1 |   C2   |
 |----|--------|

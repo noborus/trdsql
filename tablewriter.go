@@ -29,14 +29,14 @@ func (db *DDB) twRowsWrite(writer *tablewriter.Table, rows *sql.Rows, omd bool) 
 	if err != nil {
 		return fmt.Errorf("ERROR: Rows %s", err)
 	}
-	values := make([]interface{}, len(columns))
-	results := make([]string, len(columns))
-	scanArgs := make([]interface{}, len(columns))
 	writer.SetHeader(columns)
 	if omd {
 		writer.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 		writer.SetCenterSeparator("|")
 	}
+	values := make([]interface{}, len(columns))
+	results := make([]string, len(columns))
+	scanArgs := make([]interface{}, len(columns))
 
 	for i := range values {
 		scanArgs[i] = &values[i]
@@ -47,12 +47,7 @@ func (db *DDB) twRowsWrite(writer *tablewriter.Table, rows *sql.Rows, omd bool) 
 			return fmt.Errorf("ERROR: %s", err)
 		}
 		for i, col := range values {
-			b, ok := col.([]byte)
-			if ok {
-				results[i] = string(b)
-			} else {
-				results[i] = fmt.Sprint(col)
-			}
+			results[i] = valString(col)
 		}
 		writer.Append(results)
 	}

@@ -167,3 +167,18 @@ func tFileOpen(filename string) (*os.File, error) {
 	}
 	return os.Open(filename)
 }
+
+func valString(v interface{}) string {
+	var str string
+	b, ok := v.([]byte)
+	if ok {
+		str = string(b)
+	} else {
+		if v == nil {
+			str = ""
+		} else {
+			str = fmt.Sprint(v)
+		}
+	}
+	return str
+}

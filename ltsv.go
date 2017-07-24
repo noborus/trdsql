@@ -95,12 +95,7 @@ func (db *DDB) ltsvRowsWrite(writer *ltsv.Writer, rows *sql.Rows) error {
 			return fmt.Errorf("ERROR: %s", err)
 		}
 		for i, col := range values {
-			b, ok := col.([]byte)
-			if ok {
-				results[columns[i]] = string(b)
-			} else {
-				results[columns[i]] = fmt.Sprint(col)
-			}
+			results[columns[i]] = valString(col)
 		}
 		writer.Write(results)
 	}

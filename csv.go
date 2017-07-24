@@ -102,12 +102,7 @@ func (db *DDB) csvRowsWrite(writer *csv.Writer, rows *sql.Rows, head bool) error
 			return fmt.Errorf("ERROR: %s", err)
 		}
 		for i, col := range values {
-			b, ok := col.([]byte)
-			if ok {
-				results[i] = string(b)
-			} else {
-				results[i] = fmt.Sprint(col)
-			}
+			results[i] = valString(col)
 		}
 		writer.Write(results)
 	}
