@@ -37,7 +37,7 @@ func (trdsql TRDSQL) Run(args []string) int {
 		driver  string
 		dsn     string
 		oltsv   bool
-		otw     bool
+		oat     bool
 		odebug  bool
 	)
 	flags := flag.NewFlagSet("trdsql", flag.ContinueOnError)
@@ -62,7 +62,7 @@ Options:
 	flags.StringVar(&trdsql.outSep, "od", ",", "Field delimiter for output.")
 	flags.BoolVar(&ihead, "ih", false, "The first line is interpreted as column names.")
 	flags.BoolVar(&oltsv, "oltsv", false, "LTSV format for output.")
-	flags.BoolVar(&otw, "otw", false, "Table Writer format for output.")
+	flags.BoolVar(&oat, "oat", false, "ASCII Table format for output.")
 	flags.BoolVar(&trdsql.omd, "omd", false, "Mark Down format for output.")
 	flags.BoolVar(&trdsql.outHeader, "oh", false, "Output column name as header.")
 	flags.IntVar(&iskip, "is", 0, "Skip header row.")
@@ -139,7 +139,7 @@ Options:
 	}
 	if oltsv {
 		return trdsql.ltsvWrite(db, sqlstr)
-	} else if trdsql.omd || otw {
+	} else if trdsql.omd || oat {
 		return trdsql.twWrite(db, sqlstr)
 	}
 	return trdsql.csvWrite(db, sqlstr)

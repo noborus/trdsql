@@ -36,6 +36,8 @@ Options:
     	LTSV format for input.
   -is int
     	Skip header row.
+  -oat
+    	ASCII Table format for output.
   -od string
     	Field delimiter for output. (default ",")
   -oh
@@ -43,9 +45,7 @@ Options:
   -oltsv
     	LTSV format for output.
   -omd
-    	Mark Down format for output.
-  -omd
-    	Table Writer format for output.
+    	MarkDown format for output.
   -q string
     	Read query from the provided filename.
   -version
