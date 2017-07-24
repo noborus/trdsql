@@ -136,7 +136,7 @@ name:Apple	price:100	id:3
 
 **Note:** LTSV does not keep the output order of the columns
 
-### TableWriter & MarkDown (output only)
+### ASCII Table & MarkDown (output only)
 
 You can output ASCII table using [tablewriter](https://github.com/olekukonko/tablewriter).
 
