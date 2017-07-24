@@ -141,7 +141,7 @@ name:Apple	price:100	id:3
 You can output ASCII table using [tablewriter](https://github.com/olekukonko/tablewriter).
 
 ```sh
-$ trdsql -otw "SELECT * FROM test.csv"
+$ trdsql -oat "SELECT * FROM test.csv"
 ```
 ```
 +----+--------+
