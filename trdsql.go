@@ -36,9 +36,15 @@ func (trdsql TRDSQL) Run(args []string) int {
 		query   string
 		driver  string
 		dsn     string
-		oltsv   bool
-		oat     bool
 		odebug  bool
+	)
+	type Format int
+	var (
+		oltsv bool
+		oat   bool
+		omd   bool
+		oraw  bool
+		fjson bool
 	)
 	flags := flag.NewFlagSet("trdsql", flag.ContinueOnError)
 	driver = "sqlite3"
@@ -63,7 +69,9 @@ Options:
 	flags.BoolVar(&ihead, "ih", false, "The first line is interpreted as column names.")
 	flags.BoolVar(&oltsv, "oltsv", false, "LTSV format for output.")
 	flags.BoolVar(&oat, "oat", false, "ASCII Table format for output.")
-	flags.BoolVar(&trdsql.omd, "omd", false, "Mark Down format for output.")
+	flags.BoolVar(&omd, "omd", false, "Mark Down format for output.")
+	flags.BoolVar(&oraw, "oraw", false, "Raw format for output.")
+	flags.BoolVar(&fjson, "ojson", false, "Json format for output.")
 	flags.BoolVar(&trdsql.outHeader, "oh", false, "Output column name as header.")
 	flags.IntVar(&iskip, "is", 0, "Skip header row.")
 	flags.StringVar(&query, "q", "", "Read query from the provided filename.")
@@ -137,16 +145,28 @@ Options:
 	if r != 0 {
 		return r
 	}
-	if oltsv {
-		return trdsql.ltsvWrite(db, sqlstr)
-	} else if trdsql.omd || oat {
-		return trdsql.twWrite(db, sqlstr)
+	switch {
+	case oltsv:
+		r = trdsql.ltsvWrite(db, sqlstr)
+	case fjson:
+		r = trdsql.jsonWrite(db, sqlstr)
+	case oraw:
+		r = trdsql.rawWrite(db, sqlstr)
+	case omd:
+		trdsql.omd = true
+		r = trdsql.twWrite(db, sqlstr)
+	case oat:
+		r = trdsql.twWrite(db, sqlstr)
+	default:
+		r = trdsql.csvWrite(db, sqlstr)
 	}
-	return trdsql.csvWrite(db, sqlstr)
-
+	return r
 }
 
 func getSeparator(sepString string) (rune, error) {
+	if sepString == "" {
+		return 0, nil
+	}
 	sepRunes, err := strconv.Unquote(`'` + sepString + `'`)
 	if err != nil {
 		return ',', fmt.Errorf("ERROR getSeparator: %s:%s", err, sepString)
