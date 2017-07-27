@@ -71,7 +71,7 @@ Options:
 	flags.BoolVar(&oat, "oat", false, "ASCII Table format for output.")
 	flags.BoolVar(&omd, "omd", false, "Mark Down format for output.")
 	flags.BoolVar(&oraw, "oraw", false, "Raw format for output.")
-	flags.BoolVar(&fjson, "ojson", false, "Json format for output.")
+	flags.BoolVar(&fjson, "ojson", false, "JSON format for output.")
 	flags.BoolVar(&trdsql.outHeader, "oh", false, "Output column name as header.")
 	flags.IntVar(&iskip, "is", 0, "Skip header row.")
 	flags.StringVar(&query, "q", "", "Read query from the provided filename.")

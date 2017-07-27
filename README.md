@@ -42,10 +42,14 @@ Options:
     	Field delimiter for output. (default ",")
   -oh
     	Output column name as header.
+  -ojson
+    	Json format for output.
   -oltsv
     	LTSV format for output.
   -omd
-    	MarkDown format for output.
+    	Mark Down format for output.
+  -oraw
+    	Raw format for output.
   -q string
     	Read query from the provided filename.
   -version
@@ -135,6 +139,62 @@ name:Apple	price:100	id:3
 ```
 
 **Note:** LTSV does not keep the output order of the columns
+
+### JSON (output only)
+
+Output JSON with option -ojson.
+
+```sh
+$ trdsql -ojson "SELECT * FROM test.csv"
+```
+```
+[
+  {
+    "c1": "1",
+    "c2": "Orange"
+  },
+  {
+    "c1": "2",
+    "c2": "Melon"
+  },
+  {
+    "c1": "3",
+    "c2": "Apple"
+  }
+]
+```
+
+### Raw output
+
+Output Raw with option -oraw.
+It is used when "escape processing is unnecessary" in CSV output.
+(For example, when outputting JSON in the database).
+
+```sh
+$ trdsql -oraw "SELECT row_to_json(t,TRUE) FROM test.csv AS t"
+```
+
+```
+{"c1":"1",
+ "c2":"Orange"}
+{"c1":"2",
+ "c2":"Melon"}
+{"c1":"3",
+ "c2":"Apple"}
+```
+
+Multiple delimiter characters can be used for raw.
+
+```
+trdsql -oraw -od "\t|\t" -db pdb "SELECT * FROM test.csv"
+```
+
+```
+1	|	Orange
+2	|	Melon
+3	|	Apple
+```
+
 
 ### ASCII Table & MarkDown (output only)
 
