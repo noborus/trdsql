@@ -15,13 +15,14 @@ script:
 before_deploy:
 - mkdir $TRAVIS_BUILD_DIR/dist
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then scripts/build.sh ; fi
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then go build ; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then  gox -cgo -os "darwin" -arch "386 amd64" -output "dist/{{.OS}}_{{.Arch}}/{{.Dir}}"; fi
 - rm -f $TRAVIS_BUILD_DIR/dist/*.zip
 - for i in `ls $TRAVIS_BUILD_DIR/dist/`;do zip $TRAVIS_BUILD_DIR/dist/$i.zip $TRAVIS_BUILD_DIR/dist/$i/* ;done
 deploy:
   provider: releases
   api_key:
     secure: Ssa2Xkxq6EGS02PMwmLC7tN2+tE9729hICagJuA61sLQh5P50jIScdSlKT5WMrgJGaLSA8wfUCuzUiq2t4N+u8U0UDTu3HqEooli2fO59CCzpemU3NvN4iT5lp4eiXZZ7EJUGwEpNWeOPGmh3PxdcXalaRu88LfBoWIE0ChyC0cvZycSOruChhajiow2//3JLsbp/B/jktx/NIJmoOk1NYTpnRaASytm3a2xugGrtYTOaqTeCkB0s4eyy++SaOOoyEauL4cox+nTqQ98ehXVWBxC1Nqt3tlMi9Jg4fm9KjmwZtkWx/WyHhA2WtuMq/L1mYMpijUDEGXIr6DfK7KxAdVeYoaxmrccAmNTQs5eCMqt+2Ooh3EWSfRsWutsPbhcwon9mUBsgD2xrEeKK6ZfKbRx9h1oNsQ0NmLz9kflpXWNLCbDmMXmdO2pR3kwdsnZQvCQEpMqE+B3XmcmGPPUpUAfr1XbbkwNdAbqEctDFmxKt4fMF3AILFT/7VYEHhSYkBWPIthRHnBLWsOppc5scsxYHBKge29Q2JrQhMtjumzUOQ4trT6Pu/I/d7SZEhcAV63QmIMEN1GYDDQnGB347mrk8jiAGOH1ROk/CYO69DZ5+QD4/RcV0ymJsgPv2y89As9ze1MyZXvJsw8JS/9PrKS/GLBPOhU7KYU+HqmZDo4=
+  skip_cleanup: true
   file_glob: true
   file: "$TRAVIS_BUILD_DIR/dist/*.zip"
   on:
