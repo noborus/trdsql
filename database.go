@@ -18,9 +18,10 @@ import (
 
 // DDB is *sql.DB wrapper.
 type DDB struct {
-	driver string
-	dsn    string
-	escape string
+	driver    string
+	dsn       string
+	escape    string
+	rewritten []string
 	*sql.DB
 	stmt *sql.Stmt
 }
@@ -170,8 +171,15 @@ func (db *DDB) escapetable(oldname string) string {
 	return newname
 }
 
-func rewrite(sqlstr string, oldname string, newname string) (rewrite string) {
+func (db *DDB) rewrite(sqlstr string, oldname string, newname string) (rewrite string) {
+	for _, rewritten := range db.rewritten {
+		if rewritten == newname {
+			// Rewritten
+			return sqlstr
+		}
+	}
 	rewrite = strings.Replace(sqlstr, oldname, newname, -1)
+	db.rewritten = append(db.rewritten, newname)
 	return rewrite
 }
 
