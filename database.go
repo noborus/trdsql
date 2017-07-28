@@ -76,7 +76,7 @@ func (db *DDB) csvImport(reader *csv.Reader, header []string, head bool) error {
 				return fmt.Errorf("ERROR Read: %s", err)
 			}
 		}
-		for i := range header {
+		for i := 0; len(list) > i && len(record) > i; i++ {
 			list[i] = record[i]
 		}
 		rowImport(db.stmt, list)
