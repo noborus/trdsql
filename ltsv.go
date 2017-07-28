@@ -28,29 +28,27 @@ func ltsvOpen(filename string, delimiter string, skip int) (*ltsv.Reader, error)
 	return reader, nil
 }
 
-func (trdsql TRDSQL) ltsvReader(db *DDB, sqlstr string, tablenames []string) (string, int) {
-	for _, tablename := range tablenames {
-		reader, err := ltsvOpen(tablename, trdsql.inSep, trdsql.iskip)
-		if err != nil {
-			// no file
-			continue
-		}
-		rtable := db.escapetable(tablename)
-		sqlstr = rewrite(sqlstr, tablename, rtable)
-		first, err := reader.Read()
-		if err != nil {
-			return sqlstr, 1
-		}
-		header := keys(first)
-		db.Create(rtable, header, true)
-		err = db.ImportPrepare(rtable, header, true)
-		if err != nil {
-			log.Println(err)
-			return sqlstr, 1
-		}
-
-		db.ltsvImport(reader, first, header)
+func (trdsql TRDSQL) ltsvReader(db *DDB, sqlstr string, tablename string) (string, int) {
+	reader, err := ltsvOpen(tablename, "\t", trdsql.iskip)
+	if err != nil {
+		// no file
+		return sqlstr, 0
 	}
+	rtable := db.escapetable(tablename)
+	sqlstr = db.rewrite(sqlstr, tablename, rtable)
+	first, err := reader.Read()
+	if err != nil {
+		return sqlstr, 1
+	}
+	header := keys(first)
+	db.Create(rtable, header, true)
+	err = db.ImportPrepare(rtable, header, true)
+	if err != nil {
+		log.Println(err)
+		return sqlstr, 1
+	}
+
+	db.ltsvImport(reader, first, header)
 	return sqlstr, 0
 }
 

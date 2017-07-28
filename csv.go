@@ -35,29 +35,27 @@ func csvheader(reader *csv.Reader) ([]string, error) {
 	return header, err
 }
 
-func (trdsql TRDSQL) csvReader(db *DDB, sqlstr string, tablenames []string) (string, int) {
+func (trdsql TRDSQL) csvReader(db *DDB, sqlstr string, tablename string) (string, int) {
 	var header []string
-	for _, tablename := range tablenames {
-		reader, err := csvOpen(tablename, trdsql.inSep, trdsql.iskip)
-		if err != nil {
-			// no file
-			continue
-		}
-		rtable := db.escapetable(tablename)
-		sqlstr = rewrite(sqlstr, tablename, rtable)
-		header, err = csvheader(reader)
-		if err != nil {
-			log.Println(err)
-			return sqlstr, 1
-		}
-		db.Create(rtable, header, trdsql.ihead)
-		err = db.ImportPrepare(rtable, header, trdsql.ihead)
-		if err != nil {
-			log.Println(err)
-			return sqlstr, 1
-		}
-		db.csvImport(reader, header, trdsql.ihead)
+	reader, err := csvOpen(tablename, trdsql.inSep, trdsql.iskip)
+	if err != nil {
+		// no file
+		return sqlstr, 0
 	}
+	rtable := db.escapetable(tablename)
+	sqlstr = db.rewrite(sqlstr, tablename, rtable)
+	header, err = csvheader(reader)
+	if err != nil {
+		log.Println(err)
+		return sqlstr, 1
+	}
+	db.Create(rtable, header, trdsql.ihead)
+	err = db.ImportPrepare(rtable, header, trdsql.ihead)
+	if err != nil {
+		log.Println(err)
+		return sqlstr, 1
+	}
+	db.csvImport(reader, header, trdsql.ihead)
 	return sqlstr, 0
 }
 

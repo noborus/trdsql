@@ -22,6 +22,8 @@ var outformat = []string{
 	"-oltsv",
 	"-oat",
 	"-omd",
+	"-ojson",
+	"-oraw",
 }
 
 func TestRun(t *testing.T) {
@@ -61,6 +63,21 @@ func TestLtsvRun(t *testing.T) {
 	}
 }
 
+func TestGuessRun(t *testing.T) {
+	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
+	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	for _, c := range append(tcsv, tltsv...) {
+		sql := "SELECT * FROM testdata/" + c
+		args := []string{"trdsql", "-ig", sql}
+		if trdsql.Run(args) != 0 {
+			t.Errorf("trdsql error.")
+		}
+		if outStream.String() == "" {
+			t.Fatalf("trdsql error :%s", trdsql.outStream)
+		}
+	}
+}
+
 var tsql = []string{
 	"test.sql",
 }
@@ -79,19 +96,11 @@ func TestQueryfileRun(t *testing.T) {
 	}
 }
 
-/*
-func TestPgRun(t *testing.T) {
-	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
-	for _, c := range tcsv {
-		sql := "SELECT * FROM testdata/" + c
-		args := []string{"trdsql", "-driver", "postgres", sql}
-		if trdsql.Run(args) != 0 {
-			t.Errorf("trdsql error.")
-		}
-		if outStream.String() == "" {
-			t.Fatalf("trdsql error :%s", trdsql.outStream)
-		}
+func TestGuessExtension(t *testing.T) {
+	if guessExtension("test.ltsv") != true {
+		t.Errorf("guessExtension error.")
+	}
+	if guessExtension("test.csv") != false {
+		t.Errorf("guessExtension error.")
 	}
 }
-*/

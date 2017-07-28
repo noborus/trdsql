@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
@@ -31,7 +30,6 @@ ID:2	name:testb
 	reader := ltsv.NewReader(s)
 	r, _ := reader.Read()
 	if r["ID"] != "1" || r["name"] != "testa" {
-		fmt.Printf("[%s]\n", r["ID"])
 		t.Error("invalid value", r["ID"])
 	}
 }

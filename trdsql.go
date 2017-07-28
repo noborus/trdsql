@@ -11,8 +11,6 @@ import (
 	"strings"
 )
 
-const VERSION = `0.3.0`
-
 var debug = debugT(false)
 
 type debugT bool
@@ -29,9 +27,6 @@ func (trdsql TRDSQL) Run(args []string) int {
 		version bool
 		odriver string
 		odsn    string
-		iltsv   bool
-		inSep   string
-		ihead   bool
 		iskip   int
 		query   string
 		driver  string
@@ -63,10 +58,11 @@ Options:
 	flags.StringVar(&cfg.Db, "db", cfg.Db, "Specify db name of the setting.")
 	flags.StringVar(&odriver, "driver", "", "database driver.  [ "+strings.Join(sql.Drivers(), " | ")+" ]")
 	flags.StringVar(&odsn, "dsn", "", "database connection option.")
-	flags.BoolVar(&iltsv, "iltsv", false, "LTSV format for input.")
-	flags.StringVar(&inSep, "id", ",", "Field delimiter for input.")
+	flags.BoolVar(&trdsql.iguess, "ig", false, "Guess format from extension.")
+	flags.BoolVar(&trdsql.iltsv, "iltsv", false, "LTSV format for input.")
+	flags.StringVar(&trdsql.inSep, "id", ",", "Field delimiter for input.")
 	flags.StringVar(&trdsql.outSep, "od", ",", "Field delimiter for output.")
-	flags.BoolVar(&ihead, "ih", false, "The first line is interpreted as column names.")
+	flags.BoolVar(&trdsql.ihead, "ih", false, "The first line is interpreted as column names.")
 	flags.BoolVar(&oltsv, "oltsv", false, "LTSV format for output.")
 	flags.BoolVar(&oat, "oat", false, "ASCII Table format for output.")
 	flags.BoolVar(&omd, "omd", false, "Mark Down format for output.")
@@ -134,17 +130,11 @@ Options:
 	}
 	trdsql.iskip = iskip
 	var r int
-	if iltsv {
-		trdsql.inSep = "\t"
-		sqlstr, r = trdsql.ltsvReader(db, sqlstr, tablenames)
-	} else {
-		trdsql.inSep = inSep
-		trdsql.ihead = ihead
-		sqlstr, r = trdsql.csvReader(db, sqlstr, tablenames)
-	}
+	sqlstr, r = trdsql.tableReader(db, sqlstr, tablenames)
 	if r != 0 {
 		return r
 	}
+
 	switch {
 	case oltsv:
 		r = trdsql.ltsvWrite(db, sqlstr)
@@ -161,6 +151,32 @@ Options:
 		r = trdsql.csvWrite(db, sqlstr)
 	}
 	return r
+}
+
+func (trdsql TRDSQL) tableReader(db *DDB, sqlstr string, tablenames []string) (string, int) {
+	var r int
+	for _, tablename := range tablenames {
+		ltsv := false
+		if trdsql.iltsv {
+			ltsv = true
+		} else if trdsql.iguess {
+			ltsv = guessExtension(tablename)
+		}
+		if ltsv {
+			sqlstr, r = trdsql.ltsvReader(db, sqlstr, tablename)
+		} else {
+			sqlstr, r = trdsql.csvReader(db, sqlstr, tablename)
+		}
+	}
+	return sqlstr, r
+}
+
+func guessExtension(tablename string) bool {
+	pos := strings.LastIndex(tablename, ".")
+	if pos > 0 && tablename[pos:] == ".ltsv" {
+		return true
+	}
+	return false
 }
 
 func getSeparator(sepString string) (rune, error) {

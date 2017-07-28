@@ -30,6 +30,8 @@ Options:
     	database connection option.
   -id string
     	Field delimiter for input. (default ",")
+  -ig
+    	Guess format from extension.
   -ih
     	The first line is interpreted as column names.
   -iltsv
@@ -43,7 +45,7 @@ Options:
   -oh
     	Output column name as header.
   -ojson
-    	Json format for output.
+    	JSON format for output.
   -oltsv
     	LTSV format for output.
   -omd
