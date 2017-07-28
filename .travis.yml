@@ -14,10 +14,9 @@ script:
 - go test $(glide novendor)
 before_deploy:
 - mkdir $TRAVIS_BUILD_DIR/dist
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then scripts/build.sh ; fi
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then  gox -cgo -os "darwin" -arch "386 amd64" -output "dist/{{.OS}}_{{.Arch}}/{{.Dir}}"; fi
+- scripts/build.sh
 - rm -f $TRAVIS_BUILD_DIR/dist/*.zip
-- for i in `ls $TRAVIS_BUILD_DIR/dist/`;do zip $TRAVIS_BUILD_DIR/dist/$i.zip $TRAVIS_BUILD_DIR/dist/$i/* ;done
+- cd ${TRAVIS_BUILD_DIR}/dist/ && for i in `ls .`; do cp ../README.md $i; zip $i.zip $i/* ;done
 deploy:
   provider: releases
   api_key:
