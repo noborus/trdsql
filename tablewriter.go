@@ -3,41 +3,26 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"log"
 
 	"github.com/olekukonko/tablewriter"
 )
 
-func (trdsql TRDSQL) twWrite(db *DDB, sqlstr string) int {
-	writer := tablewriter.NewWriter(trdsql.outStream)
-	rows, err := db.Select(sqlstr)
-	if err != nil {
-		log.Println(err)
-		return 1
-	}
-	err = db.twRowsWrite(writer, rows, trdsql.omd)
-	if err != nil {
-		log.Println(err)
-		return 1
-	}
-	return 0
-}
-
-func (db *DDB) twRowsWrite(writer *tablewriter.Table, rows *sql.Rows, omd bool) error {
+func (trdsql TRDSQL) twWrite(rows *sql.Rows) error {
 	defer rows.Close()
+	writer := tablewriter.NewWriter(trdsql.outStream)
 	columns, err := rows.Columns()
 	if err != nil {
 		return fmt.Errorf("ERROR: Rows %s", err)
 	}
 	writer.SetHeader(columns)
-	if omd {
+	if trdsql.omd {
 		writer.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 		writer.SetCenterSeparator("|")
 	}
-	values := make([]interface{}, len(columns))
-	results := make([]string, len(columns))
-	scanArgs := make([]interface{}, len(columns))
 
+	results := make([]string, len(columns))
+	values := make([]interface{}, len(columns))
+	scanArgs := make([]interface{}, len(columns))
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}

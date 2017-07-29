@@ -4,42 +4,27 @@ import (
 	"bufio"
 	"database/sql"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 )
 
-func (trdsql TRDSQL) rawWrite(db *DDB, sqlstr string) int {
-	var err error
-	writer := bufio.NewWriter(trdsql.outStream)
-	rows, err := db.Select(sqlstr)
-	if err != nil {
-		log.Println(err)
-		return 1
-	}
-	err = db.rawRowsWrite(writer, trdsql.outSep, rows, trdsql.outHeader)
-	if err != nil {
-		log.Println(err)
-		return 1
-	}
-	return 0
-}
-
-func (db *DDB) rawRowsWrite(writer *bufio.Writer, delimiter string, rows *sql.Rows, head bool) error {
+func (trdsql TRDSQL) rawWrite(rows *sql.Rows) error {
 	defer rows.Close()
-	sep, err := strconv.Unquote(`"` + delimiter + `"`)
+	writer := bufio.NewWriter(trdsql.outStream)
+	sep, err := strconv.Unquote(`"` + trdsql.outSep + `"`)
 	if err != nil {
-		return fmt.Errorf("ERROR: Delimiter [%s]:%s", delimiter, err)
+		return fmt.Errorf("ERROR: Delimiter [%s]:%s", trdsql.outSep, err)
 	}
 	columns, err := rows.Columns()
 	if err != nil {
 		return fmt.Errorf("ERROR: Rows %s", err)
 	}
-	if head {
+	if trdsql.outHeader {
 		fmt.Fprint(writer, strings.Join(columns, sep), "\n")
 	}
-	values := make([]interface{}, len(columns))
+
 	results := make([]string, len(columns))
+	values := make([]interface{}, len(columns))
 	scanArgs := make([]interface{}, len(columns))
 	for i := range values {
 		scanArgs[i] = &values[i]

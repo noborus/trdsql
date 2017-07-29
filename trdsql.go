@@ -129,32 +129,40 @@ Options:
 		debug.Printf("table not found\n")
 	}
 	trdsql.iskip = iskip
-	var r int
-	sqlstr, r = trdsql.tableReader(db, sqlstr, tablenames)
-	if r != 0 {
-		return r
+	sqlstr, err = trdsql.tableReader(db, sqlstr, tablenames)
+	if err != nil {
+		return 1
 	}
 
+	rows, err := db.Select(sqlstr)
+	if err != nil {
+		log.Println(err)
+		return 1
+	}
 	switch {
 	case oltsv:
-		r = trdsql.ltsvWrite(db, sqlstr)
+		err = trdsql.ltsvWrite(rows)
 	case fjson:
-		r = trdsql.jsonWrite(db, sqlstr)
+		err = trdsql.jsonWrite(rows)
 	case oraw:
-		r = trdsql.rawWrite(db, sqlstr)
+		err = trdsql.rawWrite(rows)
 	case omd:
 		trdsql.omd = true
-		r = trdsql.twWrite(db, sqlstr)
+		err = trdsql.twWrite(rows)
 	case oat:
-		r = trdsql.twWrite(db, sqlstr)
+		err = trdsql.twWrite(rows)
 	default:
-		r = trdsql.csvWrite(db, sqlstr)
+		err = trdsql.csvWrite(rows)
 	}
-	return r
+	if err != nil {
+		log.Println(err)
+		return 1
+	}
+	return 0
 }
 
-func (trdsql TRDSQL) tableReader(db *DDB, sqlstr string, tablenames []string) (string, int) {
-	var r int
+func (trdsql TRDSQL) tableReader(db *DDB, sqlstr string, tablenames []string) (string, error) {
+	var err error
 	for _, tablename := range tablenames {
 		ltsv := false
 		if trdsql.iltsv {
@@ -163,19 +171,21 @@ func (trdsql TRDSQL) tableReader(db *DDB, sqlstr string, tablenames []string) (s
 			ltsv = guessExtension(tablename)
 		}
 		if ltsv {
-			sqlstr, r = trdsql.ltsvReader(db, sqlstr, tablename)
+			sqlstr, err = trdsql.ltsvReader(db, sqlstr, tablename)
 		} else {
-			sqlstr, r = trdsql.csvReader(db, sqlstr, tablename)
+			sqlstr, err = trdsql.csvReader(db, sqlstr, tablename)
 		}
 	}
-	return sqlstr, r
+	return sqlstr, err
 }
 
 func guessExtension(tablename string) bool {
 	pos := strings.LastIndex(tablename, ".")
-	if pos > 0 && tablename[pos:] == ".ltsv" {
+	if pos > 0 && strings.ToLower(tablename[pos:]) == ".ltsv" {
+		debug.Printf("%s is LTSV file", tablename)
 		return true
 	}
+	debug.Printf("%s is CSV file", tablename)
 	return false
 }
 
@@ -217,4 +227,21 @@ func valString(v interface{}) string {
 		}
 	}
 	return str
+}
+
+func write(rows *sql.Rows, columns []string, rowWrite func([]interface{})) error {
+	var err error
+	values := make([]interface{}, len(columns))
+	scanArgs := make([]interface{}, len(columns))
+	for i := range values {
+		scanArgs[i] = &values[i]
+	}
+	for rows.Next() {
+		err = rows.Scan(scanArgs...)
+		if err != nil {
+			return fmt.Errorf("ERROR: %s", err)
+		}
+		rowWrite(values)
+	}
+	return nil
 }

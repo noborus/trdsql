@@ -28,28 +28,28 @@ func ltsvOpen(filename string, delimiter string, skip int) (*ltsv.Reader, error)
 	return reader, nil
 }
 
-func (trdsql TRDSQL) ltsvReader(db *DDB, sqlstr string, tablename string) (string, int) {
+func (trdsql TRDSQL) ltsvReader(db *DDB, sqlstr string, tablename string) (string, error) {
 	reader, err := ltsvOpen(tablename, "\t", trdsql.iskip)
 	if err != nil {
 		// no file
-		return sqlstr, 0
+		return sqlstr, nil
 	}
 	rtable := db.escapetable(tablename)
 	sqlstr = db.rewrite(sqlstr, tablename, rtable)
 	first, err := reader.Read()
 	if err != nil {
-		return sqlstr, 1
+		return sqlstr, err
 	}
 	header := keys(first)
 	db.Create(rtable, header, true)
 	err = db.ImportPrepare(rtable, header, true)
 	if err != nil {
 		log.Println(err)
-		return sqlstr, 1
+		return sqlstr, err
 	}
 
 	db.ltsvImport(reader, first, header)
-	return sqlstr, 0
+	return sqlstr, nil
 }
 
 func keys(m map[string]string) []string {
@@ -60,29 +60,16 @@ func keys(m map[string]string) []string {
 	return ks
 }
 
-func (trdsql TRDSQL) ltsvWrite(db *DDB, sqlstr string) int {
-	writer := ltsv.NewWriter(trdsql.outStream)
-	rows, err := db.Select(sqlstr)
-	if err != nil {
-		log.Println(err)
-		return 1
-	}
-	err = db.ltsvRowsWrite(writer, rows)
-	if err != nil {
-		log.Println(err)
-		return 1
-	}
-	return 0
-}
-
-func (db *DDB) ltsvRowsWrite(writer *ltsv.Writer, rows *sql.Rows) error {
+func (trdsql TRDSQL) ltsvWrite(rows *sql.Rows) error {
 	defer rows.Close()
+	writer := ltsv.NewWriter(trdsql.outStream)
 	columns, err := rows.Columns()
 	if err != nil {
 		return fmt.Errorf("ERROR: Rows %s", err)
 	}
-	values := make([]interface{}, len(columns))
+
 	results := make(map[string]string, len(columns))
+	values := make([]interface{}, len(columns))
 	scanArgs := make([]interface{}, len(columns))
 	for i := range values {
 		scanArgs[i] = &values[i]
