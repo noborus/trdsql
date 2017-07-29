@@ -16,22 +16,16 @@ func (trdsql TRDSQL) jsonWrite(rows *sql.Rows) error {
 	}
 
 	results := make([]map[string]string, 0)
-	values := make([]interface{}, len(columns))
-	scanArgs := make([]interface{}, len(columns))
-	for i := range values {
-		scanArgs[i] = &values[i]
-	}
-	for rows.Next() {
-		err = rows.Scan(scanArgs...)
-		if err != nil {
-			return fmt.Errorf("ERROR: %s", err)
-		}
+	err = write(rows, columns, func(values []interface{}) {
 		m := make(map[string]string, len(columns))
 		for i, col := range values {
 			m[columns[i]] = valString(col)
 		}
 		results = append(results, m)
+	})
+	if err != nil {
+		return err
 	}
-	writer.Encode(results)
-	return nil
+	err = writer.Encode(results)
+	return err
 }

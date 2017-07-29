@@ -24,21 +24,12 @@ func (trdsql TRDSQL) rawWrite(rows *sql.Rows) error {
 	}
 
 	results := make([]string, len(columns))
-	values := make([]interface{}, len(columns))
-	scanArgs := make([]interface{}, len(columns))
-	for i := range values {
-		scanArgs[i] = &values[i]
-	}
-	for rows.Next() {
-		err = rows.Scan(scanArgs...)
-		if err != nil {
-			return fmt.Errorf("ERROR: %s", err)
-		}
+	err = write(rows, columns, func(values []interface{}) {
 		for i, col := range values {
 			results[i] = valString(col)
 		}
 		fmt.Fprint(writer, strings.Join(results, sep), "\n")
-	}
+	})
 	writer.Flush()
-	return nil
+	return err
 }
