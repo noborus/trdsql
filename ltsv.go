@@ -9,27 +9,7 @@ import (
 	"github.com/najeira/ltsv"
 )
 
-func ltsvOpen(filename string, delimiter string, skip int) (*ltsv.Reader, error) {
-	file, err := tFileOpen(filename)
-	if err != nil {
-		return nil, err
-	}
-	if err != nil {
-		return nil, err
-	}
-	reader := ltsv.NewReader(file)
-	reader.Delimiter, err = getSeparator(delimiter)
-	if err != nil {
-		return nil, err
-	}
-	for i := 0; i < skip; i++ {
-		r, _ := reader.Read()
-		debug.Printf("Skip row:%s\n", r)
-	}
-	return reader, nil
-}
-
-func (trdsql TRDSQL) ltsvReader(db *DDB, sqlstr string, tablename string) (string, error) {
+func (trdsql TRDSQL) ltsvRead(db *DDB, sqlstr string, tablename string) (string, error) {
 	reader, err := ltsvOpen(tablename, "\t", trdsql.iskip)
 	if err != nil {
 		// no file
@@ -51,6 +31,26 @@ func (trdsql TRDSQL) ltsvReader(db *DDB, sqlstr string, tablename string) (strin
 
 	db.ltsvImport(reader, first, header)
 	return sqlstr, nil
+}
+
+func ltsvOpen(filename string, delimiter string, skip int) (*ltsv.Reader, error) {
+	file, err := tFileOpen(filename)
+	if err != nil {
+		return nil, err
+	}
+	if err != nil {
+		return nil, err
+	}
+	reader := ltsv.NewReader(file)
+	reader.Delimiter, err = getSeparator(delimiter)
+	if err != nil {
+		return nil, err
+	}
+	for i := 0; i < skip; i++ {
+		r, _ := reader.Read()
+		debug.Printf("Skip row:%s\n", r)
+	}
+	return reader, nil
 }
 
 func keys(m map[string]string) []string {

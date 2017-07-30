@@ -9,8 +9,31 @@ import (
 	"strings"
 )
 
-func csvOpen(filename string, delimiter string, skip int) (*csv.Reader, error) {
+func (trdsql TRDSQL) csvRead(db *DDB, sqlstr string, tablename string) (string, error) {
+	var header []string
+	reader, err := csvOpen(tablename, trdsql.inSep, trdsql.iskip)
+	if err != nil {
+		// no file
+		return sqlstr, nil
+	}
+	rtable := db.escapetable(tablename)
+	sqlstr = db.rewrite(sqlstr, tablename, rtable)
+	header, err = reader.Read()
+	if err != nil {
+		log.Println(err)
+		return sqlstr, err
+	}
+	db.Create(rtable, header, trdsql.ihead)
+	err = db.ImportPrepare(rtable, header, trdsql.ihead)
+	if err != nil {
+		log.Println(err)
+		return sqlstr, err
+	}
+	db.csvImport(reader, header, trdsql.ihead)
+	return sqlstr, nil
+}
 
+func csvOpen(filename string, delimiter string, skip int) (*csv.Reader, error) {
 	file, err := tFileOpen(filename)
 	if err != nil {
 		return nil, err
@@ -27,37 +50,6 @@ func csvOpen(filename string, delimiter string, skip int) (*csv.Reader, error) {
 		debug.Printf("Skip row:%s\n", strings.Join(r, " "))
 	}
 	return reader, err
-}
-
-func csvheader(reader *csv.Reader) ([]string, error) {
-	var err error
-	var header []string
-	header, err = reader.Read()
-	return header, err
-}
-
-func (trdsql TRDSQL) csvReader(db *DDB, sqlstr string, tablename string) (string, error) {
-	var header []string
-	reader, err := csvOpen(tablename, trdsql.inSep, trdsql.iskip)
-	if err != nil {
-		// no file
-		return sqlstr, nil
-	}
-	rtable := db.escapetable(tablename)
-	sqlstr = db.rewrite(sqlstr, tablename, rtable)
-	header, err = csvheader(reader)
-	if err != nil {
-		log.Println(err)
-		return sqlstr, err
-	}
-	db.Create(rtable, header, trdsql.ihead)
-	err = db.ImportPrepare(rtable, header, trdsql.ihead)
-	if err != nil {
-		log.Println(err)
-		return sqlstr, err
-	}
-	db.csvImport(reader, header, trdsql.ihead)
-	return sqlstr, nil
 }
 
 func (db *DDB) csvImport(reader *csv.Reader, header []string, head bool) error {

@@ -27,23 +27,19 @@ func (trdsql TRDSQL) Run(args []string) int {
 		version bool
 		odriver string
 		odsn    string
-		iskip   int
 		query   string
-		driver  string
-		dsn     string
 		odebug  bool
 	)
-	type Format int
 	var (
 		oltsv bool
 		oat   bool
 		omd   bool
 		oraw  bool
-		fjson bool
+		ojson bool
 	)
 	flags := flag.NewFlagSet("trdsql", flag.ContinueOnError)
-	driver = "sqlite3"
-	dsn = ""
+	driver := "sqlite3"
+	dsn := ""
 	cfgfile := configOpen()
 	cfg, _ := loadConfig(cfgfile)
 	flags.Usage = func() {
@@ -67,9 +63,9 @@ Options:
 	flags.BoolVar(&oat, "oat", false, "ASCII Table format for output.")
 	flags.BoolVar(&omd, "omd", false, "Mark Down format for output.")
 	flags.BoolVar(&oraw, "oraw", false, "Raw format for output.")
-	flags.BoolVar(&fjson, "ojson", false, "JSON format for output.")
+	flags.BoolVar(&ojson, "ojson", false, "JSON format for output.")
 	flags.BoolVar(&trdsql.outHeader, "oh", false, "Output column name as header.")
-	flags.IntVar(&iskip, "is", 0, "Skip header row.")
+	flags.IntVar(&trdsql.iskip, "is", 0, "Skip header row.")
 	flags.StringVar(&query, "q", "", "Read query from the provided filename.")
 	flags.BoolVar(&version, "version", false, "display version information.")
 	flags.BoolVar(&odebug, "debug", false, "debug print.")
@@ -108,28 +104,22 @@ Options:
 			dsn = cfg.Database[cfg.Db].Dsn
 		}
 	}
+
 	if odriver != "" {
 		driver = odriver
 	}
 	if odsn != "" {
 		dsn = odsn
 	}
-
 	debug.Printf("driver: %s, dsn: %s", driver, dsn)
+
 	db, err := Connect(driver, dsn)
 	if err != nil {
 		log.Println("ERROR: ", err)
 		return 1
 	}
 	defer db.Disconnect()
-
-	tablenames := sqlparse(sqlstr)
-	if len(tablenames) == 0 {
-		// without FROM clause. ex. SELECT 1+1;
-		debug.Printf("table not found\n")
-	}
-	trdsql.iskip = iskip
-	sqlstr, err = trdsql.tableReader(db, sqlstr, tablenames)
+	sqlstr, err = trdsql.dbimport(db, sqlstr)
 	if err != nil {
 		return 1
 	}
@@ -142,7 +132,7 @@ Options:
 	switch {
 	case oltsv:
 		err = trdsql.ltsvWrite(rows)
-	case fjson:
+	case ojson:
 		err = trdsql.jsonWrite(rows)
 	case oraw:
 		err = trdsql.rawWrite(rows)
@@ -161,8 +151,13 @@ Options:
 	return 0
 }
 
-func (trdsql TRDSQL) tableReader(db *DDB, sqlstr string, tablenames []string) (string, error) {
+func (trdsql TRDSQL) dbimport(db *DDB, sqlstr string) (string, error) {
 	var err error
+	tablenames := sqlparse(sqlstr)
+	if len(tablenames) == 0 {
+		// without FROM clause. ex. SELECT 1+1;
+		debug.Printf("table not found\n")
+	}
 	for _, tablename := range tablenames {
 		ltsv := false
 		if trdsql.iltsv {
@@ -171,9 +166,9 @@ func (trdsql TRDSQL) tableReader(db *DDB, sqlstr string, tablenames []string) (s
 			ltsv = guessExtension(tablename)
 		}
 		if ltsv {
-			sqlstr, err = trdsql.ltsvReader(db, sqlstr, tablename)
+			sqlstr, err = trdsql.ltsvRead(db, sqlstr, tablename)
 		} else {
-			sqlstr, err = trdsql.csvReader(db, sqlstr, tablename)
+			sqlstr, err = trdsql.csvRead(db, sqlstr, tablename)
 		}
 	}
 	return sqlstr, err

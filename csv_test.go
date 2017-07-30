@@ -1,8 +1,6 @@
 package main
 
 import (
-	"encoding/csv"
-	"strings"
 	"testing"
 )
 
@@ -41,17 +39,5 @@ func TestFileCsvOpen(t *testing.T) {
 	f, _ := csvOpen("`not_file_dummy.csv`", ",", 0)
 	if f != nil {
 		t.Error(`not_file_dummy.csv Open error`)
-	}
-}
-
-func TestCsvRead(t *testing.T) {
-	const csvStream = `
-a,b,c
-1,2,3
-	`
-	s := strings.NewReader(csvStream)
-	c, _ := csvheader(csv.NewReader(s))
-	if c[0] != "a" {
-		t.Error("invalid value", c[0])
 	}
 }
