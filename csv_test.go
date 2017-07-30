@@ -28,16 +28,43 @@ func TestGetSeparator(t *testing.T) {
 	}
 }
 
-func TestStdinCsvOpen(t *testing.T) {
-	_, error := csvOpen("-", ",", 0)
-	if error != nil {
-		t.Error(`Stdin csvOpen error`)
+func TestCsvInputNew(t *testing.T) {
+	trdsql := trdsqlNew()
+	file, err := tFileOpen("testdata/test.csv")
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = trdsql.csvInputNew(file)
+	if err != nil {
+		t.Error(`csvInputNew error`)
 	}
 }
 
-func TestFileCsvOpen(t *testing.T) {
-	f, _ := csvOpen("`not_file_dummy.csv`", ",", 0)
-	if f != nil {
-		t.Error(`not_file_dummy.csv Open error`)
+func TestNoCsvInputNew(t *testing.T) {
+	trdsql := trdsqlNew()
+	file, err := tFileOpen("nofile")
+	if err == nil {
+		t.Error(`Should error`)
+	}
+	_, err = trdsql.csvInputNew(file)
+	if err != nil {
+		t.Error(`csvInputNew error`)
+	}
+}
+
+func TestCsvOutNew(t *testing.T) {
+	trdsql := trdsqlNew()
+	out := trdsql.csvOutNew()
+	if out == nil {
+		t.Error(`csvOut error`)
+	}
+}
+
+func TestCsvOutNewFalse(t *testing.T) {
+	trdsql := trdsqlNew()
+	trdsql.outSep = "**"
+	out := trdsql.csvOutNew()
+	if out == nil {
+		t.Error(`csvOut error`)
 	}
 }

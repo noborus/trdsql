@@ -1,56 +1,62 @@
 package main
 
 import (
-	"database/sql"
-	"fmt"
-	"io"
-	"log"
+	"os"
 
 	"github.com/najeira/ltsv"
 )
 
-func (trdsql TRDSQL) ltsvRead(db *DDB, sqlstr string, tablename string) (string, error) {
-	reader, err := ltsvOpen(tablename, "\t", trdsql.iskip)
-	if err != nil {
-		// no file
-		return sqlstr, nil
-	}
-	rtable := db.escapetable(tablename)
-	sqlstr = db.rewrite(sqlstr, tablename, rtable)
-	first, err := reader.Read()
-	if err != nil {
-		return sqlstr, err
-	}
-	header := keys(first)
-	db.Create(rtable, header, true)
-	err = db.ImportPrepare(rtable, header, true)
-	if err != nil {
-		log.Println(err)
-		return sqlstr, err
-	}
-
-	db.ltsvImport(reader, first, header)
-	return sqlstr, nil
+// LTSVIn provides methods of the Input interface
+type LTSVIn struct {
+	reader   *ltsv.Reader
+	firstrow map[string]string
+	header   []string
 }
 
-func ltsvOpen(filename string, delimiter string, skip int) (*ltsv.Reader, error) {
-	file, err := tFileOpen(filename)
+// LTSVOut provides methods of the Output interface
+type LTSVOut struct {
+	writer  *ltsv.Writer
+	results map[string]string
+}
+
+func (trdsql TRDSQL) ltsvInputNew(file *os.File) (Input, error) {
+	var err error
+	lr := &LTSVIn{}
+	lr.reader = ltsv.NewReader(file)
+	lr.reader.Delimiter, err = getSeparator("\t")
 	if err != nil {
 		return nil, err
 	}
+	return lr, nil
+}
+
+func (lr *LTSVIn) firstRead(tablename string) ([]string, error) {
+	var err error
+	lr.firstrow, err = lr.reader.Read()
 	if err != nil {
 		return nil, err
 	}
-	reader := ltsv.NewReader(file)
-	reader.Delimiter, err = getSeparator(delimiter)
+	lr.header = keys(lr.firstrow)
+	return lr.header, nil
+}
+
+func (lr *LTSVIn) firstRow(list []interface{}) []interface{} {
+	for i := range lr.header {
+		list[i] = lr.firstrow[lr.header[i]]
+	}
+	return list
+}
+
+func (lr *LTSVIn) rowRead(list []interface{}) ([]interface{}, error) {
+	record, err := lr.reader.Read()
 	if err != nil {
-		return nil, err
+		return list, err
 	}
-	for i := 0; i < skip; i++ {
-		r, _ := reader.Read()
-		debug.Printf("Skip row:%s\n", r)
+	for i := range lr.header {
+		list[i] = record[lr.header[i]]
 	}
-	return reader, nil
+
+	return list, nil
 }
 
 func keys(m map[string]string) []string {
@@ -61,45 +67,25 @@ func keys(m map[string]string) []string {
 	return ks
 }
 
-func (db *DDB) ltsvImport(reader *ltsv.Reader, first map[string]string, header []string) error {
-	list := make([]interface{}, len(header))
-	for i := range header {
-		list[i] = first[header[i]]
-	}
-	rowImport(db.stmt, list)
+func (trdsql TRDSQL) ltsvOutNew() Output {
+	lw := &LTSVOut{}
+	lw.writer = ltsv.NewWriter(trdsql.outStream)
+	return lw
+}
 
-	for {
-		record, err := reader.Read()
-		if err == io.EOF {
-			break
-		} else {
-			if err != nil {
-				return fmt.Errorf("ERROR Read: %s", err)
-			}
-		}
-		for i := range header {
-			list[i] = record[header[i]]
-		}
-		rowImport(db.stmt, list)
-	}
+func (lw *LTSVOut) first(scanArgs []interface{}, columns []string) error {
+	lw.results = make(map[string]string, len(columns))
 	return nil
 }
 
-func (trdsql TRDSQL) ltsvWrite(rows *sql.Rows) error {
-	defer rows.Close()
-	writer := ltsv.NewWriter(trdsql.outStream)
-	columns, err := rows.Columns()
-	if err != nil {
-		return fmt.Errorf("ERROR: Rows %s", err)
+func (lw *LTSVOut) rowWrite(values []interface{}, columns []string) error {
+	for i, col := range values {
+		lw.results[columns[i]] = valString(col)
 	}
+	lw.writer.Write(lw.results)
+	return nil
+}
 
-	results := make(map[string]string, len(columns))
-	err = write(rows, columns, func(values []interface{}) {
-		for i, col := range values {
-			results[columns[i]] = valString(col)
-		}
-		writer.Write(results)
-	})
-	writer.Flush()
-	return err
+func (lw *LTSVOut) last() {
+	lw.writer.Flush()
 }

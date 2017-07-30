@@ -1,31 +1,36 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
-	"fmt"
 )
 
-func (trdsql TRDSQL) jsonWrite(rows *sql.Rows) error {
-	defer rows.Close()
-	writer := json.NewEncoder(trdsql.outStream)
-	writer.SetIndent("", "  ")
-	columns, err := rows.Columns()
-	if err != nil {
-		return fmt.Errorf("ERROR: Rows %s", err)
-	}
+// JSONOut provides methods of the Output interface
+type JSONOut struct {
+	writer  *json.Encoder
+	results []map[string]string
+}
 
-	results := make([]map[string]string, 0)
-	err = write(rows, columns, func(values []interface{}) {
-		m := make(map[string]string, len(columns))
-		for i, col := range values {
-			m[columns[i]] = valString(col)
-		}
-		results = append(results, m)
-	})
-	if err != nil {
-		return err
+func (trdsql TRDSQL) jsonOutNew() Output {
+	js := &JSONOut{}
+	js.writer = json.NewEncoder(trdsql.outStream)
+	js.writer.SetIndent("", "  ")
+	return js
+}
+
+func (js *JSONOut) first(scanArgs []interface{}, columns []string) error {
+	js.results = make([]map[string]string, 0)
+	return nil
+}
+
+func (js *JSONOut) rowWrite(values []interface{}, columns []string) error {
+	m := make(map[string]string, len(columns))
+	for i, col := range values {
+		m[columns[i]] = valString(col)
 	}
-	err = writer.Encode(results)
-	return err
+	js.results = append(js.results, m)
+	return nil
+}
+
+func (js *JSONOut) last() {
+	js.writer.Encode(js.results)
 }
