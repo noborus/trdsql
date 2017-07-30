@@ -2,10 +2,8 @@ package main
 
 import (
 	"database/sql"
-	"encoding/csv"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"strconv"
 	"strings"
@@ -13,7 +11,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/najeira/ltsv"
 )
 
 // DDB is *sql.DB wrapper.
@@ -55,56 +52,6 @@ func (db *DDB) ImportPrepare(table string, header []string, head bool) error {
 
 	if err != nil {
 		return fmt.Errorf("ERROR INSERT Prepare: %s", err)
-	}
-	return nil
-}
-
-func (db *DDB) csvImport(reader *csv.Reader, header []string, head bool) error {
-	list := make([]interface{}, len(header))
-	for i := range header {
-		list[i] = header[i]
-	}
-	if !head {
-		rowImport(db.stmt, list)
-	}
-
-	for {
-		record, err := reader.Read()
-		if err == io.EOF {
-			break
-		} else {
-			if err != nil {
-				return fmt.Errorf("ERROR Read: %s", err)
-			}
-		}
-		for i := 0; len(list) > i && len(record) > i; i++ {
-			list[i] = record[i]
-		}
-		rowImport(db.stmt, list)
-	}
-	return nil
-}
-
-func (db *DDB) ltsvImport(reader *ltsv.Reader, first map[string]string, header []string) error {
-	list := make([]interface{}, len(header))
-	for i := range header {
-		list[i] = first[header[i]]
-	}
-	rowImport(db.stmt, list)
-
-	for {
-		record, err := reader.Read()
-		if err == io.EOF {
-			break
-		} else {
-			if err != nil {
-				return fmt.Errorf("ERROR Read: %s", err)
-			}
-		}
-		for i := range header {
-			list[i] = record[header[i]]
-		}
-		rowImport(db.stmt, list)
 	}
 	return nil
 }

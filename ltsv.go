@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"io"
 	"log"
 
 	"github.com/najeira/ltsv"
@@ -58,6 +59,30 @@ func keys(m map[string]string) []string {
 		ks = append(ks, k)
 	}
 	return ks
+}
+
+func (db *DDB) ltsvImport(reader *ltsv.Reader, first map[string]string, header []string) error {
+	list := make([]interface{}, len(header))
+	for i := range header {
+		list[i] = first[header[i]]
+	}
+	rowImport(db.stmt, list)
+
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		} else {
+			if err != nil {
+				return fmt.Errorf("ERROR Read: %s", err)
+			}
+		}
+		for i := range header {
+			list[i] = record[header[i]]
+		}
+		rowImport(db.stmt, list)
+	}
+	return nil
 }
 
 func (trdsql TRDSQL) ltsvWrite(rows *sql.Rows) error {

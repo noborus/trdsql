@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/csv"
 	"fmt"
+	"io"
 	"log"
 	"strings"
 )
@@ -57,6 +58,32 @@ func (trdsql TRDSQL) csvReader(db *DDB, sqlstr string, tablename string) (string
 	}
 	db.csvImport(reader, header, trdsql.ihead)
 	return sqlstr, nil
+}
+
+func (db *DDB) csvImport(reader *csv.Reader, header []string, head bool) error {
+	list := make([]interface{}, len(header))
+	for i := range header {
+		list[i] = header[i]
+	}
+	if !head {
+		rowImport(db.stmt, list)
+	}
+
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		} else {
+			if err != nil {
+				return fmt.Errorf("ERROR Read: %s", err)
+			}
+		}
+		for i := 0; len(list) > i && len(record) > i; i++ {
+			list[i] = record[i]
+		}
+		rowImport(db.stmt, list)
+	}
+	return nil
 }
 
 func (trdsql TRDSQL) csvWrite(rows *sql.Rows) error {
