@@ -9,6 +9,8 @@ import (
 type TRDSQL struct {
 	outStream io.Writer
 	errStream io.Writer
+	driver    string
+	dsn       string
 	iguess    bool
 	iltsv     bool
 	inSep     string

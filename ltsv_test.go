@@ -7,20 +7,6 @@ import (
 	"github.com/najeira/ltsv"
 )
 
-func TestStdinLtsvOpen(t *testing.T) {
-	_, error := ltsvOpen("-", "\t", 0)
-	if error != nil {
-		t.Error(`Stdin csvOpen error`)
-	}
-}
-
-func TestFileLtsvOpen(t *testing.T) {
-	f, _ := ltsvOpen("`not_file_dummy.ltsv`", "\t", 0)
-	if f != nil {
-		t.Error(`not_file_dummy.cltsv Open error`)
-	}
-}
-
 func TestLtsvRead(t *testing.T) {
 	const ltsvStream = `
 ID:1	name:testa
@@ -31,5 +17,17 @@ ID:2	name:testb
 	r, _ := reader.Read()
 	if r["ID"] != "1" || r["name"] != "testa" {
 		t.Error("invalid value", r["ID"])
+	}
+}
+
+func TestLtsvInputNew(t *testing.T) {
+	trdsql := trdsqlNew()
+	file, err := tFileOpen("testdata/test.ltsv")
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = trdsql.ltsvInputNew(file)
+	if err != nil {
+		t.Error(`ltsvInputNew error`)
 	}
 }

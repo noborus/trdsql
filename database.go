@@ -2,18 +2,14 @@ package main
 
 import (
 	"database/sql"
-	"encoding/csv"
 	"errors"
 	"fmt"
-	"io"
-	"log"
 	"strconv"
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/najeira/ltsv"
 )
 
 // DDB is *sql.DB wrapper.
@@ -29,11 +25,12 @@ type DDB struct {
 func rowImport(stmt *sql.Stmt, list []interface{}) {
 	_, err := stmt.Exec(list...)
 	if err != nil {
-		log.Println(err)
+		debug.Printf("%s\n", err)
 	}
 }
 
-func (db *DDB) ImportPrepare(table string, header []string, head bool) error {
+// InsertPrepare is executes SQL syntax INSERT with Prepare
+func (db *DDB) InsertPrepare(table string, header []string, head bool) error {
 	columns := make([]string, len(header))
 	place := make([]string, len(header))
 	for i := range header {
@@ -59,56 +56,7 @@ func (db *DDB) ImportPrepare(table string, header []string, head bool) error {
 	return nil
 }
 
-func (db *DDB) csvImport(reader *csv.Reader, header []string, head bool) error {
-	list := make([]interface{}, len(header))
-	for i := range header {
-		list[i] = header[i]
-	}
-	if !head {
-		rowImport(db.stmt, list)
-	}
-
-	for {
-		record, err := reader.Read()
-		if err == io.EOF {
-			break
-		} else {
-			if err != nil {
-				return fmt.Errorf("ERROR Read: %s", err)
-			}
-		}
-		for i := 0; len(list) > i && len(record) > i; i++ {
-			list[i] = record[i]
-		}
-		rowImport(db.stmt, list)
-	}
-	return nil
-}
-
-func (db *DDB) ltsvImport(reader *ltsv.Reader, first map[string]string, header []string) error {
-	list := make([]interface{}, len(header))
-	for i := range header {
-		list[i] = first[header[i]]
-	}
-	rowImport(db.stmt, list)
-
-	for {
-		record, err := reader.Read()
-		if err == io.EOF {
-			break
-		} else {
-			if err != nil {
-				return fmt.Errorf("ERROR Read: %s", err)
-			}
-		}
-		for i := range header {
-			list[i] = record[header[i]]
-		}
-		rowImport(db.stmt, list)
-	}
-	return nil
-}
-
+// Connect is connects to the database
 func Connect(driver, dsn string) (*DDB, error) {
 	var db DDB
 	var err error
@@ -126,11 +74,13 @@ func Connect(driver, dsn string) (*DDB, error) {
 	return &db, err
 }
 
+// Disconnect is disconnect the database
 func (db *DDB) Disconnect() error {
 	err := db.Close()
 	return err
 }
 
+// Create is create a temporary table
 func (db *DDB) Create(table string, header []string, head bool) error {
 	var sqlstr string
 	columns := make([]string, len(header))
@@ -148,15 +98,16 @@ func (db *DDB) Create(table string, header []string, head bool) error {
 	return err
 }
 
+// Select is executes SQL select statements
 func (db *DDB) Select(sqlstr string) (*sql.Rows, error) {
 	sqlstr = strings.TrimSpace(sqlstr)
 	if sqlstr == "" {
-		return nil, errors.New("ERROR: no SQL statement")
+		return nil, errors.New("no SQL statement")
 	}
 	debug.Printf(sqlstr)
 	rows, err := db.Query(sqlstr)
 	if err != nil {
-		return rows, fmt.Errorf("ERROR: %s [%s]", err, sqlstr)
+		return rows, fmt.Errorf("%s\n[%s]", err, sqlstr)
 	}
 	return rows, nil
 }

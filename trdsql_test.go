@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"log"
 	"testing"
 )
 
@@ -26,6 +27,12 @@ var outformat = []string{
 	"-oraw",
 }
 
+func trdsqlNew() *TRDSQL {
+	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
+	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	return trdsql
+}
+
 func TestRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
 	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
@@ -36,9 +43,11 @@ func TestRun(t *testing.T) {
 			if trdsql.Run(args) != 0 {
 				t.Errorf("trdsql error.")
 			}
+			t.Log(c, outStream.String())
 			if outStream.String() == "" {
-				t.Fatalf("trdsql error :%s", trdsql.outStream)
+				t.Fatalf("trdsql error :%s:%s", c, trdsql.outStream)
 			}
+			outStream.Reset()
 		}
 	}
 }
@@ -102,5 +111,31 @@ func TestGuessExtension(t *testing.T) {
 	}
 	if guessExtension("test.csv") != false {
 		t.Errorf("guessExtension error.")
+	}
+}
+
+func TestNoFrom(t *testing.T) {
+	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
+	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	args := []string{"trdsql", "SELECT 1+1"}
+	if trdsql.Run(args) != 0 {
+		t.Errorf("trdsql error.")
+	}
+	if outStream.String() != "2\n" {
+		t.Fatalf("trdsql error :%s", trdsql.outStream)
+	}
+}
+
+func TestFromFunc(t *testing.T) {
+	var buf bytes.Buffer
+	log.SetOutput(&buf)
+	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
+	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	args := []string{"trdsql", "SELECT * FROM func()"}
+	if trdsql.Run(args) == 0 {
+		t.Errorf("trdsql error.")
+	}
+	if buf.String() == "" {
+		t.Errorf("Should error.")
 	}
 }

@@ -2,34 +2,47 @@ package main
 
 import (
 	"bufio"
-	"database/sql"
 	"fmt"
 	"strconv"
 	"strings"
 )
 
-func (trdsql TRDSQL) rawWrite(rows *sql.Rows) error {
-	defer rows.Close()
-	writer := bufio.NewWriter(trdsql.outStream)
-	sep, err := strconv.Unquote(`"` + trdsql.outSep + `"`)
-	if err != nil {
-		return fmt.Errorf("ERROR: Delimiter [%s]:%s", trdsql.outSep, err)
-	}
-	columns, err := rows.Columns()
-	if err != nil {
-		return fmt.Errorf("ERROR: Rows %s", err)
-	}
-	if trdsql.outHeader {
-		fmt.Fprint(writer, strings.Join(columns, sep), "\n")
-	}
+// RawOut provides methods of the Output interface
+type RawOut struct {
+	writer    *bufio.Writer
+	results   []string
+	sep       string
+	outHeader bool
+}
 
-	results := make([]string, len(columns))
-	err = write(rows, columns, func(values []interface{}) {
-		for i, col := range values {
-			results[i] = valString(col)
-		}
-		fmt.Fprint(writer, strings.Join(results, sep), "\n")
-	})
-	writer.Flush()
-	return err
+func (trdsql TRDSQL) rawOutNew() Output {
+	var err error
+	raw := &RawOut{}
+	raw.writer = bufio.NewWriter(trdsql.outStream)
+	raw.sep, err = strconv.Unquote(`"` + trdsql.outSep + `"`)
+	if err != nil {
+		debug.Printf("%s\n", err)
+	}
+	raw.outHeader = trdsql.outHeader
+	return raw
+}
+
+func (raw *RawOut) first(scanArgs []interface{}, columns []string) error {
+	if raw.outHeader {
+		fmt.Fprint(raw.writer, strings.Join(columns, raw.sep), "\n")
+	}
+	raw.results = make([]string, len(columns))
+	return nil
+}
+
+func (raw *RawOut) rowWrite(values []interface{}, columns []string) error {
+	for i, col := range values {
+		raw.results[i] = valString(col)
+	}
+	fmt.Fprint(raw.writer, strings.Join(raw.results, raw.sep), "\n")
+	return nil
+}
+
+func (raw *RawOut) last() {
+	raw.writer.Flush()
 }
