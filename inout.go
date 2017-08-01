@@ -44,6 +44,9 @@ func (trdsql TRDSQL) makeTable(db *DDB, tablename string, sqlstr string) (string
 	}
 	frow := false
 	file, err := tFileOpen(tablename)
+	if err != nil {
+		return sqlstr, err
+	}
 	if ltsv {
 		trdsql.ihead = true
 		frow = true
