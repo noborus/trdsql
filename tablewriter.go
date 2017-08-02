@@ -13,6 +13,7 @@ type TwOut struct {
 func (trdsql TRDSQL) twOutNew() Output {
 	tw := &TwOut{}
 	tw.writer = tablewriter.NewWriter(trdsql.outStream)
+	tw.writer.SetAutoFormatHeaders(false)
 	if trdsql.omd {
 		tw.writer.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 		tw.writer.SetCenterSeparator("|")
