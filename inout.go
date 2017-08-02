@@ -15,7 +15,7 @@ type Input interface {
 	rowRead([]interface{}) ([]interface{}, error)
 }
 
-func (trdsql TRDSQL) dbimport(db *DDB, sqlstr string) (string, error) {
+func (trdsql *TRDSQL) dbimport(db *DDB, sqlstr string) (string, error) {
 	var err error
 	tablenames := sqlparse(sqlstr)
 	if len(tablenames) == 0 {
@@ -23,7 +23,7 @@ func (trdsql TRDSQL) dbimport(db *DDB, sqlstr string) (string, error) {
 		debug.Printf("table not found\n")
 	}
 	for _, tablename := range tablenames {
-		sqlstr, err = trdsql.makeTable(db, tablename, sqlstr)
+		sqlstr, err = trdsql.importTable(db, tablename, sqlstr)
 		if err != nil {
 			debug.Printf("file not found %s", tablename)
 			err = nil
@@ -33,48 +33,41 @@ func (trdsql TRDSQL) dbimport(db *DDB, sqlstr string) (string, error) {
 	return sqlstr, err
 }
 
-func (trdsql TRDSQL) makeTable(db *DDB, tablename string, sqlstr string) (string, error) {
-	var input Input
-
-	ltsv := false
-	if trdsql.iltsv {
-		ltsv = true
-	} else if trdsql.iguess {
-		ltsv = guessExtension(tablename)
-	}
-	frow := false
-	file, err := tFileOpen(tablename)
+func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (string, error) {
+	input, err := trdsql.fileInput(tablename)
 	if err != nil {
 		return sqlstr, err
 	}
-	if ltsv {
-		trdsql.ihead = true
-		frow = true
-		input, err = trdsql.ltsvInputNew(file)
-	} else {
-		frow = !trdsql.ihead
-		input, err = trdsql.csvInputNew(file)
-	}
-	if err != nil {
-		return sqlstr, err
-	}
-
-	var list []interface{}
+	skip := make([]interface{}, 1)
 	for i := 0; i < trdsql.iskip; i++ {
-		r, _ := input.rowRead(list)
+		r, _ := input.rowRead(skip)
 		debug.Printf("Skip row:%s\n", r)
 	}
 	rtable := db.escapetable(tablename)
 	sqlstr = db.rewrite(sqlstr, tablename, rtable)
-	var header []string
-	header, err = input.firstRead(rtable)
-	db.Create(rtable, header, trdsql.ihead)
-	err = db.InsertPrepare(rtable, header, trdsql.ihead)
+	var first []string
+	first, err = input.firstRead(rtable)
+	header := make([]string, len(first))
+	for i := range first {
+		if !trdsql.ihead || first[i] == "" {
+			header[i] = "c" + strconv.Itoa(i+1)
+		} else {
+			header[i] = first[i]
+		}
+	}
+	db.Create(rtable, header)
+	err = db.InsertPrepare(rtable, header)
 	if err != nil {
 		return sqlstr, err
 	}
-	list = make([]interface{}, len(header))
-	if frow {
+	err = trdsql.importData(db, input, len(header))
+	return sqlstr, err
+}
+
+func (trdsql *TRDSQL) importData(db *DDB, input Input, clen int) error {
+	var err error
+	list := make([]interface{}, clen)
+	if trdsql.ifrow {
 		list = input.firstRow(list)
 		rowImport(db.stmt, list)
 	}
@@ -85,12 +78,39 @@ func (trdsql TRDSQL) makeTable(db *DDB, tablename string, sqlstr string) (string
 			break
 		} else {
 			if err != nil {
-				return sqlstr, fmt.Errorf("ERROR Read: %s", err)
+				return fmt.Errorf("ERROR Read: %s", err)
 			}
 		}
 		rowImport(db.stmt, list)
 	}
-	return sqlstr, nil
+	return nil
+}
+
+func (trdsql *TRDSQL) fileInput(tablename string) (Input, error) {
+	var input Input
+	trdsql.ifrow = false
+	ltsv := false
+	if trdsql.iltsv {
+		ltsv = true
+	} else if trdsql.iguess {
+		ltsv = guessExtension(tablename)
+	}
+	file, err := tFileOpen(tablename)
+	if err != nil {
+		return nil, err
+	}
+	if ltsv {
+		trdsql.ihead = true
+		trdsql.ifrow = true
+		input, err = trdsql.ltsvInputNew(file)
+	} else {
+		trdsql.ifrow = !trdsql.ihead
+		input, err = trdsql.csvInputNew(file)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return input, nil
 }
 
 // Output is database export
@@ -100,7 +120,7 @@ type Output interface {
 	last()
 }
 
-func (trdsql TRDSQL) dbexport(db *DDB, sqlstr string, output Output) error {
+func (trdsql *TRDSQL) dbexport(db *DDB, sqlstr string, output Output) error {
 	rows, err := db.Select(sqlstr)
 	if err != nil {
 		return err

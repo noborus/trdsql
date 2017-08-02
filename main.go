@@ -16,6 +16,7 @@ type TRDSQL struct {
 	inSep     string
 	ihead     bool
 	iskip     int
+	ifrow     bool
 	outHeader bool
 	omd       bool
 	outSep    string

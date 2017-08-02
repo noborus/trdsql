@@ -30,15 +30,11 @@ func rowImport(stmt *sql.Stmt, list []interface{}) {
 }
 
 // InsertPrepare is executes SQL syntax INSERT with Prepare
-func (db *DDB) InsertPrepare(table string, header []string, head bool) error {
+func (db *DDB) InsertPrepare(table string, header []string) error {
 	columns := make([]string, len(header))
 	place := make([]string, len(header))
 	for i := range header {
-		if head {
-			columns[i] = db.escape + header[i] + db.escape
-		} else {
-			columns[i] = "c" + strconv.Itoa(i+1)
-		}
+		columns[i] = db.escape + header[i] + db.escape
 		if db.driver == "postgres" {
 			place[i] = "$" + strconv.Itoa(i+1)
 		} else {
@@ -81,15 +77,11 @@ func (db *DDB) Disconnect() error {
 }
 
 // Create is create a temporary table
-func (db *DDB) Create(table string, header []string, head bool) error {
+func (db *DDB) Create(table string, header []string) error {
 	var sqlstr string
 	columns := make([]string, len(header))
 	for i := 0; i < len(header); i++ {
-		if head {
-			columns[i] = db.escape + header[i] + db.escape + " text"
-		} else {
-			columns[i] = "c" + strconv.Itoa(i+1) + " text"
-		}
+		columns[i] = db.escape + header[i] + db.escape + " text"
 	}
 	sqlstr = "CREATE TEMPORARY TABLE "
 	sqlstr = sqlstr + table + " ( " + strings.Join(columns, ",") + " );"
