@@ -106,10 +106,10 @@ func TestQueryfileRun(t *testing.T) {
 }
 
 func TestGuessExtension(t *testing.T) {
-	if guessExtension("test.ltsv") != true {
+	if !guessExtension("test.ltsv") {
 		t.Errorf("guessExtension error.")
 	}
-	if guessExtension("test.csv") != false {
+	if guessExtension("test.csv") {
 		t.Errorf("guessExtension error.")
 	}
 }

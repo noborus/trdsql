@@ -6,17 +6,12 @@ import (
 
 func IsSeparator(s string) bool {
 	r, _ := getSeparator(s)
-	if r > 0 {
-		return true
-	}
-	return false
+	return (r > 0)
 }
+
 func IsNotSeparator() bool {
 	r, _ := getSeparator("false")
-	if r == ',' {
-		return true
-	}
-	return false
+	return (r == ',')
 }
 
 func TestGetSeparator(t *testing.T) {

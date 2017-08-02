@@ -9,7 +9,6 @@ import (
 type CSVIn struct {
 	reader *csv.Reader
 	header []string
-	ihead  bool
 }
 
 // CSVOut provides methods of the Output interface
@@ -25,11 +24,7 @@ func (trdsql TRDSQL) csvInputNew(file *os.File) (Input, error) {
 	cr.reader = csv.NewReader(file)
 	cr.reader.FieldsPerRecord = -1 // no check count
 	cr.reader.TrimLeadingSpace = true
-	cr.ihead = trdsql.ihead
 	cr.reader.Comma, err = getSeparator(trdsql.inSep)
-	if err != nil {
-		return cr, err
-	}
 	return cr, err
 }
 
