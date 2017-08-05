@@ -84,6 +84,7 @@ $ trdsql "SELECT * FROM test.csv"
 ```
 
 You can also save the SQL in a file and specify the file.
+The default is CSV, so you can omit -ocsv.
 
 ```sh
 $ trdsql -q test.sql
@@ -235,6 +236,25 @@ $ trdsql -omd "SELECT * FROM test.csv"
 |  1 | Orange |
 |  2 | Melon  |
 |  3 | Apple  |
+```
+
+### Vertical format
+
+Vertical format outputs "column name | value" vertically
+
+```
+$ trdsql -ovf "SELECT * FROM test.csv"
+```
+```
+---[ 1]----------------------------------------------------------------
+  c1 | 1
+  c2 | Orange
+---[ 2]----------------------------------------------------------------
+  c1 | 2
+  c2 | Melon
+---[ 3]----------------------------------------------------------------
+  c1 | 3
+  c2 | Apple
 ```
 
 ### SQL function
@@ -396,7 +416,19 @@ You can specify driver and dsn in the configuration file.
 Unix like.
 ```
 $HOME/.config/trdsql/config.json
+
 ```
+Windows (ex).
+```
+C:\Users\{"User"}\AppData\Roaming\trdsql\config.json
+```
+
+Or you can specify the file with the -config option/
+
+```
+$ trdsql -config config.json "SELECT * FROM test.csv"
+```
+
 
  sample: [config.json](config.json.sample)
 
