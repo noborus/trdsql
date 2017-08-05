@@ -7,3 +7,6 @@ import:
 - package: github.com/najeira/ltsv
 - package: github.com/olekukonko/tablewriter
 - package: github.com/mattn/go-runewidth
+- package: golang.org/x/crypto
+  subpackages:
+  - ssh/terminal

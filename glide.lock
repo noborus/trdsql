@@ -1,5 +1,5 @@
-hash: 0d0433f2b4fd252b6ac707f1e79fca7d281f3244a61ee3bcddb8f93a14003f4d
-updated: 2017-07-24T02:01:32.594875928+09:00
+hash: 877f94f80f0bfa482d2e6e4be6c00559cb5bec3b1fb1cf1123ca1d8fa4c32c23
+updated: 2017-08-06T01:36:14.605773876+09:00
 imports:
 - name: github.com/go-sql-driver/mysql
   version: a0583e0143b1624142adab07e0e97fe106d99561
@@ -17,8 +17,17 @@ imports:
   version: be5337e7b39e64e5f91445ce7e721888dbab7387
 - name: github.com/xwb1989/sqlparser
   version: a9cdf22bd561e715bba34ee228cb1c06bfa2719c
+- name: golang.org/x/crypto
+  version: 42ff06aea7c329876e5a0fe94acc96902accf0ad
+  subpackages:
+  - ssh/terminal
 - name: golang.org/x/net
   version: b3756b4b77d7b13260a0a2ec658753cf48922eac
   subpackages:
   - context
+- name: golang.org/x/sys
+  version: d8f5ea21b9295e315e612b4bcf4bedea93454d4d
+  subpackages:
+  - unix
+  - windows
 testImports: []
