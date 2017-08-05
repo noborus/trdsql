@@ -45,16 +45,8 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 	}
 	rtable := db.escapetable(tablename)
 	sqlstr = db.rewrite(sqlstr, tablename, rtable)
-	var first []string
-	first, err = input.firstRead(rtable)
-	header := make([]string, len(first))
-	for i := range first {
-		if !trdsql.ihead || first[i] == "" {
-			header[i] = "c" + strconv.Itoa(i+1)
-		} else {
-			header[i] = first[i]
-		}
-	}
+	var header []string
+	header, err = input.firstRead(rtable)
 	db.Create(rtable, header)
 	err = db.InsertPrepare(rtable, header)
 	if err != nil {
@@ -100,7 +92,6 @@ func (trdsql *TRDSQL) fileInput(tablename string) (Input, error) {
 		return nil, err
 	}
 	if ltsv {
-		trdsql.ihead = true
 		trdsql.ifrow = true
 		input, err = trdsql.ltsvInputNew(file)
 	} else {
@@ -115,7 +106,7 @@ func (trdsql *TRDSQL) fileInput(tablename string) (Input, error) {
 
 // Output is database export
 type Output interface {
-	first([]interface{}, []string) error
+	first([]string) error
 	rowWrite([]interface{}, []string) error
 	last()
 }
@@ -136,7 +127,7 @@ func (trdsql *TRDSQL) dbexport(db *DDB, sqlstr string, output Output) error {
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
-	err = output.first(scanArgs, columns)
+	err = output.first(columns)
 	if err != nil {
 		return err
 	}

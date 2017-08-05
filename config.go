@@ -19,16 +19,21 @@ type config struct {
 	Database map[string]database `json:"database"`
 }
 
-func configOpen() (cfg io.Reader) {
-	home := os.Getenv("HOME")
-	if home == "" && runtime.GOOS == "windows" {
-		home = os.Getenv("APPDATA")
+func configOpen(config string) io.Reader {
+	fname := ""
+	if config != "" {
+		fname = config
+	} else if runtime.GOOS == "windows" {
+		fname = filepath.Join(os.Getenv("APPDATA"), "trdsql", "config.json")
+	} else {
+		fname = filepath.Join(os.Getenv("HOME"), ".config", "trdsql", "config.json")
 	}
-	fname := filepath.Join(home, ".config", "trdsql", "config.json")
 	cfg, err := os.Open(fname)
 	if err != nil {
+		debug.Printf("configOpen: %s", err.Error())
 		return nil
 	}
+	debug.Printf("config found: %s", fname)
 	return cfg
 }
 

@@ -99,7 +99,7 @@ func (db *DDB) Select(sqlstr string) (*sql.Rows, error) {
 	debug.Printf(sqlstr)
 	rows, err := db.Query(sqlstr)
 	if err != nil {
-		return rows, fmt.Errorf("%s\n[%s]", err, sqlstr)
+		return rows, fmt.Errorf("SQL:%s\n[%s]", err, sqlstr)
 	}
 	return rows, nil
 }
@@ -129,8 +129,8 @@ func (db *DDB) rewrite(sqlstr string, oldname string, newname string) (rewrite s
 func sqlparse(sqlstr string) []string {
 	var tablenames []string
 	word := strings.Fields(sqlstr)
-	for i := 0; i < len(word); i++ {
-		if element := strings.ToUpper(word[i]); element == "FROM" || element == "JOIN" {
+	for i, w := range word {
+		if element := strings.ToUpper(w); element == "FROM" || element == "JOIN" {
 			if (i + 1) < len(word) {
 				tablenames = append(tablenames, word[i+1])
 			}

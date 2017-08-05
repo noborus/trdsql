@@ -11,15 +11,15 @@ type TRDSQL struct {
 	errStream io.Writer
 	driver    string
 	dsn       string
+	inSep     string
+	outSep    string
+	iskip     int
 	iguess    bool
 	iltsv     bool
-	inSep     string
 	ihead     bool
-	iskip     int
 	ifrow     bool
 	outHeader bool
 	omd       bool
-	outSep    string
 }
 
 func main() {

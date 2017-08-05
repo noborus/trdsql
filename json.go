@@ -17,7 +17,7 @@ func (trdsql TRDSQL) jsonOutNew() Output {
 	return js
 }
 
-func (js *JSONOut) first(scanArgs []interface{}, columns []string) error {
+func (js *JSONOut) first(columns []string) error {
 	js.results = make([]map[string]string, 0)
 	return nil
 }

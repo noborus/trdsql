@@ -1,16 +1,17 @@
 package main
 
 import (
-	"os"
+	"io"
+	"strings"
 
 	"github.com/najeira/ltsv"
 )
 
 // LTSVIn provides methods of the Input interface
 type LTSVIn struct {
-	reader   *ltsv.Reader
-	firstrow map[string]string
-	header   []string
+	reader *ltsv.Reader
+	frow   map[string]string
+	header []string
 }
 
 // LTSVOut provides methods of the Output interface
@@ -19,10 +20,10 @@ type LTSVOut struct {
 	results map[string]string
 }
 
-func (trdsql TRDSQL) ltsvInputNew(file *os.File) (Input, error) {
+func (trdsql TRDSQL) ltsvInputNew(r io.Reader) (Input, error) {
 	var err error
 	lr := &LTSVIn{}
-	lr.reader = ltsv.NewReader(file)
+	lr.reader = ltsv.NewReader(r)
 	lr.reader.Delimiter, err = getSeparator("\t")
 	if err != nil {
 		return nil, err
@@ -32,17 +33,18 @@ func (trdsql TRDSQL) ltsvInputNew(file *os.File) (Input, error) {
 
 func (lr *LTSVIn) firstRead(tablename string) ([]string, error) {
 	var err error
-	lr.firstrow, err = lr.reader.Read()
+	lr.frow, err = lr.reader.Read()
 	if err != nil {
 		return nil, err
 	}
-	lr.header = keys(lr.firstrow)
+	lr.header = keys(lr.frow)
+	debug.Printf("Column Name: [%v]", strings.Join(lr.header, ","))
 	return lr.header, nil
 }
 
 func (lr *LTSVIn) firstRow(list []interface{}) []interface{} {
 	for i := range lr.header {
-		list[i] = lr.firstrow[lr.header[i]]
+		list[i] = lr.frow[lr.header[i]]
 	}
 	return list
 }
@@ -73,7 +75,7 @@ func (trdsql TRDSQL) ltsvOutNew() Output {
 	return lw
 }
 
-func (lw *LTSVOut) first(scanArgs []interface{}, columns []string) error {
+func (lw *LTSVOut) first(columns []string) error {
 	lw.results = make(map[string]string, len(columns))
 	return nil
 }

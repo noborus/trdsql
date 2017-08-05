@@ -21,12 +21,13 @@ func (trdsql TRDSQL) twOutNew() Output {
 	return tw
 }
 
-func (tw *TwOut) first(scanArgs []interface{}, columns []string) error {
+func (tw *TwOut) first(columns []string) error {
 	tw.writer.SetHeader(columns)
 	tw.results = make([]string, len(columns))
 
 	return nil
 }
+
 func (tw *TwOut) rowWrite(values []interface{}, columns []string) error {
 	for i, col := range values {
 		tw.results[i] = valString(col)

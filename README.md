@@ -11,15 +11,18 @@ The difference from these tools is that the syntax of PostgreSQL or MySQL can be
 You need to prepare a database server if you want to use PostgreSQL or MySQL syntax.
 
 ## INSTALL
+
 ```
 go get -u github.com/noborus/trdsql
 ```
+Or download binaries from the [releases](https://github.com/noborus/trdsql/releases) page(Linux/Windows/macOS).
+
 ## Usage
 
 ```
-Usage: trdsql [OPTIONS] [SQL(SELECT...)]
-
 Options:
+  -config string
+    	Specify db name of the setting.
   -db string
     	Specify db name of the setting.
   -debug
@@ -28,18 +31,22 @@ Options:
     	database driver.  [ mysql | postgres | sqlite3 ]
   -dsn string
     	database connection option.
+  -help
+    	display usage information.
   -id string
     	Field delimiter for input. (default ",")
   -ig
     	Guess format from extension.
   -ih
-    	The first line is interpreted as column names.
+    	The first line is interpreted as column names(CSV only).
   -iltsv
     	LTSV format for input.
   -is int
     	Skip header row.
   -oat
     	ASCII Table format for output.
+  -ocsv
+    	CSV format for output. (default true)
   -od string
     	Field delimiter for output. (default ",")
   -oh
@@ -52,6 +59,8 @@ Options:
     	Mark Down format for output.
   -oraw
     	Raw format for output.
+  -ovf
+    	Vertical format for output.
   -q string
     	Read query from the provided filename.
   -version

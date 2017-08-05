@@ -54,12 +54,3 @@ func TestCsvOutNew(t *testing.T) {
 		t.Error(`csvOut error`)
 	}
 }
-
-func TestCsvOutNewFalse(t *testing.T) {
-	trdsql := trdsqlNew()
-	trdsql.outSep = "**"
-	out := trdsql.csvOutNew()
-	if out == nil {
-		t.Error(`csvOut error`)
-	}
-}

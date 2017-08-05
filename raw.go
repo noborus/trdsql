@@ -27,7 +27,7 @@ func (trdsql TRDSQL) rawOutNew() Output {
 	return raw
 }
 
-func (raw *RawOut) first(scanArgs []interface{}, columns []string) error {
+func (raw *RawOut) first(columns []string) error {
 	if raw.outHeader {
 		fmt.Fprint(raw.writer, strings.Join(columns, raw.sep), "\n")
 	}

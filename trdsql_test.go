@@ -10,12 +10,12 @@ const (
 	data = "testdata/"
 )
 
-var tcsv = []string{
-	"test.csv",
-	"testcsv",
-	"abc.csv",
-	"aiu.csv",
-	"hist.csv",
+var tcsv = [][]string{
+	{"test.csv", "1,Orange\n2,Melon\n3,Apple\n"},
+	{"testcsv", "aaaaaaaa\nbbbbbbbb\ncccccccc\n"},
+	{"abc.csv", "a1\na2\n"},
+	{"aiu.csv", "あ\nい\nう\n"},
+	{"hist.csv", "1,2017-7-10\n2,2017-7-10\n2,2017-7-11\n"},
 }
 
 var outformat = []string{
@@ -25,6 +25,7 @@ var outformat = []string{
 	"-omd",
 	"-ojson",
 	"-oraw",
+	"-ovf",
 }
 
 func trdsqlNew() *TRDSQL {
@@ -38,17 +39,33 @@ func TestRun(t *testing.T) {
 	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
 	for _, f := range outformat {
 		for _, c := range tcsv {
-			sql := "SELECT * FROM testdata/" + c
+			sql := "SELECT * FROM " + data + c[0]
 			args := []string{"trdsql", f, sql}
 			if trdsql.Run(args) != 0 {
 				t.Errorf("trdsql error.")
 			}
-			t.Log(c, outStream.String())
+			t.Logf("%s\n%s\n", c[0], outStream.String())
 			if outStream.String() == "" {
-				t.Fatalf("trdsql error :%s:%s", c, trdsql.outStream)
+				t.Fatalf("trdsql error %s:%s:%s", c[0], c[1], trdsql.outStream)
 			}
 			outStream.Reset()
 		}
+	}
+}
+
+func TestCsvRun(t *testing.T) {
+	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
+	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	for _, c := range tcsv {
+		sql := "SELECT * FROM " + data + c[0]
+		args := []string{"trdsql", sql}
+		if trdsql.Run(args) != 0 {
+			t.Errorf("trdsql error.")
+		}
+		if outStream.String() != c[1] {
+			t.Fatalf("trdsql error %s:%s:%s", c[0], c[1], trdsql.outStream)
+		}
+		outStream.Reset()
 	}
 }
 
@@ -61,7 +78,7 @@ func TestLtsvRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
 	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
 	for _, c := range tltsv {
-		sql := "SELECT * FROM testdata/" + c
+		sql := "SELECT * FROM " + data + c
 		args := []string{"trdsql", "-iltsv", sql}
 		if trdsql.Run(args) != 0 {
 			t.Errorf("trdsql error.")
@@ -75,15 +92,22 @@ func TestLtsvRun(t *testing.T) {
 func TestGuessRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
 	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
-	for _, c := range append(tcsv, tltsv...) {
-		sql := "SELECT * FROM testdata/" + c
-		args := []string{"trdsql", "-ig", sql}
-		if trdsql.Run(args) != 0 {
-			t.Errorf("trdsql error.")
-		}
-		if outStream.String() == "" {
-			t.Fatalf("trdsql error :%s", trdsql.outStream)
-		}
+	sql := "SELECT id,name,price FROM testdata/test.ltsv"
+	args := []string{"trdsql", "-ig", sql}
+	if trdsql.Run(args) != 0 {
+		t.Errorf("trdsql error.")
+	}
+	if outStream.String() != "1,Orange,50\n2,Melon,500\n3,Apple,100\n" {
+		t.Fatalf("trdsql error :%s", trdsql.outStream)
+	}
+	sql = "SELECT * FROM testdata/test.csv"
+	args = []string{"trdsql", "-ig", sql}
+	if trdsql.Run(args) != 0 {
+		t.Errorf("trdsql error.")
+	}
+	outs := outStream.String()
+	if outs[0] != '1' {
+		t.Fatalf("trdsql error %s:%s", outs, trdsql.outStream)
 	}
 }
 
