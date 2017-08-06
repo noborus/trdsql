@@ -117,7 +117,6 @@ Options:
 }
 
 func (trdsql *TRDSQL) main(sqlstr string, output Output) int {
-	debug.Printf("driver: %s, dsn: %s", trdsql.driver, trdsql.dsn)
 	db, err := Connect(trdsql.driver, trdsql.dsn)
 	if err != nil {
 		log.Println("ERROR:", err)
