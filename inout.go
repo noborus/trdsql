@@ -25,7 +25,7 @@ func (trdsql *TRDSQL) dbimport(db *DDB, sqlstr string) (string, error) {
 	for _, tablename := range tablenames {
 		sqlstr, err = trdsql.importTable(db, tablename, sqlstr)
 		if err != nil {
-			debug.Printf("file not found %s", tablename)
+			debug.Printf("%s:%s", err, tablename)
 			err = nil
 			continue
 		}
@@ -47,7 +47,13 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 	sqlstr = db.rewrite(sqlstr, tablename, rtable)
 	var header []string
 	header, err = input.firstRead(rtable)
-	db.Create(rtable, header)
+	if err != nil {
+		return sqlstr, err
+	}
+	err = db.Create(rtable, header)
+	if err != nil {
+		return sqlstr, err
+	}
 	err = db.InsertPrepare(rtable, header)
 	if err != nil {
 		return sqlstr, err
