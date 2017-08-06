@@ -15,7 +15,7 @@ type RawOut struct {
 	outHeader bool
 }
 
-func (trdsql TRDSQL) rawOutNew() Output {
+func (trdsql *TRDSQL) rawOutNew() Output {
 	var err error
 	raw := &RawOut{}
 	raw.writer = bufio.NewWriter(trdsql.outStream)

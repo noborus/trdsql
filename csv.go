@@ -22,7 +22,7 @@ type CSVOut struct {
 	outHeader bool
 }
 
-func (trdsql TRDSQL) csvInputNew(r io.Reader) (Input, error) {
+func (trdsql *TRDSQL) csvInputNew(r io.Reader) (Input, error) {
 	var err error
 	cr := &CSVIn{}
 	cr.reader = csv.NewReader(r)
@@ -78,7 +78,7 @@ func (cr *CSVIn) rowRead(list []interface{}) ([]interface{}, error) {
 	return list, nil
 }
 
-func (trdsql TRDSQL) csvOutNew() Output {
+func (trdsql *TRDSQL) csvOutNew() Output {
 	var err error
 	c := &CSVOut{}
 	c.writer = csv.NewWriter(trdsql.outStream)

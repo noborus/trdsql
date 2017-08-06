@@ -10,7 +10,7 @@ type JSONOut struct {
 	results []map[string]string
 }
 
-func (trdsql TRDSQL) jsonOutNew() Output {
+func (trdsql *TRDSQL) jsonOutNew() Output {
 	js := &JSONOut{}
 	js.writer = json.NewEncoder(trdsql.outStream)
 	js.writer.SetIndent("", "  ")

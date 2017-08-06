@@ -20,7 +20,7 @@ type LTSVOut struct {
 	results map[string]string
 }
 
-func (trdsql TRDSQL) ltsvInputNew(r io.Reader) (Input, error) {
+func (trdsql *TRDSQL) ltsvInputNew(r io.Reader) (Input, error) {
 	var err error
 	lr := &LTSVIn{}
 	lr.reader = ltsv.NewReader(r)
@@ -69,7 +69,7 @@ func keys(m map[string]string) []string {
 	return ks
 }
 
-func (trdsql TRDSQL) ltsvOutNew() Output {
+func (trdsql *TRDSQL) ltsvOutNew() Output {
 	lw := &LTSVOut{}
 	lw.writer = ltsv.NewWriter(trdsql.outStream)
 	return lw

@@ -18,7 +18,7 @@ type VfOut struct {
 	count     int
 }
 
-func (trdsql TRDSQL) vfOutNew() Output {
+func (trdsql *TRDSQL) vfOutNew() Output {
 	var err error
 	vf := &VfOut{}
 	vf.writer = bufio.NewWriter(trdsql.outStream)

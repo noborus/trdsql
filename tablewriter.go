@@ -10,7 +10,7 @@ type TwOut struct {
 	results []string
 }
 
-func (trdsql TRDSQL) twOutNew() Output {
+func (trdsql *TRDSQL) twOutNew() Output {
 	tw := &TwOut{}
 	tw.writer = tablewriter.NewWriter(trdsql.outStream)
 	tw.writer.SetAutoFormatHeaders(false)

@@ -32,7 +32,7 @@ var (
 )
 
 // Run is main routine.
-func (trdsql TRDSQL) Run(args []string) int {
+func (trdsql *TRDSQL) Run(args []string) int {
 	var (
 		usage   bool
 		version bool
@@ -116,7 +116,8 @@ Options:
 	return trdsql.main(sqlstr, output)
 }
 
-func (trdsql TRDSQL) main(sqlstr string, output Output) int {
+func (trdsql *TRDSQL) main(sqlstr string, output Output) int {
+	debug.Printf("driver: %s, dsn: %s", trdsql.driver, trdsql.dsn)
 	db, err := Connect(trdsql.driver, trdsql.dsn)
 	if err != nil {
 		log.Println("ERROR:", err)
@@ -178,7 +179,7 @@ func getSQL(rargs []string, query string) string {
 	return sqlstr
 }
 
-func (trdsql TRDSQL) setDB(cfg *config, cdb string, cdriver string, cdsn string) {
+func (trdsql *TRDSQL) setDB(cfg *config, cdb string, cdriver string, cdsn string) {
 	if cdb == "" {
 		cdb = cfg.Db
 	}
