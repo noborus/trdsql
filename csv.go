@@ -26,6 +26,7 @@ func (trdsql *TRDSQL) csvInputNew(r io.Reader) (Input, error) {
 	var err error
 	cr := &CSVIn{}
 	cr.reader = csv.NewReader(r)
+	cr.reader.LazyQuotes = true
 	cr.reader.FieldsPerRecord = -1 // no check count
 	cr.reader.TrimLeadingSpace = true
 	cr.reader.Comma, err = getSeparator(trdsql.inSep)
