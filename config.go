@@ -20,7 +20,7 @@ type config struct {
 }
 
 func configOpen(config string) io.Reader {
-	fname := ""
+	var fname string
 	if config != "" {
 		fname = config
 	} else if runtime.GOOS == "windows" {

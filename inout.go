@@ -63,21 +63,19 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 }
 
 func (trdsql *TRDSQL) importData(db *DDB, input Input, clen int) error {
-	var err error
 	list := make([]interface{}, clen)
 	if trdsql.ifrow {
 		list = input.firstRow(list)
 		rowImport(db.stmt, list)
 	}
+
+	var err error
 	for {
 		list, err = input.rowRead(list)
 		if err == io.EOF {
-			err = nil
 			break
-		} else {
-			if err != nil {
-				return fmt.Errorf("ERROR Read: %s", err)
-			}
+		} else if err != nil {
+			return fmt.Errorf("ERROR Read: %s", err)
 		}
 		rowImport(db.stmt, list)
 	}
@@ -85,18 +83,20 @@ func (trdsql *TRDSQL) importData(db *DDB, input Input, clen int) error {
 }
 
 func (trdsql *TRDSQL) fileInput(tablename string) (Input, error) {
-	var input Input
-	trdsql.ifrow = false
+	file, err := tFileOpen(tablename)
+	if err != nil {
+		return nil, err
+	}
+
 	ltsv := false
 	if trdsql.iltsv {
 		ltsv = true
 	} else if trdsql.iguess {
 		ltsv = guessExtension(tablename)
 	}
-	file, err := tFileOpen(tablename)
-	if err != nil {
-		return nil, err
-	}
+
+	trdsql.ifrow = false
+	var input Input
 	if ltsv {
 		trdsql.ifrow = true
 		input, err = trdsql.ltsvInputNew(file)
@@ -104,10 +104,7 @@ func (trdsql *TRDSQL) fileInput(tablename string) (Input, error) {
 		trdsql.ifrow = !trdsql.ihead
 		input, err = trdsql.csvInputNew(file)
 	}
-	if err != nil {
-		return nil, err
-	}
-	return input, nil
+	return input, err
 }
 
 // Output is database export
