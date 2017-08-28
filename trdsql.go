@@ -55,7 +55,7 @@ func (trdsql *TRDSQL) Run(args []string) int {
 `, os.Args[0])
 	}
 
-	flags.StringVar(&config, "config", config, "Specify db name of the setting.")
+	flags.StringVar(&config, "config", config, "Configuration file location.")
 	flags.StringVar(&cdb, "db", "", "Specify db name of the setting.")
 	flags.StringVar(&cdriver, "driver", "", "database driver.  [ "+strings.Join(sql.Drivers(), " | ")+" ]")
 	flags.StringVar(&cdsn, "dsn", "", "database connection option.")

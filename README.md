@@ -22,7 +22,7 @@ Or download binaries from the [releases](https://github.com/noborus/trdsql/relea
 ```
 Options:
   -config string
-    	Specify db name of the setting.
+      Configuration file location.
   -db string
     	Specify db name of the setting.
   -debug
