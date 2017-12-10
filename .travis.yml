@@ -11,7 +11,7 @@ before_install:
 install:
 - dep ensure
 script:
-- go test $(glide novendor)
+- go test
 before_deploy:
 - mkdir $TRAVIS_BUILD_DIR/dist
 - scripts/build.sh
