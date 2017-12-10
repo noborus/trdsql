@@ -3,13 +3,13 @@ os:
 - linux
 - osx
 go:
-- 1.8
+- 1.9
 before_install:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -y ; sudo apt-get install -y libc6-dev-i386 binutils-mingw-w64-x86-64 gcc-mingw-w64-base gcc-mingw-w64-i686 gcc-mingw-w64-x86-64 ; fi
-- go get github.com/Masterminds/glide
+- go get -u github.com/golang/dep/cmd/dep
 - go get github.com/mitchellh/gox
 install:
-- glide install
+- dep ensure
 script:
 - go test $(glide novendor)
 before_deploy:
