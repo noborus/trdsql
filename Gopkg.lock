@@ -8,9 +8,10 @@
   version = "v1.3"
 
 [[projects]]
+  branch = "master"
   name = "github.com/lib/pq"
   packages = [".","oid"]
-  revision = "dd1fe2071026ce53f36a39112e645b4d4f5793a4"
+  revision = "83612a56d3dd153a94a629cd64925371c9adad78"
 
 [[projects]]
   branch = "master"
@@ -21,8 +22,8 @@
 [[projects]]
   name = "github.com/mattn/go-sqlite3"
   packages = ["."]
-  revision = "ca5e3819723d8eeaf170ad510e7da1d6d2e94a08"
-  version = "v1.2.0"
+  revision = "ed69081a91fd053f17672236b0dd52ba7485e1a3"
+  version = "v1.4.0"
 
 [[projects]]
   branch = "master"
@@ -31,24 +32,28 @@
   revision = "40eb84a5b5d21afa8f26f357445d910c62011166"
 
 [[projects]]
+  branch = "master"
   name = "github.com/olekukonko/tablewriter"
   packages = ["."]
-  revision = "be5337e7b39e64e5f91445ce7e721888dbab7387"
+  revision = "65fec0d89a572b4367094e2058d3ebe667de3b60"
 
 [[projects]]
+  branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "b176d7def5d71bdd214203491f89843ed217f420"
+  revision = "94eea52f7b742c7cbe0b03b22f0c4c8631ece122"
 
 [[projects]]
+  branch = "master"
   name = "golang.org/x/net"
   packages = ["context"]
-  revision = "b3756b4b77d7b13260a0a2ec658753cf48922eac"
+  revision = "dc871a5d77e227f5bbf6545176ef3eeebf87e76e"
 
 [[projects]]
+  branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix","windows"]
-  revision = "d8f5ea21b9295e315e612b4bcf4bedea93454d4d"
+  revision = "b8f5ef32195cae6470b728e8ca677f0dbed1a004"
 
 [solve-meta]
   analyzer-name = "dep"
