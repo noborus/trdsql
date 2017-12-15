@@ -17,61 +17,66 @@ go get -u github.com/noborus/trdsql
 ```
 Or download binaries from the [releases](https://github.com/noborus/trdsql/releases) page(Linux/Windows/macOS).
 
-## Usage
+## Options
 
-```
-Options:
-  -config string
-      Configuration file location.
-  -db string
-    	Specify db name of the setting.
-  -debug
-    	debug print.
-  -driver string
-    	database driver.  [ mysql | postgres | sqlite3 ]
-  -dsn string
-    	database connection option.
-  -help
-    	display usage information.
-  -id string
-    	Field delimiter for input. (default ",")
-  -ig
-    	Guess format from extension.
-  -ih
-    	The first line is interpreted as column names(CSV only).
-  -iltsv
-    	LTSV format for input.
-  -is int
-    	Skip header row.
-  -oat
-    	ASCII Table format for output.
-  -ocsv
-    	CSV format for output. (default true)
-  -od string
-    	Field delimiter for output. (default ",")
-  -oh
-    	Output column name as header.
-  -ojson
-    	JSON format for output.
-  -oltsv
-    	LTSV format for output.
-  -omd
-    	Mark Down format for output.
-  -oraw
-    	Raw format for output.
-  -ovf
-    	Vertical format for output.
-  -q string
-    	Read query from the provided filename.
-  -version
-    	display version information.
-```
+### global
+
+* `-config` **filename**
+        Configuration file location.
+* `-db` **db name**
+        Specify db name of the setting.
+* `-driver` **driver name**
+        database driver.  [ mysql | postgres | sqlite3 ]
+* `-dsn` **dns string**
+        database connection option.
+* `-debug`
+        debug print.
+* `-help`
+        display usage information.
+* `-version`
+        display version information.
+* `-q` **filename**
+        Read query from the provided filename.
+
+### Input format
+
+* `-ih`
+        The first line is interpreted as column names(CSV only).
+* `-id` **delimiter characeter**
+        Field delimiter for input. (default ",")
+* `-ig`
+        Guess format from extension.
+* `-iltsv`
+        LTSV format for input.
+* `-is int`
+        Skip header row.
+
+### Output format
+
+* `-oh`
+        Output column name as header.
+* `-od` **delimiter characeter**
+        Field delimiter for output. (default ",")
+* `-oat`
+        ASCII Table format for output.
+* `-ocsv`
+        CSV format for output. (default true)
+* `-ojson`
+        JSON format for output.
+* `-oltsv`
+        LTSV format for output.
+* `-omd`
+        Mark Down format for output.
+* `-oraw`
+        Raw format for output.
+* `-ovf`
+        Vertical format for output.
 
 ## Example
 
 test.csv file.
 
-```csv
+```CSV
 1,Orange
 2,Melon
 3,Apple
@@ -130,7 +135,7 @@ id:3	name:Apple	price:100
 $ trdsql -iltsv "SELECT * FROM sample.ltsv"
 ```
 
-```
+```CSV
 1,Orange,50
 2,Melon,500
 3,Apple,100
@@ -159,7 +164,8 @@ Output JSON with option -ojson.
 ```sh
 $ trdsql -ojson "SELECT * FROM test.csv"
 ```
-```
+
+```JSON
 [
   {
     "c1": "1",
@@ -215,6 +221,7 @@ You can output ASCII table using [tablewriter](https://github.com/olekukonko/tab
 ```sh
 $ trdsql -oat "SELECT * FROM test.csv"
 ```
+
 ```
 +----+--------+
 | C1 |   C2   |
@@ -230,6 +237,7 @@ You can also output Markdown.
 ```sh
 $ trdsql -omd "SELECT * FROM test.csv"
 ```
+
 ```
 | C1 |   C2   |
 |----|--------|
@@ -242,9 +250,10 @@ $ trdsql -omd "SELECT * FROM test.csv"
 
 Vertical format outputs "column name | value" vertically
 
-```
+```sh
 $ trdsql -ovf "SELECT * FROM test.csv"
 ```
+
 ```
 ---[ 1]----------------------------------------------------------------
   c1 | 1
@@ -270,7 +279,8 @@ The default column names are c1, c2,...
 ```sh
 $ trdsql "SELECT c2,c1 FROM test.csv"
 ```
-```
+
+```CSV
 Orange,1
 Melon,2
 Apple,3
@@ -292,13 +302,13 @@ PID,TTY,TIME,CMD
 You can also JOIN.
 
 user.csv
-```
+```CSV
 1,userA
 2,uesrB
 ```
 
 hist.csv
-```
+```CSV
 1,2017-7-10
 2,2017-7-10
 2,2017-7-11
@@ -326,7 +336,7 @@ The PostgreSQL driver can use the window function.
 ```sh
 $ trdsql -driver postgres -dsn "dbname=test" "SELECT row_number() OVER (ORDER BY c2),c1,c2 FROM test.csv"
 ```
-```
+```CSV
 1,3,Apple
 2,2,Melon
 3,1,Orange
@@ -401,7 +411,7 @@ $ trdsql -driver mysql -dsn "user:password@/test" "SELECT GROUP_CONCAT(c2 ORDER 
 $ trdsql -driver mysql -dsn "user:password@/test" "SELECT c1, SHA2(c2,224) FROM test.csv"
 ```
 
-```
+```CSV
 1,a063876767f00792bac16d0dac57457fc88863709361a1bb33f13dfb
 2,2e7906d37e9523efeefb6fd2bc3be6b3f2991678427bedc296f9ddb6
 3,d0b8d1d417a45c7c58202f55cbb617865f1ef72c606f9bce54322802
@@ -415,7 +425,7 @@ You can specify driver and dsn in the configuration file.
 
 Unix like.
 ```
-$HOME/.config/trdsql/config.json
+${HOME}/.config/trdsql/config.json
 
 ```
 Windows (ex).
@@ -425,7 +435,7 @@ C:\Users\{"User"}\AppData\Roaming\trdsql\config.json
 
 Or you can specify the file with the -config option/
 
-```
+```sh
 $ trdsql -config config.json "SELECT * FROM test.csv"
 ```
 
