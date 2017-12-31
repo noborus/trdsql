@@ -63,6 +63,7 @@ func (trdsql *TRDSQL) Run(args []string) int {
 	flags.StringVar(&cdsn, "dsn", "", "database connection option.")
 	flags.BoolVar(&trdsql.iguess, "ig", false, "Guess format from extension.")
 	flags.BoolVar(&trdsql.iltsv, "iltsv", false, "LTSV format for input.")
+	flags.BoolVar(&trdsql.ijson, "ijson", false, "JSON format for input.")
 	flags.StringVar(&trdsql.inSep, "id", ",", "Field delimiter for input.")
 	flags.StringVar(&trdsql.outSep, "od", ",", "Field delimiter for output.")
 	flags.BoolVar(&trdsql.ihead, "ih", false, "The first line is interpreted as column names(CSV only).")

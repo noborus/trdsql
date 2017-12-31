@@ -89,6 +89,26 @@ func TestLtsvRun(t *testing.T) {
 	}
 }
 
+var tjson = []string{
+	"test.json",
+	"test2.json",
+}
+
+func TestJSONRun(t *testing.T) {
+	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
+	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	for _, c := range tjson {
+		sql := "SELECT * FROM " + data + c
+		args := []string{"trdsql", "-ijson", sql}
+		if trdsql.Run(args) != 0 {
+			t.Errorf("trdsql error.")
+		}
+		if outStream.String() == "" {
+			t.Fatalf("trdsql error :%s", trdsql.outStream)
+		}
+	}
+}
+
 func TestGuessRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
 	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
@@ -130,10 +150,13 @@ func TestQueryfileRun(t *testing.T) {
 }
 
 func TestGuessExtension(t *testing.T) {
-	if !guessExtension("test.ltsv") {
+	if guessExtension("test.ltsv") != LTSV {
 		t.Errorf("guessExtension error.")
 	}
-	if guessExtension("test.csv") {
+	if guessExtension("test.json") != JSON {
+		t.Errorf("guessExtension error.")
+	}
+	if guessExtension("test.csv") != CSV {
 		t.Errorf("guessExtension error.")
 	}
 }

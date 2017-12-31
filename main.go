@@ -16,6 +16,7 @@ type TRDSQL struct {
 	iskip     int
 	iguess    bool
 	iltsv     bool
+	ijson     bool
 	ihead     bool
 	ifrow     bool
 	outHeader bool

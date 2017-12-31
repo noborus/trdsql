@@ -8,6 +8,12 @@ import (
 	"strings"
 )
 
+const (
+	CSV = iota
+	LTSV
+	JSON
+)
+
 // Input is database import
 type Input interface {
 	firstRead(string) ([]string, error)
@@ -88,19 +94,25 @@ func (trdsql *TRDSQL) fileInput(tablename string) (Input, error) {
 		return nil, err
 	}
 
-	ltsv := false
+	itype := CSV
 	if trdsql.iltsv {
-		ltsv = true
+		itype = LTSV
+	} else if trdsql.ijson {
+		itype = JSON
 	} else if trdsql.iguess {
-		ltsv = guessExtension(tablename)
+		itype = guessExtension(tablename)
 	}
 
 	trdsql.ifrow = false
 	var input Input
-	if ltsv {
+	switch itype {
+	case LTSV:
 		trdsql.ifrow = true
 		input, err = trdsql.ltsvInputNew(file)
-	} else {
+	case JSON:
+		trdsql.ifrow = true
+		input, err = trdsql.jsonInputNew(file)
+	default:
 		trdsql.ifrow = !trdsql.ihead
 		input, err = trdsql.csvInputNew(file)
 	}
@@ -145,14 +157,20 @@ func (trdsql *TRDSQL) dbexport(db *DDB, sqlstr string, output Output) error {
 	return nil
 }
 
-func guessExtension(tablename string) bool {
+func guessExtension(tablename string) int {
 	pos := strings.LastIndex(tablename, ".")
-	if pos > 0 && strings.ToLower(tablename[pos:]) == ".ltsv" {
-		debug.Printf("Guess file type as LTSV: [%s]", tablename)
-		return true
+	if pos > 0 {
+		ext := strings.ToLower(tablename[pos:])
+		if ext == ".ltsv" {
+			debug.Printf("Guess file type as LTSV: [%s]", tablename)
+			return LTSV
+		} else if ext == ".json" {
+			debug.Printf("Guess file type as JSON: [%s]", tablename)
+			return JSON
+		}
 	}
 	debug.Printf("Guess file type as CSV: [%s]", tablename)
-	return false
+	return CSV
 }
 
 func getSeparator(sepString string) (rune, error) {
