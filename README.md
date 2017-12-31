@@ -25,6 +25,8 @@ Or download binaries from the [releases](https://github.com/noborus/trdsql/relea
         Configuration file location.
 * `-db` **db name**
         Specify db name of the setting.
+* `-dblist`
+        Display db list of configure.
 * `-driver` **driver name**
         database driver.  [ mysql | postgres | sqlite3 ]
 * `-dsn` **dns string**

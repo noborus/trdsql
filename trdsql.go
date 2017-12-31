@@ -36,6 +36,7 @@ func (trdsql *TRDSQL) Run(args []string) int {
 	var (
 		usage   bool
 		version bool
+		dblist  bool
 		config  string
 		cdb     string
 		cdriver string
@@ -57,6 +58,7 @@ func (trdsql *TRDSQL) Run(args []string) int {
 
 	flags.StringVar(&config, "config", config, "Configuration file location.")
 	flags.StringVar(&cdb, "db", "", "Specify db name of the setting.")
+	flags.BoolVar(&dblist, "dblist", false, "display db information.")
 	flags.StringVar(&cdriver, "driver", "", "database driver.  [ "+strings.Join(sql.Drivers(), " | ")+" ]")
 	flags.StringVar(&cdsn, "dsn", "", "database connection option.")
 	flags.BoolVar(&trdsql.iguess, "ig", false, "Guess format from extension.")
@@ -97,6 +99,12 @@ func (trdsql *TRDSQL) Run(args []string) int {
 			log.Printf("ERROR: [%s]%s", config, err)
 			return (1)
 		}
+	}
+	if dblist {
+		for od, odb := range cfg.Database {
+			fmt.Printf("%s:%s\n", od, odb.Driver)
+		}
+		return (0)
 	}
 
 	sqlstr := getSQL(flags.Args(), query)
