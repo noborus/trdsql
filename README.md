@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/noborus/trdsql.svg?branch=master)](https://travis-ci.org/noborus/trdsql)
 
-A tool that can execute SQL queries on CSV and  [LTSV](http://ltsv.org/).
+A tool that can execute SQL queries on CSV, [LTSV](http://ltsv.org/) and JSON.
 
 It is a tool like [q](https://github.com/harelba/q) , [textql](https://github.com/dinedal/textql) and others.
 
@@ -161,7 +161,60 @@ name:Apple	price:100	id:3
 
 **Note:** LTSV does not keep the output order of the columns
 
-### JSON (output only)
+### JSON
+
+For JSON files, specify option -ijson.
+
+sample.json
+```JSON
+[
+  {
+    "id": "1",
+    "name": "Orange",
+    "price": "50"
+  },
+  {
+    "id": "2",
+    "name": "Melon",
+    "price": "500"
+  },
+  {
+    "id": "3",
+    "name": "Apple",
+    "price": "100"
+  }
+]
+```
+
+```sh
+$ trdsql -iltsv "SELECT * FROM sample.json"
+```
+
+```CSV
+1,Orange,50
+2,Melon,500
+3,Apple,100
+```
+Another json format. One record is JSON.
+
+sample2.json
+```JSON
+{
+  "id": "1",
+  "name": "Orange",
+  "price": "50"
+}
+{
+  "id": "2",
+  "name": "Melon",
+  "price": "500"
+}
+{
+  "id": "3",
+  "name": "Apple",
+  "price": "100"
+}
+```
 
 Output JSON with option -ojson.
 
