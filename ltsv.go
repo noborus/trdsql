@@ -23,13 +23,9 @@ type LTSVOut struct {
 }
 
 func (trdsql *TRDSQL) ltsvInputNew(r io.Reader) (Input, error) {
-	var err error
 	lr := &LTSVIn{}
 	lr.reader = bufio.NewReader(r)
 	lr.delimiter = "\t"
-	if err != nil {
-		return nil, err
-	}
 	return lr, nil
 }
 
@@ -56,7 +52,7 @@ func (lr *LTSVIn) read() (map[string]string, []string, error) {
 	return lvs, keys, nil
 }
 
-func (lr *LTSVIn) firstRead(tablename string) ([]string, error) {
+func (lr *LTSVIn) firstRead() ([]string, error) {
 	var err error
 	lr.frow, lr.header, err = lr.read()
 	if err != nil {

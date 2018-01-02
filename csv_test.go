@@ -1,6 +1,8 @@
 package main
 
 import (
+	"io"
+	"strings"
 	"testing"
 )
 
@@ -35,7 +37,96 @@ func TestCsvInputNew(t *testing.T) {
 	}
 }
 
-func TestNoCsvInputNew(t *testing.T) {
+func TestCsvEmptyNew(t *testing.T) {
+	trdsql := trdsqlNew()
+	const csvStream = ``
+	s := strings.NewReader(csvStream)
+	r, err := trdsql.csvInputNew(s)
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = r.firstRead()
+	if err.Error() != "EOF" {
+		t.Error(err)
+	}
+}
+
+func TestCsvHeaderNew(t *testing.T) {
+	trdsql := trdsqlNew()
+	trdsql.ihead = true
+	trdsql.inSep = ","
+	csvStream := `h1,h2
+	v1,v2`
+	s := strings.NewReader(csvStream)
+	r, _ := trdsql.csvInputNew(s)
+	header, _ := r.firstRead()
+	if header[0] != "h1" || header[1] != "h2" {
+		t.Error("invalid header")
+	}
+}
+
+func TestCsvEmptyColumnHeaderNew(t *testing.T) {
+	trdsql := trdsqlNew()
+	trdsql.ihead = true
+	trdsql.inSep = ","
+	csvStream := `h1,
+	v1,v2`
+	s := strings.NewReader(csvStream)
+	r, _ := trdsql.csvInputNew(s)
+	header, _ := r.firstRead()
+	if header[0] != "h1" || header[1] != "c2" {
+		t.Error("invalid header")
+	}
+}
+
+func TestCsvEmptyColumnRowNew(t *testing.T) {
+	trdsql := trdsqlNew()
+	trdsql.ihead = true
+	trdsql.inSep = ","
+	csvStream := `h1,h2
+	,v2`
+	s := strings.NewReader(csvStream)
+	r, _ := trdsql.csvInputNew(s)
+	_, err := r.firstRead()
+	if err != nil {
+		t.Error(err)
+	}
+	record := make([]interface{}, 2)
+	record, _ = r.rowRead(record)
+	if record[0] != "" || record[1] != "v2" {
+		t.Error("invalid value")
+	}
+}
+
+func TestCsvColumnDifferenceNew(t *testing.T) {
+	trdsql := trdsqlNew()
+	trdsql.ihead = true
+	trdsql.inSep = ","
+	csvStream := `h1,h2,h3
+	v1,v2,v3
+	x1,x2
+	z1`
+	s := strings.NewReader(csvStream)
+	r, _ := trdsql.csvInputNew(s)
+	_, err := r.firstRead()
+	if err != nil {
+		t.Error(err)
+	}
+	record := make([]interface{}, 3)
+	for {
+		record, err = r.rowRead(record)
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			t.Error(err)
+		}
+		if len(record) != 3 {
+			t.Error("row difference")
+		}
+	}
+}
+
+func TestCsvNoInputNew(t *testing.T) {
 	trdsql := trdsqlNew()
 	file, err := tFileOpen("nofile")
 	if err == nil {

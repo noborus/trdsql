@@ -22,13 +22,12 @@ type JSONOut struct {
 }
 
 func (trdsql *TRDSQL) jsonInputNew(r io.Reader) (Input, error) {
-	var err error
 	jr := &JSONIn{}
 	jr.reader = json.NewDecoder(r)
-	return jr, err
+	return jr, nil
 }
 
-func (jr *JSONIn) firstRead(tablename string) ([]string, error) {
+func (jr *JSONIn) firstRead() ([]string, error) {
 	var data interface{}
 	var dmap map[string]interface{}
 	err := jr.reader.Decode(&data)
