@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// Input format
 const (
 	CSV = iota
 	LTSV
@@ -16,7 +17,7 @@ const (
 
 // Input is database import
 type Input interface {
-	firstRead(string) ([]string, error)
+	firstRead() ([]string, error)
 	firstRow([]interface{}) []interface{}
 	rowRead([]interface{}) ([]interface{}, error)
 }
@@ -52,7 +53,7 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 	rtable := db.escapetable(tablename)
 	sqlstr = db.rewrite(sqlstr, tablename, rtable)
 	var header []string
-	header, err = input.firstRead(rtable)
+	header, err = input.firstRead()
 	if err != nil {
 		return sqlstr, err
 	}

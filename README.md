@@ -156,10 +156,8 @@ $ trdsql -iltsv -oltsv "SELECT * FROM sample.ltsv"
 ```
 id:1	name:Orange	price:50
 id:2	name:Melon	price:500
-name:Apple	price:100	id:3
+id:3	name:Apple	price:100
 ```
-
-**Note:** LTSV does not keep the output order of the columns
 
 ### JSON
 

@@ -3,31 +3,52 @@ package main
 import (
 	"strings"
 	"testing"
-
-	"github.com/najeira/ltsv"
 )
 
-func TestLtsvRead(t *testing.T) {
-	const ltsvStream = `
-ID:1	name:testa
-ID:2	name:testb
-	`
+func TestLtsvInputNew(t *testing.T) {
+	const ltsvStream = `ID:1	name:test`
 	s := strings.NewReader(ltsvStream)
-	reader := ltsv.NewReader(s)
-	r, _ := reader.Read()
-	if r["ID"] != "1" || r["name"] != "testa" {
-		t.Error("invalid value", r["ID"])
+	trdsql := trdsqlNew()
+	lr, err := trdsql.ltsvInputNew(s)
+	if err != nil {
+		t.Error(`ltsvInputNew error`)
+	}
+	list, err := lr.firstRead()
+	if err != nil {
+		t.Error(`firstRead error`)
+	}
+	if len(list) == 0 {
+		t.Error(`0 column`)
 	}
 }
 
-func TestLtsvInputNew(t *testing.T) {
+func TestLtsvInvalidInputNew(t *testing.T) {
+	const ltsvStream = `ID;1	name:test`
+	s := strings.NewReader(ltsvStream)
+	trdsql := trdsqlNew()
+	lr, _ := trdsql.ltsvInputNew(s)
+	_, err := lr.firstRead()
+	if err.Error() != "LTSV format error" {
+		t.Error()
+	}
+}
+
+func TestLtsvFile(t *testing.T) {
 	trdsql := trdsqlNew()
 	file, err := tFileOpen("testdata/test.ltsv")
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = trdsql.ltsvInputNew(file)
+	var lr Input
+	lr, err = trdsql.ltsvInputNew(file)
 	if err != nil {
 		t.Error(`ltsvInputNew error`)
+	}
+	list, err := lr.firstRead()
+	if err != nil {
+		t.Error(`firstRead error`)
+	}
+	if len(list) == 0 {
+		t.Error(`0 column`)
 	}
 }

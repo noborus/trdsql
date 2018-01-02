@@ -34,7 +34,7 @@ func (trdsql *TRDSQL) csvInputNew(r io.Reader) (Input, error) {
 	return cr, err
 }
 
-func (cr *CSVIn) firstRead(tablename string) ([]string, error) {
+func (cr *CSVIn) firstRead() ([]string, error) {
 	first, err := cr.reader.Read()
 	if err != nil {
 		return nil, err
