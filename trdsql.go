@@ -132,6 +132,12 @@ func (trdsql *TRDSQL) main(sqlstr string, output Output) int {
 		return 1
 	}
 	defer db.Disconnect()
+	db.Tx, err = db.Begin()
+	if err != nil {
+		log.Println("ERROR:", err)
+		return 1
+	}
+
 	sqlstr, err = trdsql.dbimport(db, sqlstr)
 	if err != nil {
 		log.Println("ERROR:", err)
@@ -142,6 +148,12 @@ func (trdsql *TRDSQL) main(sqlstr string, output Output) int {
 		log.Println("ERROR:", err)
 		return 1
 	}
+	err = db.Tx.Commit()
+	if err != nil {
+		log.Println("ERROR:", err)
+		return 1
+	}
+
 	return 0
 }
 
