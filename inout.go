@@ -86,6 +86,7 @@ func (trdsql *TRDSQL) importData(db *DDB, input Input, clen int) error {
 		}
 		rowImport(db.stmt, list)
 	}
+	db.stmtclose()
 	return nil
 }
 

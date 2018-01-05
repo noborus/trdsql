@@ -29,29 +29,6 @@ func (trdsql *TRDSQL) ltsvInputNew(r io.Reader) (Input, error) {
 	return lr, nil
 }
 
-func (lr *LTSVIn) read() (map[string]string, []string, error) {
-	line, _, err := lr.reader.ReadLine()
-	if err != nil {
-		return nil, nil, err
-	}
-	tline := strings.TrimSpace(string(line))
-	if len(tline) == 0 {
-		return nil, nil, errors.New("no line")
-	}
-	columns := strings.Split(tline, lr.delimiter)
-	lvs := make(map[string]string)
-	keys := make([]string, 0, len(columns))
-	for _, column := range columns {
-		data := strings.SplitN(column, ":", 2)
-		if len(data) != 2 {
-			return nil, nil, errors.New("LTSV format error")
-		}
-		lvs[data[0]] = data[1]
-		keys = append(keys, data[0])
-	}
-	return lvs, keys, nil
-}
-
 func (lr *LTSVIn) firstRead() ([]string, error) {
 	var err error
 	lr.frow, lr.header, err = lr.read()
@@ -78,6 +55,38 @@ func (lr *LTSVIn) rowRead(list []interface{}) ([]interface{}, error) {
 		list[i] = record[lr.header[i]]
 	}
 	return list, nil
+}
+
+func (lr *LTSVIn) read() (map[string]string, []string, error) {
+	line, err := lr.readline()
+	if err != nil {
+		return nil, nil, err
+	}
+	columns := strings.Split(line, lr.delimiter)
+	lvs := make(map[string]string)
+	keys := make([]string, 0, len(columns))
+	for _, column := range columns {
+		kv := strings.SplitN(column, ":", 2)
+		if len(kv) != 2 {
+			return nil, nil, errors.New("LTSV format error")
+		}
+		lvs[kv[0]] = kv[1]
+		keys = append(keys, kv[0])
+	}
+	return lvs, keys, nil
+}
+
+func (lr *LTSVIn) readline() (string, error) {
+	for {
+		line, _, err := lr.reader.ReadLine()
+		if err != nil {
+			return "", err
+		}
+		tline := strings.TrimSpace(string(line))
+		if len(tline) != 0 {
+			return tline, nil
+		}
+	}
 }
 
 func (trdsql *TRDSQL) ltsvOutNew() Output {
