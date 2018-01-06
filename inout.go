@@ -97,7 +97,9 @@ func (trdsql *TRDSQL) fileInput(tablename string) (Input, error) {
 	}
 
 	itype := CSV
-	if trdsql.iltsv {
+	if trdsql.icsv {
+		itype = CSV
+	} else if trdsql.iltsv {
 		itype = LTSV
 	} else if trdsql.ijson {
 		itype = JSON

@@ -48,6 +48,8 @@ Or download binaries from the [releases](https://github.com/noborus/trdsql/relea
         Field delimiter for input. (default ",")
 * `-ig`
         Guess format from extension.
+* `-icsv`
+        CSV format for input.
 * `-ijson`
         JSON format for input.
 * `-iltsv`

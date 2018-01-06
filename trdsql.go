@@ -62,6 +62,7 @@ func (trdsql *TRDSQL) Run(args []string) int {
 	flags.StringVar(&cdriver, "driver", "", "database driver.  [ "+strings.Join(sql.Drivers(), " | ")+" ]")
 	flags.StringVar(&cdsn, "dsn", "", "database connection option.")
 	flags.BoolVar(&trdsql.iguess, "ig", false, "Guess format from extension.")
+	flags.BoolVar(&trdsql.icsv, "icsv", false, "CSV format for input.")
 	flags.BoolVar(&trdsql.iltsv, "iltsv", false, "LTSV format for input.")
 	flags.BoolVar(&trdsql.ijson, "ijson", false, "JSON format for input.")
 	flags.StringVar(&trdsql.inSep, "id", ",", "Field delimiter for input.")
