@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -32,9 +31,7 @@ func (trdsql *TRDSQL) dbimport(db *DDB, sqlstr string) (string, error) {
 	for _, tablename := range tablenames {
 		sqlstr, err = trdsql.importTable(db, tablename, sqlstr)
 		if err != nil {
-			debug.Printf("%s:%s", err, tablename)
-			err = nil
-			continue
+			break
 		}
 	}
 	return sqlstr, err
@@ -43,7 +40,8 @@ func (trdsql *TRDSQL) dbimport(db *DDB, sqlstr string) (string, error) {
 func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (string, error) {
 	input, err := trdsql.fileInput(tablename)
 	if err != nil {
-		return sqlstr, err
+		debug.Printf("%s\n", err)
+		return sqlstr, nil
 	}
 	skip := make([]interface{}, 1)
 	for i := 0; i < trdsql.iskip; i++ {
@@ -61,33 +59,8 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 	if err != nil {
 		return sqlstr, err
 	}
-	err = db.InsertPrepare(rtable, header)
-	if err != nil {
-		return sqlstr, err
-	}
-	err = trdsql.importData(db, input, len(header))
+	err = db.ImportData(rtable, header, input, trdsql.ifrow)
 	return sqlstr, err
-}
-
-func (trdsql *TRDSQL) importData(db *DDB, input Input, clen int) error {
-	list := make([]interface{}, clen)
-	if trdsql.ifrow {
-		list = input.firstRow(list)
-		rowImport(db.stmt, list)
-	}
-
-	var err error
-	for {
-		list, err = input.rowRead(list)
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			return fmt.Errorf("ERROR Read: %s", err)
-		}
-		rowImport(db.stmt, list)
-	}
-	db.stmtclose()
-	return nil
 }
 
 func (trdsql *TRDSQL) fileInput(tablename string) (Input, error) {
