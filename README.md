@@ -54,7 +54,7 @@ Or download binaries from the [releases](https://github.com/noborus/trdsql/relea
         JSON format for input.
 * `-iltsv`
         LTSV format for input.
-* `-is int`
+* `-is` **int**
         Skip header row.
 
 ### Output format

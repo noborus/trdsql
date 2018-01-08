@@ -18,19 +18,19 @@ func TestErrorSelect(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 	defer db.Disconnect()
-	db.Tx, err = db.DB.Begin()
+	db.tx, err = db.DB.Begin()
 	_, err = db.Select(" ")
 	if err == nil {
 		t.Fatalf("Select error")
 	}
-	db.Tx.Commit()
+	db.tx.Commit()
 
-	db.Tx, err = db.DB.Begin()
+	db.tx, err = db.DB.Begin()
 	_, err = db.Select("SELEC * FROM test")
 	if err == nil {
 		t.Fatalf("Select error")
 	}
-	db.Tx.Commit()
+	db.tx.Commit()
 }
 
 func TestRewrite(t *testing.T) {

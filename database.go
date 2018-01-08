@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -17,66 +18,183 @@ type DDB struct {
 	dsn       string
 	escape    string
 	rewritten []string
+	maxbulk   int
 	*sql.DB
-	*sql.Tx
-	stmt *sql.Stmt
+	tx *sql.Tx
 }
 
-func rowImport(stmt *sql.Stmt, list []interface{}) {
-	_, err := stmt.Exec(list...)
-	if err != nil {
-		debug.Printf("%s\n", err)
-	}
+// iTable is import Table data
+type iTable struct {
+	tablename string
+	header    []string
+	columns   []string
+	place     string
+	firstrow  bool
+	count     int
+	rows      []interface{}
+	rownum    int
+	sqlpre    string
+	sqlstr    string
+	stmt      *sql.Stmt
 }
 
-// InsertPrepare is executes SQL syntax INSERT with Prepare
-func (db *DDB) InsertPrepare(table string, header []string) error {
+// ImportData is import to the table.
+func (db *DDB) ImportData(tablename string, header []string, input Input, firstrow bool) error {
 	var err error
-	sqlstr := db.insertSQLBuild(table, header)
-	db.stmt, err = db.Tx.Prepare(sqlstr)
-	if err != nil {
-		return fmt.Errorf("ERROR INSERT Prepare: %s", err)
-	}
-	return nil
-}
-
-func (db *DDB) insertSQLBuild(table string, header []string) string {
-	var sqlstr string
 	columns := make([]string, len(header))
 	for i := range header {
 		columns[i] = db.escape + header[i] + db.escape
 	}
-	columnstr := strings.Join(columns, ",")
-	if db.driver == "postgres" {
-		sqlstr = fmt.Sprintf("COPY %s (%s) FROM STDIN", table, columnstr)
-	} else {
-		place := strings.Repeat("?,", len(columns)-1) + "?"
-		sqlstr = fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s);", table, columnstr, place)
+	rows := make([]interface{}, 0, db.maxbulk*len(header))
+	itable := &iTable{
+		tablename: tablename,
+		header:    header,
+		columns:   columns,
+		firstrow:  firstrow,
+		rows:      rows,
+		rownum:    0,
 	}
-	debug.Printf(sqlstr)
-	return sqlstr
+	if db.driver == "postgres" {
+		err = db.copyImport(itable, input)
+	} else {
+		err = db.insertImport(itable, input)
+	}
+	return err
 }
 
-func (db *DDB) stmtclose() {
-	db.stmt.Exec()
-	db.stmt.Close()
+func (db *DDB) copyImport(itable *iTable, input Input) error {
+	sqlstr := fmt.Sprintf("COPY %s (%s) FROM STDIN", itable.tablename, strings.Join(itable.columns, ","))
+	debug.Printf(sqlstr)
+	stmt, err := db.tx.Prepare(sqlstr)
+	if err != nil {
+		return fmt.Errorf("COPY Prepare: %s", err)
+	}
+	row := make([]interface{}, len(itable.header))
+	if itable.firstrow {
+		row = input.firstRow(row)
+		_, err = stmt.Exec(row...)
+		if err != nil {
+			return err
+		}
+	}
+
+	for {
+		row, err = input.rowRead(row)
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return fmt.Errorf("Read: %s", err)
+		}
+		_, err = stmt.Exec(row...)
+		if err != nil {
+			return err
+		}
+	}
+	stmt.Exec()
+	stmt.Close()
+	return nil
+}
+
+func (db *DDB) insertImport(itable *iTable, input Input) error {
+	var err error
+	var stmt *sql.Stmt
+
+	row := make([]interface{}, len(itable.header))
+
+	itable.sqlpre = fmt.Sprintf("INSERT INTO %s (%s) VALUES ",
+		itable.tablename, strings.Join(itable.columns, ","))
+
+	if itable.firstrow {
+		itable.place = "(" + strings.Repeat("?,", len(itable.header)-1) + "?)"
+		sqlstr := itable.sqlpre + itable.place
+		debug.Printf(sqlstr)
+
+		stmt, err = db.tx.Prepare(sqlstr)
+		if err != nil {
+			return fmt.Errorf("INSERT Prepare: %s:%s", sqlstr, err)
+		}
+		row = input.firstRow(row)
+		_, err = stmt.Exec(row...)
+		if err != nil {
+			return err
+		}
+		stmt.Exec()
+		stmt.Close()
+	}
+
+	for {
+		row, err = input.rowRead(row)
+		if err == io.EOF {
+			err = nil
+			break
+		} else if err != nil {
+			return fmt.Errorf("Read: %s", err)
+		}
+		err = db.bulkpush(itable, row)
+		if err != nil {
+			return err
+		}
+	}
+	if itable.count > 0 {
+		err = db.bulkimport(itable)
+	}
+	itable.stmt.Close()
+	return err
+}
+
+func (db *DDB) bulkpush(itable *iTable, row []interface{}) error {
+	var err error
+	itable.count++
+	for _, r := range row {
+		itable.rows = append(itable.rows, r)
+	}
+	if (itable.count*len(row))+len(row) > db.maxbulk {
+		err = db.bulkimport(itable)
+		itable.rows = itable.rows[:0]
+		itable.count = 0
+	}
+	return err
+}
+
+func (db *DDB) bulkimport(itable *iTable) error {
+	var err error
+	if itable.rownum != itable.count {
+		if itable.stmt != nil {
+			itable.stmt.Close()
+		}
+		itable.sqlstr = itable.sqlpre +
+			strings.Repeat(itable.place+",", itable.count-1) + itable.place
+		itable.rownum = itable.count
+		debug.Printf(itable.sqlstr)
+		itable.stmt, err = db.tx.Prepare(itable.sqlstr)
+		if err != nil {
+			return fmt.Errorf("INSERT Prepare: %s:%s", itable.sqlstr, err)
+		}
+	}
+	_, err = itable.stmt.Exec(itable.rows...)
+	return err
 }
 
 // Connect is connects to the database
 func Connect(driver, dsn string) (*DDB, error) {
 	var db DDB
 	var err error
-	if driver == "sqlite3" && dsn == "" {
-		dsn = ":memory:"
-	}
 	db.driver = driver
 	db.dsn = dsn
-	if driver == "postgres" {
-		db.escape = "\""
-	} else {
+	switch driver {
+	case "sqlite3":
+		db.maxbulk = 1000
 		db.escape = "`"
+		if dsn == "" {
+			db.dsn = ":memory:"
+		}
+	case "mysql":
+		db.escape = "`"
+		db.maxbulk = 1000
+	case "postgres":
+		db.escape = "\""
 	}
-	db.DB, err = sql.Open(driver, dsn)
+	db.DB, err = sql.Open(db.driver, db.dsn)
 	return &db, err
 }
 
@@ -96,7 +214,7 @@ func (db *DDB) Create(table string, header []string) error {
 	sqlstr = "CREATE TEMPORARY TABLE "
 	sqlstr = sqlstr + table + " ( " + strings.Join(columns, ",") + " );"
 	debug.Printf(sqlstr)
-	_, err := db.Tx.Exec(sqlstr)
+	_, err := db.tx.Exec(sqlstr)
 	return err
 }
 
@@ -107,7 +225,7 @@ func (db *DDB) Select(sqlstr string) (*sql.Rows, error) {
 		return nil, errors.New("no SQL statement")
 	}
 	debug.Printf(sqlstr)
-	rows, err := db.Tx.Query(sqlstr)
+	rows, err := db.tx.Query(sqlstr)
 	if err != nil {
 		return rows, fmt.Errorf("SQL:%s\n[%s]", err, sqlstr)
 	}
