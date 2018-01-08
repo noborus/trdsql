@@ -28,11 +28,17 @@ func (trdsql *TRDSQL) dbimport(db *DDB, sqlstr string) (string, error) {
 		// without FROM clause. ex. SELECT 1+1;
 		debug.Printf("table not found\n")
 	}
+	created := make(map[string]bool)
 	for _, tablename := range tablenames {
+		if created[tablename] == true {
+			debug.Printf("already created \"%s\"\n", tablename)
+			continue
+		}
 		sqlstr, err = trdsql.importTable(db, tablename, sqlstr)
 		if err != nil {
 			break
 		}
+		created[tablename] = true
 	}
 	return sqlstr, err
 }
