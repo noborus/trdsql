@@ -23,7 +23,7 @@ var tcsv = [][]string{
 var tdsn = map[string]string{
 	"sqlite3":  "",
 	"postgres": "dbname=trdsql_test",
-	"mysql":    "root:root@/trdsql_test",
+	"mysql":    "root:@/trdsql_test",
 }
 
 var tdb = map[string]bool{
@@ -211,10 +211,12 @@ func TestFromFunc(t *testing.T) {
 func dbcheck(d string) bool {
 	db, err := Connect(d, tdsn[d])
 	if err != nil {
+		log.Printf("%s:%s\n", d, err)
 		return false
 	}
 	_, err = db.Exec("SELECT 1")
 	if err != nil {
+		log.Printf("%s:%s\n", d, err)
 		return false
 	}
 	db.Disconnect()
