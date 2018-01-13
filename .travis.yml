@@ -4,6 +4,12 @@ os:
 - osx
 go:
 - 1.9
+services:
+- postgresql
+- mysql
+before_script:
+- psql -c 'create database trdsql_test;' -U postgres
+- mysql -e 'CREATE DATABASE trdsql_test;'
 before_install:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -y ; sudo apt-get install -y libc6-dev-i386 binutils-mingw-w64-x86-64 gcc-mingw-w64-base gcc-mingw-w64-i686 gcc-mingw-w64-x86-64 ; fi
 - go get -u github.com/golang/dep/cmd/dep
