@@ -226,6 +226,7 @@ func (trdsql *TRDSQL) setDB(cfg *config, cdb string, cdriver string, cdsn string
 	}
 	if cdriver != "" {
 		trdsql.driver = cdriver
+		trdsql.dsn = cdsn
 	}
 	if cdsn != "" {
 		trdsql.dsn = cdsn
