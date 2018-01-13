@@ -104,8 +104,8 @@ func (db *DDB) insertImport(itable *iTable, input Input) error {
 	itable.sqlpre = fmt.Sprintf("INSERT INTO %s (%s) VALUES ",
 		itable.tablename, strings.Join(itable.columns, ","))
 
+	itable.place = "(" + strings.Repeat("?,", len(itable.header)-1) + "?)"
 	if itable.firstrow {
-		itable.place = "(" + strings.Repeat("?,", len(itable.header)-1) + "?)"
 		sqlstr := itable.sqlpre + itable.place
 		debug.Printf(sqlstr)
 
@@ -121,7 +121,6 @@ func (db *DDB) insertImport(itable *iTable, input Input) error {
 		stmt.Exec()
 		stmt.Close()
 	}
-
 	for {
 		row, err = input.rowRead(row)
 		if err == io.EOF {
