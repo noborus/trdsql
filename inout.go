@@ -70,7 +70,7 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 }
 
 func (trdsql *TRDSQL) fileInput(tablename string) (Input, error) {
-	file, err := tFileOpen(tablename)
+	file, err := tableFileOpen(tablename)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +168,7 @@ func getSeparator(sepString string) (rune, error) {
 	return sepRune, err
 }
 
-func tFileOpen(filename string) (*os.File, error) {
+func tableFileOpen(filename string) (*os.File, error) {
 	if filename == "-" {
 		return os.Stdin, nil
 	}

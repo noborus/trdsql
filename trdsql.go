@@ -139,7 +139,6 @@ func (trdsql *TRDSQL) main(sqlstr string, output Output) int {
 		log.Println("ERROR:", err)
 		return 1
 	}
-
 	sqlstr, err = trdsql.dbimport(db, sqlstr)
 	if err != nil {
 		log.Println("ERROR:", err)

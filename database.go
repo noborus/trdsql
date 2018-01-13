@@ -18,7 +18,7 @@ type DDB struct {
 	dsn       string
 	escape    string
 	rewritten []string
-	maxbulk   int
+	maxBulk   int
 	*sql.DB
 	tx *sql.Tx
 }
@@ -45,7 +45,7 @@ func (db *DDB) ImportData(tablename string, header []string, input Input, firstr
 	for i := range header {
 		columns[i] = db.escape + header[i] + db.escape
 	}
-	rows := make([]interface{}, 0, db.maxbulk*len(header))
+	rows := make([]interface{}, 0, db.maxBulk+1)
 	itable := &iTable{
 		tablename: tablename,
 		header:    header,
@@ -129,33 +129,33 @@ func (db *DDB) insertImport(itable *iTable, input Input) error {
 		} else if err != nil {
 			return fmt.Errorf("Read: %s", err)
 		}
-		err = db.bulkpush(itable, row)
+		err = db.bulkPush(itable, row)
 		if err != nil {
 			return err
 		}
 	}
 	if itable.count > 0 {
-		err = db.bulkimport(itable)
+		err = db.bulkImport(itable)
 	}
 	itable.stmt.Close()
 	return err
 }
 
-func (db *DDB) bulkpush(itable *iTable, row []interface{}) error {
+func (db *DDB) bulkPush(itable *iTable, row []interface{}) error {
 	var err error
 	itable.count++
 	for _, r := range row {
 		itable.rows = append(itable.rows, r)
 	}
-	if (itable.count*len(row))+len(row) > db.maxbulk {
-		err = db.bulkimport(itable)
+	if (itable.count*len(row))+len(row) > db.maxBulk {
+		err = db.bulkImport(itable)
 		itable.rows = itable.rows[:0]
 		itable.count = 0
 	}
 	return err
 }
 
-func (db *DDB) bulkimport(itable *iTable) error {
+func (db *DDB) bulkImport(itable *iTable) error {
 	var err error
 	if itable.rownum != itable.count {
 		if itable.stmt != nil {
@@ -182,14 +182,14 @@ func Connect(driver, dsn string) (*DDB, error) {
 	db.dsn = dsn
 	switch driver {
 	case "sqlite3":
-		db.maxbulk = 1000
+		db.maxBulk = 1000
 		db.escape = "`"
 		if dsn == "" {
 			db.dsn = ":memory:"
 		}
 	case "mysql":
 		db.escape = "`"
-		db.maxbulk = 1000
+		db.maxBulk = 1000
 	case "postgres":
 		db.escape = "\""
 	}
