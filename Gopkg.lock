@@ -22,14 +22,8 @@
 [[projects]]
   name = "github.com/mattn/go-sqlite3"
   packages = ["."]
-  revision = "ed69081a91fd053f17672236b0dd52ba7485e1a3"
-  version = "v1.4.0"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/najeira/ltsv"
-  packages = ["."]
-  revision = "40eb84a5b5d21afa8f26f357445d910c62011166"
+  revision = "6c771bb9887719704b210e87e934f08be014bdb1"
+  version = "v1.6.0"
 
 [[projects]]
   branch = "master"
@@ -45,12 +39,6 @@
 
 [[projects]]
   branch = "master"
-  name = "golang.org/x/net"
-  packages = ["context"]
-  revision = "d866cfc389cec985d6fda2859936a575a55a3ab6"
-
-[[projects]]
-  branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix","windows"]
   revision = "83801418e1b59fb1880e363299581ee543af32ca"
@@ -58,6 +46,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e5aa45aecbef111797d046ddf6b9aa79dc92e5e95df65520e8222dbf722a4622"
+  inputs-digest = "74f0c61d589fb3097200075a25b268272d9b47e7eeffb50e806bc963d5313e88"
   solver-name = "gps-cdcl"
   solver-version = 1
