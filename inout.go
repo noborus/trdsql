@@ -44,11 +44,12 @@ func (trdsql *TRDSQL) dbimport(db *DDB, sqlstr string) (string, error) {
 }
 
 func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (string, error) {
-	input, err := trdsql.fileInput(tablename)
+	file, input, err := trdsql.fileInput(tablename)
 	if err != nil {
 		debug.Printf("%s\n", err)
 		return sqlstr, nil
 	}
+	defer file.Close()
 	skip := make([]interface{}, 1)
 	for i := 0; i < trdsql.iskip; i++ {
 		r, _ := input.rowRead(skip)
@@ -69,10 +70,10 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 	return sqlstr, err
 }
 
-func (trdsql *TRDSQL) fileInput(tablename string) (Input, error) {
-	file, err := tFileOpen(tablename)
+func (trdsql *TRDSQL) fileInput(tablename string) (*os.File, Input, error) {
+	file, err := tableFileOpen(tablename)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	itype := CSV
@@ -99,7 +100,7 @@ func (trdsql *TRDSQL) fileInput(tablename string) (Input, error) {
 		trdsql.ifrow = !trdsql.ihead
 		input, err = trdsql.csvInputNew(file)
 	}
-	return input, err
+	return file, input, err
 }
 
 // Output is database export
@@ -168,7 +169,7 @@ func getSeparator(sepString string) (rune, error) {
 	return sepRune, err
 }
 
-func tFileOpen(filename string) (*os.File, error) {
+func tableFileOpen(filename string) (*os.File, error) {
 	if filename == "-" {
 		return os.Stdin, nil
 	}

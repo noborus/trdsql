@@ -27,7 +27,7 @@ func TestGetSeparator(t *testing.T) {
 
 func TestCsvInputNew(t *testing.T) {
 	trdsql := trdsqlNew()
-	file, err := tFileOpen("testdata/test.csv")
+	file, err := tableFileOpen("testdata/test.csv")
 	if err != nil {
 		t.Error(err)
 	}
@@ -128,7 +128,7 @@ func TestCsvColumnDifferenceNew(t *testing.T) {
 
 func TestCsvNoInputNew(t *testing.T) {
 	trdsql := trdsqlNew()
-	file, err := tFileOpen("nofile")
+	file, err := tableFileOpen("nofile")
 	if err == nil {
 		t.Error(`Should error`)
 	}

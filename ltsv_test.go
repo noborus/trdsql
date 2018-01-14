@@ -35,7 +35,7 @@ func TestLtsvInvalidInputNew(t *testing.T) {
 
 func TestLtsvFile(t *testing.T) {
 	trdsql := trdsqlNew()
-	file, err := tFileOpen("testdata/test.ltsv")
+	file, err := tableFileOpen("testdata/test.ltsv")
 	if err != nil {
 		t.Error(err)
 	}
