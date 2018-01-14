@@ -20,8 +20,6 @@ func TestTableFileOpen(t *testing.T) {
 	if err != nil && stdin == os.Stdin {
 		t.Error(err)
 	}
-	stdin.Close()
-
 	f, err := tableFileOpen("inout_test.go")
 	if err != nil {
 		t.Error(err)

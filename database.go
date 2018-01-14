@@ -45,7 +45,7 @@ func (db *DDB) ImportData(tablename string, header []string, input Input, firstr
 	for i := range header {
 		columns[i] = db.escape + header[i] + db.escape
 	}
-	rows := make([]interface{}, 0, db.maxBulk+1)
+	rows := make([]interface{}, 0, db.maxBulk)
 	itable := &iTable{
 		tablename: tablename,
 		header:    header,
@@ -182,7 +182,7 @@ func Connect(driver, dsn string) (*DDB, error) {
 	db.dsn = dsn
 	switch driver {
 	case "sqlite3":
-		db.maxBulk = 1000
+		db.maxBulk = 500
 		db.escape = "`"
 		if dsn == "" {
 			db.dsn = ":memory:"

@@ -220,9 +220,9 @@ func TestDbRun(t *testing.T) {
 		}
 	}
 }
+
 func TestCountKENALLRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-
 	log.SetOutput(errStream)
 	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
 	csv := "KEN_ALL.CSV"
