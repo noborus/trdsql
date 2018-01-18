@@ -56,6 +56,6 @@ func (vf *VfOut) rowWrite(values []interface{}, columns []string) error {
 	return nil
 }
 
-func (vf *VfOut) last() {
-	vf.writer.Flush()
+func (vf *VfOut) last() error {
+	return vf.writer.Flush()
 }

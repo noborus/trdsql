@@ -19,6 +19,10 @@ func TestErrorSelect(t *testing.T) {
 	}
 	defer db.Disconnect()
 	db.tx, err = db.DB.Begin()
+	if err != nil {
+		t.Fatalf("Begin error")
+
+	}
 	_, err = db.Select(" ")
 	if err == nil {
 		t.Fatalf("Select error")
@@ -26,6 +30,10 @@ func TestErrorSelect(t *testing.T) {
 	db.tx.Commit()
 
 	db.tx, err = db.DB.Begin()
+	if err != nil {
+		t.Fatalf("Begin error")
+
+	}
 	_, err = db.Select("SELEC * FROM test")
 	if err == nil {
 		t.Fatalf("Select error")
