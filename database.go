@@ -30,12 +30,7 @@ type iTable struct {
 	columns   []string
 	place     string
 	firstrow  bool
-	count     int
-	rows      []interface{}
-	rownum    int
 	sqlpre    string
-	sqlstr    string
-	stmt      *sql.Stmt
 }
 
 // ImportData is import to the table.
@@ -45,14 +40,11 @@ func (db *DDB) ImportData(tablename string, header []string, input Input, firstr
 	for i := range header {
 		columns[i] = db.escape + header[i] + db.escape
 	}
-	rows := make([]interface{}, 0, db.maxBulk)
 	itable := &iTable{
 		tablename: tablename,
 		header:    header,
 		columns:   columns,
 		firstrow:  firstrow,
-		rows:      rows,
-		rownum:    0,
 	}
 	if db.driver == "postgres" {
 		err = db.copyImport(itable, input)
@@ -90,88 +82,95 @@ func (db *DDB) copyImport(itable *iTable, input Input) error {
 			return err
 		}
 	}
-	stmt.Exec()
-	stmt.Close()
-	return nil
+	_, err = stmt.Exec()
+	if err != nil {
+		return err
+	}
+	err = stmt.Close()
+	return err
 }
 
 func (db *DDB) insertImport(itable *iTable, input Input) error {
-	var err error
 	var stmt *sql.Stmt
-
-	row := make([]interface{}, len(itable.header))
-
+	var err error
+	defer db.stmtClose(stmt)
 	itable.sqlpre = fmt.Sprintf("INSERT INTO %s (%s) VALUES ",
 		itable.tablename, strings.Join(itable.columns, ","))
-
 	itable.place = "(" + strings.Repeat("?,", len(itable.header)-1) + "?)"
-	if itable.firstrow {
-		sqlstr := itable.sqlpre + itable.place
-		debug.Printf(sqlstr)
 
-		stmt, err = db.tx.Prepare(sqlstr)
-		if err != nil {
-			return fmt.Errorf("INSERT Prepare: %s:%s", sqlstr, err)
-		}
+	row := make([]interface{}, len(itable.header))
+	maxBulk := (db.maxBulk / len(row)) * len(row)
+	bulk := make([]interface{}, 0, maxBulk)
+	count := 0
+	bulkNum := 0
+
+	if itable.firstrow {
 		row = input.firstRow(row)
-		_, err = stmt.Exec(row...)
+		bulk = append(bulk, row...)
+		bulkNum = bulkNum + len(row)
+		count++
+	}
+
+	previousNum := 0
+	eof := false
+	for !eof {
+		for bulkNum < maxBulk {
+			row, err = input.rowRead(row)
+			if err == nil {
+				bulk = append(bulk, row...)
+				bulkNum = bulkNum + len(row)
+				count++
+			} else if err == io.EOF {
+				if len(bulk) <= 0 {
+					return nil
+				}
+				eof = true
+				break
+			} else {
+				return fmt.Errorf("Read: %s", err)
+			}
+		}
+
+		if previousNum != bulkNum {
+			previousNum = bulkNum
+			if stmt != nil {
+				err = stmt.Close()
+				if err != nil {
+					return err
+				}
+			}
+			stmt, err = db.insertPrepare(itable, count)
+			if err != nil {
+				return err
+			}
+		}
+		_, err = stmt.Exec(bulk...)
 		if err != nil {
 			return err
 		}
-		stmt.Exec()
+		bulk = bulk[:0]
+		bulkNum = 0
+		count = 0
+	}
+
+	return err
+}
+
+func (db *DDB) stmtClose(stmt *sql.Stmt) {
+	if stmt != nil {
 		stmt.Close()
 	}
-	for {
-		row, err = input.rowRead(row)
-		if err == io.EOF {
-			err = nil
-			break
-		} else if err != nil {
-			return fmt.Errorf("Read: %s", err)
-		}
-		err = db.bulkPush(itable, row)
-		if err != nil {
-			return err
-		}
-	}
-	if itable.count > 0 {
-		err = db.bulkImport(itable)
-	}
-	itable.stmt.Close()
-	return err
 }
 
-func (db *DDB) bulkPush(itable *iTable, row []interface{}) error {
-	var err error
-	itable.count++
-	for _, r := range row {
-		itable.rows = append(itable.rows, r)
+func (db *DDB) insertPrepare(itable *iTable, count int) (*sql.Stmt, error) {
+	sqlstr := itable.sqlpre +
+		strings.Repeat(itable.place+",", count-1) + itable.place
+	debug.Printf(sqlstr)
+	stmt, err := db.tx.Prepare(sqlstr)
+	if err != nil {
+		return nil, fmt.Errorf("INSERT Prepare: %s:%s", sqlstr, err)
 	}
-	if (itable.count*len(row))+len(row) > db.maxBulk {
-		err = db.bulkImport(itable)
-		itable.rows = itable.rows[:0]
-		itable.count = 0
-	}
-	return err
-}
-
-func (db *DDB) bulkImport(itable *iTable) error {
-	var err error
-	if itable.rownum != itable.count {
-		if itable.stmt != nil {
-			itable.stmt.Close()
-		}
-		itable.sqlstr = itable.sqlpre +
-			strings.Repeat(itable.place+",", itable.count-1) + itable.place
-		itable.rownum = itable.count
-		debug.Printf(itable.sqlstr)
-		itable.stmt, err = db.tx.Prepare(itable.sqlstr)
-		if err != nil {
-			return fmt.Errorf("INSERT Prepare: %s:%s", itable.sqlstr, err)
-		}
-	}
-	_, err = itable.stmt.Exec(itable.rows...)
-	return err
+	return stmt, nil
 }
 
 // Connect is connects to the database
