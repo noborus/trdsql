@@ -173,7 +173,7 @@ func getSeparator(sepString string) (rune, error) {
 }
 
 func tableFileOpen(filename string) (*os.File, error) {
-	if filename == "-" {
+	if filename == "-" || strings.ToLower(filename) == "stdin" {
 		return os.Stdin, nil
 	}
 	if filename[0] == '`' {
