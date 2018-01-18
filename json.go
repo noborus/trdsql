@@ -113,6 +113,6 @@ func (js *JSONOut) rowWrite(values []interface{}, columns []string) error {
 	return nil
 }
 
-func (js *JSONOut) last() {
-	js.writer.Encode(js.results)
+func (js *JSONOut) last() error {
+	return js.writer.Encode(js.results)
 }

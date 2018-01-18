@@ -30,7 +30,7 @@ func (trdsql *TRDSQL) dbimport(db *DDB, sqlstr string) (string, error) {
 	}
 	created := make(map[string]bool)
 	for _, tablename := range tablenames {
-		if created[tablename] == true {
+		if created[tablename] {
 			debug.Printf("already created \"%s\"\n", tablename)
 			continue
 		}
@@ -107,7 +107,7 @@ func (trdsql *TRDSQL) fileInput(tablename string) (*os.File, Input, error) {
 type Output interface {
 	first([]string) error
 	rowWrite([]interface{}, []string) error
-	last()
+	last() error
 }
 
 func (trdsql *TRDSQL) dbexport(db *DDB, sqlstr string, output Output) error {
@@ -135,7 +135,10 @@ func (trdsql *TRDSQL) dbexport(db *DDB, sqlstr string, output Output) error {
 		if err != nil {
 			return err
 		}
-		output.rowWrite(values, columns)
+		err = output.rowWrite(values, columns)
+		if err != nil {
+			return err
+		}
 	}
 	output.last()
 	return nil

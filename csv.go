@@ -93,7 +93,10 @@ func (trdsql *TRDSQL) csvOutNew() Output {
 
 func (c *CSVOut) first(columns []string) error {
 	if c.outHeader {
-		c.writer.Write(columns)
+		err := c.writer.Write(columns)
+		if err != nil {
+			return err
+		}
 	}
 	c.results = make([]string, len(columns))
 	return nil
@@ -103,10 +106,11 @@ func (c *CSVOut) rowWrite(values []interface{}, columns []string) error {
 	for i, col := range values {
 		c.results[i] = valString(col)
 	}
-	c.writer.Write(c.results)
-	return nil
+	err := c.writer.Write(c.results)
+	return err
 }
 
-func (c *CSVOut) last() {
+func (c *CSVOut) last() error {
 	c.writer.Flush()
+	return nil
 }

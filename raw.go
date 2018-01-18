@@ -43,6 +43,6 @@ func (raw *RawOut) rowWrite(values []interface{}, columns []string) error {
 	return nil
 }
 
-func (raw *RawOut) last() {
-	raw.writer.Flush()
+func (raw *RawOut) last() error {
+	return raw.writer.Flush()
 }

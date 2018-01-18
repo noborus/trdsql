@@ -36,6 +36,7 @@ func (tw *TwOut) rowWrite(values []interface{}, columns []string) error {
 	return nil
 }
 
-func (tw *TwOut) last() {
+func (tw *TwOut) last() error {
 	tw.writer.Render()
+	return nil
 }

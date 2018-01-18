@@ -107,10 +107,10 @@ func (lw *LTSVOut) rowWrite(values []interface{}, columns []string) error {
 		results[i] = columns[i] + ":" + valString(col)
 	}
 	str := strings.Join(results, lw.delimiter) + "\n"
-	lw.writer.Write([]byte(str))
-	return nil
+	_, err := lw.writer.Write([]byte(str))
+	return err
 }
 
-func (lw *LTSVOut) last() {
-	lw.writer.Flush()
+func (lw *LTSVOut) last() error {
+	return lw.writer.Flush()
 }
