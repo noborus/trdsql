@@ -8,8 +8,6 @@ It is a tool like [q](https://github.com/harelba/q) , [textql](https://github.co
 
 The difference from these tools is that the syntax of PostgreSQL or MySQL can be used.
 
-You need to prepare a database server if you want to use PostgreSQL or MySQL syntax.
-
 ## INSTALL
 
 ```
@@ -88,14 +86,13 @@ test.csv file.
 3,Apple
 ```
 
-You can specify the CSV file in the SQL FROM clause.
+Please write a file name like a table name.
 
 ```sh
 $ trdsql "SELECT * FROM test.csv"
 ```
 
-You can also save the SQL in a file and specify the file.
-The default is CSV, so you can omit -ocsv.
+-q filename can execute SQL from file
 
 ```sh
 $ trdsql -q test.sql
@@ -103,7 +100,7 @@ $ trdsql -q test.sql
 
 ### TSV
 
-For a TAB delimited CSV file(TSV), specify option -id "\\t"
+-id "\\t" is input form TSV (Tab Separated Value)
 
 ```
 1	Orange
@@ -115,7 +112,7 @@ For a TAB delimited CSV file(TSV), specify option -id "\\t"
 $ trdsql -id "\t" "SELECT * FROM test-tab.csv"
 ```
 
-If you want to use it for output, specify -od "\\t".
+-od "\\t" is TSV (Tab Separated Value) output.
 
 ```sh
 $ trdsql -od "\t" "SELECT * FROM test.csv"
@@ -128,7 +125,7 @@ $ trdsql -od "\t" "SELECT * FROM test.csv"
 
 ### LTSV
 
-For LTSV files, specify option -iltsv.
+-iltsv is input form LTSV(Labeled Tab-separated Values).
 
 sample.ltsv
 ```
@@ -149,7 +146,7 @@ $ trdsql -iltsv "SELECT * FROM sample.ltsv"
 
 **Note:** Only the columns in the first row are targeted.
 
-If you want to use it for output, specify -oltsv.
+-oltsv is LTSV(Labeled Tab-separated Values) output.
 
 ```sh
 $ trdsql -iltsv -oltsv "SELECT * FROM sample.ltsv"
@@ -163,7 +160,7 @@ id:3	name:Apple	price:100
 
 ### JSON
 
-For JSON files, specify option -ijson.
+-ijson is input form JSON.
 
 sample.json
 ```JSON
@@ -187,7 +184,7 @@ sample.json
 ```
 
 ```sh
-$ trdsql -iltsv "SELECT * FROM sample.json"
+$ trdsql -ijson "SELECT * FROM sample.json"
 ```
 
 ```CSV
@@ -195,6 +192,7 @@ $ trdsql -iltsv "SELECT * FROM sample.json"
 2,Melon,500
 3,Apple,100
 ```
+
 Another json format. One record is JSON.
 
 sample2.json
@@ -216,7 +214,7 @@ sample2.json
 }
 ```
 
-Output JSON with option -ojson.
+-ojson is JSON Output.
 
 ```sh
 $ trdsql -ojson "SELECT * FROM test.csv"
@@ -241,7 +239,7 @@ $ trdsql -ojson "SELECT * FROM test.csv"
 
 ### Raw output
 
-Output Raw with option -oraw.
+-oraw is Raw Output.
 It is used when "escape processing is unnecessary" in CSV output.
 (For example, when outputting JSON in the database).
 
@@ -273,7 +271,9 @@ trdsql -oraw -od "\t|\t" -db pdb "SELECT * FROM test.csv"
 
 ### ASCII Table & MarkDown (output only)
 
-You can output ASCII table using [tablewriter](https://github.com/olekukonko/tablewriter).
+-oat is ASCII table output.
+It uses [tablewriter](https://github.com/olekukonko/tablewriter).
+
 
 ```sh
 $ trdsql -oat "SELECT * FROM test.csv"
@@ -289,7 +289,7 @@ $ trdsql -oat "SELECT * FROM test.csv"
 +----+--------+
 ```
 
-You can also output Markdown.
+-omd is Markdown output.
 
 ```sh
 $ trdsql -omd "SELECT * FROM test.csv"
@@ -305,20 +305,20 @@ $ trdsql -omd "SELECT * FROM test.csv"
 
 ### Vertical format
 
-Vertical format outputs "column name | value" vertically
+-ovf is Vertical format output("column name | value" vertically).
 
 ```sh
 $ trdsql -ovf "SELECT * FROM test.csv"
 ```
 
 ```
----[ 1]----------------------------------------------------------------
+---[ 1]--------------------------------------------------------
   c1 | 1
   c2 | Orange
----[ 2]----------------------------------------------------------------
+---[ 2]--------------------------------------------------------
   c1 | 2
   c2 | Melon
----[ 3]----------------------------------------------------------------
+---[ 3]--------------------------------------------------------
   c1 | 3
   c2 | Apple
 ```
@@ -333,6 +333,7 @@ $ trdsql "SELECT count(*) FROM test.csv"
 ```
 
 The default column names are c1, c2,...
+
 ```sh
 $ trdsql "SELECT c2,c1 FROM test.csv"
 ```
@@ -342,11 +343,15 @@ Orange,1
 Melon,2
 Apple,3
 ```
-
-You can specify "-" can be specified for stdin.
+"-" or "stdin" is received from standard input instead of file name.
 ```sh
 $ ps | trdsql -id " " "SELECT * FROM -"
 ```
+or
+```sh
+$ ps | trdsql -id " " "SELECT * FROM stdin"
+```
+
 ```
 PID,TTY,TIME,CMD
 3073,pts/22,00:00:00,zsh
@@ -356,7 +361,7 @@ PID,TTY,TIME,CMD
 
 ### JOIN
 
-You can also JOIN.
+The SQL JOIN can be used.
 
 user.csv
 ```CSV
@@ -389,7 +394,9 @@ $ trdsql -driver postgres -dsn "dbname=test" "SELECT count(*) FROM test.csv "
 ```
 
 #### Function
+
 The PostgreSQL driver can use the window function.
+
 ```sh
 $ trdsql -driver postgres -dsn "dbname=test" "SELECT row_number() OVER (ORDER BY c2),c1,c2 FROM test.csv"
 ```
@@ -399,7 +406,8 @@ $ trdsql -driver postgres -dsn "dbname=test" "SELECT row_number() OVER (ORDER BY
 3,1,Orange
 ```
 
-You can also use the generate_series function.
+For example, the generate_series function can be used.
+
 ```sh
 $ trdsql -driver postgres -dsn "dbname=test" "SELECT generate_series(1,3);"
 ```
@@ -436,7 +444,7 @@ $ trdsql -driver postgres -dsn "dbname=test" "SELECT t.c1,t.c2,c.name FROM test.
 3,Apple,red
 ```
 
-You can also use "CREATE TABLE ... AS SELECT...".
+To create a table from a file, use "CREATE TABLE ... AS SELECT...".
 
 ```sh
 $ trdsql -driver postgres -dns "dbname=test" "CREATE TABLE fruits (id, name) AS SELECT c1::int, c2 FROM fruits.csv "
@@ -489,13 +497,11 @@ Windows (ex).
 ```
 C:\Users\{"User"}\AppData\Roaming\trdsql\config.json
 ```
-
-Or you can specify the file with the -config option/
+Or use the -config file option.
 
 ```sh
 $ trdsql -config config.json "SELECT * FROM test.csv"
 ```
-
 
  sample: [config.json](config.json.sample)
 
