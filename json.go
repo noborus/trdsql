@@ -8,11 +8,11 @@ import (
 
 // JSONIn provides methods of the Input interface
 type JSONIn struct {
-	reader *json.Decoder
-	frow   []string
-	header []string
-	ajson  []interface{}
-	count  int
+	reader   *json.Decoder
+	firstRow []string
+	header   []string
+	ajson    []interface{}
+	count    int
 }
 
 // JSONOut provides methods of the Output interface
@@ -46,7 +46,7 @@ func (jr *JSONIn) firstRead() ([]string, error) {
 	}
 	for k, v := range dmap {
 		jr.header = append(jr.header, k)
-		jr.frow = append(jr.frow, jsonStr(v))
+		jr.firstRow = append(jr.firstRow, jsonStr(v))
 	}
 	debug.Printf("Column Name: [%v]", strings.Join(jr.header, ","))
 	return jr.header, err
@@ -62,9 +62,9 @@ func jsonStr(val interface{}) string {
 	}
 }
 
-func (jr *JSONIn) firstRow(list []interface{}) []interface{} {
+func (jr *JSONIn) firstRowRead(list []interface{}) []interface{} {
 	for i := range jr.header {
-		list[i] = jr.frow[i]
+		list[i] = jr.firstRow[i]
 	}
 	return list
 }

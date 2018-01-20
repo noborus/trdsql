@@ -7,12 +7,12 @@ import (
 )
 
 func IsSeparator(s string) bool {
-	r, _ := getSeparator(s)
+	r, _ := separator(s)
 	return (r > 0)
 }
 
 func IsNotSeparator() bool {
-	r, _ := getSeparator("false")
+	r, _ := separator("false")
 	return (r == ',')
 }
 
@@ -53,7 +53,7 @@ func TestCsvEmptyNew(t *testing.T) {
 
 func TestCsvHeaderNew(t *testing.T) {
 	trdsql := trdsqlNew()
-	trdsql.ihead = true
+	trdsql.inHeader = true
 	trdsql.inSep = ","
 	csvStream := `h1,h2
 	v1,v2`
@@ -67,7 +67,7 @@ func TestCsvHeaderNew(t *testing.T) {
 
 func TestCsvEmptyColumnHeaderNew(t *testing.T) {
 	trdsql := trdsqlNew()
-	trdsql.ihead = true
+	trdsql.inHeader = true
 	trdsql.inSep = ","
 	csvStream := `h1,
 	v1,v2`
@@ -81,7 +81,7 @@ func TestCsvEmptyColumnHeaderNew(t *testing.T) {
 
 func TestCsvEmptyColumnRowNew(t *testing.T) {
 	trdsql := trdsqlNew()
-	trdsql.ihead = true
+	trdsql.inHeader = true
 	trdsql.inSep = ","
 	csvStream := `h1,h2
 	,v2`
@@ -100,7 +100,7 @@ func TestCsvEmptyColumnRowNew(t *testing.T) {
 
 func TestCsvColumnDifferenceNew(t *testing.T) {
 	trdsql := trdsqlNew()
-	trdsql.ihead = true
+	trdsql.inHeader = true
 	trdsql.inSep = ","
 	csvStream := `h1,h2,h3
 	v1,v2,v3

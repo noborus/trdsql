@@ -20,6 +20,13 @@ func (d debugT) Printf(format string, args ...interface{}) {
 	}
 }
 
+// (Default)input Formast
+var (
+	Icsv  bool
+	Iltsv bool
+	Ijson bool
+)
+
 // Output Formast
 var (
 	Ocsv  bool
@@ -61,14 +68,14 @@ func (trdsql *TRDSQL) Run(args []string) int {
 	flags.BoolVar(&dblist, "dblist", false, "display db information.")
 	flags.StringVar(&cdriver, "driver", "", "database driver.  [ "+strings.Join(sql.Drivers(), " | ")+" ]")
 	flags.StringVar(&cdsn, "dsn", "", "database connection option.")
-	flags.BoolVar(&trdsql.iguess, "ig", false, "Guess format from extension.")
-	flags.BoolVar(&trdsql.icsv, "icsv", false, "CSV format for input.")
-	flags.BoolVar(&trdsql.iltsv, "iltsv", false, "LTSV format for input.")
-	flags.BoolVar(&trdsql.ijson, "ijson", false, "JSON format for input.")
+	flags.BoolVar(&trdsql.inGuess, "ig", false, "Guess format from extension.")
+	flags.BoolVar(&Icsv, "icsv", false, "CSV format for input.")
+	flags.BoolVar(&Iltsv, "iltsv", false, "LTSV format for input.")
+	flags.BoolVar(&Ijson, "ijson", false, "JSON format for input.")
 	flags.StringVar(&trdsql.inSep, "id", ",", "Field delimiter for input.")
 	flags.StringVar(&trdsql.outSep, "od", ",", "Field delimiter for output.")
-	flags.BoolVar(&trdsql.ihead, "ih", false, "The first line is interpreted as column names(CSV only).")
-	flags.IntVar(&trdsql.iskip, "is", 0, "Skip header row.")
+	flags.BoolVar(&trdsql.inHeader, "ih", false, "The first line is interpreted as column names(CSV only).")
+	flags.IntVar(&trdsql.inSkip, "is", 0, "Skip header row.")
 	flags.BoolVar(&trdsql.outHeader, "oh", false, "Output column name as header.")
 	flags.StringVar(&query, "q", "", "Read query from the provided filename.")
 	flags.BoolVar(&usage, "help", false, "display usage information.")
@@ -83,7 +90,11 @@ func (trdsql *TRDSQL) Run(args []string) int {
 	flags.BoolVar(&Oraw, "oraw", false, "Raw format for output.")
 	flags.BoolVar(&Ojson, "ojson", false, "JSON format for output.")
 
-	flags.Parse(args[1:])
+	err := flags.Parse(args[1:])
+	if err != nil {
+		log.Println("ERROR:", err)
+		return (1)
+	}
 
 	if version {
 		fmt.Println(VERSION)
@@ -93,6 +104,8 @@ func (trdsql *TRDSQL) Run(args []string) int {
 	if odebug {
 		debug = true
 	}
+
+	trdsql.setInFormat()
 
 	cfgfile := configOpen(config)
 	cfg, err := loadConfig(cfgfile)
@@ -132,20 +145,25 @@ func (trdsql *TRDSQL) main(sqlstr string, output Output) int {
 		log.Println("ERROR:", err)
 		return 1
 	}
-	defer db.Disconnect()
+	defer func() {
+		err = db.Disconnect()
+		if err != nil {
+			log.Println("ERROR:", err)
+		}
+	}()
 
 	db.tx, err = db.Begin()
 	if err != nil {
 		log.Println("ERROR:", err)
 		return 1
 	}
-	sqlstr, err = trdsql.dbimport(db, sqlstr)
+	sqlstr, err = trdsql.Import(db, sqlstr)
 	if err != nil {
 		log.Println("ERROR:", err)
 		return 1
 	}
 
-	err = trdsql.dbexport(db, sqlstr, output)
+	err = trdsql.Export(db, sqlstr, output)
 	if err != nil {
 		log.Println("ERROR:", err)
 		return 1
@@ -160,6 +178,16 @@ func (trdsql *TRDSQL) main(sqlstr string, output Output) int {
 	return 0
 }
 
+func (trdsql *TRDSQL) setInFormat() {
+	if Icsv {
+		trdsql.inType = CSV
+	} else if Iltsv {
+		trdsql.inType = LTSV
+	} else if Ijson {
+		trdsql.inType = JSON
+	}
+}
+
 func (trdsql *TRDSQL) setOutFormat() Output {
 	var output Output
 	switch {
@@ -170,10 +198,9 @@ func (trdsql *TRDSQL) setOutFormat() Output {
 	case Oraw:
 		output = trdsql.rawOutNew()
 	case Omd:
-		trdsql.omd = true
-		output = trdsql.twOutNew()
+		output = trdsql.twOutNew(true)
 	case Oat:
-		output = trdsql.twOutNew()
+		output = trdsql.twOutNew(false)
 	case Ovf:
 		output = trdsql.vfOutNew()
 	case Ocsv:

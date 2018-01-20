@@ -10,7 +10,7 @@ import (
 // LTSVIn provides methods of the Input interface
 type LTSVIn struct {
 	reader    *bufio.Reader
-	frow      map[string]string
+	firstRow  map[string]string
 	delimiter string
 	header    []string
 }
@@ -31,7 +31,7 @@ func (trdsql *TRDSQL) ltsvInputNew(r io.Reader) (Input, error) {
 
 func (lr *LTSVIn) firstRead() ([]string, error) {
 	var err error
-	lr.frow, lr.header, err = lr.read()
+	lr.firstRow, lr.header, err = lr.read()
 	if err != nil {
 		return nil, err
 	}
@@ -39,9 +39,9 @@ func (lr *LTSVIn) firstRead() ([]string, error) {
 	return lr.header, nil
 }
 
-func (lr *LTSVIn) firstRow(list []interface{}) []interface{} {
+func (lr *LTSVIn) firstRowRead(list []interface{}) []interface{} {
 	for i := range lr.header {
-		list[i] = lr.frow[lr.header[i]]
+		list[i] = lr.firstRow[lr.header[i]]
 	}
 	return list
 }

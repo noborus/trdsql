@@ -8,6 +8,8 @@ It is a tool like [q](https://github.com/harelba/q) , [textql](https://github.co
 
 The difference from these tools is that the syntax of PostgreSQL or MySQL can be used.
 
+[![asciicast](https://asciinema.org/a/I01SWSNiMXamkxZiOPSiL8oET.png)](https://asciinema.org/a/I01SWSNiMXamkxZiOPSiL8oET)
+
 ## INSTALL
 
 ```
@@ -15,9 +17,13 @@ go get -u github.com/noborus/trdsql
 ```
 Or download binaries from the [releases](https://github.com/noborus/trdsql/releases) page(Linux/Windows/macOS).
 
-## Options
+## Usage
 
-### global
+```
+$ trdsql [options] SQL
+```
+
+### global option
 
 * `-config` **filename**
         Configuration file location.
@@ -40,41 +46,58 @@ Or download binaries from the [releases](https://github.com/noborus/trdsql/relea
 
 ### Input format
 
-* `-ih`
-        The first line is interpreted as column names(CSV only).
-* `-id` **delimiter characeter**
-        Field delimiter for input. (default ",")
 * `-ig`
         Guess format from extension.
 * `-icsv`
-        CSV format for input.
+        CSV format for input(default).
 * `-ijson`
         JSON format for input.
 * `-iltsv`
         LTSV format for input.
+
+#### Input opution
+
+* `-ih`
+        The first line is interpreted as column names(CSV only).
+* `-id` **delimiter characeter**(CSV only)
+        Field delimiter for input. (default ",")
 * `-is` **int**
         Skip header row.
 
 ### Output format
 
-* `-oh`
-        Output column name as header.
-* `-od` **delimiter characeter**
-        Field delimiter for output. (default ",")
-* `-oat`
-        ASCII Table format for output.
 * `-ocsv`
-        CSV format for output. (default true)
+        CSV format for output. (default)
 * `-ojson`
         JSON format for output.
 * `-oltsv`
         LTSV format for output.
+* `-oat`
+        ASCII Table format for output.
 * `-omd`
         Mark Down format for output.
 * `-oraw`
         Raw format for output.
 * `-ovf`
         Vertical format for output.
+
+#### Output option
+
+* `-oh`
+        Output column name as header.
+* `-od` **delimiter characeter**
+        Field delimiter for output. (default ",")
+
+## STDIN input
+
+"-" or "stdin" is received from standard input instead of file name.
+```sh
+$ ps | trdsql -id " " "SELECT * FROM -"
+```
+or
+```sh
+$ ps | trdsql -id " " "SELECT * FROM stdin"
+```
 
 ## Example
 
@@ -342,14 +365,6 @@ $ trdsql "SELECT c2,c1 FROM test.csv"
 Orange,1
 Melon,2
 Apple,3
-```
-"-" or "stdin" is received from standard input instead of file name.
-```sh
-$ ps | trdsql -id " " "SELECT * FROM -"
-```
-or
-```sh
-$ ps | trdsql -id " " "SELECT * FROM stdin"
 ```
 
 ```
