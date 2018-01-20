@@ -11,7 +11,7 @@ import (
 type CSVIn struct {
 	reader   *csv.Reader
 	header   []string
-	fRow     []string
+	firstRow []string
 	inHeader bool
 }
 
@@ -29,8 +29,8 @@ func (trdsql *TRDSQL) csvInputNew(r io.Reader) (Input, error) {
 	cr.reader.LazyQuotes = true
 	cr.reader.FieldsPerRecord = -1 // no check count
 	cr.reader.TrimLeadingSpace = true
-	cr.reader.Comma, err = getSeparator(trdsql.inSep)
-	cr.inHeader = trdsql.ihead
+	cr.reader.Comma, err = separator(trdsql.inSep)
+	cr.inHeader = trdsql.inHeader
 	return cr, err
 }
 
@@ -40,7 +40,7 @@ func (cr *CSVIn) firstRead() ([]string, error) {
 		return nil, err
 	}
 	cr.header = make([]string, len(first))
-	cr.fRow = make([]string, len(first))
+	cr.firstRow = make([]string, len(first))
 	for i, row := range first {
 		if cr.inHeader {
 			if row == "" {
@@ -50,15 +50,15 @@ func (cr *CSVIn) firstRead() ([]string, error) {
 			}
 		} else {
 			cr.header[i] = "c" + strconv.Itoa(i+1)
-			cr.fRow[i] = row
+			cr.firstRow[i] = row
 		}
 	}
 	debug.Printf("Column Name: [%v]", strings.Join(cr.header, ","))
 	return cr.header, err
 }
 
-func (cr *CSVIn) firstRow(list []interface{}) []interface{} {
-	for i, f := range cr.fRow {
+func (cr *CSVIn) firstRowRead(list []interface{}) []interface{} {
+	for i, f := range cr.firstRow {
 		list[i] = f
 	}
 	return list
@@ -83,7 +83,7 @@ func (trdsql *TRDSQL) csvOutNew() Output {
 	var err error
 	c := &CSVOut{}
 	c.writer = csv.NewWriter(trdsql.outStream)
-	c.writer.Comma, err = getSeparator(trdsql.outSep)
+	c.writer.Comma, err = separator(trdsql.outSep)
 	if err != nil {
 		debug.Printf("%s\n", err)
 	}

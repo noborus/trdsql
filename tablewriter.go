@@ -10,11 +10,11 @@ type TwOut struct {
 	results []string
 }
 
-func (trdsql *TRDSQL) twOutNew() Output {
+func (trdsql *TRDSQL) twOutNew(markdown bool) Output {
 	tw := &TwOut{}
 	tw.writer = tablewriter.NewWriter(trdsql.outStream)
 	tw.writer.SetAutoFormatHeaders(false)
-	if trdsql.omd {
+	if markdown {
 		tw.writer.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 		tw.writer.SetCenterSeparator("|")
 	}

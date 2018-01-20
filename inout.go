@@ -2,34 +2,31 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"os"
 	"strconv"
 	"strings"
 )
 
-// Input format
-const (
-	CSV = iota
-	LTSV
-	JSON
-)
-
-// Input is database import
+// Input is wrap the reader.
 type Input interface {
 	firstRead() ([]string, error)
-	firstRow([]interface{}) []interface{}
+	firstRowRead([]interface{}) []interface{}
 	rowRead([]interface{}) ([]interface{}, error)
 }
 
-func (trdsql *TRDSQL) dbimport(db *DDB, sqlstr string) (string, error) {
+// Import is import the file written in SQL.
+func (trdsql *TRDSQL) Import(db *DDB, sqlstr string) (string, error) {
 	var err error
-	tablenames := sqlparse(sqlstr)
-	if len(tablenames) == 0 {
+	tableList := tableList(sqlstr)
+	if len(tableList) == 0 {
 		// without FROM clause. ex. SELECT 1+1;
 		debug.Printf("table not found\n")
+		return sqlstr, nil
 	}
 	created := make(map[string]bool)
-	for _, tablename := range tablenames {
+	for _, tablename := range tableList {
 		if created[tablename] {
 			debug.Printf("already created \"%s\"\n", tablename)
 			continue
@@ -43,64 +40,90 @@ func (trdsql *TRDSQL) dbimport(db *DDB, sqlstr string) (string, error) {
 	return sqlstr, err
 }
 
+func tableList(sqlstr string) []string {
+	var tableList []string
+	word := strings.Fields(sqlstr)
+	for i, w := range word {
+		if element := strings.ToUpper(w); element == "FROM" || element == "JOIN" {
+			if (i + 1) < len(word) {
+				tableList = append(tableList, word[i+1])
+			}
+		}
+	}
+	return tableList
+}
+
 func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (string, error) {
-	file, input, err := trdsql.fileInput(tablename)
+	file, err := tableFileOpen(tablename)
 	if err != nil {
 		debug.Printf("%s\n", err)
 		return sqlstr, nil
 	}
-	defer file.Close()
-	skip := make([]interface{}, 1)
-	for i := 0; i < trdsql.iskip; i++ {
-		r, _ := input.rowRead(skip)
-		debug.Printf("Skip row:%s\n", r)
+	defer func() {
+		err = file.Close()
+		if err != nil {
+			log.Println("ERROR:", err)
+		}
+	}()
+	input, err := trdsql.InputNew(file, tablename)
+	if err != nil {
+		log.Println("ERROR:", err)
 	}
-	rtable := db.escapetable(tablename)
-	sqlstr = db.rewrite(sqlstr, tablename, rtable)
+	if trdsql.inSkip > 0 {
+		skip := make([]interface{}, 1)
+		for i := 0; i < trdsql.inSkip; i++ {
+			r, _ := input.rowRead(skip)
+			debug.Printf("Skip row:%s\n", r)
+		}
+	}
+	rtable := db.EscapeTable(tablename)
+	sqlstr = db.RewriteSQL(sqlstr, tablename, rtable)
 	var header []string
 	header, err = input.firstRead()
 	if err != nil {
 		return sqlstr, err
 	}
-	err = db.Create(rtable, header)
+	err = db.CreateTable(rtable, header)
 	if err != nil {
 		return sqlstr, err
 	}
-	err = db.ImportData(rtable, header, input, trdsql.ifrow)
+	err = db.Import(rtable, header, input, trdsql.inFirstRow)
 	return sqlstr, err
 }
 
-func (trdsql *TRDSQL) fileInput(tablename string) (*os.File, Input, error) {
-	file, err := tableFileOpen(tablename)
-	if err != nil {
-		return nil, nil, err
+// InputNew is create input reader.
+func (trdsql *TRDSQL) InputNew(file io.Reader, tablename string) (Input, error) {
+	var err error
+	if trdsql.inGuess {
+		trdsql.inType = guessExtension(tablename)
 	}
-
-	itype := CSV
-	if trdsql.icsv {
-		itype = CSV
-	} else if trdsql.iltsv {
-		itype = LTSV
-	} else if trdsql.ijson {
-		itype = JSON
-	} else if trdsql.iguess {
-		itype = guessExtension(tablename)
-	}
-
-	trdsql.ifrow = false
+	trdsql.inFirstRow = false
 	var input Input
-	switch itype {
+	switch trdsql.inType {
 	case LTSV:
-		trdsql.ifrow = true
+		trdsql.inFirstRow = true
 		input, err = trdsql.ltsvInputNew(file)
 	case JSON:
-		trdsql.ifrow = true
+		trdsql.inFirstRow = true
 		input, err = trdsql.jsonInputNew(file)
 	default:
-		trdsql.ifrow = !trdsql.ihead
+		trdsql.inFirstRow = !trdsql.inHeader
 		input, err = trdsql.csvInputNew(file)
 	}
-	return file, input, err
+	return input, err
+}
+
+func tableFileOpen(filename string) (*os.File, error) {
+	if filename == "-" || strings.ToLower(filename) == "stdin" {
+		return os.Stdin, nil
+	}
+	if filename[0] == '`' {
+		filename = strings.Replace(filename, "`", "", 2)
+	}
+	if filename[0] == '"' {
+		filename = strings.Replace(filename, "\"", "", 2)
+	}
+	return os.Open(filename)
 }
 
 // Output is database export
@@ -110,7 +133,8 @@ type Output interface {
 	last() error
 }
 
-func (trdsql *TRDSQL) dbexport(db *DDB, sqlstr string, output Output) error {
+// Export is execute SQL and output the result.
+func (trdsql *TRDSQL) Export(db *DDB, sqlstr string, output Output) error {
 	rows, err := db.Select(sqlstr)
 	if err != nil {
 		return err
@@ -120,7 +144,12 @@ func (trdsql *TRDSQL) dbexport(db *DDB, sqlstr string, output Output) error {
 	if err != nil {
 		return err
 	}
-	defer rows.Close()
+	defer func() {
+		err = rows.Close()
+		if err != nil {
+			log.Println("ERROR:", err)
+		}
+	}()
 	values := make([]interface{}, len(columns))
 	scanArgs := make([]interface{}, len(columns))
 	for i := range values {
@@ -140,8 +169,7 @@ func (trdsql *TRDSQL) dbexport(db *DDB, sqlstr string, output Output) error {
 			return err
 		}
 	}
-	output.last()
-	return nil
+	return output.last()
 }
 
 func guessExtension(tablename string) int {
@@ -160,7 +188,7 @@ func guessExtension(tablename string) int {
 	return CSV
 }
 
-func getSeparator(sepString string) (rune, error) {
+func separator(sepString string) (rune, error) {
 	if sepString == "" {
 		return 0, nil
 	}
@@ -170,19 +198,6 @@ func getSeparator(sepString string) (rune, error) {
 	}
 	sepRune := ([]rune(sepRunes))[0]
 	return sepRune, err
-}
-
-func tableFileOpen(filename string) (*os.File, error) {
-	if filename == "-" || strings.ToLower(filename) == "stdin" {
-		return os.Stdin, nil
-	}
-	if filename[0] == '`' {
-		filename = strings.Replace(filename, "`", "", 2)
-	}
-	if filename[0] == '"' {
-		filename = strings.Replace(filename, "\"", "", 2)
-	}
-	return os.Open(filename)
 }
 
 func valString(v interface{}) string {

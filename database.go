@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -21,156 +22,6 @@ type DDB struct {
 	maxBulk   int
 	*sql.DB
 	tx *sql.Tx
-}
-
-// iTable is import Table data
-type iTable struct {
-	tablename string
-	header    []string
-	columns   []string
-	place     string
-	firstrow  bool
-	sqlpre    string
-}
-
-// ImportData is import to the table.
-func (db *DDB) ImportData(tablename string, header []string, input Input, firstrow bool) error {
-	var err error
-	columns := make([]string, len(header))
-	for i := range header {
-		columns[i] = db.escape + header[i] + db.escape
-	}
-	itable := &iTable{
-		tablename: tablename,
-		header:    header,
-		columns:   columns,
-		firstrow:  firstrow,
-	}
-	if db.driver == "postgres" {
-		err = db.copyImport(itable, input)
-	} else {
-		err = db.insertImport(itable, input)
-	}
-	return err
-}
-
-func (db *DDB) copyImport(itable *iTable, input Input) error {
-	sqlstr := fmt.Sprintf("COPY %s (%s) FROM STDIN", itable.tablename, strings.Join(itable.columns, ","))
-	debug.Printf(sqlstr)
-	stmt, err := db.tx.Prepare(sqlstr)
-	if err != nil {
-		return fmt.Errorf("COPY Prepare: %s", err)
-	}
-	row := make([]interface{}, len(itable.header))
-	if itable.firstrow {
-		row = input.firstRow(row)
-		_, err = stmt.Exec(row...)
-		if err != nil {
-			return err
-		}
-	}
-
-	for {
-		row, err = input.rowRead(row)
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			return fmt.Errorf("Read: %s", err)
-		}
-		_, err = stmt.Exec(row...)
-		if err != nil {
-			return err
-		}
-	}
-	_, err = stmt.Exec()
-	if err != nil {
-		return err
-	}
-	err = stmt.Close()
-	return err
-}
-
-func (db *DDB) insertImport(itable *iTable, input Input) error {
-	var stmt *sql.Stmt
-	var err error
-	defer db.stmtClose(stmt)
-	itable.sqlpre = fmt.Sprintf("INSERT INTO %s (%s) VALUES ",
-		itable.tablename, strings.Join(itable.columns, ","))
-	itable.place = "(" + strings.Repeat("?,", len(itable.header)-1) + "?)"
-
-	row := make([]interface{}, len(itable.header))
-	maxBulk := (db.maxBulk / len(row)) * len(row)
-	bulk := make([]interface{}, 0, maxBulk)
-	count := 0
-	bulkNum := 0
-
-	if itable.firstrow {
-		row = input.firstRow(row)
-		bulk = append(bulk, row...)
-		bulkNum = bulkNum + len(row)
-		count++
-	}
-
-	previousNum := 0
-	eof := false
-	for !eof {
-		for bulkNum < maxBulk {
-			row, err = input.rowRead(row)
-			if err == nil {
-				bulk = append(bulk, row...)
-				bulkNum = bulkNum + len(row)
-				count++
-			} else if err == io.EOF {
-				if len(bulk) <= 0 {
-					return nil
-				}
-				eof = true
-				break
-			} else {
-				return fmt.Errorf("Read: %s", err)
-			}
-		}
-
-		if previousNum != bulkNum {
-			previousNum = bulkNum
-			if stmt != nil {
-				err = stmt.Close()
-				if err != nil {
-					return err
-				}
-			}
-			stmt, err = db.insertPrepare(itable, count)
-			if err != nil {
-				return err
-			}
-		}
-		_, err = stmt.Exec(bulk...)
-		if err != nil {
-			return err
-		}
-		bulk = bulk[:0]
-		bulkNum = 0
-		count = 0
-	}
-
-	return err
-}
-
-func (db *DDB) stmtClose(stmt *sql.Stmt) {
-	if stmt != nil {
-		stmt.Close()
-	}
-}
-
-func (db *DDB) insertPrepare(itable *iTable, count int) (*sql.Stmt, error) {
-	sqlstr := itable.sqlpre +
-		strings.Repeat(itable.place+",", count-1) + itable.place
-	debug.Printf(sqlstr)
-	stmt, err := db.tx.Prepare(sqlstr)
-	if err != nil {
-		return nil, fmt.Errorf("INSERT Prepare: %s:%s", sqlstr, err)
-	}
-	return stmt, nil
 }
 
 // Connect is connects to the database
@@ -202,8 +53,8 @@ func (db *DDB) Disconnect() error {
 	return err
 }
 
-// Create is create a temporary table
-func (db *DDB) Create(table string, header []string) error {
+// CreateTable is create a temporary table
+func (db *DDB) CreateTable(table string, header []string) error {
 	var sqlstr string
 	columns := make([]string, len(header))
 	for i := 0; i < len(header); i++ {
@@ -230,7 +81,172 @@ func (db *DDB) Select(sqlstr string) (*sql.Rows, error) {
 	return rows, nil
 }
 
-func (db *DDB) escapetable(oldname string) string {
+// iTable is import Table data
+type iTable struct {
+	tablename string
+	header    []string
+	columns   []string
+	sqlstr    string
+	place     string
+	firstRow  bool
+	row       []interface{}
+	lastCount int
+	count     int
+}
+
+// Import is import to the table.
+func (db *DDB) Import(tablename string, header []string, input Input, firstRow bool) error {
+	var err error
+	columns := make([]string, len(header))
+	for i := range header {
+		columns[i] = db.escape + header[i] + db.escape
+	}
+	row := make([]interface{}, len(header))
+	itable := &iTable{
+		tablename: tablename,
+		header:    header,
+		columns:   columns,
+		firstRow:  firstRow,
+		row:       row,
+		lastCount: 0,
+		count:     0,
+	}
+	if db.driver == "postgres" {
+		err = db.copyImport(itable, input)
+	} else {
+		err = db.insertImport(itable, input)
+	}
+	return err
+}
+
+func (db *DDB) copyImport(itable *iTable, input Input) error {
+	sqlstr := "COPY " + itable.tablename + " (" + strings.Join(itable.columns, ",") + ") FROM STDIN"
+	debug.Printf(sqlstr)
+	stmt, err := db.tx.Prepare(sqlstr)
+	if err != nil {
+		return fmt.Errorf("COPY Prepare: %s", err)
+	}
+	if itable.firstRow {
+		itable.row = input.firstRowRead(itable.row)
+		_, err = stmt.Exec(itable.row...)
+		if err != nil {
+			return err
+		}
+	}
+
+	for {
+		itable.row, err = input.rowRead(itable.row)
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return fmt.Errorf("Read: %s", err)
+		}
+		_, err = stmt.Exec(itable.row...)
+		if err != nil {
+			return err
+		}
+	}
+	_, err = stmt.Exec()
+	if err != nil {
+		return err
+	}
+	err = stmt.Close()
+	return err
+}
+
+func (db *DDB) insertImport(itable *iTable, input Input) error {
+	var err error
+	var stmt *sql.Stmt
+	defer db.stmtClose(stmt)
+	itable.sqlstr = "INSERT INTO " + itable.tablename + " (" + strings.Join(itable.columns, ",") + ") VALUES "
+	itable.place = "(" + strings.Repeat("?,", len(itable.header)-1) + "?)"
+	maxCap := (db.maxBulk / len(itable.row)) * len(itable.row)
+	bulk := make([]interface{}, 0, maxCap)
+
+	if itable.firstRow {
+		itable.row = input.firstRowRead(itable.row)
+		bulk = append(bulk, itable.row...)
+		itable.count++
+	}
+
+	for eof := false; !eof; {
+		bulk, err = bulkPush(itable, input, bulk)
+		if err == io.EOF {
+			if len(bulk) <= 0 {
+				return nil
+			}
+			eof = true
+		} else if err != nil {
+			return fmt.Errorf("Read: %s", err)
+		}
+		stmt, err = db.bulkStmtOpen(itable, stmt)
+		if err != nil {
+			return err
+		}
+		_, err = stmt.Exec(bulk...)
+		if err != nil {
+			return err
+		}
+		bulk = bulk[:0]
+		itable.count = 0
+	}
+	return nil
+}
+
+func bulkPush(itable *iTable, input Input, bulk []interface{}) ([]interface{}, error) {
+	var err error
+	for (itable.count * len(itable.row)) < cap(bulk) {
+		itable.row, err = input.rowRead(itable.row)
+		if err != nil {
+			return bulk, err
+		}
+		bulk = append(bulk, itable.row...)
+		itable.count++
+	}
+	return bulk, nil
+}
+
+func (db *DDB) bulkStmtOpen(itable *iTable, stmt *sql.Stmt) (*sql.Stmt, error) {
+	var err error
+
+	if itable.lastCount != itable.count {
+		if stmt != nil {
+			err = stmt.Close()
+			if err != nil {
+				return nil, err
+			}
+		}
+		stmt, err = db.insertPrepare(itable)
+		if err != nil {
+			return nil, err
+		}
+		itable.lastCount = itable.count
+	}
+	return stmt, nil
+}
+
+func (db *DDB) stmtClose(stmt *sql.Stmt) {
+	if stmt != nil {
+		err := stmt.Close()
+		if err != nil {
+			log.Println("ERROR:", err)
+		}
+	}
+}
+
+func (db *DDB) insertPrepare(itable *iTable) (*sql.Stmt, error) {
+	sqlstr := itable.sqlstr +
+		strings.Repeat(itable.place+",", itable.count-1) + itable.place
+	debug.Printf(sqlstr)
+	stmt, err := db.tx.Prepare(sqlstr)
+	if err != nil {
+		return nil, fmt.Errorf("INSERT Prepare: %s:%s", sqlstr, err)
+	}
+	return stmt, nil
+}
+
+// EscapeTable is escape table name.
+func (db *DDB) EscapeTable(oldname string) string {
 	var newname string
 	if oldname[0] != db.escape[0] {
 		newname = db.escape + oldname + db.escape
@@ -240,7 +256,8 @@ func (db *DDB) escapetable(oldname string) string {
 	return newname
 }
 
-func (db *DDB) rewrite(sqlstr string, oldname string, newname string) (rewrite string) {
+// RewriteSQL is rewrite SQL from file name to table name.
+func (db *DDB) RewriteSQL(sqlstr string, oldname string, newname string) (rewrite string) {
 	for _, rewritten := range db.rewritten {
 		if rewritten == newname {
 			// Rewritten
@@ -250,17 +267,4 @@ func (db *DDB) rewrite(sqlstr string, oldname string, newname string) (rewrite s
 	rewrite = strings.Replace(sqlstr, oldname, newname, -1)
 	db.rewritten = append(db.rewritten, newname)
 	return rewrite
-}
-
-func sqlparse(sqlstr string) []string {
-	var tablenames []string
-	word := strings.Fields(sqlstr)
-	for i, w := range word {
-		if element := strings.ToUpper(w); element == "FROM" || element == "JOIN" {
-			if (i + 1) < len(word) {
-				tablenames = append(tablenames, word[i+1])
-			}
-		}
-	}
-	return tablenames
 }
