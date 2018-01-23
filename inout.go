@@ -46,7 +46,11 @@ func tableList(sqlstr string) []string {
 	for i, w := range word {
 		if element := strings.ToUpper(w); element == "FROM" || element == "JOIN" {
 			if (i + 1) < len(word) {
-				tableList = append(tableList, word[i+1])
+				t := word[i+1]
+				if len(t) > 0 && t[len(t)-1] == ')' {
+					t = t[:len(t)-1]
+				}
+				tableList = append(tableList, t)
 			}
 		}
 	}
@@ -176,10 +180,10 @@ func guessExtension(tablename string) int {
 	pos := strings.LastIndex(tablename, ".")
 	if pos > 0 {
 		ext := strings.ToLower(tablename[pos:])
-		if ext == ".ltsv" {
+		if strings.Contains(ext, ".ltsv") {
 			debug.Printf("Guess file type as LTSV: [%s]", tablename)
 			return LTSV
-		} else if ext == ".json" {
+		} else if strings.Contains(ext, ".json") {
 			debug.Printf("Guess file type as JSON: [%s]", tablename)
 			return JSON
 		}
