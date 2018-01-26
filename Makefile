@@ -47,5 +47,6 @@ install:
 clean:
 	$(GOCLEAN)
 	rm -f $(BINARY_NAME)
+	rm -rf dist
 
 .PHONY: all dep test build pkg install clean
