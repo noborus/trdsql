@@ -1,0 +1,17 @@
+[
+    {
+      "id": 1,
+      "name": "Drolet",
+      "attribute": { "country": "Maldives", "color": "burlywood" }
+    },
+    {
+      "id": 2,
+      "name": "Shelly",
+      "attribute": { "country": "Yemen", "color": "plum" }
+    },
+    {
+      "id": 3,
+      "name": "Tuck",
+      "attribute": { "country": "Mayotte", "color": "antiquewhite" }
+    }
+]
