@@ -53,6 +53,21 @@ func TestCsvRun(t *testing.T) {
 	}
 }
 
+func TestCsvHeaderRun(t *testing.T) {
+	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
+	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	sql := "SELECT * FROM " + data + "header.csv"
+	outstr := "1,Orange\n2,Melon\n3,Apple\n"
+	args := []string{"trdsql", "-driver", "sqlite3", "-ih", sql}
+	if trdsql.Run(args) != 0 {
+		t.Errorf("trdsql error.")
+	}
+	if outStream.String() != outstr {
+		t.Fatalf("trdsql error %s:%s:%s", "header.csv", outstr, trdsql.outStream)
+	}
+	outStream.Reset()
+}
+
 func TestOutHeaderRun(t *testing.T) {
 	outstr := "c1,c2\n1,Orange\n2,Melon\n3,Apple\n"
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
@@ -104,20 +119,6 @@ func TestJSONRun(t *testing.T) {
 		if outStream.String() == "" {
 			t.Fatalf("trdsql error :%s", trdsql.outStream)
 		}
-	}
-}
-
-func TestJSONFuncRun(t *testing.T) {
-	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
-	sql := "SELECT id,name,json_extract(attribute,'$.country') AS country, json_extract(attribute,'$.color') as color FROM testdata/test3.json"
-	outstr := "1,Drolet,Maldives,burlywood\n2,Shelly,Yemen,plum\n3,Tuck,Mayotte,antiquewhite\n"
-	args := []string{"trdsql", "-driver", "sqlite3", "-ijson", sql}
-	if trdsql.Run(args) != 0 {
-		t.Errorf("trdsql error.")
-	}
-	if outStream.String() != outstr {
-		t.Fatalf("trdsql error \n[%s]\n[%s]\n", outstr, trdsql.outStream)
 	}
 }
 
@@ -225,7 +226,6 @@ func TestDbRun(t *testing.T) {
 				if trdsql.Run(args) != 0 {
 					t.Errorf("trdsql error.")
 				}
-				t.Logf("%s\n%s\n", c[0], outStream.String())
 				if outStream.String() == "" {
 					t.Fatalf("trdsql error %s:%s:%s", c[0], c[1], trdsql.outStream)
 				}
@@ -251,7 +251,6 @@ func TestCountKENALLRun(t *testing.T) {
 			t.Errorf("%s\n%s", db, errStream.String())
 		}
 		outStr := strings.TrimRight(outStream.String(), "\n")
-		t.Logf("%s:%s:[%s]\n", db, sql, outStr)
 		if outStr != count {
 			t.Fatalf("%s:%s:%s", csv, count, outStr)
 		}
