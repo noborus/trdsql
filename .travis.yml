@@ -15,7 +15,7 @@ before_install:
 script:
   - make test
 before_deploy:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make pkg ; else [[[ "$TRAVIS_OS_NAME" == "osx" ]]; then make pkg_macOS ; then
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make pkg ; elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then make pkg_macOS ;fi
   - rm -f $TRAVIS_BUILD_DIR/dist/*.zip
   - cd ${TRAVIS_BUILD_DIR}/dist/ && for i in `ls .`; do cp ../README.md $i; cp ../config.json.sample $i; zip $i.zip $i/* ;done
 deploy:
