@@ -57,6 +57,9 @@ func jsonStr(val interface{}) string {
 	case map[string]interface{}:
 		str, _ := json.Marshal(val)
 		return valString(str)
+	case []interface{}:
+		str, _ := json.Marshal(val)
+		return valString(str)
 	default:
 		return valString(val)
 	}
