@@ -13,7 +13,10 @@ The difference from these tools is that the syntax of PostgreSQL or MySQL can be
 ## INSTALL
 
 ```
-go get -u github.com/noborus/trdsql
+go get -d github.com/noborus/trdsql
+cd $GOPATH/src/github.com/noborus/trdsql
+make
+make install
 ```
 Or download binaries from the [releases](https://github.com/noborus/trdsql/releases) page(Linux/Windows/macOS).
 
@@ -216,6 +219,50 @@ $ trdsql -ijson "SELECT * FROM sample.json"
 3,Apple,100
 ```
 
+JSON can contain structured types, but trdsql is stored as it is as JSON string.
+
+sample2.json
+```JSON
+[
+    {
+      "id": 1,
+      "name": "Drolet",
+      "attribute": { "country": "Maldives", "color": "burlywood" }
+    },
+    {
+      "id": 2,
+      "name": "Shelly",
+      "attribute": { "country": "Yemen", "color": "plum" }
+    },
+    {
+      "id": 3,
+      "name": "Tuck",
+      "attribute": { "country": "Mayotte", "color": "antiquewhite" }
+    }
+]
+```
+
+```sh
+trdsql -ijson "SELECT * FROM sample2.json"
+```
+
+```CSV
+1,Drolet,"{""color"":""burlywood"",""country"":""Maldives""}"
+2,Shelly,"{""color"":""plum"",""country"":""Yemen""}"
+3,Tuck,"{""color"":""antiquewhite"",""country"":""Mayotte""}"
+```
+
+Please use SQL function.
+
+```sh
+trdsql -ijson "SELECT id, name, JSON_EXTRACT(attribute,'$country'), JSON_EXTRACT(attribute,'$color') FROM sample2.json"
+```
+```CSV
+1,Drolet,Maldives,burlywood
+2,Shelly,Yemen,plum
+3,Tuck,Mayotte,antiquewhite
+```
+
 Another json format. One record is JSON.
 
 sample2.json
@@ -236,6 +283,7 @@ sample2.json
   "price": "100"
 }
 ```
+
 
 -ojson is JSON Output.
 
@@ -292,7 +340,7 @@ trdsql -oraw -od "\t|\t" -db pdb "SELECT * FROM test.csv"
 ```
 
 
-### ASCII Table & MarkDown (output only)
+### ASCII Table & MarkDown output
 
 -oat is ASCII table output.
 It uses [tablewriter](https://github.com/olekukonko/tablewriter).
@@ -326,7 +374,7 @@ $ trdsql -omd "SELECT * FROM test.csv"
 |  3 | Apple  |
 ```
 
-### Vertical format
+### Vertical format output
 
 -ovf is Vertical format output("column name | value" vertically).
 
