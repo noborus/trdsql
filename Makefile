@@ -42,7 +42,7 @@ pkg_macOS:
 	$(GOXCMD) -os "darwin" -arch "386 amd64" -output ${TARGET}
 
 install:
-	$(GOCMD) install
+	$(GOINSTALL)
 
 clean:
 	$(GOCLEAN)
