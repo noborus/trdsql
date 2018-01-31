@@ -28,28 +28,57 @@ func (trdsql *TRDSQL) jsonInputNew(r io.Reader) (Input, error) {
 }
 
 func (jr *JSONIn) firstRead() ([]string, error) {
-	var data interface{}
-	var dmap map[string]interface{}
-	err := jr.reader.Decode(&data)
+	var top interface{}
+	err := jr.reader.Decode(&top)
 	if err != nil {
 		return nil, err
 	}
-	switch data.(type) {
-	case []interface{}:
-		jr.ajson = data.([]interface{})
-		jr.count = 0
-		kv := jr.ajson[jr.count]
-		dmap = kv.(map[string]interface{})
-	case map[string]interface{}:
-		jr.ajson = nil
-		dmap = data.(map[string]interface{})
-	}
-	for k, v := range dmap {
-		jr.header = append(jr.header, k)
-		jr.firstRow = append(jr.firstRow, jsonStr(v))
+	err = jr.topRow(top)
+	if err != nil {
+		return nil, err
 	}
 	debug.Printf("Column Name: [%v]", strings.Join(jr.header, ","))
 	return jr.header, err
+}
+
+func (jr *JSONIn) topRow(top interface{}) error {
+	switch top.(type) {
+	case []interface{}:
+		jr.ajson = top.([]interface{})
+		val := jr.ajson[0]
+		switch val.(type) {
+		case map[string]interface{}:
+			jr.objectFirstRow(val.(map[string]interface{}))
+			return nil
+		case []interface{}:
+			jr.etcFirstRow(val)
+		default:
+			// ["a","b"]
+			jr.ajson = nil
+			jr.etcFirstRow(top)
+		}
+	case map[string]interface{}:
+		// {"a":"b"} object
+		jr.ajson = nil
+		jr.objectFirstRow(top.(map[string]interface{}))
+	}
+	return nil
+}
+
+func (jr *JSONIn) objectFirstRow(obj map[string]interface{}) {
+	// {"a":"b"} object
+	for k, v := range obj {
+		jr.header = append(jr.header, k)
+		jr.firstRow = append(jr.firstRow, jsonStr(v))
+	}
+}
+
+func (jr *JSONIn) etcFirstRow(val interface{}) {
+	// array array
+	// [["a"],
+	//  ["b"]]
+	jr.header = append(jr.header, "c1")
+	jr.firstRow = append(jr.firstRow, jsonStr(val))
 }
 
 func jsonStr(val interface{}) string {
@@ -73,26 +102,36 @@ func (jr *JSONIn) firstRowRead(list []interface{}) []interface{} {
 }
 
 func (jr *JSONIn) rowRead(list []interface{}) ([]interface{}, error) {
-	var dmap map[string]interface{}
-	if jr.ajson == nil {
+	if jr.ajson != nil {
+		// [] array
+		jr.count++
+		if jr.count >= len(jr.ajson) {
+			return nil, io.EOF
+		}
+		list = jr.rowParse(list, jr.ajson[jr.count])
+	} else {
 		var data interface{}
+		// {} object
 		err := jr.reader.Decode(&data)
 		if err != nil {
 			return nil, err
 		}
-		dmap = data.(map[string]interface{})
-	} else {
-		jr.count++
-		if len(jr.ajson) <= jr.count {
-			return nil, io.EOF
-		}
-		kv := jr.ajson[jr.count]
-		dmap = kv.(map[string]interface{})
-	}
-	for i := range jr.header {
-		list[i] = jsonStr(dmap[jr.header[i]])
+		list = jr.rowParse(list, data)
 	}
 	return list, nil
+}
+
+func (jr *JSONIn) rowParse(list []interface{}, jsonRow interface{}) []interface{} {
+	switch jsonRow.(type) {
+	case map[string]interface{}:
+		dmap := jsonRow.(map[string]interface{})
+		for i := range jr.header {
+			list[i] = jsonStr(dmap[jr.header[i]])
+		}
+	default:
+		list[0] = jsonStr(jsonRow)
+	}
+	return list
 }
 
 func (trdsql *TRDSQL) jsonOutNew() Output {
