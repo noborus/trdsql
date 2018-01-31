@@ -32,11 +32,8 @@ func Connect(driver, dsn string) (*DDB, error) {
 	db.dsn = dsn
 	switch driver {
 	case "sqlite3":
-		db.maxBulk = 500
 		db.escape = "`"
-		if dsn == "" {
-			db.dsn = ":memory:"
-		}
+		db.maxBulk = 500
 	case "mysql":
 		db.escape = "`"
 		db.maxBulk = 1000
