@@ -27,7 +27,7 @@ func (trdsql *TRDSQL) jsonInputNew(r io.Reader) (Input, error) {
 	return jr, nil
 }
 
-func (jr *JSONIn) firstRead() ([]string, error) {
+func (jr *JSONIn) FirstRead() ([]string, error) {
 	var top interface{}
 	err := jr.reader.Decode(&top)
 	if err != nil {
@@ -94,14 +94,14 @@ func jsonStr(val interface{}) string {
 	}
 }
 
-func (jr *JSONIn) firstRowRead(list []interface{}) []interface{} {
+func (jr *JSONIn) FirstRowRead(list []interface{}) []interface{} {
 	for i := range jr.header {
 		list[i] = jr.firstRow[i]
 	}
 	return list
 }
 
-func (jr *JSONIn) rowRead(list []interface{}) ([]interface{}, error) {
+func (jr *JSONIn) RowRead(list []interface{}) ([]interface{}, error) {
 	if jr.ajson != nil {
 		// [] array
 		jr.count++
@@ -141,12 +141,12 @@ func (trdsql *TRDSQL) jsonOutNew() Output {
 	return js
 }
 
-func (js *JSONOut) first(columns []string) error {
+func (js *JSONOut) First(columns []string) error {
 	js.results = make([]map[string]string, 0)
 	return nil
 }
 
-func (js *JSONOut) rowWrite(values []interface{}, columns []string) error {
+func (js *JSONOut) RowWrite(values []interface{}, columns []string) error {
 	m := make(map[string]string, len(columns))
 	for i, col := range values {
 		m[columns[i]] = valString(col)
@@ -155,6 +155,6 @@ func (js *JSONOut) rowWrite(values []interface{}, columns []string) error {
 	return nil
 }
 
-func (js *JSONOut) last() error {
+func (js *JSONOut) Last() error {
 	return js.writer.Encode(js.results)
 }

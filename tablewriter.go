@@ -21,14 +21,14 @@ func (trdsql *TRDSQL) twOutNew(markdown bool) Output {
 	return tw
 }
 
-func (tw *TwOut) first(columns []string) error {
+func (tw *TwOut) First(columns []string) error {
 	tw.writer.SetHeader(columns)
 	tw.results = make([]string, len(columns))
 
 	return nil
 }
 
-func (tw *TwOut) rowWrite(values []interface{}, columns []string) error {
+func (tw *TwOut) RowWrite(values []interface{}, columns []string) error {
 	for i, col := range values {
 		tw.results[i] = valString(col)
 	}
@@ -36,7 +36,7 @@ func (tw *TwOut) rowWrite(values []interface{}, columns []string) error {
 	return nil
 }
 
-func (tw *TwOut) last() error {
+func (tw *TwOut) Last() error {
 	tw.writer.Render()
 	return nil
 }

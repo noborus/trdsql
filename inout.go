@@ -11,9 +11,9 @@ import (
 
 // Input is wrap the reader.
 type Input interface {
-	firstRead() ([]string, error)
-	firstRowRead([]interface{}) []interface{}
-	rowRead([]interface{}) ([]interface{}, error)
+	FirstRead() ([]string, error)
+	FirstRowRead([]interface{}) []interface{}
+	RowRead([]interface{}) ([]interface{}, error)
 }
 
 // Import is import the file written in SQL.
@@ -76,14 +76,14 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 	if trdsql.inSkip > 0 {
 		skip := make([]interface{}, 1)
 		for i := 0; i < trdsql.inSkip; i++ {
-			r, _ := input.rowRead(skip)
+			r, _ := input.RowRead(skip)
 			debug.Printf("Skip row:%s\n", r)
 		}
 	}
 	rtable := db.EscapeTable(tablename)
 	sqlstr = db.RewriteSQL(sqlstr, tablename, rtable)
 	var header []string
-	header, err = input.firstRead()
+	header, err = input.FirstRead()
 	if err != nil {
 		return sqlstr, err
 	}
@@ -132,9 +132,9 @@ func tableFileOpen(filename string) (*os.File, error) {
 
 // Output is database export
 type Output interface {
-	first([]string) error
-	rowWrite([]interface{}, []string) error
-	last() error
+	First([]string) error
+	RowWrite([]interface{}, []string) error
+	Last() error
 }
 
 // Export is execute SQL and output the result.
@@ -159,7 +159,7 @@ func (trdsql *TRDSQL) Export(db *DDB, sqlstr string, output Output) error {
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
-	err = output.first(columns)
+	err = output.First(columns)
 	if err != nil {
 		return err
 	}
@@ -168,12 +168,12 @@ func (trdsql *TRDSQL) Export(db *DDB, sqlstr string, output Output) error {
 		if err != nil {
 			return err
 		}
-		err = output.rowWrite(values, columns)
+		err = output.RowWrite(values, columns)
 		if err != nil {
 			return err
 		}
 	}
-	return output.last()
+	return output.Last()
 }
 
 func guessExtension(tablename string) int {

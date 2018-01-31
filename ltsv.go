@@ -29,7 +29,7 @@ func (trdsql *TRDSQL) ltsvInputNew(r io.Reader) (Input, error) {
 	return lr, nil
 }
 
-func (lr *LTSVIn) firstRead() ([]string, error) {
+func (lr *LTSVIn) FirstRead() ([]string, error) {
 	var err error
 	lr.firstRow, lr.header, err = lr.read()
 	if err != nil {
@@ -39,14 +39,14 @@ func (lr *LTSVIn) firstRead() ([]string, error) {
 	return lr.header, nil
 }
 
-func (lr *LTSVIn) firstRowRead(list []interface{}) []interface{} {
+func (lr *LTSVIn) FirstRowRead(list []interface{}) []interface{} {
 	for i := range lr.header {
 		list[i] = lr.firstRow[lr.header[i]]
 	}
 	return list
 }
 
-func (lr *LTSVIn) rowRead(list []interface{}) ([]interface{}, error) {
+func (lr *LTSVIn) RowRead(list []interface{}) ([]interface{}, error) {
 	record, _, err := lr.read()
 	if err != nil {
 		return list, err
@@ -96,12 +96,12 @@ func (trdsql *TRDSQL) ltsvOutNew() Output {
 	return lw
 }
 
-func (lw *LTSVOut) first(columns []string) error {
+func (lw *LTSVOut) First(columns []string) error {
 	lw.results = make(map[string]string, len(columns))
 	return nil
 }
 
-func (lw *LTSVOut) rowWrite(values []interface{}, columns []string) error {
+func (lw *LTSVOut) RowWrite(values []interface{}, columns []string) error {
 	results := make([]string, len(values))
 	for i, col := range values {
 		results[i] = columns[i] + ":" + valString(col)
@@ -111,6 +111,6 @@ func (lw *LTSVOut) rowWrite(values []interface{}, columns []string) error {
 	return err
 }
 
-func (lw *LTSVOut) last() error {
+func (lw *LTSVOut) Last() error {
 	return lw.writer.Flush()
 }
