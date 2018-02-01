@@ -34,7 +34,7 @@ func (trdsql *TRDSQL) csvInputNew(r io.Reader) (Input, error) {
 	return cr, err
 }
 
-func (cr *CSVIn) firstRead() ([]string, error) {
+func (cr *CSVIn) FirstRead() ([]string, error) {
 	first, err := cr.reader.Read()
 	if err != nil {
 		return nil, err
@@ -57,14 +57,14 @@ func (cr *CSVIn) firstRead() ([]string, error) {
 	return cr.header, err
 }
 
-func (cr *CSVIn) firstRowRead(list []interface{}) []interface{} {
+func (cr *CSVIn) FirstRowRead(list []interface{}) []interface{} {
 	for i, f := range cr.firstRow {
 		list[i] = f
 	}
 	return list
 }
 
-func (cr *CSVIn) rowRead(list []interface{}) ([]interface{}, error) {
+func (cr *CSVIn) RowRead(list []interface{}) ([]interface{}, error) {
 	record, err := cr.reader.Read()
 	if err != nil {
 		return list, err
@@ -91,7 +91,7 @@ func (trdsql *TRDSQL) csvOutNew() Output {
 	return c
 }
 
-func (c *CSVOut) first(columns []string) error {
+func (c *CSVOut) First(columns []string) error {
 	if c.outHeader {
 		err := c.writer.Write(columns)
 		if err != nil {
@@ -102,7 +102,7 @@ func (c *CSVOut) first(columns []string) error {
 	return nil
 }
 
-func (c *CSVOut) rowWrite(values []interface{}, columns []string) error {
+func (c *CSVOut) RowWrite(values []interface{}, columns []string) error {
 	for i, col := range values {
 		c.results[i] = valString(col)
 	}
@@ -110,7 +110,7 @@ func (c *CSVOut) rowWrite(values []interface{}, columns []string) error {
 	return err
 }
 
-func (c *CSVOut) last() error {
+func (c *CSVOut) Last() error {
 	c.writer.Flush()
 	return nil
 }

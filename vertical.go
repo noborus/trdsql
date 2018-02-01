@@ -29,7 +29,7 @@ func (trdsql *TRDSQL) vfOutNew() Output {
 	return vf
 }
 
-func (vf *VfOut) first(columns []string) error {
+func (vf *VfOut) First(columns []string) error {
 	vf.header = make([]string, len(columns))
 	vf.hsize = 0
 	for i, col := range columns {
@@ -41,7 +41,7 @@ func (vf *VfOut) first(columns []string) error {
 	return nil
 }
 
-func (vf *VfOut) rowWrite(values []interface{}, columns []string) error {
+func (vf *VfOut) RowWrite(values []interface{}, columns []string) error {
 	vf.count++
 	fmt.Fprintf(vf.writer,
 		"---[ %d]%s\n", vf.count, strings.Repeat("-", (vf.termWidth-16)))
@@ -56,6 +56,6 @@ func (vf *VfOut) rowWrite(values []interface{}, columns []string) error {
 	return nil
 }
 
-func (vf *VfOut) last() error {
+func (vf *VfOut) Last() error {
 	return vf.writer.Flush()
 }

@@ -13,9 +13,9 @@ func TestLtsvInputNew(t *testing.T) {
 	if err != nil {
 		t.Error(`ltsvInputNew error`)
 	}
-	list, err := lr.firstRead()
+	list, err := lr.FirstRead()
 	if err != nil {
-		t.Error(`firstRead error`)
+		t.Error(`FirstRead error`)
 	}
 	if len(list) == 0 {
 		t.Error(`0 column`)
@@ -27,7 +27,7 @@ func TestLtsvInvalidInputNew(t *testing.T) {
 	s := strings.NewReader(ltsvStream)
 	trdsql := trdsqlNew()
 	lr, _ := trdsql.ltsvInputNew(s)
-	_, err := lr.firstRead()
+	_, err := lr.FirstRead()
 	if err.Error() != "LTSV format error" {
 		t.Error()
 	}
@@ -44,9 +44,9 @@ func TestLtsvFile(t *testing.T) {
 	if err != nil {
 		t.Error(`ltsvInputNew error`)
 	}
-	list, err := lr.firstRead()
+	list, err := lr.FirstRead()
 	if err != nil {
-		t.Error(`firstRead error`)
+		t.Error(`FirstRead error`)
 	}
 	if len(list) == 0 {
 		t.Error(`0 column`)

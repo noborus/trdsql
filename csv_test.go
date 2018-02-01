@@ -45,7 +45,7 @@ func TestCsvEmptyNew(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = r.firstRead()
+	_, err = r.FirstRead()
 	if err.Error() != "EOF" {
 		t.Error(err)
 	}
@@ -59,7 +59,7 @@ func TestCsvHeaderNew(t *testing.T) {
 	v1,v2`
 	s := strings.NewReader(csvStream)
 	r, _ := trdsql.csvInputNew(s)
-	header, _ := r.firstRead()
+	header, _ := r.FirstRead()
 	if header[0] != "h1" || header[1] != "h2" {
 		t.Error("invalid header")
 	}
@@ -73,7 +73,7 @@ func TestCsvEmptyColumnHeaderNew(t *testing.T) {
 	v1,v2`
 	s := strings.NewReader(csvStream)
 	r, _ := trdsql.csvInputNew(s)
-	header, _ := r.firstRead()
+	header, _ := r.FirstRead()
 	if header[0] != "h1" || header[1] != "c2" {
 		t.Error("invalid header")
 	}
@@ -87,12 +87,12 @@ func TestCsvEmptyColumnRowNew(t *testing.T) {
 	,v2`
 	s := strings.NewReader(csvStream)
 	r, _ := trdsql.csvInputNew(s)
-	_, err := r.firstRead()
+	_, err := r.FirstRead()
 	if err != nil {
 		t.Error(err)
 	}
 	record := make([]interface{}, 2)
-	record, _ = r.rowRead(record)
+	record, _ = r.RowRead(record)
 	if record[0] != "" || record[1] != "v2" {
 		t.Error("invalid value")
 	}
@@ -108,13 +108,13 @@ func TestCsvColumnDifferenceNew(t *testing.T) {
 	z1`
 	s := strings.NewReader(csvStream)
 	r, _ := trdsql.csvInputNew(s)
-	_, err := r.firstRead()
+	_, err := r.FirstRead()
 	if err != nil {
 		t.Error(err)
 	}
 	record := make([]interface{}, 3)
 	for {
-		record, err = r.rowRead(record)
+		record, err = r.RowRead(record)
 		if err == io.EOF {
 			break
 		} else if err != nil {

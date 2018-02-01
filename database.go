@@ -32,11 +32,8 @@ func Connect(driver, dsn string) (*DDB, error) {
 	db.dsn = dsn
 	switch driver {
 	case "sqlite3":
-		db.maxBulk = 500
 		db.escape = "`"
-		if dsn == "" {
-			db.dsn = ":memory:"
-		}
+		db.maxBulk = 500
 	case "mysql":
 		db.escape = "`"
 		db.maxBulk = 1000
@@ -127,7 +124,7 @@ func (db *DDB) copyImport(itable *iTable, input Input) error {
 		return fmt.Errorf("COPY Prepare: %s", err)
 	}
 	if itable.firstRow {
-		itable.row = input.firstRowRead(itable.row)
+		itable.row = input.FirstRowRead(itable.row)
 		_, err = stmt.Exec(itable.row...)
 		if err != nil {
 			return err
@@ -135,7 +132,7 @@ func (db *DDB) copyImport(itable *iTable, input Input) error {
 	}
 
 	for {
-		itable.row, err = input.rowRead(itable.row)
+		itable.row, err = input.RowRead(itable.row)
 		if err == io.EOF {
 			break
 		} else if err != nil {
@@ -164,7 +161,7 @@ func (db *DDB) insertImport(itable *iTable, input Input) error {
 	bulk := make([]interface{}, 0, maxCap)
 
 	if itable.firstRow {
-		itable.row = input.firstRowRead(itable.row)
+		itable.row = input.FirstRowRead(itable.row)
 		bulk = append(bulk, itable.row...)
 		itable.count++
 	}
@@ -196,7 +193,7 @@ func (db *DDB) insertImport(itable *iTable, input Input) error {
 func bulkPush(itable *iTable, input Input, bulk []interface{}) ([]interface{}, error) {
 	var err error
 	for (itable.count * len(itable.row)) < cap(bulk) {
-		itable.row, err = input.rowRead(itable.row)
+		itable.row, err = input.RowRead(itable.row)
 		if err != nil {
 			return bulk, err
 		}
