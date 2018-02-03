@@ -82,8 +82,7 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 	}
 	rtable := db.EscapeTable(tablename)
 	sqlstr = db.RewriteSQL(sqlstr, tablename, rtable)
-	var header []string
-	header, err = input.FirstRead()
+	header, err := input.FirstRead()
 	if err != nil {
 		return sqlstr, err
 	}

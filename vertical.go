@@ -29,6 +29,7 @@ func (trdsql *TRDSQL) vfOutNew() Output {
 	return vf
 }
 
+// First is preparation
 func (vf *VfOut) First(columns []string) error {
 	vf.header = make([]string, len(columns))
 	vf.hsize = 0
@@ -41,6 +42,7 @@ func (vf *VfOut) First(columns []string) error {
 	return nil
 }
 
+// RowWrite is Actual output
 func (vf *VfOut) RowWrite(values []interface{}, columns []string) error {
 	vf.count++
 	fmt.Fprintf(vf.writer,
@@ -56,6 +58,7 @@ func (vf *VfOut) RowWrite(values []interface{}, columns []string) error {
 	return nil
 }
 
+// Last is flush
 func (vf *VfOut) Last() error {
 	return vf.writer.Flush()
 }
