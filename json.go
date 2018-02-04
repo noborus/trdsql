@@ -150,6 +150,9 @@ func (jr *JSONIn) rowParse(list []interface{}, jsonRow interface{}) []interface{
 			list[i] = jsonString(dmap[jr.header[i]])
 		}
 	default:
+		for i := range jr.header {
+			list[i] = nil
+		}
 		list[0] = jsonString(jsonRow)
 	}
 	return list
