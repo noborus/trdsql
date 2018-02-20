@@ -39,6 +39,7 @@ func TestCsvInputNew(t *testing.T) {
 
 func TestCsvEmptyNew(t *testing.T) {
 	trdsql := trdsqlNew()
+	trdsql.inSep = ","
 	const csvStream = ``
 	s := strings.NewReader(csvStream)
 	r, err := trdsql.csvInputNew(s)
