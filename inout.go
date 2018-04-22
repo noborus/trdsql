@@ -197,7 +197,7 @@ func separator(sepString string) (rune, error) {
 	}
 	sepRunes, err := strconv.Unquote(`'` + sepString + `'`)
 	if err != nil {
-		return ',', fmt.Errorf("ERROR getSeparator: %s:%s", err, sepString)
+		return ',', fmt.Errorf("Can not get separator: %s:\"%s\"", err, sepString)
 	}
 	sepRune := ([]rune(sepRunes))[0]
 	return sepRune, err
