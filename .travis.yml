@@ -3,7 +3,7 @@ os:
   - linux
   - osx
 go:
-  - 1.9
+  - "1.10"
 services:
   - postgresql
   - mysql
