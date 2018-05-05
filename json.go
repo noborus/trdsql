@@ -11,7 +11,7 @@ import (
 type JSONIn struct {
 	reader   *json.Decoder
 	firstRow []string
-	header   []string
+	name     []string
 	ajson    []interface{}
 	count    int
 }
@@ -35,9 +35,9 @@ func (jr *JSONIn) FirstRead() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	jr.header, jr.firstRow = jr.topLevel(top)
-	debug.Printf("Column Name: [%v]", strings.Join(jr.header, ","))
-	return jr.header, err
+	jr.name, jr.firstRow = jr.topLevel(top)
+	debug.Printf("Column Name: [%v]", strings.Join(jr.name, ","))
+	return jr.name, err
 }
 
 func (jr *JSONIn) topLevel(top interface{}) ([]string, []string) {
@@ -74,24 +74,24 @@ func (jr *JSONIn) secondLevel(top interface{}, second interface{}) ([]string, []
 
 func (jr *JSONIn) objectFirstRow(obj map[string]interface{}) ([]string, []string) {
 	// {"a":"b"} object
-	var header []string
+	var name []string
 	var firstRow []string
 	for k, v := range obj {
-		header = append(header, k)
+		name = append(name, k)
 		firstRow = append(firstRow, jsonString(v))
 	}
-	return header, firstRow
+	return name, firstRow
 }
 
 func (jr *JSONIn) etcFirstRow(val interface{}) ([]string, []string) {
 	// ex. array array
 	// [["a"],
 	//  ["b"]]
-	var header []string
+	var name []string
 	var firstRow []string
-	header = append(header, "c1")
+	name = append(name, "c1")
 	firstRow = append(firstRow, jsonString(val))
-	return header, firstRow
+	return name, firstRow
 }
 
 func jsonString(val interface{}) string {
@@ -109,7 +109,7 @@ func jsonString(val interface{}) string {
 
 // FirstRowRead is read the first row
 func (jr *JSONIn) FirstRowRead(list []interface{}) []interface{} {
-	for i := range jr.header {
+	for i := range jr.name {
 		list[i] = jr.firstRow[i]
 	}
 	return list
@@ -146,11 +146,11 @@ func (jr *JSONIn) rowParse(list []interface{}, jsonRow interface{}) []interface{
 	switch jsonRow.(type) {
 	case map[string]interface{}:
 		dmap := jsonRow.(map[string]interface{})
-		for i := range jr.header {
-			list[i] = jsonString(dmap[jr.header[i]])
+		for i := range jr.name {
+			list[i] = jsonString(dmap[jr.name[i]])
 		}
 	default:
-		for i := range jr.header {
+		for i := range jr.name {
 			list[i] = nil
 		}
 		list[0] = jsonString(jsonRow)

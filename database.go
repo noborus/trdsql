@@ -51,11 +51,11 @@ func (db *DDB) Disconnect() error {
 }
 
 // CreateTable is create a temporary table
-func (db *DDB) CreateTable(table string, header []string) error {
+func (db *DDB) CreateTable(table string, name []string) error {
 	var sqlstr string
-	columns := make([]string, len(header))
-	for i := 0; i < len(header); i++ {
-		columns[i] = db.escape + header[i] + db.escape + " text"
+	columns := make([]string, len(name))
+	for i := 0; i < len(name); i++ {
+		columns[i] = db.escape + name[i] + db.escape + " text"
 	}
 	sqlstr = "CREATE TEMPORARY TABLE "
 	sqlstr = sqlstr + table + " ( " + strings.Join(columns, ",") + " );"
@@ -81,7 +81,7 @@ func (db *DDB) Select(sqlstr string) (*sql.Rows, error) {
 // iTable is import Table data
 type iTable struct {
 	tablename string
-	header    []string
+	name      []string
 	columns   []string
 	sqlstr    string
 	place     string
@@ -92,16 +92,16 @@ type iTable struct {
 }
 
 // Import is import to the table.
-func (db *DDB) Import(tablename string, header []string, input Input, firstRow bool) error {
+func (db *DDB) Import(tablename string, name []string, input Input, firstRow bool) error {
 	var err error
-	columns := make([]string, len(header))
-	for i := range header {
-		columns[i] = db.escape + header[i] + db.escape
+	columns := make([]string, len(name))
+	for i := range name {
+		columns[i] = db.escape + name[i] + db.escape
 	}
-	row := make([]interface{}, len(header))
+	row := make([]interface{}, len(name))
 	itable := &iTable{
 		tablename: tablename,
-		header:    header,
+		name:      name,
 		columns:   columns,
 		firstRow:  firstRow,
 		row:       row,
@@ -156,7 +156,7 @@ func (db *DDB) insertImport(itable *iTable, input Input) error {
 	var stmt *sql.Stmt
 	defer db.stmtClose(stmt)
 	itable.sqlstr = "INSERT INTO " + itable.tablename + " (" + strings.Join(itable.columns, ",") + ") VALUES "
-	itable.place = "(" + strings.Repeat("?,", len(itable.header)-1) + "?)"
+	itable.place = "(" + strings.Repeat("?,", len(itable.name)-1) + "?)"
 	maxCap := (db.maxBulk / len(itable.row)) * len(itable.row)
 	bulk := make([]interface{}, 0, maxCap)
 

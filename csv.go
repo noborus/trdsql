@@ -10,7 +10,7 @@ import (
 // CSVIn provides methods of the Input interface
 type CSVIn struct {
 	reader   *csv.Reader
-	header   []string
+	name     []string
 	firstRow []string
 	inHeader bool
 }
@@ -40,22 +40,22 @@ func (cr *CSVIn) FirstRead() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	cr.header = make([]string, len(first))
+	cr.name = make([]string, len(first))
 	cr.firstRow = make([]string, len(first))
 	for i, row := range first {
 		if cr.inHeader {
 			if row == "" {
-				cr.header[i] = "c" + strconv.Itoa(i+1)
+				cr.name[i] = "c" + strconv.Itoa(i+1)
 			} else {
-				cr.header[i] = row
+				cr.name[i] = row
 			}
 		} else {
-			cr.header[i] = "c" + strconv.Itoa(i+1)
+			cr.name[i] = "c" + strconv.Itoa(i+1)
 			cr.firstRow[i] = row
 		}
 	}
-	debug.Printf("Column Name: [%v]", strings.Join(cr.header, ","))
-	return cr.header, err
+	debug.Printf("Column Name: [%v]", strings.Join(cr.name, ","))
+	return cr.name, err
 }
 
 // FirstRowRead is read the first row

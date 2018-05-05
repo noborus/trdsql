@@ -12,7 +12,7 @@ type LTSVIn struct {
 	reader    *bufio.Reader
 	firstRow  map[string]string
 	delimiter string
-	header    []string
+	name      []string
 }
 
 // LTSVOut provides methods of the Output interface
@@ -32,18 +32,18 @@ func (trdsql *TRDSQL) ltsvInputNew(r io.Reader) (Input, error) {
 // FirstRead is read input to determine column of table
 func (lr *LTSVIn) FirstRead() ([]string, error) {
 	var err error
-	lr.firstRow, lr.header, err = lr.read()
+	lr.firstRow, lr.name, err = lr.read()
 	if err != nil {
 		return nil, err
 	}
-	debug.Printf("Column Name: [%v]", strings.Join(lr.header, ","))
-	return lr.header, nil
+	debug.Printf("Column Name: [%v]", strings.Join(lr.name, ","))
+	return lr.name, nil
 }
 
 // FirstRowRead is read the first row
 func (lr *LTSVIn) FirstRowRead(list []interface{}) []interface{} {
-	for i := range lr.header {
-		list[i] = lr.firstRow[lr.header[i]]
+	for i := range lr.name {
+		list[i] = lr.firstRow[lr.name[i]]
 	}
 	return list
 }
@@ -54,8 +54,8 @@ func (lr *LTSVIn) RowRead(list []interface{}) ([]interface{}, error) {
 	if err != nil {
 		return list, err
 	}
-	for i := range lr.header {
-		list[i] = record[lr.header[i]]
+	for i := range lr.name {
+		list[i] = record[lr.name[i]]
 	}
 	return list, nil
 }
