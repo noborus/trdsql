@@ -58,7 +58,7 @@ func TestCsvHeaderRun(t *testing.T) {
 	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
 	sql := "SELECT * FROM " + data + "header.csv"
 	outstr := "1,Orange\n2,Melon\n3,Apple\n"
-	args := []string{"trdsql", "-driver", "sqlite3", "-ih", sql}
+	args := []string{"trdsql", "-driver", "sqlite3", "-icsv", "-ih", sql}
 	if trdsql.Run(args) != 0 {
 		t.Errorf("trdsql error.")
 	}
