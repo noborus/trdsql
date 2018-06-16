@@ -58,11 +58,11 @@ $ trdsql [options] SQL
 * `-iltsv`
         LTSV format for input.
 
-#### Input opution
+#### Input option
 
 * `-ih`
         The first line is interpreted as column names(CSV only).
-* `-id` **delimiter characeter**(CSV only)
+* `-id` **delimiter character**(CSV only)
         Field delimiter for input. (default ",")
 * `-is` **int**
         Skip header row.
@@ -88,7 +88,7 @@ $ trdsql [options] SQL
 
 * `-oh`
         Output column name as header.
-* `-od` **delimiter characeter**
+* `-od` **delimiter character**
         Field delimiter for output. (default ",")
 
 ## STDIN input
@@ -124,7 +124,7 @@ $ trdsql "SELECT * FROM test.csv"
 $ trdsql -q test.sql
 ```
 
-### TSV
+### TSV (Tab Separated Value)
 
 -id "\\t" is input form TSV (Tab Separated Value)
 
@@ -149,7 +149,7 @@ $ trdsql -od "\t" "SELECT * FROM test.csv"
 3	Apple
 ```
 
-### LTSV
+### LTSV ([Labeled Tab-separated Values](http://ltsv.org/))
 
 -iltsv is input form LTSV(Labeled Tab-separated Values).
 
@@ -414,12 +414,17 @@ Orange,1
 Melon,2
 Apple,3
 ```
+"- ih" sets the first line to column name
+
+```sh
+ps |trdsql -ih -oh -id " " "SELECT \"TIME\",\"TTY\",\"PID\",\"CMD\" FROM -"
+```
 
 ```
-PID,TTY,TIME,CMD
-3073,pts/22,00:00:00,zsh
-17815,pts/22,00:00:00,ps
-17816,pts/22,00:00:00,trdsql
+TIME,TTY,PID,CMD
+00:00:00,pts/20,3452,ps
+00:00:00,pts/20,3453,trdsql
+00:00:05,pts/20,15576,zsh
 ```
 
 ### JOIN
