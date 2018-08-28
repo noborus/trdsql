@@ -62,7 +62,7 @@ func tableList(sqlstr string) []string {
 
 	// get possible table names
 	possibleTables := stringRegex(tableSection[0], `(?is)(?:"([^"]*)"|'([^']*)'|([^\s"']+))(?:\s+AS\s+(?:"[^"]+"|\S+))?`)
-	fmt.Printf("%v\n", possibleTables)
+	//fmt.Printf("%v\n", possibleTables)
 
 	for _, table := range possibleTables {
 		if len(table) < 3 || stringRegexMatch(table, "(?i)JOIN|INNER|OUTER|LEFT|CROSS") {
@@ -80,9 +80,8 @@ func tableList(sqlstr string) []string {
 func fileExistsCheck(path string) bool {
 	if _, err := os.Stat(path); err == nil {
 		return true
-	} else {
-		return false
 	}
+	return false
 }
 
 // Simple regex: return one non-empty match per subgroup in a string array
