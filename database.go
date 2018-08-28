@@ -261,7 +261,11 @@ func (db *DDB) RewriteSQL(sqlstr string, oldname string, newname string) (rewrit
 			return sqlstr
 		}
 	}
-	rewrite = strings.Replace(sqlstr, oldname, newname, -1)
+	if strings.Contains(oldname, " ") {
+		rewrite = strings.Replace(sqlstr, `"`+oldname+`"`, newname, -1)
+	} else {
+		rewrite = strings.Replace(rewrite, oldname, newname, -1)
+	}
 	db.rewritten = append(db.rewritten, newname)
 	return rewrite
 }
