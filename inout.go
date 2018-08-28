@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -56,21 +57,53 @@ func stringSplitWithQuotes(data string) []string {
 func tableList(sqlstr string) []string {
 	var tableList []string
 
-	// Fixes the issue with the tableList ignoring quotes in the table list
-	word := stringSplitWithQuotes(sqlstr)
+	// Get a section of SQL that would contain table names
+	tableSection := stringRegex(sqlstr, `(?is)[\r\n\s]FROM\s(.+)(?:[\r\n\s]WHERE|$)`)
 
-	for i, w := range word {
-		if element := strings.ToUpper(w); element == "FROM" || element == "JOIN" {
-			if (i + 1) < len(word) {
-				t := word[i+1]
-				if len(t) > 0 && t[len(t)-1] == ')' {
-					t = t[:len(t)-1]
-				}
-				tableList = append(tableList, t)
-			}
+	// get possible table names
+	possibleTables := stringRegex(tableSection[0], `(?is)(?:"([^"]*)"|'([^']*)'|([^\s"']+))(?:\s+AS\s+(?:"[^"]+"|\S+))?`)
+	fmt.Printf("%v\n", possibleTables)
+
+	for _, table := range possibleTables {
+		if len(table) < 3 || stringRegexMatch(table, "(?i)JOIN|INNER|OUTER|LEFT|CROSS") {
+			continue
 		}
+		if !fileExistsCheck(table) {
+			continue
+		}
+		tableList = append(tableList, table)
 	}
 	return tableList
+}
+
+// check if file exists given path
+func fileExistsCheck(path string) bool {
+	if _, err := os.Stat(path); err == nil {
+		return true
+	} else {
+		return false
+	}
+}
+
+// Simple regex: return one non-empty match per subgroup in a string array
+func stringRegex(text string, reg string) []string {
+	groups := regexp.MustCompile(reg).FindAllStringSubmatch(text, -1)
+	var output []string
+	for _, word := range groups {
+		for i, w := range word {
+			if i == 0 || w == "" {
+				continue
+			}
+			output = append(output, w)
+		}
+	}
+	return output
+}
+
+// does the text match the regex?
+func stringRegexMatch(text string, reg string) bool {
+	match, _ := regexp.MatchString(reg, text)
+	return match
 }
 
 func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (string, error) {

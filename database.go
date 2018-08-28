@@ -262,14 +262,12 @@ func (db *DDB) RewriteSQL(sqlstr string, oldname string, newname string) (rewrit
 			return sqlstr
 		}
 	}
-	rewrite = ""
-	re := regexp.MustCompile("\"" + regexp.QuoteMeta(oldname) + "\"")
-	le := len(re.FindStringSubmatch(sqlstr))
-	if le > 0 {
-		rewrite = strings.Replace(sqlstr, `"`+oldname+`"`, newname, -1)
-	} else {
-		rewrite = strings.Replace(sqlstr, oldname, newname, -1)
-	}
+	rewrite = stringRegexReplace(sqlstr, `(?:"|')*`+regexp.QuoteMeta(oldname)+`(?:"|')*`, newname)
 	db.rewritten = append(db.rewritten, newname)
 	return rewrite
+}
+
+// replace regex with new string in the text
+func stringRegexReplace(text string, reg string, new string) string {
+	return regexp.MustCompile(reg).ReplaceAllString(text, new)
 }
