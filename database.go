@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"regexp"
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -261,10 +262,13 @@ func (db *DDB) RewriteSQL(sqlstr string, oldname string, newname string) (rewrit
 			return sqlstr
 		}
 	}
-	if strings.Contains(oldname, " ") {
+	rewrite = ""
+	re := regexp.MustCompile("\"" + regexp.QuoteMeta(oldname) + "\"")
+	le := len(re.FindStringSubmatch(sqlstr))
+	if le > 0 {
 		rewrite = strings.Replace(sqlstr, `"`+oldname+`"`, newname, -1)
 	} else {
-		rewrite = strings.Replace(rewrite, oldname, newname, -1)
+		rewrite = strings.Replace(sqlstr, oldname, newname, -1)
 	}
 	db.rewritten = append(db.rewritten, newname)
 	return rewrite
