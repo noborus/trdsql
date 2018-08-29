@@ -233,9 +233,9 @@ func (trdsql *TRDSQL) createTable(db *DDB, tablename string, sqlstr string) (str
 	}
 	err = db.CreateTable(rtable, name)
 	if err != nil {
-		return "", err
+		return sqlstr, err
 	}
-	return "", err
+	return sqlstr, err
 }
 
 // InputNew is create input reader.
