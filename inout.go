@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -68,7 +69,7 @@ func tableList(sqlstr string) []string {
 		if len(table) < 3 || stringRegexMatch(table, "(?i)JOIN|INNER|OUTER|LEFT|CROSS") {
 			continue
 		}
-		if !fileExistsCheck(table) {
+		if !stringRegexMatch(table, `\*`) && !fileExistsCheck(table) {
 			continue
 		}
 		tableList = append(tableList, table)
@@ -106,6 +107,102 @@ func stringRegexMatch(text string, reg string) bool {
 }
 
 func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (string, error) {
+
+	rtable := db.EscapeTable(tablename)
+	sqlstr = db.RewriteSQL(sqlstr, tablename, rtable)
+	var colNames []string
+
+	// supports table name to be an explicit file or a glob pattern for the files
+	fileCollection, err := filepath.Glob(tablename)
+
+	// read all of the columns in all the files (each file may have a different column set)
+	for _, filePath := range fileCollection {
+		debug.Printf(`Reading columns from: "` + filePath + `"`)
+		file, err := tableFileOpen(filePath)
+		if err != nil {
+			debug.Printf("%s\n", err)
+			return sqlstr, nil
+		}
+		defer func() {
+			err = file.Close()
+			if err != nil {
+				log.Println("ERROR:", err)
+			}
+		}()
+		input, err := trdsql.InputNew(file, filePath)
+		if err != nil {
+			log.Println("ERROR:", err)
+		}
+		if trdsql.inSkip > 0 {
+			skip := make([]interface{}, 1)
+			for i := 0; i < trdsql.inSkip; i++ {
+				r, _ := input.RowRead(skip)
+				debug.Printf("Skip row:%s\n", r)
+			}
+		}
+
+		colNew, err := input.FirstRead()
+		if err != nil {
+			return sqlstr, err
+		}
+		for _, colItemNew := range colNew {
+			exists := false
+			for _, colItem := range colNames {
+				if colItem == colItemNew {
+					exists = true
+					break
+				}
+			}
+			if !exists {
+				colNames = append(colNames, colItemNew)
+			}
+		}
+	}
+	debug.Printf(`Final column names: %v`, colNames)
+
+	// Create Table
+	err = db.CreateTable(rtable, colNames)
+	if err != nil {
+		return sqlstr, err
+	}
+
+	// insert the data from each file
+	for _, filePath := range fileCollection {
+		debug.Printf(`Reading: "` + filePath + `"`)
+
+		file, err := tableFileOpen(filePath)
+		if err != nil {
+			debug.Printf("%s\n", err)
+			return sqlstr, nil
+		}
+		defer func() {
+			err = file.Close()
+			if err != nil {
+				log.Println("ERROR:", err)
+			}
+		}()
+		input, err := trdsql.InputNew(file, filePath)
+		if err != nil {
+			log.Println("ERROR:", err)
+		}
+		if trdsql.inSkip > 0 {
+			skip := make([]interface{}, 1)
+			for i := 0; i < trdsql.inSkip; i++ {
+				r, _ := input.RowRead(skip)
+				debug.Printf("Skip row:%s\n", r)
+			}
+		}
+		// skip the header for each file if present
+		if trdsql.inHeader {
+			skip := make([]interface{}, 1)
+			input.RowRead(skip)
+		}
+		err = db.Import(rtable, colNames, input, trdsql.inFirstRow)
+	}
+	return sqlstr, err
+}
+
+func (trdsql *TRDSQL) createTable(db *DDB, tablename string, sqlstr string) (string, error) {
 	file, err := tableFileOpen(tablename)
 	if err != nil {
 		debug.Printf("%s\n", err)
@@ -136,10 +233,9 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 	}
 	err = db.CreateTable(rtable, name)
 	if err != nil {
-		return sqlstr, err
+		return "", err
 	}
-	err = db.Import(rtable, name, input, trdsql.inFirstRow)
-	return sqlstr, err
+	return "", err
 }
 
 // InputNew is create input reader.
