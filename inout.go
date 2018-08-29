@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/csv"
 	"fmt"
 	"io"
 	"log"
@@ -41,18 +40,6 @@ func (trdsql *TRDSQL) Import(db *DDB, sqlstr string) (string, error) {
 		created[tablename] = true
 	}
 	return sqlstr, err
-}
-
-// Fixes the issue with the tableList ignoring quotes in the table list
-func stringSplitWithQuotes(data string) []string {
-	// Split string
-	r := csv.NewReader(strings.NewReader(data))
-	r.Comma = ' ' // space
-	out, err := r.Read()
-	if err != nil {
-		fmt.Println(err)
-	}
-	return out
 }
 
 func tableList(sqlstr string) []string {
