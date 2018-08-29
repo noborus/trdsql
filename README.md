@@ -453,6 +453,18 @@ $ trdsql "SELECT u.c1,u.c2,h.c2 FROM user.csv as u LEFT JOIN hist.csv as h ON(u.
 2,uesrB,2017-7-11
 ```
 
+### File wildcards are supported
+
+```sh
+$ trdsql "SELECT u.c1,u.c2,h.c2 FROM user.csv as u LEFT JOIN hist_*.csv as h ON(u.c1=h.c1)"
+```
+
+### JOIN different formats
+
+```sh
+$ trdsql "SELECT u.c1,u.c2,h.c2 FROM user.csv as u LEFT JOIN hist.json as h ON(u.c1=h.c1)"
+```
+
 ### PostgreSQL
 
 When using PostgreSQL, specify postgres for driver and connection information for dsn.
