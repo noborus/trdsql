@@ -40,20 +40,66 @@ func (trdsql *TRDSQL) Import(db *DDB, sqlstr string) (string, error) {
 	return sqlstr, err
 }
 
+func sqlFields(line string) []string {
+	parsed := []string{}
+	buf := ""
+	var singleQuoted, doubleQuoted, backQuote bool
+	for _, r := range line {
+		switch r {
+		case ' ', '\t', '\r', '\n', ',', ';', '=':
+			if !singleQuoted && !doubleQuoted && !backQuote {
+				if buf != "" {
+					parsed = append(parsed, buf)
+					buf = ""
+				}
+			} else {
+				buf += string(r)
+			}
+			continue
+		case '\'':
+			if !doubleQuoted && !backQuote {
+				singleQuoted = !singleQuoted
+			}
+		case '"':
+			if !singleQuoted && !backQuote {
+				doubleQuoted = !doubleQuoted
+			}
+		case '`':
+			if !singleQuoted && !doubleQuoted {
+				backQuote = !backQuote
+			}
+		}
+		buf += string(r)
+	}
+	parsed = append(parsed, buf)
+	return parsed
+}
+
 func tableList(sqlstr string) []string {
 	var tableList []string
-	word := strings.Fields(sqlstr)
+	var tableFlag bool
+	word := sqlFields(sqlstr)
 	for i, w := range word {
-		if element := strings.ToUpper(w); element == "FROM" || element == "JOIN" {
-			if (i + 1) < len(word) {
-				t := word[i+1]
-				if len(t) > 0 && t[len(t)-1] == ')' {
-					t = t[:len(t)-1]
+		switch strings.ToUpper(w) {
+		case "FROM", "JOIN":
+			tableFlag = true
+		case "WHERE", "GROUP", "HAVING", "WINDOW", "UNION", "ORDER", "OFFSET", "FETCH", "FOR":
+			tableFlag = false
+		}
+		if tableFlag {
+			n := i + 1
+			if n < len(word) {
+				t := word[n]
+				if len(t) > 0 {
+					if t[len(t)-1] == ')' {
+						t = t[:len(t)-1]
+					}
+					tableList = append(tableList, t)
 				}
-				tableList = append(tableList, t)
 			}
 		}
 	}
+
 	return tableList
 }
 
