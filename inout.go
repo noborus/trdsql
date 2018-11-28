@@ -52,6 +52,9 @@ func sqlFields(line string) []string {
 					parsed = append(parsed, buf)
 					buf = ""
 				}
+				if r == ',' {
+					parsed = append(parsed, ",")
+				}
 			} else {
 				buf += string(r)
 			}
@@ -75,25 +78,38 @@ func sqlFields(line string) []string {
 	return parsed
 }
 
+func isSQLkey(str string) bool {
+	switch strings.ToUpper(str) {
+	case "WHERE", "GROUP", "HAVING", "WINDOW", "UNION", "ORDER", "LIMIT", "OFFSET", "FETCH", "FOR", "LEFT", "RIGHT", "CROSS", "INNER", "FULL", "LETERAL", "(SELECT":
+		return true
+	}
+	return false
+}
+
 func tableList(sqlstr string) []string {
 	var tableList []string
-	var tableFlag bool
+	var tableFlag, frontFlag bool
 	word := sqlFields(sqlstr)
+	debug.Printf("[%s]", strings.Join(word, "]["))
 	for i, w := range word {
-		switch strings.ToUpper(w) {
-		case "FROM", "JOIN":
+		frontFlag = false
+		switch {
+		case strings.ToUpper(w) == "FROM" || strings.ToUpper(w) == "JOIN":
 			tableFlag = true
-		case "WHERE", "GROUP", "HAVING", "WINDOW", "UNION", "ORDER", "OFFSET", "FETCH", "FOR":
+			frontFlag = true
+		case isSQLkey(w):
 			tableFlag = false
+		case w == ",":
+			frontFlag = true
+		default:
+			frontFlag = false
 		}
-		if tableFlag {
-			n := i + 1
-			if n < len(word) {
-				t := word[n]
-				if len(t) > 0 {
-					if t[len(t)-1] == ')' {
-						t = t[:len(t)-1]
-					}
+		if n := i + 1; n < len(word) && tableFlag && frontFlag {
+			if t := word[n]; len(t) > 0 {
+				if t[len(t)-1] == ')' {
+					t = t[:len(t)-1]
+				}
+				if !isSQLkey(t) {
 					tableList = append(tableList, t)
 				}
 			}
@@ -163,7 +179,7 @@ func (trdsql *TRDSQL) InputNew(file io.Reader, tablename string) (Input, error) 
 }
 
 func tableFileOpen(filename string) (*os.File, error) {
-	if filename == "-" || strings.ToLower(filename) == "stdin" {
+	if len(filename) == 0 || filename == "-" || strings.ToLower(filename) == "stdin" {
 		return os.Stdin, nil
 	}
 	if filename[0] == '`' {

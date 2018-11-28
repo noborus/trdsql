@@ -174,6 +174,45 @@ func TestGuessExtension(t *testing.T) {
 	}
 }
 
+func TestContainSpaceRun(t *testing.T) {
+	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
+	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	sql := "SELECT * FROM \"testdata/a b.csv\""
+	args := []string{"trdsql", "-driver", "sqlite3", "-ig", sql}
+	if trdsql.Run(args) != 0 {
+		t.Errorf("trdsql error.")
+	}
+	if outStream.String() == "" {
+		t.Fatalf("trdsql error :%s", trdsql.outStream)
+	}
+}
+
+func TestTableJoinRun(t *testing.T) {
+	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
+	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	sql := "SELECT t.c2,a.c2 FROM testdata/test.csv AS t LEFT JOIN testdata/hist.csv AS a USING (c1)"
+	args := []string{"trdsql", "-driver", "sqlite3", "-ig", sql}
+	if trdsql.Run(args) != 0 {
+		t.Errorf("trdsql error.")
+	}
+	if outStream.String() == "" {
+		t.Fatalf("trdsql error :%s", trdsql.outStream)
+	}
+}
+
+func TestFromCommaRun(t *testing.T) {
+	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
+	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	sql := "SELECT * FROM testdata/test.csv, testdata/abc.csv"
+	args := []string{"trdsql", "-driver", "sqlite3", "-ig", sql}
+	if trdsql.Run(args) != 0 {
+		t.Errorf("trdsql error.")
+	}
+	if outStream.String() == "" {
+		t.Fatalf("trdsql error :%s", trdsql.outStream)
+	}
+}
+
 func TestNoFrom(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
 	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
