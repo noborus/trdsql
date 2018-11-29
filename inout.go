@@ -40,20 +40,82 @@ func (trdsql *TRDSQL) Import(db *DDB, sqlstr string) (string, error) {
 	return sqlstr, err
 }
 
+func sqlFields(line string) []string {
+	parsed := []string{}
+	buf := ""
+	var singleQuoted, doubleQuoted, backQuote bool
+	for _, r := range line {
+		switch r {
+		case ' ', '\t', '\r', '\n', ',', ';', '=':
+			if !singleQuoted && !doubleQuoted && !backQuote {
+				if buf != "" {
+					parsed = append(parsed, buf)
+					buf = ""
+				}
+				if r == ',' {
+					parsed = append(parsed, ",")
+				}
+			} else {
+				buf += string(r)
+			}
+			continue
+		case '\'':
+			if !doubleQuoted && !backQuote {
+				singleQuoted = !singleQuoted
+			}
+		case '"':
+			if !singleQuoted && !backQuote {
+				doubleQuoted = !doubleQuoted
+			}
+		case '`':
+			if !singleQuoted && !doubleQuoted {
+				backQuote = !backQuote
+			}
+		}
+		buf += string(r)
+	}
+	parsed = append(parsed, buf)
+	return parsed
+}
+
+func isSQLkey(str string) bool {
+	switch strings.ToUpper(str) {
+	case "WHERE", "GROUP", "HAVING", "WINDOW", "UNION", "ORDER", "LIMIT", "OFFSET", "FETCH", "FOR", "LEFT", "RIGHT", "CROSS", "INNER", "FULL", "LETERAL", "(SELECT":
+		return true
+	}
+	return false
+}
+
 func tableList(sqlstr string) []string {
 	var tableList []string
-	word := strings.Fields(sqlstr)
+	var tableFlag, frontFlag bool
+	word := sqlFields(sqlstr)
+	debug.Printf("[%s]", strings.Join(word, "]["))
 	for i, w := range word {
-		if element := strings.ToUpper(w); element == "FROM" || element == "JOIN" {
-			if (i + 1) < len(word) {
-				t := word[i+1]
-				if len(t) > 0 && t[len(t)-1] == ')' {
+		frontFlag = false
+		switch {
+		case strings.ToUpper(w) == "FROM" || strings.ToUpper(w) == "JOIN":
+			tableFlag = true
+			frontFlag = true
+		case isSQLkey(w):
+			tableFlag = false
+		case w == ",":
+			frontFlag = true
+		default:
+			frontFlag = false
+		}
+		if n := i + 1; n < len(word) && tableFlag && frontFlag {
+			if t := word[n]; len(t) > 0 {
+				if t[len(t)-1] == ')' {
 					t = t[:len(t)-1]
 				}
-				tableList = append(tableList, t)
+				if !isSQLkey(t) {
+					tableList = append(tableList, t)
+				}
 			}
 		}
 	}
+
 	return tableList
 }
 
@@ -117,7 +179,7 @@ func (trdsql *TRDSQL) InputNew(file io.Reader, tablename string) (Input, error) 
 }
 
 func tableFileOpen(filename string) (*os.File, error) {
-	if filename == "-" || strings.ToLower(filename) == "stdin" {
+	if len(filename) == 0 || filename == "-" || strings.ToLower(filename) == "stdin" {
 		return os.Stdin, nil
 	}
 	if filename[0] == '`' {

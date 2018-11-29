@@ -15,6 +15,17 @@ func TestValString(t *testing.T) {
 	}
 }
 
+func TestSqlFields(t *testing.T) {
+	str := "SELECT * FROM \"C:\\file with a space.csv\""
+	w := sqlFields(str)
+	if len(w) != 4 {
+		t.Errorf("sqlFields error. element count:%d", len(w))
+	}
+	if w[len(w)-1] != "\"C:\\file with a space.csv\"" {
+		t.Errorf("sqlFields error. element:%s", w[len(w)-1])
+	}
+}
+
 func TestTableFileOpen(t *testing.T) {
 	stdin, err := tableFileOpen("-")
 	if err != nil && stdin == os.Stdin {
