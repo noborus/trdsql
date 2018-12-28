@@ -36,7 +36,7 @@ $ trdsql [options] SQL
         Display db list of configure.
 * `-driver` **driver name**
         database driver.  [ mysql | postgres | sqlite3 ]
-* `-dsn` **dns string**
+* `-dsn` **dsn string**
         database connection option.
 * `-debug`
         debug print.
