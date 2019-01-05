@@ -11,7 +11,7 @@ import (
 
 // Input is wrap the reader.
 type Input interface {
-	FirstRead() ([]string, error)
+	GetColumn() ([]string, error)
 	FirstRowRead([]interface{}) []interface{}
 	RowRead([]interface{}) ([]interface{}, error)
 }
@@ -144,7 +144,7 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 	}
 	rtable := db.EscapeTable(tablename)
 	sqlstr = db.RewriteSQL(sqlstr, tablename, rtable)
-	name, err := input.FirstRead()
+	name, err := input.GetColumn()
 	if err != nil {
 		return sqlstr, err
 	}

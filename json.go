@@ -28,8 +28,8 @@ func (trdsql *TRDSQL) jsonInputNew(r io.Reader) (Input, error) {
 	return jr, nil
 }
 
-// FirstRead is read input to determine column of table
-func (jr *JSONIn) FirstRead() ([]string, error) {
+// GetColumn is read input to determine column of table
+func (jr *JSONIn) GetColumn() ([]string, error) {
 	var top interface{}
 	err := jr.reader.Decode(&top)
 	if err != nil {

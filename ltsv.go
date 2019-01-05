@@ -29,8 +29,8 @@ func (trdsql *TRDSQL) ltsvInputNew(r io.Reader) (Input, error) {
 	return lr, nil
 }
 
-// FirstRead is read input to determine column of table
-func (lr *LTSVIn) FirstRead() ([]string, error) {
+// GetColumn is read input to determine column of table
+func (lr *LTSVIn) GetColumn() ([]string, error) {
 	var err error
 	lr.firstRow, lr.name, err = lr.read()
 	if err != nil {
