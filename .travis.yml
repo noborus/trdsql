@@ -3,7 +3,7 @@ os:
   - linux
   - osx
 go:
-  - "1.10"
+  - master
 services:
   - postgresql
   - mysql
