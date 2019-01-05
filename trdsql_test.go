@@ -122,6 +122,45 @@ func TestJSONRun(t *testing.T) {
 	}
 }
 
+func TestGLobFileRun(t *testing.T) {
+	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
+	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	sql := "SELECT * FROM " + data + "tt*.csv"
+	args := []string{"trdsql", "-driver", "sqlite3", "-icsv", sql}
+	if trdsql.Run(args) != 0 {
+		t.Errorf("trdsql error.")
+	}
+	if outStream.String() == "" {
+		t.Fatalf("trdsql error :%s", trdsql.outStream)
+	}
+}
+
+func TestGLobFileLTSVRun(t *testing.T) {
+	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
+	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	sql := "SELECT * FROM " + data + "tt*.ltsv"
+	args := []string{"trdsql", "-driver", "sqlite3", "-icsv", sql}
+	if trdsql.Run(args) != 0 {
+		t.Errorf("trdsql error.")
+	}
+	if outStream.String() == "" {
+		t.Fatalf("trdsql error :%s", trdsql.outStream)
+	}
+}
+
+func TestGLobFileJSONRun(t *testing.T) {
+	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
+	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	sql := "SELECT * FROM " + data + "tt*.json"
+	args := []string{"trdsql", "-driver", "sqlite3", "-icsv", sql}
+	if trdsql.Run(args) != 0 {
+		t.Errorf("trdsql error.")
+	}
+	if outStream.String() == "" {
+		t.Fatalf("trdsql error :%s", trdsql.outStream)
+	}
+}
+
 func TestGuessRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
 	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}

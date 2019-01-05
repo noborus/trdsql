@@ -129,7 +129,9 @@ func (jr *JSONIn) RowRead(list []interface{}) ([]interface{}, error) {
 			_, jr.firstRow = jr.topLevel(top)
 			jr.count = 0
 		}
-		list = jr.rowParse(list, jr.ajson[jr.count])
+		if len(jr.ajson) > 0 {
+			list = jr.rowParse(list, jr.ajson[jr.count])
+		}
 	} else {
 		// {} object
 		var data interface{}

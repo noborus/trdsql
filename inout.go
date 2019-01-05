@@ -1,10 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -120,20 +123,35 @@ func tableList(sqlstr string) []string {
 }
 
 func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (string, error) {
-	file, err := tableFileOpen(tablename)
-	if err != nil {
-		debug.Printf("%s\n", err)
-		return sqlstr, nil
-	}
-	defer func() {
-		err = file.Close()
+	var input Input
+	r := regexp.MustCompile(`\*|\?|\[`)
+	if r.MatchString(tablename) == true {
+		var err error
+		file, err := globFileOpen(tablename)
 		if err != nil {
-			log.Println("ERROR:", err)
+			debug.Printf("%s\n", err)
+			return sqlstr, nil
 		}
-	}()
-	input, err := trdsql.InputNew(file, tablename)
-	if err != nil {
-		log.Println("ERROR:", err)
+		input, err = trdsql.InputNew(file, tablename)
+		defer func() {
+			err = file.Close()
+			if err != nil {
+				log.Println("ERROR:", err)
+			}
+		}()
+	} else {
+		file, err := tableFileOpen(tablename)
+		if err != nil {
+			debug.Printf("%s\n", err)
+			return sqlstr, nil
+		}
+		defer func() {
+			err = file.Close()
+			if err != nil {
+				log.Println("ERROR:", err)
+			}
+		}()
+		input, err = trdsql.InputNew(file, tablename)
 	}
 	if trdsql.inSkip > 0 {
 		skip := make([]interface{}, 1)
@@ -178,16 +196,56 @@ func (trdsql *TRDSQL) InputNew(file io.Reader, tablename string) (Input, error) 
 	return input, err
 }
 
-func tableFileOpen(filename string) (*os.File, error) {
-	if len(filename) == 0 || filename == "-" || strings.ToLower(filename) == "stdin" {
-		return os.Stdin, nil
-	}
+func trimQuote(filename string) string {
 	if filename[0] == '`' {
 		filename = strings.Replace(filename, "`", "", 2)
 	}
 	if filename[0] == '"' {
 		filename = strings.Replace(filename, "\"", "", 2)
 	}
+	return filename
+}
+
+func globFileOpen(filename string) (*io.PipeReader, error) {
+	filename = trimQuote(filename)
+	files, err := filepath.Glob(filename)
+	if err != nil {
+		return nil, err
+	}
+	if len(files) <= 0 {
+		return nil, fmt.Errorf("No matches found: %s", filename)
+	}
+	pipeReader, pipeWriter := io.Pipe()
+	go func() {
+		defer pipeWriter.Close()
+		for _, file := range files {
+			f, err := os.Open(file)
+			debug.Printf("Open: [%s]", file)
+			if err != nil {
+				log.Println("ERROR:", err)
+			}
+			r := bufio.NewReader(f)
+			for {
+				line, err := r.ReadBytes('\n')
+				if err == io.EOF {
+					pipeWriter.Write(line)
+					pipeWriter.Write([]byte("\n"))
+					break
+				}
+				pipeWriter.Write(line)
+			}
+			f.Close()
+		}
+	}()
+
+	return pipeReader, nil
+}
+
+func tableFileOpen(filename string) (*os.File, error) {
+	if len(filename) == 0 || filename == "-" || strings.ToLower(filename) == "stdin" {
+		return os.Stdin, nil
+	}
+	filename = trimQuote(filename)
 	return os.Open(filename)
 }
 
