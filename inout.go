@@ -118,41 +118,44 @@ func tableList(sqlstr string) []string {
 			}
 		}
 	}
-
 	return tableList
 }
 
-func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (string, error) {
-	var input Input
+type stream struct {
+	file *os.File
+	pipe *io.PipeReader
+	io.Reader
+}
+
+func (trdsql *TRDSQL) inputFileOpen(tablename string) (io.ReadCloser, error) {
 	r := regexp.MustCompile(`\*|\?|\[`)
 	if r.MatchString(tablename) == true {
-		var err error
-		file, err := globFileOpen(tablename)
+		stream, err := globFileOpen(tablename)
 		if err != nil {
-			debug.Printf("%s\n", err)
-			return sqlstr, nil
+			return nil, err
 		}
-		input, err = trdsql.InputNew(file, tablename)
-		defer func() {
-			err = file.Close()
-			if err != nil {
-				log.Println("ERROR:", err)
-			}
-		}()
-	} else {
-		file, err := tableFileOpen(tablename)
-		if err != nil {
-			debug.Printf("%s\n", err)
-			return sqlstr, nil
-		}
-		defer func() {
-			err = file.Close()
-			if err != nil {
-				log.Println("ERROR:", err)
-			}
-		}()
-		input, err = trdsql.InputNew(file, tablename)
+		return stream, err
 	}
+	file, err := tableFileOpen(tablename)
+	if err != nil {
+		return nil, err
+	}
+	return file, err
+}
+
+func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (string, error) {
+	file, err := trdsql.inputFileOpen(tablename)
+	if err != nil {
+		log.Println("ERROR:", err)
+		return sqlstr, err
+	}
+	defer file.Close()
+	input, err := trdsql.InputNew(file, tablename)
+	if err != nil {
+		log.Println("ERROR:", err)
+		return sqlstr, err
+	}
+
 	if trdsql.inSkip > 0 {
 		skip := make([]interface{}, 1)
 		for i := 0; i < trdsql.inSkip; i++ {
@@ -162,15 +165,15 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 	}
 	rtable := db.EscapeTable(tablename)
 	sqlstr = db.RewriteSQL(sqlstr, tablename, rtable)
-	name, err := input.GetColumn()
+	columnNames, err := input.GetColumn()
 	if err != nil {
 		return sqlstr, err
 	}
-	err = db.CreateTable(rtable, name)
+	err = db.CreateTable(rtable, columnNames)
 	if err != nil {
 		return sqlstr, err
 	}
-	err = db.Import(rtable, name, input, trdsql.inFirstRow)
+	err = db.Import(rtable, columnNames, input, trdsql.inFirstRow)
 	return sqlstr, err
 }
 
@@ -225,19 +228,11 @@ func globFileOpen(filename string) (*io.PipeReader, error) {
 				log.Println("ERROR:", err)
 			}
 			r := bufio.NewReader(f)
-			for {
-				line, err := r.ReadBytes('\n')
-				if err == io.EOF {
-					pipeWriter.Write(line)
-					pipeWriter.Write([]byte("\n"))
-					break
-				}
-				pipeWriter.Write(line)
-			}
+			io.Copy(pipeWriter, r)
+			pipeWriter.Write([]byte("\n"))
 			f.Close()
 		}
 	}()
-
 	return pipeReader, nil
 }
 

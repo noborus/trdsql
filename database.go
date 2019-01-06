@@ -80,33 +80,33 @@ func (db *DDB) Select(sqlstr string) (*sql.Rows, error) {
 
 // iTable is import Table data
 type iTable struct {
-	tablename string
-	name      []string
-	columns   []string
-	sqlstr    string
-	place     string
-	firstRow  bool
-	row       []interface{}
-	lastCount int
-	count     int
+	tablename   string
+	columnNames []string
+	columns     []string
+	sqlstr      string
+	place       string
+	firstRow    bool
+	row         []interface{}
+	lastCount   int
+	count       int
 }
 
 // Import is import to the table.
-func (db *DDB) Import(tablename string, name []string, input Input, firstRow bool) error {
+func (db *DDB) Import(tablename string, columnNames []string, input Input, firstRow bool) error {
 	var err error
-	columns := make([]string, len(name))
-	for i := range name {
-		columns[i] = db.escape + name[i] + db.escape
+	columns := make([]string, len(columnNames))
+	for i := range columnNames {
+		columns[i] = db.escape + columnNames[i] + db.escape
 	}
-	row := make([]interface{}, len(name))
+	row := make([]interface{}, len(columnNames))
 	itable := &iTable{
-		tablename: tablename,
-		name:      name,
-		columns:   columns,
-		firstRow:  firstRow,
-		row:       row,
-		lastCount: 0,
-		count:     0,
+		tablename:   tablename,
+		columnNames: columnNames,
+		columns:     columns,
+		firstRow:    firstRow,
+		row:         row,
+		lastCount:   0,
+		count:       0,
 	}
 	if db.driver == "postgres" {
 		err = db.copyImport(itable, input)
@@ -156,7 +156,7 @@ func (db *DDB) insertImport(itable *iTable, input Input) error {
 	var stmt *sql.Stmt
 	defer db.stmtClose(stmt)
 	itable.sqlstr = "INSERT INTO " + itable.tablename + " (" + strings.Join(itable.columns, ",") + ") VALUES "
-	itable.place = "(" + strings.Repeat("?,", len(itable.name)-1) + "?)"
+	itable.place = "(" + strings.Repeat("?,", len(itable.columnNames)-1) + "?)"
 	maxCap := (db.maxBulk / len(itable.row)) * len(itable.row)
 	bulk := make([]interface{}, 0, maxCap)
 
