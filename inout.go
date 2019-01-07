@@ -146,7 +146,8 @@ func (trdsql *TRDSQL) inputFileOpen(tablename string) (io.ReadCloser, error) {
 func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (string, error) {
 	file, err := trdsql.inputFileOpen(tablename)
 	if err != nil {
-		return sqlstr, err
+		debug.Printf("%s\n", err)
+		return sqlstr, nil
 	}
 	defer file.Close()
 	input, err := trdsql.InputNew(file, tablename)
