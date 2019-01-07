@@ -91,17 +91,6 @@ $ trdsql [options] SQL
 * `-od` **delimiter character**
         Field delimiter for output. (default ",")
 
-## STDIN input
-
-"-" or "stdin" is received from standard input instead of file name.
-```sh
-$ ps | trdsql -id " " "SELECT * FROM -"
-```
-or
-```sh
-$ ps | trdsql -id " " "SELECT * FROM stdin"
-```
-
 ## Example
 
 test.csv file.
@@ -123,6 +112,29 @@ $ trdsql "SELECT * FROM test.csv"
 ```sh
 $ trdsql -q test.sql
 ```
+
+### STDIN input
+
+"-" or "stdin" is received from standard input instead of file name.
+```sh
+$ ps | trdsql -id " " "SELECT * FROM -"
+```
+or
+```sh
+$ ps | trdsql -id " " "SELECT * FROM stdin"
+```
+
+### Multiple files
+
+Multiple matched files can be executed as one table.
+
+```sh
+$ trdsql -ih "SELECT * FROM tt*.csv"
+1,test1
+2,test2
+3,test3
+```
+
 
 ### TSV (Tab Separated Value)
 
