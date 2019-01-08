@@ -226,7 +226,7 @@ func (db *DDB) stmtClose(stmt *sql.Stmt) {
 	if stmt != nil {
 		err := stmt.Close()
 		if err != nil {
-			log.Println("ERROR:", err)
+			log.Printf("ERROR: stmtClose:%s", err)
 		}
 	}
 }

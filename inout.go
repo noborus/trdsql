@@ -121,15 +121,9 @@ func tableList(sqlstr string) []string {
 	return tableList
 }
 
-type stream struct {
-	file *os.File
-	pipe *io.PipeReader
-	io.Reader
-}
-
 func (trdsql *TRDSQL) inputFileOpen(tablename string) (io.ReadCloser, error) {
 	r := regexp.MustCompile(`\*|\?|\[`)
-	if r.MatchString(tablename) == true {
+	if r.MatchString(tablename) {
 		stream, err := globFileOpen(tablename)
 		if err != nil {
 			return nil, err
@@ -158,7 +152,11 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 	if trdsql.inSkip > 0 {
 		skip := make([]interface{}, 1)
 		for i := 0; i < trdsql.inSkip; i++ {
-			r, _ := input.RowRead(skip)
+			r, e := input.RowRead(skip)
+			if e != nil {
+				log.Printf("ERROR: skip error %s", e)
+				break
+			}
 			debug.Printf("Skip row:%s\n", r)
 		}
 	}
@@ -224,12 +222,24 @@ func globFileOpen(filename string) (*io.PipeReader, error) {
 			f, err := os.Open(file)
 			debug.Printf("Open: [%s]", file)
 			if err != nil {
-				log.Println("ERROR:", err)
+				log.Printf("ERROR: %s:%s", file, err)
+				continue
 			}
 			r := bufio.NewReader(f)
-			io.Copy(pipeWriter, r)
-			pipeWriter.Write([]byte("\n"))
-			f.Close()
+			_, err = io.Copy(pipeWriter, r)
+			if err != nil {
+				log.Printf("ERROR: %s:%s", file, err)
+				continue
+			}
+			_, err = pipeWriter.Write([]byte("\n"))
+			if err != nil {
+				log.Printf("ERROR: %s:%s", file, err)
+				continue
+			}
+			err = f.Close()
+			if err != nil {
+				log.Printf("ERROR: %s:%s", file, err)
+			}
 		}
 	}()
 	return pipeReader, nil
@@ -264,7 +274,7 @@ func (trdsql *TRDSQL) Export(db *DDB, sqlstr string, output Output) error {
 	defer func() {
 		err = rows.Close()
 		if err != nil {
-			log.Println("ERROR:", err)
+			log.Printf("ERROR: close:%s", err)
 		}
 	}()
 	values := make([]interface{}, len(columns))

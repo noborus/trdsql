@@ -99,7 +99,7 @@ func jsonString(val interface{}) string {
 	case map[string]interface{}, []interface{}:
 		str, err := json.Marshal(val)
 		if err != nil {
-			log.Println("ERROR:", err)
+			log.Printf("ERROR: jsonString:%s", err)
 		}
 		return valString(str)
 	default:
