@@ -45,15 +45,21 @@ func (vf *VfOut) First(columns []string) error {
 // RowWrite is Actual output
 func (vf *VfOut) RowWrite(values []interface{}, columns []string) error {
 	vf.count++
-	fmt.Fprintf(vf.writer,
+	_, err := fmt.Fprintf(vf.writer,
 		"---[ %d]%s\n", vf.count, strings.Repeat("-", (vf.termWidth-16)))
+	if err != nil {
+		debug.Printf("%s\n", err)
+	}
 	for i, col := range vf.header {
 		v := vf.hsize - runewidth.StringWidth(col)
-		fmt.Fprintf(vf.writer,
+		_, err := fmt.Fprintf(vf.writer,
 			"%s%s | %-s\n",
 			strings.Repeat(" ", v+2),
 			col,
 			valString(values[i]))
+		if err != nil {
+			debug.Printf("%s\n", err)
+		}
 	}
 	return nil
 }

@@ -122,7 +122,11 @@ func (trdsql *TRDSQL) Run(args []string) int {
 		return (0)
 	}
 
-	sqlstr := getSQL(flags.Args(), query)
+	sqlstr, err := getSQL(flags.Args(), query)
+	if err != nil {
+		log.Printf("ERROR: %s", err)
+		return (1)
+	}
 
 	if usage || (len(sqlstr) == 0) {
 		fmt.Fprintf(os.Stderr, `
@@ -142,36 +146,36 @@ Options:
 func (trdsql *TRDSQL) main(sqlstr string, output Output) int {
 	db, err := Connect(trdsql.driver, trdsql.dsn)
 	if err != nil {
-		log.Println("ERROR:", err)
+		log.Printf("ERROR(CONNECT):%s", err)
 		return 1
 	}
 	defer func() {
 		err = db.Disconnect()
 		if err != nil {
-			log.Println("ERROR:", err)
+			log.Printf("ERROR(DISCONNECT):%s", err)
 		}
 	}()
 
 	db.tx, err = db.Begin()
 	if err != nil {
-		log.Println("ERROR:", err)
+		log.Printf("ERROR(BEGIN):%s", err)
 		return 1
 	}
 	sqlstr, err = trdsql.Import(db, sqlstr)
 	if err != nil {
-		log.Println("ERROR:", err)
+		log.Printf("ERROR(IMPORT):%s", err)
 		return 1
 	}
 
 	err = trdsql.Export(db, sqlstr, output)
 	if err != nil {
-		log.Println("ERROR:", err)
+		log.Printf("ERROR(EXPORT)%s", err)
 		return 1
 	}
 
 	err = db.tx.Commit()
 	if err != nil {
-		log.Println("ERROR:", err)
+		log.Printf("ERROR(COMMIT):%s", err)
 		return 1
 	}
 
@@ -211,13 +215,12 @@ func (trdsql *TRDSQL) setOutFormat() Output {
 	return output
 }
 
-func getSQL(rargs []string, query string) string {
+func getSQL(rargs []string, query string) (string, error) {
 	sqlstr := ""
 	if query != "" {
 		bq, err := ioutil.ReadFile(query)
 		if err != nil {
-			log.Println("ERROR:", err)
-			return ""
+			return "", err
 		}
 		sqlstr = string(bq)
 	} else {
@@ -226,7 +229,7 @@ func getSQL(rargs []string, query string) string {
 	if strings.HasSuffix(sqlstr, ";") {
 		sqlstr = sqlstr[:len(sqlstr)-1]
 	}
-	return sqlstr
+	return sqlstr, nil
 }
 
 func (trdsql *TRDSQL) setDB(cfg *config, cdb string, cdriver string, cdsn string) {

@@ -99,7 +99,7 @@ func jsonString(val interface{}) string {
 	case map[string]interface{}, []interface{}:
 		str, err := json.Marshal(val)
 		if err != nil {
-			log.Println("ERROR:", err)
+			log.Printf("ERROR: jsonString:%s", err)
 		}
 		return valString(str)
 	default:
@@ -129,7 +129,9 @@ func (jr *JSONIn) RowRead(list []interface{}) ([]interface{}, error) {
 			_, jr.firstRow = jr.topLevel(top)
 			jr.count = 0
 		}
-		list = jr.rowParse(list, jr.ajson[jr.count])
+		if len(jr.ajson) > 0 {
+			list = jr.rowParse(list, jr.ajson[jr.count])
+		}
 	} else {
 		// {} object
 		var data interface{}

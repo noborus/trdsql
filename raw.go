@@ -30,7 +30,10 @@ func (trdsql *TRDSQL) rawOutNew() Output {
 // First is output of header and preparation
 func (raw *RawOut) First(columns []string) error {
 	if raw.outHeader {
-		fmt.Fprint(raw.writer, strings.Join(columns, raw.sep), "\n")
+		_, err := fmt.Fprint(raw.writer, strings.Join(columns, raw.sep), "\n")
+		if err != nil {
+			debug.Printf("%s\n", err)
+		}
 	}
 	raw.results = make([]string, len(columns))
 	return nil
@@ -41,7 +44,10 @@ func (raw *RawOut) RowWrite(values []interface{}, columns []string) error {
 	for i, col := range values {
 		raw.results[i] = valString(col)
 	}
-	fmt.Fprint(raw.writer, strings.Join(raw.results, raw.sep), "\n")
+	_, err := fmt.Fprint(raw.writer, strings.Join(raw.results, raw.sep), "\n")
+	if err != nil {
+		debug.Printf("%s\n", err)
+	}
 	return nil
 }
 
