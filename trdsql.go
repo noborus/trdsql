@@ -76,6 +76,7 @@ func (trdsql *TRDSQL) Run(args []string) int {
 	flags.StringVar(&trdsql.outSep, "od", ",", "Field delimiter for output.")
 	flags.BoolVar(&trdsql.inHeader, "ih", false, "The first line is interpreted as column names(CSV only).")
 	flags.IntVar(&trdsql.inSkip, "is", 0, "Skip header row.")
+	flags.IntVar(&trdsql.inPreRead, "ir", 1, "PreRead Rows count.")
 	flags.BoolVar(&trdsql.outHeader, "oh", false, "Output column name as header.")
 	flags.StringVar(&query, "q", "", "Read query from the provided filename.")
 	flags.BoolVar(&usage, "help", false, "display usage information.")

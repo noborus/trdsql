@@ -85,14 +85,14 @@ type iTable struct {
 	columns     []string
 	sqlstr      string
 	place       string
-	firstRow    bool
+	preRead     int
 	row         []interface{}
 	lastCount   int
 	count       int
 }
 
 // Import is import to the table.
-func (db *DDB) Import(tablename string, columnNames []string, input Input, firstRow bool) error {
+func (db *DDB) Import(tablename string, columnNames []string, input Input, preRead int) error {
 	var err error
 	columns := make([]string, len(columnNames))
 	for i := range columnNames {
@@ -103,7 +103,7 @@ func (db *DDB) Import(tablename string, columnNames []string, input Input, first
 		tablename:   tablename,
 		columnNames: columnNames,
 		columns:     columns,
-		firstRow:    firstRow,
+		preRead:     preRead,
 		row:         row,
 		lastCount:   0,
 		count:       0,
@@ -123,16 +123,21 @@ func (db *DDB) copyImport(itable *iTable, input Input) error {
 	if err != nil {
 		return fmt.Errorf("COPY Prepare: %s", err)
 	}
-	if itable.firstRow {
-		itable.row = input.FirstRowRead(itable.row)
-		_, err = stmt.Exec(itable.row...)
-		if err != nil {
-			return err
+	if itable.preRead > 0 {
+		preReadRows := input.PreReadRow()
+		for _, row := range preReadRows {
+			if row == nil {
+				break
+			}
+			_, err = stmt.Exec(row...)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
 	for {
-		itable.row, err = input.RowRead(itable.row)
+		itable.row, err = input.ReadRow(itable.row)
 		if err == io.EOF {
 			break
 		} else if err != nil {
@@ -160,10 +165,12 @@ func (db *DDB) insertImport(itable *iTable, input Input) error {
 	maxCap := (db.maxBulk / len(itable.row)) * len(itable.row)
 	bulk := make([]interface{}, 0, maxCap)
 
-	if itable.firstRow {
-		itable.row = input.FirstRowRead(itable.row)
-		bulk = append(bulk, itable.row...)
-		itable.count++
+	if itable.preRead > 0 {
+		preReadRows := input.PreReadRow()
+		for _, row := range preReadRows {
+			bulk = append(bulk, row...)
+			itable.count++
+		}
 	}
 
 	for eof := false; !eof; {
@@ -193,7 +200,7 @@ func (db *DDB) insertImport(itable *iTable, input Input) error {
 func bulkPush(itable *iTable, input Input, bulk []interface{}) ([]interface{}, error) {
 	var err error
 	for (itable.count * len(itable.row)) < cap(bulk) {
-		itable.row, err = input.RowRead(itable.row)
+		itable.row, err = input.ReadRow(itable.row)
 		if err != nil {
 			return bulk, err
 		}

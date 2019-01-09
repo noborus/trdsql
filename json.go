@@ -9,11 +9,11 @@ import (
 
 // JSONIn provides methods of the Input interface
 type JSONIn struct {
-	reader   *json.Decoder
-	firstRow []string
-	name     []string
-	ajson    []interface{}
-	count    int
+	reader  *json.Decoder
+	preRead [][]string
+	names   []string
+	ajson   []interface{}
+	count   int
 }
 
 // JSONOut provides methods of the Output interface
@@ -29,20 +29,22 @@ func (trdsql *TRDSQL) jsonInputNew(r io.Reader) (Input, error) {
 }
 
 // GetColumn is read input to determine column of table
-func (jr *JSONIn) GetColumn() ([]string, error) {
+func (jr *JSONIn) GetColumn(rowNum int) ([]string, error) {
 	var top interface{}
 	err := jr.reader.Decode(&top)
 	if err != nil {
 		return nil, err
 	}
-	jr.name, jr.firstRow = jr.topLevel(top)
-	debug.Printf("Column Name: [%v]", strings.Join(jr.name, ","))
-	return jr.name, err
+	jr.preRead = make([][]string, 1)
+	jr.names, jr.preRead[0] = jr.topLevel(top)
+	debug.Printf("Column Names: [%v]", strings.Join(jr.names, ","))
+	return jr.names, err
 }
 
 func (jr *JSONIn) topLevel(top interface{}) ([]string, []string) {
 	switch top.(type) {
 	case []interface{}:
+		// [{} or [] or etc...]
 		jr.ajson = top.([]interface{})
 		val := jr.ajson[0]
 		return jr.secondLevel(top, val)
@@ -107,16 +109,21 @@ func jsonString(val interface{}) string {
 	}
 }
 
-// FirstRowRead is read the first row
-func (jr *JSONIn) FirstRowRead(list []interface{}) []interface{} {
-	for i := range jr.name {
-		list[i] = jr.firstRow[i]
+// PreReadRow is read the first row
+func (jr *JSONIn) PreReadRow() [][]interface{} {
+	rowNum := len(jr.preRead)
+	rows := make([][]interface{}, rowNum)
+	for n := 0; n < rowNum; n++ {
+		rows[n] = make([]interface{}, len(jr.names))
+		for i := range jr.names {
+			rows[n][i] = jr.preRead[n][i]
+		}
 	}
-	return list
+	return rows
 }
 
-// RowRead is read 2row or later
-func (jr *JSONIn) RowRead(list []interface{}) ([]interface{}, error) {
+// ReadRow is read 2row or later
+func (jr *JSONIn) ReadRow(row []interface{}) ([]interface{}, error) {
 	if jr.ajson != nil {
 		// [] array
 		jr.count++
@@ -126,11 +133,10 @@ func (jr *JSONIn) RowRead(list []interface{}) ([]interface{}, error) {
 			if err != nil {
 				return nil, err
 			}
-			_, jr.firstRow = jr.topLevel(top)
 			jr.count = 0
 		}
 		if len(jr.ajson) > 0 {
-			list = jr.rowParse(list, jr.ajson[jr.count])
+			row = jr.rowParse(row, jr.ajson[jr.count])
 		}
 	} else {
 		// {} object
@@ -139,25 +145,25 @@ func (jr *JSONIn) RowRead(list []interface{}) ([]interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		list = jr.rowParse(list, data)
+		row = jr.rowParse(row, data)
 	}
-	return list, nil
+	return row, nil
 }
 
-func (jr *JSONIn) rowParse(list []interface{}, jsonRow interface{}) []interface{} {
+func (jr *JSONIn) rowParse(row []interface{}, jsonRow interface{}) []interface{} {
 	switch jsonRow.(type) {
 	case map[string]interface{}:
 		dmap := jsonRow.(map[string]interface{})
-		for i := range jr.name {
-			list[i] = jsonString(dmap[jr.name[i]])
+		for i := range jr.names {
+			row[i] = jsonString(dmap[jr.names[i]])
 		}
 	default:
-		for i := range jr.name {
-			list[i] = nil
+		for i := range jr.names {
+			row[i] = nil
 		}
-		list[0] = jsonString(jsonRow)
+		row[0] = jsonString(jsonRow)
 	}
-	return list
+	return row
 }
 
 func (trdsql *TRDSQL) jsonOutNew() Output {

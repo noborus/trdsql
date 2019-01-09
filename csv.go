@@ -10,8 +10,8 @@ import (
 // CSVIn provides methods of the Input interface
 type CSVIn struct {
 	reader   *csv.Reader
-	name     []string
-	firstRow []string
+	names    []string
+	preRead  [][]string
 	inHeader bool
 }
 
@@ -35,51 +35,68 @@ func (trdsql *TRDSQL) csvInputNew(r io.Reader) (Input, error) {
 }
 
 // GetColumn is read input to determine column of table
-func (cr *CSVIn) GetColumn() ([]string, error) {
-	first, err := cr.reader.Read()
-	if err != nil {
-		return nil, err
-	}
-	cr.name = make([]string, len(first))
-	cr.firstRow = make([]string, len(first))
-	for i, row := range first {
-		if cr.inHeader {
-			if row == "" {
-				cr.name[i] = "c" + strconv.Itoa(i+1)
+func (cr *CSVIn) GetColumn(rowNum int) ([]string, error) {
+	// Header
+	if cr.inHeader {
+		first, err := cr.reader.Read()
+		if err != nil {
+			return nil, err
+		}
+		cr.names = make([]string, len(first))
+		for i, col := range first {
+			if col == "" {
+				cr.names[i] = "c" + strconv.Itoa(i+1)
 			} else {
-				cr.name[i] = row
+				cr.names[i] = col
 			}
-		} else {
-			cr.name[i] = "c" + strconv.Itoa(i+1)
-			cr.firstRow[i] = row
 		}
 	}
-	debug.Printf("Column Name: [%v]", strings.Join(cr.name, ","))
-	return cr.name, err
-}
 
-// FirstRowRead is read the first row
-func (cr *CSVIn) FirstRowRead(list []interface{}) []interface{} {
-	for i, f := range cr.firstRow {
-		list[i] = f
+	for n := 0; n < rowNum; n++ {
+		first, err := cr.reader.Read()
+		if err != nil {
+			return nil, err
+		}
+		rows := make([]string, len(first))
+		for i, col := range first {
+			rows[i] = col
+			if len(cr.names) < i+1 {
+				cr.names = append(cr.names, "c"+strconv.Itoa(i+1))
+			}
+		}
+		cr.preRead = append(cr.preRead, rows)
 	}
-	return list
+	debug.Printf("Column Names: [%v]", strings.Join(cr.names, ","))
+	return cr.names, nil
 }
 
-// RowRead is read 2row or later
-func (cr *CSVIn) RowRead(list []interface{}) ([]interface{}, error) {
+// PreReadRow is read the first row
+func (cr *CSVIn) PreReadRow() [][]interface{} {
+	rowNum := len(cr.preRead)
+	rows := make([][]interface{}, rowNum)
+	for n := 0; n < rowNum; n++ {
+		rows[n] = make([]interface{}, len(cr.names))
+		for i, f := range cr.preRead[n] {
+			rows[n][i] = f
+		}
+	}
+	return rows
+}
+
+// ReadRow is read 2row or later
+func (cr *CSVIn) ReadRow(row []interface{}) ([]interface{}, error) {
 	record, err := cr.reader.Read()
 	if err != nil {
-		return list, err
+		return row, err
 	}
-	for i := 0; len(list) > i; i++ {
+	for i := 0; len(row) > i; i++ {
 		if len(record) > i {
-			list[i] = record[i]
+			row[i] = record[i]
 		} else {
-			list[i] = nil
+			row[i] = nil
 		}
 	}
-	return list, nil
+	return row, nil
 }
 
 func (trdsql *TRDSQL) csvOutNew() Output {
