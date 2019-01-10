@@ -164,8 +164,12 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 	sqlstr = db.RewriteSQL(sqlstr, tablename, rtable)
 	columnNames, err := input.GetColumn(trdsql.inPreRead)
 	if err != nil {
-		return sqlstr, err
+		if err != io.EOF {
+			return sqlstr, err
+		}
+		debug.Printf("EOF reached before argument number of rows")
 	}
+	debug.Printf("Column Names: [%v]", strings.Join(columnNames, ","))
 	err = db.CreateTable(rtable, columnNames)
 	if err != nil {
 		return sqlstr, err

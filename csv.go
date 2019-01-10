@@ -4,7 +4,6 @@ import (
 	"encoding/csv"
 	"io"
 	"strconv"
-	"strings"
 )
 
 // CSVIn provides methods of the Input interface
@@ -34,16 +33,17 @@ func (trdsql *TRDSQL) csvInputNew(r io.Reader) (Input, error) {
 	return cr, err
 }
 
-// GetColumn is read input to determine column of table
+// GetColumn is reads the specified number of rows and determines the column name.
+// The previously read row is stored in preRead.
 func (cr *CSVIn) GetColumn(rowNum int) ([]string, error) {
 	// Header
 	if cr.inHeader {
-		first, err := cr.reader.Read()
+		row, err := cr.reader.Read()
 		if err != nil {
 			return nil, err
 		}
-		cr.names = make([]string, len(first))
-		for i, col := range first {
+		cr.names = make([]string, len(row))
+		for i, col := range row {
 			if col == "" {
 				cr.names[i] = "c" + strconv.Itoa(i+1)
 			} else {
@@ -53,12 +53,12 @@ func (cr *CSVIn) GetColumn(rowNum int) ([]string, error) {
 	}
 
 	for n := 0; n < rowNum; n++ {
-		first, err := cr.reader.Read()
+		row, err := cr.reader.Read()
 		if err != nil {
-			return nil, err
+			return cr.names, err
 		}
-		rows := make([]string, len(first))
-		for i, col := range first {
+		rows := make([]string, len(row))
+		for i, col := range row {
 			rows[i] = col
 			if len(cr.names) < i+1 {
 				cr.names = append(cr.names, "c"+strconv.Itoa(i+1))
@@ -66,11 +66,10 @@ func (cr *CSVIn) GetColumn(rowNum int) ([]string, error) {
 		}
 		cr.preRead = append(cr.preRead, rows)
 	}
-	debug.Printf("Column Names: [%v]", strings.Join(cr.names, ","))
 	return cr.names, nil
 }
 
-// PreReadRow is read the first row
+// PreReadRow is returns only columns that store preread rows.
 func (cr *CSVIn) PreReadRow() [][]interface{} {
 	rowNum := len(cr.preRead)
 	rows := make([][]interface{}, rowNum)
@@ -83,7 +82,7 @@ func (cr *CSVIn) PreReadRow() [][]interface{} {
 	return rows
 }
 
-// ReadRow is read 2row or later
+// ReadRow is read the rest of the row.
 func (cr *CSVIn) ReadRow(row []interface{}) ([]interface{}, error) {
 	record, err := cr.reader.Read()
 	if err != nil {

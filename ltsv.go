@@ -29,31 +29,28 @@ func (trdsql *TRDSQL) ltsvInputNew(r io.Reader) (Input, error) {
 	return lr, nil
 }
 
-// GetColumn is read input to determine column of table
+// GetColumn is reads the specified number of rows and determines the column name.
+// The previously read row is stored in preRead.
 func (lr *LTSVIn) GetColumn(rowNum int) ([]string, error) {
 	names := map[string]bool{}
 	for i := 0; i < rowNum; i++ {
-		rows, keys, err := lr.read()
+		row, keys, err := lr.read()
 		if err != nil {
-			if err == io.EOF {
-				break
-			} else {
-				return nil, err
-			}
+			return lr.names, err
 		}
+		// Add only unique column names.
 		for k := 0; k < len(keys); k++ {
 			if !names[keys[k]] {
 				names[keys[k]] = true
 				lr.names = append(lr.names, keys[k])
 			}
 		}
-		lr.preRead = append(lr.preRead, rows)
+		lr.preRead = append(lr.preRead, row)
 	}
-	debug.Printf("Column Names: [%v]", strings.Join(lr.names, ","))
 	return lr.names, nil
 }
 
-// PreReadRow is read the first row
+// PreReadRow is returns only columns that store preread rows.
 func (lr *LTSVIn) PreReadRow() [][]interface{} {
 	rowNum := len(lr.preRead)
 	rows := make([][]interface{}, rowNum)
@@ -66,7 +63,7 @@ func (lr *LTSVIn) PreReadRow() [][]interface{} {
 	return rows
 }
 
-// ReadRow is read 2row or later
+// ReadRow is read the rest of the row.
 func (lr *LTSVIn) ReadRow(row []interface{}) ([]interface{}, error) {
 	record, _, err := lr.read()
 	if err != nil {
