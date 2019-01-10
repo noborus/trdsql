@@ -66,6 +66,8 @@ $ trdsql [options] SQL
         Field delimiter for input. (default ",")
 * `-is` **int**
         Skip header row.
+* `-ir` **int**
+        Number of row preread for column determination. (default 1)
 
 ### Output format
 
@@ -135,6 +137,16 @@ $ trdsql -ih "SELECT * FROM tt*.csv"
 3,test3
 ```
 
+### Columns is not constant
+
+If the number of columns is not a constant, read and decide multiple rows.
+
+```sh
+$ trdsql -ir 3 -iltsv "SELECT * FROM test_indefinite.ltsv"
+1,Orange,50,,
+2,Melon,500,ibaraki,
+3,Apple,100,aomori,red
+```
 
 ### TSV (Tab Separated Value)
 
