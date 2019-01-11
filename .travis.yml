@@ -4,6 +4,8 @@ os:
   - osx
 go:
   - master
+env:
+  - GO111MODULE=on
 services:
   - postgresql
   - mysql
