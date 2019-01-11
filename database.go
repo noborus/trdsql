@@ -85,6 +85,7 @@ type iTable struct {
 	columns     []string
 	sqlstr      string
 	place       string
+	maxCap      int
 	preRead     int
 	row         []interface{}
 	lastCount   int
@@ -162,26 +163,34 @@ func (db *DDB) insertImport(itable *iTable, input Input) error {
 	defer db.stmtClose(stmt)
 	itable.sqlstr = "INSERT INTO " + itable.tablename + " (" + strings.Join(itable.columns, ",") + ") VALUES "
 	itable.place = "(" + strings.Repeat("?,", len(itable.columnNames)-1) + "?)"
-	maxCap := (db.maxBulk / len(itable.row)) * len(itable.row)
-	bulk := make([]interface{}, 0, maxCap)
+	itable.maxCap = (db.maxBulk / len(itable.row)) * len(itable.row)
+	bulk := make([]interface{}, 0, itable.maxCap)
 
+	var pRows [][]interface{}
 	if itable.preRead > 0 {
-		preReadRows := input.PreReadRow()
-		for _, row := range preReadRows {
-			bulk = append(bulk, row...)
-			itable.count++
-		}
+		pRows = input.PreReadRow()
 	}
-
 	for eof := false; !eof; {
-		bulk, err = bulkPush(itable, input, bulk)
-		if err == io.EOF {
-			if len(bulk) <= 0 {
-				return nil
+		if len(pRows) > 0 {
+			for (itable.count * len(itable.row)) < itable.maxCap {
+				if len(pRows) <= 0 {
+					break
+				}
+				row := pRows[len(pRows)-1]
+				pRows = pRows[:len(pRows)-1]
+				bulk = append(bulk, row...)
+				itable.count++
 			}
-			eof = true
-		} else if err != nil {
-			return fmt.Errorf("Read: %s", err)
+		} else {
+			bulk, err = bulkPush(itable, input, bulk)
+			if err == io.EOF {
+				if len(bulk) <= 0 {
+					return nil
+				}
+				eof = true
+			} else if err != nil {
+				return fmt.Errorf("Read: %s", err)
+			}
 		}
 		stmt, err = db.bulkStmtOpen(itable, stmt)
 		if err != nil {
@@ -199,7 +208,7 @@ func (db *DDB) insertImport(itable *iTable, input Input) error {
 
 func bulkPush(itable *iTable, input Input, bulk []interface{}) ([]interface{}, error) {
 	var err error
-	for (itable.count * len(itable.row)) < cap(bulk) {
+	for (itable.count * len(itable.row)) < itable.maxCap {
 		itable.row, err = input.ReadRow(itable.row)
 		if err != nil {
 			return bulk, err
