@@ -10,9 +10,9 @@ import (
 // LTSVIn provides methods of the Input interface
 type LTSVIn struct {
 	reader    *bufio.Reader
-	firstRow  map[string]string
+	preRead   []map[string]string
 	delimiter string
-	name      []string
+	names     []string
 }
 
 // LTSVOut provides methods of the Output interface
@@ -29,35 +29,50 @@ func (trdsql *TRDSQL) ltsvInputNew(r io.Reader) (Input, error) {
 	return lr, nil
 }
 
-// GetColumn is read input to determine column of table
-func (lr *LTSVIn) GetColumn() ([]string, error) {
-	var err error
-	lr.firstRow, lr.name, err = lr.read()
-	if err != nil {
-		return nil, err
+// GetColumn is reads the specified number of rows and determines the column name.
+// The previously read row is stored in preRead.
+func (lr *LTSVIn) GetColumn(rowNum int) ([]string, error) {
+	names := map[string]bool{}
+	for i := 0; i < rowNum; i++ {
+		row, keys, err := lr.read()
+		if err != nil {
+			return lr.names, err
+		}
+		// Add only unique column names.
+		for k := 0; k < len(keys); k++ {
+			if !names[keys[k]] {
+				names[keys[k]] = true
+				lr.names = append(lr.names, keys[k])
+			}
+		}
+		lr.preRead = append(lr.preRead, row)
 	}
-	debug.Printf("Column Name: [%v]", strings.Join(lr.name, ","))
-	return lr.name, nil
+	return lr.names, nil
 }
 
-// FirstRowRead is read the first row
-func (lr *LTSVIn) FirstRowRead(list []interface{}) []interface{} {
-	for i := range lr.name {
-		list[i] = lr.firstRow[lr.name[i]]
+// PreReadRow is returns only columns that store preread rows.
+func (lr *LTSVIn) PreReadRow() [][]interface{} {
+	rowNum := len(lr.preRead)
+	rows := make([][]interface{}, rowNum)
+	for n := 0; n < rowNum; n++ {
+		rows[n] = make([]interface{}, len(lr.names))
+		for i := range lr.names {
+			rows[n][i] = lr.preRead[n][lr.names[i]]
+		}
 	}
-	return list
+	return rows
 }
 
-// RowRead is read 2row or later
-func (lr *LTSVIn) RowRead(list []interface{}) ([]interface{}, error) {
+// ReadRow is read the rest of the row.
+func (lr *LTSVIn) ReadRow(row []interface{}) ([]interface{}, error) {
 	record, _, err := lr.read()
 	if err != nil {
-		return list, err
+		return row, err
 	}
-	for i := range lr.name {
-		list[i] = record[lr.name[i]]
+	for i := range lr.names {
+		row[i] = record[lr.names[i]]
 	}
-	return list, nil
+	return row, nil
 }
 
 func (lr *LTSVIn) read() (map[string]string, []string, error) {

@@ -14,9 +14,9 @@ import (
 
 // Input is wrap the reader.
 type Input interface {
-	GetColumn() ([]string, error)
-	FirstRowRead([]interface{}) []interface{}
-	RowRead([]interface{}) ([]interface{}, error)
+	GetColumn(rowNum int) ([]string, error)
+	PreReadRow() [][]interface{}
+	ReadRow([]interface{}) ([]interface{}, error)
 }
 
 // Import is import the file written in SQL.
@@ -152,7 +152,7 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 	if trdsql.inSkip > 0 {
 		skip := make([]interface{}, 1)
 		for i := 0; i < trdsql.inSkip; i++ {
-			r, e := input.RowRead(skip)
+			r, e := input.ReadRow(skip)
 			if e != nil {
 				log.Printf("ERROR: skip error %s", e)
 				break
@@ -162,15 +162,19 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 	}
 	rtable := db.EscapeTable(tablename)
 	sqlstr = db.RewriteSQL(sqlstr, tablename, rtable)
-	columnNames, err := input.GetColumn()
+	columnNames, err := input.GetColumn(trdsql.inPreRead)
 	if err != nil {
-		return sqlstr, err
+		if err != io.EOF {
+			return sqlstr, err
+		}
+		debug.Printf("EOF reached before argument number of rows")
 	}
+	debug.Printf("Column Names: [%v]", strings.Join(columnNames, ","))
 	err = db.CreateTable(rtable, columnNames)
 	if err != nil {
 		return sqlstr, err
 	}
-	err = db.Import(rtable, columnNames, input, trdsql.inFirstRow)
+	err = db.Import(rtable, columnNames, input, trdsql.inPreRead)
 	return sqlstr, err
 }
 
@@ -180,17 +184,16 @@ func (trdsql *TRDSQL) InputNew(file io.Reader, tablename string) (Input, error) 
 	if trdsql.inGuess {
 		trdsql.inType = guessExtension(tablename)
 	}
-	trdsql.inFirstRow = false
 	var input Input
 	switch trdsql.inType {
 	case LTSV:
-		trdsql.inFirstRow = true
 		input, err = trdsql.ltsvInputNew(file)
 	case JSON:
-		trdsql.inFirstRow = true
 		input, err = trdsql.jsonInputNew(file)
 	default:
-		trdsql.inFirstRow = !trdsql.inHeader
+		if trdsql.inHeader {
+			trdsql.inPreRead--
+		}
 		input, err = trdsql.csvInputNew(file)
 	}
 	return input, err

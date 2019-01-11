@@ -31,6 +31,7 @@ func TestCsvInputNew(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	trdsql.inSep = ","
 	_, err = trdsql.csvInputNew(file)
 	if err != nil {
 		t.Error(`csvInputNew error`)
@@ -46,7 +47,7 @@ func TestCsvEmptyNew(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = r.GetColumn()
+	_, err = r.GetColumn(1)
 	if err.Error() != "EOF" {
 		t.Error(err)
 	}
@@ -60,7 +61,7 @@ func TestCsvHeaderNew(t *testing.T) {
 	v1,v2`
 	s := strings.NewReader(csvStream)
 	r, _ := trdsql.csvInputNew(s)
-	header, _ := r.GetColumn()
+	header, _ := r.GetColumn(1)
 	if header[0] != "h1" || header[1] != "h2" {
 		t.Error("invalid header")
 	}
@@ -74,7 +75,7 @@ func TestCsvEmptyColumnHeaderNew(t *testing.T) {
 	v1,v2`
 	s := strings.NewReader(csvStream)
 	r, _ := trdsql.csvInputNew(s)
-	header, _ := r.GetColumn()
+	header, _ := r.GetColumn(1)
 	if header[0] != "h1" || header[1] != "c2" {
 		t.Error("invalid header")
 	}
@@ -88,12 +89,12 @@ func TestCsvEmptyColumnRowNew(t *testing.T) {
 	,v2`
 	s := strings.NewReader(csvStream)
 	r, _ := trdsql.csvInputNew(s)
-	_, err := r.GetColumn()
+	_, err := r.GetColumn(0)
 	if err != nil {
 		t.Error(err)
 	}
 	record := make([]interface{}, 2)
-	record, _ = r.RowRead(record)
+	record, _ = r.ReadRow(record)
 	if record[0] != "" || record[1] != "v2" {
 		t.Error("invalid value")
 	}
@@ -109,13 +110,13 @@ func TestCsvColumnDifferenceNew(t *testing.T) {
 	z1`
 	s := strings.NewReader(csvStream)
 	r, _ := trdsql.csvInputNew(s)
-	_, err := r.GetColumn()
+	_, err := r.GetColumn(1)
 	if err != nil {
 		t.Error(err)
 	}
 	record := make([]interface{}, 3)
 	for {
-		record, err = r.RowRead(record)
+		record, err = r.ReadRow(record)
 		if err == io.EOF {
 			break
 		} else if err != nil {
@@ -137,6 +138,71 @@ func TestCsvNoInputNew(t *testing.T) {
 	if err != nil {
 		t.Error(`csvInputNew error`)
 	}
+}
+
+func TestCsvIndefiniteInputFile(t *testing.T) {
+	trdsql := trdsqlNew()
+	file, err := tableFileOpen("testdata/test_indefinite.csv")
+	if err != nil {
+		t.Error(err)
+	}
+	trdsql.inSep = ","
+	var cr Input
+	cr, err = trdsql.csvInputNew(file)
+	if err != nil {
+		t.Error(`csvInputNew error`)
+	}
+	list, err := cr.GetColumn(1)
+	if err != nil {
+		t.Fatalf("GetColumn error :%s", err)
+	}
+	if len(list) != 2 {
+		t.Error(`invalid column`)
+	}
+
+}
+
+func TestCsvIndefiniteInputFile2(t *testing.T) {
+	trdsql := trdsqlNew()
+	file, err := tableFileOpen("testdata/test_indefinite.csv")
+	if err != nil {
+		t.Error(err)
+	}
+	trdsql.inSep = ","
+	var cr Input
+	cr, err = trdsql.csvInputNew(file)
+	if err != nil {
+		t.Error(`csvInputNew error`)
+	}
+	list, err := cr.GetColumn(2)
+	if err != nil {
+		t.Fatalf("GetColumn error :%s", err)
+	}
+	if len(list) != 3 {
+		t.Error(`invalid column`)
+	}
+}
+
+func TestCsvIndefiniteInputFile3(t *testing.T) {
+	trdsql := trdsqlNew()
+	file, err := tableFileOpen("testdata/test_indefinite.csv")
+	if err != nil {
+		t.Error(err)
+	}
+	trdsql.inSep = ","
+	var cr Input
+	cr, err = trdsql.csvInputNew(file)
+	if err != nil {
+		t.Error(`csvInputNew error`)
+	}
+	list, err := cr.GetColumn(100)
+	if err != nil && err != io.EOF {
+		t.Fatalf("GetColumn error :%s", err)
+	}
+	if len(list) != 4 {
+		t.Error(`invalid column`)
+	}
+
 }
 
 func TestCsvOutNew(t *testing.T) {
