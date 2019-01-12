@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bufio"
+	"compress/gzip"
 	"fmt"
 	"io"
 	"log"
@@ -122,19 +122,18 @@ func tableList(sqlstr string) []string {
 }
 
 func (trdsql *TRDSQL) inputFileOpen(tablename string) (io.ReadCloser, error) {
+	var reader io.ReadCloser
+	var err error
 	r := regexp.MustCompile(`\*|\?|\[`)
 	if r.MatchString(tablename) {
-		stream, err := globFileOpen(tablename)
-		if err != nil {
-			return nil, err
-		}
-		return stream, err
+		reader, err = globFileOpen(tablename)
+	} else {
+		reader, err = tableFileOpen(tablename)
 	}
-	file, err := tableFileOpen(tablename)
 	if err != nil {
 		return nil, err
 	}
-	return file, err
+	return reader, err
 }
 
 func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (string, error) {
@@ -209,6 +208,22 @@ func trimQuote(filename string) string {
 	return filename
 }
 
+func extFileReader(filename string, reader *os.File) io.ReadCloser {
+	if strings.HasSuffix(filename, ".gz") {
+		z, err := gzip.NewReader(reader)
+		if err != nil {
+			debug.Printf("No gzip file: [%s]", filename)
+			_, err := reader.Seek(0, io.SeekStart)
+			if err != nil {
+				return nil
+			}
+			return reader
+		}
+		return z
+	}
+	return reader
+}
+
 func globFileOpen(filename string) (*io.PipeReader, error) {
 	filename = trimQuote(filename)
 	files, err := filepath.Glob(filename)
@@ -228,7 +243,7 @@ func globFileOpen(filename string) (*io.PipeReader, error) {
 				log.Printf("ERROR: %s:%s", file, err)
 				continue
 			}
-			r := bufio.NewReader(f)
+			r := extFileReader(file, f)
 			_, err = io.Copy(pipeWriter, r)
 			if err != nil {
 				log.Printf("ERROR: %s:%s", file, err)
@@ -248,12 +263,18 @@ func globFileOpen(filename string) (*io.PipeReader, error) {
 	return pipeReader, nil
 }
 
-func tableFileOpen(filename string) (*os.File, error) {
+func tableFileOpen(filename string) (io.ReadCloser, error) {
 	if len(filename) == 0 || filename == "-" || strings.ToLower(filename) == "stdin" {
 		return os.Stdin, nil
 	}
 	filename = trimQuote(filename)
-	return os.Open(filename)
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	var r io.ReadCloser
+	r = extFileReader(filename, file)
+	return r, nil
 }
 
 // Output is database export
@@ -303,6 +324,9 @@ func (trdsql *TRDSQL) Export(db *DDB, sqlstr string, output Output) error {
 }
 
 func guessExtension(tablename string) int {
+	if strings.HasSuffix(tablename, ".gz") {
+		tablename = tablename[0 : len(tablename)-3]
+	}
 	pos := strings.LastIndex(tablename, ".")
 	if pos > 0 {
 		ext := strings.ToLower(tablename[pos:])

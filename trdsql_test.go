@@ -82,6 +82,32 @@ func TestOutHeaderRun(t *testing.T) {
 	}
 }
 
+func TestGzipRun(t *testing.T) {
+	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
+	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	sql := "SELECT * FROM " + data + "test.csv.gz"
+	args := []string{"trdsql", "-driver", "sqlite3", sql}
+	if trdsql.Run(args) != 0 {
+		t.Errorf("trdsql error.")
+	}
+	if outStream.String() != tcsv[0][1] {
+		t.Fatalf("trdsql error %s:%s:%s", "test.csv.gz", tcsv[0][1], trdsql.outStream)
+	}
+}
+
+func TestGzipGuessRun(t *testing.T) {
+	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
+	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	sql := "SELECT * FROM " + data + "test*.csv.gz"
+	args := []string{"trdsql", "-driver", "sqlite3", "-ig", sql}
+	if trdsql.Run(args) != 0 {
+		t.Errorf("trdsql error.")
+	}
+	if outStream.String() != tcsv[0][1] {
+		t.Fatalf("trdsql error %s:%s:%s", "test*.csv.gz", tcsv[0][1], trdsql.outStream)
+	}
+}
+
 var tltsv = []string{
 	"test.ltsv",
 	"apache.ltsv",
