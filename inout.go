@@ -219,6 +219,7 @@ func extFileReader(filename string, reader *os.File) io.ReadCloser {
 			}
 			return reader
 		}
+		debug.Printf("decompress gzip file: [%s]", filename)
 		return z
 	}
 	return reader
