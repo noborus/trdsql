@@ -48,8 +48,8 @@ func TestCsvEmptyNew(t *testing.T) {
 		t.Error(err)
 	}
 	_, err = r.GetColumn(1)
-	if err.Error() != "EOF" {
-		t.Error(err)
+	if err == nil {
+		t.Error(`csvEmpty is should error`)
 	}
 }
 
