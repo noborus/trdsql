@@ -58,7 +58,8 @@ func (trdsql *TRDSQL) Run(args []string) int {
 	trdsql.driver = "sqlite3"
 	trdsql.dsn = ""
 	flags.Usage = func() {
-		fmt.Fprintf(os.Stderr, `[OPTIONS] [SQL(SELECT...)]`)
+		fmt.Fprintf(os.Stderr, `Usage: %s [OPTIONS] [SQL(SELECT...)]
+`, os.Args[0])
 		fmt.Fprintf(os.Stderr, `'See %s -help'
 `, os.Args[0])
 	}
