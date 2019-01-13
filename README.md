@@ -137,6 +137,22 @@ $ trdsql -ih "SELECT * FROM tt*.csv"
 3,test3
 ```
 
+**Note:** It is not possible to mix different formats (ex: CSV and LTSV).
+
+### Expand gzip
+
+Files with the file name suffix of ".gz" are automatically expanded.
+
+```sh
+$ trdsql "SELECT * FROM testdata/test.csv.gz"
+```
+
+It is possible to mix uncompressed and compressed files using wildcards.
+
+```sh
+$ trdsql "SELECT * FROM testdata/test.csv*"
+```
+
 ### Columns is not constant
 
 If the number of columns is not a constant, read and decide multiple rows.
