@@ -26,14 +26,13 @@ $(BINARY_NAME): $(SRCS)
 pkg: linux_pkg window_pkg
 
 linux_pkg:
-	$(GOXCMD) -os "linux" -arch "386 amd64" -output $(TARGET)
+	$(GOXCMD) -os "linux" -arch "amd64" -output $(TARGET)
 
 window_pkg:
 	CC=x86_64-w64-mingw32-gcc $(GOXCMD) -os "windows" -arch "amd64" -output $(TARGET)
-	CC=i686-w64-mingw32-gcc $(GOXCMD) -os "windows" -arch "386" -output $(TARGET)
 
 pkg_macOS:
-	$(GOXCMD) -os "darwin" -arch "386 amd64" -output ${TARGET}
+	$(GOXCMD) -os "darwin" -arch "amd64" -output ${TARGET}
 
 install:
 	$(GOINSTALL)
