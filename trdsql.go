@@ -53,7 +53,6 @@ func (trdsql *TRDSQL) Run(args []string) int {
 	)
 
 	var output Output
-
 	flags := flag.NewFlagSet("trdsql", flag.ExitOnError)
 	trdsql.driver = "sqlite3"
 	trdsql.dsn = ""
@@ -73,8 +72,8 @@ func (trdsql *TRDSQL) Run(args []string) int {
 	flags.BoolVar(&Icsv, "icsv", false, "CSV format for input.")
 	flags.BoolVar(&Iltsv, "iltsv", false, "LTSV format for input.")
 	flags.BoolVar(&Ijson, "ijson", false, "JSON format for input.")
-	flags.StringVar(&trdsql.inSep, "id", ",", "Field delimiter for input.")
-	flags.StringVar(&trdsql.outSep, "od", ",", "Field delimiter for output.")
+	flags.StringVar(&trdsql.inDelimiter, "id", ",", "Field delimiter for input.")
+	flags.StringVar(&trdsql.outDelimiter, "od", ",", "Field delimiter for output.")
 	flags.BoolVar(&trdsql.inHeader, "ih", false, "The first line is interpreted as column names(CSV only).")
 	flags.IntVar(&trdsql.inSkip, "is", 0, "Skip header row.")
 	flags.IntVar(&trdsql.inPreRead, "ir", 1, "Number of row preread for column determination.")

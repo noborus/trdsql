@@ -102,7 +102,7 @@ func (jr *JSONIn) secondLevel(top interface{}, second interface{}) (map[string]s
 
 func (jr *JSONIn) objectFirstRow(obj map[string]interface{}) (map[string]string, []string, error) {
 	// {"a":"b"} object
-	var name []string
+	name := make([]string, 0, len(obj))
 	row := make(map[string]string)
 	for k, v := range obj {
 		name = append(name, k)

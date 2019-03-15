@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/csv"
+	"fmt"
 	"io"
 	"strconv"
 )
@@ -21,14 +22,29 @@ type CSVOut struct {
 	outHeader bool
 }
 
+func delimiter(sepString string) (rune, error) {
+	if sepString == "" {
+		return 0, nil
+	}
+	sepRunes, err := strconv.Unquote(`'` + sepString + `'`)
+	if err != nil {
+		return ',', fmt.Errorf("can not get separator: %s:\"%s\"", err, sepString)
+	}
+	sepRune := ([]rune(sepRunes))[0]
+	return sepRune, err
+}
+
 func (trdsql *TRDSQL) csvInputNew(r io.Reader) (Input, error) {
 	var err error
+	if trdsql.inHeader {
+		trdsql.inPreRead--
+	}
 	cr := &CSVIn{}
 	cr.reader = csv.NewReader(r)
 	cr.reader.LazyQuotes = true
 	cr.reader.FieldsPerRecord = -1 // no check count
 	cr.reader.TrimLeadingSpace = true
-	cr.reader.Comma, err = separator(trdsql.inSep)
+	cr.reader.Comma, err = delimiter(trdsql.inDelimiter)
 	cr.inHeader = trdsql.inHeader
 	return cr, err
 }
@@ -102,7 +118,7 @@ func (trdsql *TRDSQL) csvOutNew() Output {
 	var err error
 	c := &CSVOut{}
 	c.writer = csv.NewWriter(trdsql.outStream)
-	c.writer.Comma, err = separator(trdsql.outSep)
+	c.writer.Comma, err = delimiter(trdsql.outDelimiter)
 	if err != nil {
 		debug.Printf("%s\n", err)
 	}

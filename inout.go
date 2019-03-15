@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -178,7 +177,7 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 }
 
 // InputNew is create input reader.
-func (trdsql *TRDSQL) InputNew(file io.Reader, tablename string) (Input, error) {
+func (trdsql *TRDSQL) InputNew(reader io.Reader, tablename string) (Input, error) {
 	var err error
 	if trdsql.inGuess {
 		trdsql.inType = guessExtension(tablename)
@@ -186,14 +185,11 @@ func (trdsql *TRDSQL) InputNew(file io.Reader, tablename string) (Input, error) 
 	var input Input
 	switch trdsql.inType {
 	case LTSV:
-		input, err = trdsql.ltsvInputNew(file)
+		input, err = trdsql.ltsvInputNew(reader)
 	case JSON:
-		input, err = trdsql.jsonInputNew(file)
+		input, err = trdsql.jsonInputNew(reader)
 	default:
-		if trdsql.inHeader {
-			trdsql.inPreRead--
-		}
-		input, err = trdsql.csvInputNew(file)
+		input, err = trdsql.csvInputNew(reader)
 	}
 	return input, err
 }
@@ -231,7 +227,7 @@ func globFileOpen(filename string) (*io.PipeReader, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(files) <= 0 {
+	if len(files) == 0 {
 		return nil, fmt.Errorf("No matches found: %s", filename)
 	}
 	pipeReader, pipeWriter := io.Pipe()
@@ -273,8 +269,7 @@ func tableFileOpen(filename string) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	var r io.ReadCloser
-	r = extFileReader(filename, file)
+	var r io.ReadCloser = extFileReader(filename, file)
 	return r, nil
 }
 
@@ -341,18 +336,6 @@ func guessExtension(tablename string) int {
 	}
 	debug.Printf("Guess file type as CSV: [%s]", tablename)
 	return CSV
-}
-
-func separator(sepString string) (rune, error) {
-	if sepString == "" {
-		return 0, nil
-	}
-	sepRunes, err := strconv.Unquote(`'` + sepString + `'`)
-	if err != nil {
-		return ',', fmt.Errorf("Can not get separator: %s:\"%s\"", err, sepString)
-	}
-	sepRune := ([]rune(sepRunes))[0]
-	return sepRune, err
 }
 
 func valString(v interface{}) string {
