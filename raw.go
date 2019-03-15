@@ -19,7 +19,7 @@ func (trdsql *TRDSQL) rawOutNew() Output {
 	var err error
 	raw := &RawOut{}
 	raw.writer = bufio.NewWriter(trdsql.outStream)
-	raw.sep, err = strconv.Unquote(`"` + trdsql.outSep + `"`)
+	raw.sep, err = strconv.Unquote(`"` + trdsql.outDelimiter + `"`)
 	if err != nil {
 		debug.Printf("%s\n", err)
 	}

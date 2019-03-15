@@ -142,7 +142,7 @@ func (db *DDB) copyImport(itable *iTable, input Input) error {
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return fmt.Errorf("Read: %s", err)
+			return fmt.Errorf("read: %s", err)
 		}
 		_, err = stmt.Exec(itable.row...)
 		if err != nil {
@@ -173,7 +173,7 @@ func (db *DDB) insertImport(itable *iTable, input Input) error {
 	for eof := false; !eof; {
 		if len(pRows) > 0 {
 			for (itable.count * len(itable.row)) < itable.maxCap {
-				if len(pRows) <= 0 {
+				if len(pRows) == 0 {
 					break
 				}
 				row := pRows[len(pRows)-1]
@@ -184,12 +184,12 @@ func (db *DDB) insertImport(itable *iTable, input Input) error {
 		} else {
 			bulk, err = bulkPush(itable, input, bulk)
 			if err == io.EOF {
-				if len(bulk) <= 0 {
+				if len(bulk) == 0 {
 					return nil
 				}
 				eof = true
 			} else if err != nil {
-				return fmt.Errorf("Read: %s", err)
+				return fmt.Errorf("read: %s", err)
 			}
 		}
 		stmt, err = db.bulkStmtOpen(itable, stmt)
