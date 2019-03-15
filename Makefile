@@ -5,7 +5,6 @@ GOCLEAN=$(GOCMD) clean
 GOBUILD=$(GOCMD) build -tags $(TAGS)
 GOTEST=$(GOCMD) test -tags $(TAGS)
 GOINSTALL=$(GOCMD) install -tags $(TAGS)
-DEP=dep
 
 GOXCMD=gox -cgo -tags $(TAGS)
 
@@ -14,12 +13,7 @@ TARGET="dist/trdsql_{{.OS}}_{{.Arch}}/{{.Dir}}"
 BINARY_NAME := trdsql
 SRCS := $(shell git ls-files '*.go')
 
-all: dep test build
-
-dep:
-	$(GOGET) github.com/golang/dep/cmd/dep
-	$(GOGET) github.com/mitchellh/gox
-	$(DEP) ensure
+all: test build
 
 test: $(SRCS)
 	$(GOTEST)
@@ -49,4 +43,4 @@ clean:
 	rm -f $(BINARY_NAME)
 	rm -rf dist
 
-.PHONY: all dep test build pkg install clean
+.PHONY: all test build pkg install clean

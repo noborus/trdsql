@@ -4,6 +4,8 @@ os:
   - osx
 go:
   - master
+env:
+  - GO111MODULE=on
 services:
   - postgresql
   - mysql
@@ -11,7 +13,6 @@ before_script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then psql -c 'create database trdsql_test;' -U postgres && mysql -e 'CREATE DATABASE trdsql_test;'; fi
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -y ; sudo apt-get install -y libc6-dev-i386 binutils-mingw-w64-x86-64 gcc-mingw-w64-base gcc-mingw-w64-i686 gcc-mingw-w64-x86-64 ; fi
-  - make dep
 script:
   - make test
 before_deploy:
