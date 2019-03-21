@@ -10,6 +10,7 @@ const (
 	CSV = iota
 	LTSV
 	JSON
+	TBLN
 )
 
 // TRDSQL is output stream define

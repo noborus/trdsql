@@ -51,11 +51,11 @@ func (db *DDB) Disconnect() error {
 }
 
 // CreateTable is create a temporary table
-func (db *DDB) CreateTable(table string, name []string) error {
+func (db *DDB) CreateTable(table string, names []string, types []string) error {
 	var sqlstr string
-	columns := make([]string, len(name))
-	for i := 0; i < len(name); i++ {
-		columns[i] = db.escape + name[i] + db.escape + " text"
+	columns := make([]string, len(names))
+	for i := 0; i < len(names); i++ {
+		columns[i] = db.escape + names[i] + db.escape + " " + types[i]
 	}
 	sqlstr = "CREATE TEMPORARY TABLE "
 	sqlstr = sqlstr + table + " ( " + strings.Join(columns, ",") + " );"

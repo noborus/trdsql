@@ -22,7 +22,7 @@ func (trdsql *TRDSQL) twOutNew(markdown bool) Output {
 }
 
 // First is preparation
-func (tw *TwOut) First(columns []string) error {
+func (tw *TwOut) First(columns []string, types []string) error {
 	tw.writer.SetHeader(columns)
 	tw.results = make([]string, len(columns))
 

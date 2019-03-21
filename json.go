@@ -12,6 +12,7 @@ type JSONIn struct {
 	reader  *json.Decoder
 	preRead []map[string]string
 	names   []string
+	types   []string
 	inArray []interface{}
 	count   int
 }
@@ -52,6 +53,15 @@ func (jr *JSONIn) GetColumn(rowNum int) ([]string, error) {
 		}
 	}
 	return jr.names, nil
+}
+
+// GetTypes is reads the specified number of rows and determines the column type.
+func (jr *JSONIn) GetTypes() ([]string, error) {
+	jr.types = make([]string, len(jr.names))
+	for i := 0; i < len(jr.names); i++ {
+		jr.types[i] = "text"
+	}
+	return jr.types, nil
 }
 
 func (jr *JSONIn) readAhead(top interface{}, rcount int) (map[string]string, []string, error) {
@@ -201,7 +211,7 @@ func (trdsql *TRDSQL) jsonOutNew() Output {
 }
 
 // First is preparation
-func (js *JSONOut) First(columns []string) error {
+func (js *JSONOut) First(columns []string, types []string) error {
 	js.results = make([]map[string]string, 0)
 	return nil
 }

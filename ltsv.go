@@ -13,6 +13,7 @@ type LTSVIn struct {
 	preRead   []map[string]string
 	delimiter string
 	names     []string
+	types     []string
 }
 
 // LTSVOut provides methods of the Output interface
@@ -48,6 +49,15 @@ func (lr *LTSVIn) GetColumn(rowNum int) ([]string, error) {
 		lr.preRead = append(lr.preRead, row)
 	}
 	return lr.names, nil
+}
+
+// GetTypes is reads the specified number of rows and determines the column type.
+func (lr *LTSVIn) GetTypes() ([]string, error) {
+	lr.types = make([]string, len(lr.names))
+	for i := 0; i < len(lr.names); i++ {
+		lr.types[i] = "text"
+	}
+	return lr.types, nil
 }
 
 // PreReadRow is returns only columns that store preread rows.
@@ -115,7 +125,7 @@ func (trdsql *TRDSQL) ltsvOutNew() Output {
 }
 
 // First is preparation
-func (lw *LTSVOut) First(columns []string) error {
+func (lw *LTSVOut) First(columns []string, types []string) error {
 	lw.results = make(map[string]string, len(columns))
 	return nil
 }

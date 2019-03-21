@@ -11,6 +11,7 @@ import (
 type CSVIn struct {
 	reader   *csv.Reader
 	names    []string
+	types    []string
 	preRead  [][]string
 	inHeader bool
 }
@@ -85,6 +86,15 @@ func (cr *CSVIn) GetColumn(rowNum int) ([]string, error) {
 	return cr.names, nil
 }
 
+// GetTypes is reads the specified number of rows and determines the column type.
+func (cr *CSVIn) GetTypes() ([]string, error) {
+	cr.types = make([]string, len(cr.names))
+	for i := 0; i < len(cr.names); i++ {
+		cr.types[i] = "text"
+	}
+	return cr.types, nil
+}
+
 // PreReadRow is returns only columns that store preread rows.
 func (cr *CSVIn) PreReadRow() [][]interface{} {
 	rowNum := len(cr.preRead)
@@ -127,7 +137,7 @@ func (trdsql *TRDSQL) csvOutNew() Output {
 }
 
 // First is output of header and preparation
-func (c *CSVOut) First(columns []string) error {
+func (c *CSVOut) First(columns []string, types []string) error {
 	if c.outHeader {
 		err := c.writer.Write(columns)
 		if err != nil {
