@@ -188,14 +188,17 @@ func (trdsql *TRDSQL) main(sqlstr string, output Output) int {
 }
 
 func (trdsql *TRDSQL) setInFormat() {
-	if Icsv {
+	switch {
+	case Icsv:
 		trdsql.inType = CSV
-	} else if Iltsv {
+	case Iltsv:
 		trdsql.inType = LTSV
-	} else if Ijson {
+	case Ijson:
 		trdsql.inType = JSON
-	} else if Itbln {
+	case Itbln:
 		trdsql.inType = TBLN
+	default:
+		trdsql.inType = CSV
 	}
 }
 

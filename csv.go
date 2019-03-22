@@ -45,8 +45,8 @@ func (trdsql *TRDSQL) csvInputNew(r io.Reader) (Input, error) {
 	cr.reader.LazyQuotes = true
 	cr.reader.FieldsPerRecord = -1 // no check count
 	cr.reader.TrimLeadingSpace = true
-	cr.reader.Comma, err = delimiter(trdsql.inDelimiter)
 	cr.inHeader = trdsql.inHeader
+	cr.reader.Comma, err = delimiter(trdsql.inDelimiter)
 	return cr, err
 }
 

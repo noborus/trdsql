@@ -80,26 +80,25 @@ func (jr *JSONIn) readAhead(top interface{}, rcount int) (map[string]string, []s
 }
 
 func (jr *JSONIn) topLevel(top interface{}) (map[string]string, []string, error) {
-	switch top.(type) {
+	switch obj := top.(type) {
 	case []interface{}:
 		// [{} or [] or etc...]
-		jr.inArray = top.([]interface{})
-		val := jr.inArray[0]
-		return jr.secondLevel(top, val)
+		jr.inArray = obj
+		return jr.secondLevel(top, jr.inArray[0])
 	case map[string]interface{}:
 		// {"a":"b"} object
 		jr.inArray = nil
-		return jr.objectFirstRow(top.(map[string]interface{}))
+		return jr.objectFirstRow(obj)
 	}
 	return nil, nil, fmt.Errorf("JSON format could not be converted")
 }
 
 // Analyze second when top is array
 func (jr *JSONIn) secondLevel(top interface{}, second interface{}) (map[string]string, []string, error) {
-	switch second.(type) {
+	switch obj := second.(type) {
 	case map[string]interface{}:
 		// [{}]
-		return jr.objectFirstRow(second.(map[string]interface{}))
+		return jr.objectFirstRow(obj)
 	case []interface{}:
 		// [[]]
 		return jr.etcFirstRow(second)
@@ -188,9 +187,8 @@ func (jr *JSONIn) ReadRow(row []interface{}) ([]interface{}, error) {
 }
 
 func (jr *JSONIn) rowParse(row []interface{}, jsonRow interface{}) []interface{} {
-	switch jsonRow.(type) {
+	switch dmap := jsonRow.(type) {
 	case map[string]interface{}:
-		dmap := jsonRow.(map[string]interface{})
 		for i := range jr.names {
 			row[i] = jsonString(dmap[jr.names[i]])
 		}
