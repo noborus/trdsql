@@ -21,11 +21,12 @@ type config struct {
 
 func configOpen(config string) io.Reader {
 	var fname string
-	if config != "" {
+	switch {
+	case config != "":
 		fname = config
-	} else if runtime.GOOS == "windows" {
+	case runtime.GOOS == "windows":
 		fname = filepath.Join(os.Getenv("APPDATA"), "trdsql", "config.json")
-	} else {
+	default:
 		fname = filepath.Join(os.Getenv("HOME"), ".config", "trdsql", "config.json")
 	}
 	cfg, err := os.Open(fname)
