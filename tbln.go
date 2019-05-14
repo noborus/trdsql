@@ -42,6 +42,12 @@ func (tr *TBLNIn) GetColumn(rowNum int) ([]string, error) {
 
 // GetTypes is reads the specified number of rows and determines the column type.
 func (tr *TBLNIn) GetTypes() ([]string, error) {
+	if len(tr.reader.Types) == 0 {
+		tr.reader.Types = make([]string, len(tr.reader.Names))
+		for i := 0; i < len(tr.reader.Names); i++ {
+			tr.reader.Types[i] = "text"
+		}
+	}
 	return tr.reader.Types, nil
 }
 
