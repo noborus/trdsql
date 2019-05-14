@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/noborus/trdsql.svg?branch=master)](https://travis-ci.org/noborus/trdsql)
 
-A tool that can execute SQL queries on [CSV](https://www.ietf.org/rfc/rfc4180.txt), [LTSV](http://ltsv.org/), [JSON](https://tools.ietf.org/rfc/rfc7159.txt) and [TBLN](https://tbln.dev/).
+A tool that can execute SQL queries on [CSV](https://tools.ietf.org/html/rfc4180), [LTSV](http://ltsv.org/), [JSON](https://tools.ietf.org/html/rfc7159) and [TBLN](https://tbln.dev/).
 
 It is a tool like [q](https://github.com/harelba/q) , [textql](https://github.com/dinedal/textql) and others.
 
@@ -18,6 +18,7 @@ cd $GOPATH/src/github.com/noborus/trdsql
 make
 make install
 ```
+
 Or download binaries from the [releases](https://github.com/noborus/trdsql/releases) page(Linux/Windows/macOS).
 
 ## Usage
@@ -170,7 +171,7 @@ $ trdsql -ir 3 -iltsv "SELECT * FROM test_indefinite.ltsv"
 
 ### TSV (Tab Separated Value)
 
--id "\\t" is input form TSV (Tab Separated Value)
+-id "\\t" is input from TSV (Tab Separated Value)
 
 ```
 1	Orange
@@ -195,7 +196,7 @@ $ trdsql -od "\t" "SELECT * FROM test.csv"
 
 ### LTSV ([Labeled Tab-separated Values](http://ltsv.org/))
 
--iltsv is input form LTSV(Labeled Tab-separated Values).
+-iltsv is input from LTSV(Labeled Tab-separated Values).
 
 sample.ltsv
 ```
@@ -230,7 +231,7 @@ id:3	name:Apple	price:100
 
 ### JSON
 
--ijson is input form JSON.
+-ijson is input from JSON.
 
 sample.json
 ```JSON
@@ -354,9 +355,10 @@ $ trdsql -ojson "SELECT * FROM test.csv"
 
 ### TBLN
 
-itbln is input form TBLN.
+-itbln is input from TBLN.
 
 sample.tbln
+
 ```TBLN
 ; name: | id | name |
 ; type: | int | text |
@@ -390,6 +392,8 @@ $ trdsql -otbln "SELECT c1::int as id, c2::text as name FROM test.csv"
 | 3 | Apple |
 ```
 
+TBLN can contain column names and type definitions.
+Please refer to https://tbln.dev/ for details of TBLN.
 
 ### Raw output
 

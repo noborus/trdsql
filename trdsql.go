@@ -166,6 +166,7 @@ func (trdsql *TRDSQL) main(sqlstr string, output Output) int {
 		log.Printf("ERROR(BEGIN):%s", err)
 		return 1
 	}
+
 	sqlstr, err = trdsql.Import(db, sqlstr)
 	if err != nil {
 		log.Printf("ERROR(IMPORT):%s", err)
@@ -174,7 +175,7 @@ func (trdsql *TRDSQL) main(sqlstr string, output Output) int {
 
 	err = trdsql.Export(db, sqlstr, output)
 	if err != nil {
-		log.Printf("ERROR(EXPORT)%s", err)
+		log.Printf("ERROR(EXPORT):%s", err)
 		return 1
 	}
 

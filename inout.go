@@ -125,18 +125,11 @@ func tableList(sqlstr string) []string {
 }
 
 func (trdsql *TRDSQL) inputFileOpen(tablename string) (io.ReadCloser, error) {
-	var reader io.ReadCloser
-	var err error
 	r := regexp.MustCompile(`\*|\?|\[`)
 	if r.MatchString(tablename) {
-		reader, err = globFileOpen(tablename)
-	} else {
-		reader, err = tableFileOpen(tablename)
+		return globFileOpen(tablename)
 	}
-	if err != nil {
-		return nil, err
-	}
-	return reader, err
+	return tableFileOpen(tablename)
 }
 
 func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (string, error) {
@@ -243,7 +236,7 @@ func globFileOpen(filename string) (*io.PipeReader, error) {
 		return nil, err
 	}
 	if len(files) == 0 {
-		return nil, fmt.Errorf("No matches found: %s", filename)
+		return nil, fmt.Errorf("no matches found: %s", filename)
 	}
 	pipeReader, pipeWriter := io.Pipe()
 	go func() {
@@ -284,9 +277,7 @@ func tableFileOpen(filename string) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	var r io.ReadCloser
-	r = extFileReader(filename, file)
-	return r, nil
+	return extFileReader(filename, file), nil
 }
 
 // Output is database export
