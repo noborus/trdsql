@@ -30,7 +30,7 @@ func (trdsql *TRDSQL) vfOutNew() Output {
 }
 
 // First is preparation
-func (vf *VfOut) First(columns []string) error {
+func (vf *VfOut) First(columns []string, types []string) error {
 	vf.header = make([]string, len(columns))
 	vf.hsize = 0
 	for i, col := range columns {

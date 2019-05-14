@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/noborus/trdsql.svg?branch=master)](https://travis-ci.org/noborus/trdsql)
 
-A tool that can execute SQL queries on CSV, [LTSV](http://ltsv.org/) and JSON.
+A tool that can execute SQL queries on [CSV](https://www.ietf.org/rfc/rfc4180.txt), [LTSV](http://ltsv.org/), [JSON](https://tools.ietf.org/rfc/rfc7159.txt) and [TBLN](https://tbln.dev/).
 
 It is a tool like [q](https://github.com/harelba/q) , [textql](https://github.com/dinedal/textql) and others.
 
@@ -57,6 +57,8 @@ $ trdsql [options] SQL
         JSON format for input.
 * `-iltsv`
         LTSV format for input.
+* `-itbln`
+        TBLN format for input.
 
 #### Input option
 
@@ -85,6 +87,8 @@ $ trdsql [options] SQL
         Raw format for output.
 * `-ovf`
         Vertical format for output.
+* `-tbln`
+        TBLN format for output.
 
 #### Output option
 
@@ -347,6 +351,45 @@ $ trdsql -ojson "SELECT * FROM test.csv"
   }
 ]
 ```
+
+### TBLN
+
+itbln is input form TBLN.
+
+sample.tbln
+```TBLN
+; name: | id | name |
+; type: | int | text |
+| 1 | Bob |
+| 2 | Alice |
+```
+
+```sh
+trdsql -itbln "SELECT * FROM sample.tbln"
+```
+
+```CSV
+1,Bob
+2,Alice
+```
+
+TBLN file reflects extras name and type.
+
+-otbln is TBLN Output.
+
+```sh
+$ trdsql -otbln "SELECT c1::int as id, c2::text as name FROM test.csv"
+```
+
+```TBLN
+; created_at: 2019-03-22T13:20:31+09:00
+; name: | id | name |
+; type: | int | text |
+| 1 | Orange |
+| 2 | Melon |
+| 3 | Apple |
+```
+
 
 ### Raw output
 

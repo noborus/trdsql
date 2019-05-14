@@ -28,7 +28,7 @@ func (trdsql *TRDSQL) rawOutNew() Output {
 }
 
 // First is output of header and preparation
-func (raw *RawOut) First(columns []string) error {
+func (raw *RawOut) First(columns []string, types []string) error {
 	if raw.outHeader {
 		_, err := fmt.Fprint(raw.writer, strings.Join(columns, raw.sep), "\n")
 		if err != nil {

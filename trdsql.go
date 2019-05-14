@@ -25,6 +25,7 @@ var (
 	Icsv  bool
 	Iltsv bool
 	Ijson bool
+	Itbln bool
 )
 
 // Output Formast
@@ -36,6 +37,7 @@ var (
 	Ovf   bool
 	Oraw  bool
 	Ojson bool
+	Otbln bool
 )
 
 // Run is main routine.
@@ -72,6 +74,7 @@ func (trdsql *TRDSQL) Run(args []string) int {
 	flags.BoolVar(&Icsv, "icsv", false, "CSV format for input.")
 	flags.BoolVar(&Iltsv, "iltsv", false, "LTSV format for input.")
 	flags.BoolVar(&Ijson, "ijson", false, "JSON format for input.")
+	flags.BoolVar(&Itbln, "itbln", false, "TBLN format for input.")
 	flags.StringVar(&trdsql.inDelimiter, "id", ",", "Field delimiter for input.")
 	flags.StringVar(&trdsql.outDelimiter, "od", ",", "Field delimiter for output.")
 	flags.BoolVar(&trdsql.inHeader, "ih", false, "The first line is interpreted as column names(CSV only).")
@@ -90,6 +93,7 @@ func (trdsql *TRDSQL) Run(args []string) int {
 	flags.BoolVar(&Ovf, "ovf", false, "Vertical format for output.")
 	flags.BoolVar(&Oraw, "oraw", false, "Raw format for output.")
 	flags.BoolVar(&Ojson, "ojson", false, "JSON format for output.")
+	flags.BoolVar(&Otbln, "otbln", false, "TBLN format for output.")
 
 	err := flags.Parse(args[1:])
 	if err != nil {
@@ -184,12 +188,17 @@ func (trdsql *TRDSQL) main(sqlstr string, output Output) int {
 }
 
 func (trdsql *TRDSQL) setInFormat() {
-	if Icsv {
+	switch {
+	case Icsv:
 		trdsql.inType = CSV
-	} else if Iltsv {
+	case Iltsv:
 		trdsql.inType = LTSV
-	} else if Ijson {
+	case Ijson:
 		trdsql.inType = JSON
+	case Itbln:
+		trdsql.inType = TBLN
+	default:
+		trdsql.inType = CSV
 	}
 }
 
@@ -208,6 +217,8 @@ func (trdsql *TRDSQL) setOutFormat() Output {
 		output = trdsql.twOutNew(false)
 	case Ovf:
 		output = trdsql.vfOutNew()
+	case Otbln:
+		output = trdsql.tblnOutNew()
 	case Ocsv:
 		output = trdsql.csvOutNew()
 	default:

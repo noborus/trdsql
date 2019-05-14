@@ -2,6 +2,7 @@ package main
 
 import (
 	"compress/gzip"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"log"
@@ -9,11 +10,14 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
+	"unicode/utf8"
 )
 
 // Input is wrap the reader.
 type Input interface {
 	GetColumn(rowNum int) ([]string, error)
+	GetTypes() ([]string, error)
 	PreReadRow() [][]interface{}
 	ReadRow([]interface{}) ([]interface{}, error)
 }
@@ -167,8 +171,17 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 		}
 		debug.Printf("EOF reached before argument number of rows")
 	}
+	columnTypes, err := input.GetTypes()
+	if err != nil {
+		if err != io.EOF {
+			return sqlstr, err
+		}
+		debug.Printf("EOF reached before argument number of rows")
+	}
+
 	debug.Printf("Column Names: [%v]", strings.Join(columnNames, ","))
-	err = db.CreateTable(rtable, columnNames)
+	debug.Printf("Column Types: [%v]", strings.Join(columnTypes, ","))
+	err = db.CreateTable(rtable, columnNames, columnTypes)
 	if err != nil {
 		return sqlstr, err
 	}
@@ -188,6 +201,8 @@ func (trdsql *TRDSQL) InputNew(reader io.Reader, tablename string) (Input, error
 		input, err = trdsql.ltsvInputNew(reader)
 	case JSON:
 		input, err = trdsql.jsonInputNew(reader)
+	case TBLN:
+		input, err = trdsql.tblnInputNew(reader)
 	default:
 		input, err = trdsql.csvInputNew(reader)
 	}
@@ -269,13 +284,14 @@ func tableFileOpen(filename string) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	var r io.ReadCloser = extFileReader(filename, file)
+	var r io.ReadCloser
+	r = extFileReader(filename, file)
 	return r, nil
 }
 
 // Output is database export
 type Output interface {
-	First([]string) error
+	First([]string, []string) error
 	RowWrite([]interface{}, []string) error
 	Last() error
 }
@@ -302,7 +318,17 @@ func (trdsql *TRDSQL) Export(db *DDB, sqlstr string, output Output) error {
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
-	err = output.First(columns)
+
+	columnTypes, err := rows.ColumnTypes()
+	if err != nil {
+		return err
+	}
+	types := make([]string, len(columns))
+	for i, ct := range columnTypes {
+		types[i] = convertType(ct.DatabaseTypeName())
+	}
+
+	err = output.First(columns, types)
 	if err != nil {
 		return err
 	}
@@ -317,6 +343,25 @@ func (trdsql *TRDSQL) Export(db *DDB, sqlstr string, output Output) error {
 		}
 	}
 	return output.Last()
+}
+
+func convertType(dbtype string) string {
+	switch strings.ToLower(dbtype) {
+	case "smallint", "integer", "int", "int2", "int4", "smallserial", "serial":
+		return "int"
+	case "bigint", "int8", "bigserial":
+		return "bigint"
+	case "float", "decimal", "numeric", "real", "double precision":
+		return "numeric"
+	case "bool":
+		return "bool"
+	case "timestamp", "timestamptz", "date", "time":
+		return "timestamp"
+	case "string", "text", "char", "varchar":
+		return "text"
+	default:
+		return "text"
+	}
 }
 
 func guessExtension(tablename string) int {
@@ -340,15 +385,20 @@ func guessExtension(tablename string) int {
 
 func valString(v interface{}) string {
 	var str string
-	b, ok := v.([]byte)
-	if ok {
-		str = string(b)
-	} else {
-		if v == nil {
-			str = ""
+	switch t := v.(type) {
+	case nil:
+		str = ""
+	case time.Time:
+		str = t.Format(time.RFC3339)
+	case []byte:
+		if ok := utf8.Valid(t); ok {
+			str = string(t)
 		} else {
-			str = fmt.Sprint(v)
+			str = `\x` + hex.EncodeToString(t)
 		}
+	default:
+		str = fmt.Sprint(v)
+		str = strings.ReplaceAll(str, "\n", "\\n")
 	}
 	return str
 }

@@ -13,7 +13,7 @@ const (
 	data = "testdata/"
 )
 
-var tcsv = [][]string{
+var TCSV = [][]string{
 	{"test.csv", "1,Orange\n2,Melon\n3,Apple\n"},
 	{"testcsv", "aaaaaaaa\nbbbbbbbb\ncccccccc\n"},
 	{"abc.csv", "a1\na2\n"},
@@ -29,6 +29,7 @@ var outformat = []string{
 	"-ojson",
 	"-oraw",
 	"-ovf",
+	"-otbln",
 }
 
 func trdsqlNew() *TRDSQL {
@@ -37,10 +38,10 @@ func trdsqlNew() *TRDSQL {
 	return trdsql
 }
 
-func TestCsvRun(t *testing.T) {
+func TesTCSVRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
 	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
-	for _, c := range tcsv {
+	for _, c := range TCSV {
 		sql := "SELECT * FROM " + data + c[0]
 		args := []string{"trdsql", "-driver", "sqlite3", sql}
 		if trdsql.Run(args) != 0 {
@@ -53,7 +54,7 @@ func TestCsvRun(t *testing.T) {
 	}
 }
 
-func TestCsvHeaderRun(t *testing.T) {
+func TesTCSVHeaderRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
 	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
 	sql := "SELECT * FROM " + data + "header.csv"
@@ -90,8 +91,8 @@ func TestGzipRun(t *testing.T) {
 	if trdsql.Run(args) != 0 {
 		t.Errorf("trdsql error.")
 	}
-	if outStream.String() != tcsv[0][1] {
-		t.Fatalf("trdsql error %s:%s:%s", "test.csv.gz", tcsv[0][1], trdsql.outStream)
+	if outStream.String() != TCSV[0][1] {
+		t.Fatalf("trdsql error %s:%s:%s", "test.csv.gz", TCSV[0][1], trdsql.outStream)
 	}
 }
 
@@ -103,8 +104,8 @@ func TestGzipGuessRun(t *testing.T) {
 	if trdsql.Run(args) != 0 {
 		t.Errorf("trdsql error.")
 	}
-	if outStream.String() != tcsv[0][1] {
-		t.Fatalf("trdsql error %s:%s:%s", "test*.csv.gz", tcsv[0][1], trdsql.outStream)
+	if outStream.String() != TCSV[0][1] {
+		t.Fatalf("trdsql error %s:%s:%s", "test*.csv.gz", TCSV[0][1], trdsql.outStream)
 	}
 }
 
@@ -324,7 +325,7 @@ func TestDbRun(t *testing.T) {
 			continue
 		}
 		for _, f := range outformat {
-			for _, c := range tcsv {
+			for _, c := range TCSV {
 				sql := "SELECT * FROM " + data + c[0]
 				args := []string{"trdsql", "-driver", db, "-dsn", tdsn[db], f, sql}
 				if trdsql.Run(args) != 0 {

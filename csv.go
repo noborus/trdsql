@@ -11,6 +11,7 @@ import (
 type CSVIn struct {
 	reader   *csv.Reader
 	names    []string
+	types    []string
 	preRead  [][]string
 	inHeader bool
 }
@@ -44,8 +45,8 @@ func (trdsql *TRDSQL) csvInputNew(r io.Reader) (Input, error) {
 	cr.reader.LazyQuotes = true
 	cr.reader.FieldsPerRecord = -1 // no check count
 	cr.reader.TrimLeadingSpace = true
-	cr.reader.Comma, err = delimiter(trdsql.inDelimiter)
 	cr.inHeader = trdsql.inHeader
+	cr.reader.Comma, err = delimiter(trdsql.inDelimiter)
 	return cr, err
 }
 
@@ -83,6 +84,15 @@ func (cr *CSVIn) GetColumn(rowNum int) ([]string, error) {
 		cr.preRead = append(cr.preRead, rows)
 	}
 	return cr.names, nil
+}
+
+// GetTypes is reads the specified number of rows and determines the column type.
+func (cr *CSVIn) GetTypes() ([]string, error) {
+	cr.types = make([]string, len(cr.names))
+	for i := 0; i < len(cr.names); i++ {
+		cr.types[i] = "text"
+	}
+	return cr.types, nil
 }
 
 // PreReadRow is returns only columns that store preread rows.
@@ -127,7 +137,7 @@ func (trdsql *TRDSQL) csvOutNew() Output {
 }
 
 // First is output of header and preparation
-func (c *CSVOut) First(columns []string) error {
+func (c *CSVOut) First(columns []string, types []string) error {
 	if c.outHeader {
 		err := c.writer.Write(columns)
 		if err != nil {
