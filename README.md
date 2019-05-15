@@ -8,7 +8,7 @@ It is a tool like [q](https://github.com/harelba/q) , [textql](https://github.co
 
 The difference from these tools is that the syntax of PostgreSQL or MySQL can be used.
 
-[![asciicast](https://asciinema.org/a/I01SWSNiMXamkxZiOPSiL8oET.png)](https://asciinema.org/a/I01SWSNiMXamkxZiOPSiL8oET)
+![trdsql.gif](doc/trdsql.gif)
 
 ## INSTALL
 
