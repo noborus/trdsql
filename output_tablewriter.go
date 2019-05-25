@@ -1,4 +1,4 @@
-package main
+package trdsql
 
 import (
 	"github.com/olekukonko/tablewriter"
@@ -12,7 +12,7 @@ type TwOut struct {
 
 func (trdsql *TRDSQL) twOutNew(markdown bool) Output {
 	tw := &TwOut{}
-	tw.writer = tablewriter.NewWriter(trdsql.outStream)
+	tw.writer = tablewriter.NewWriter(trdsql.OutStream)
 	tw.writer.SetAutoFormatHeaders(false)
 	if markdown {
 		tw.writer.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})

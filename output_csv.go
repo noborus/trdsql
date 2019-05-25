@@ -1,4 +1,4 @@
-package main
+package trdsql
 
 import (
 	"encoding/csv"
@@ -7,7 +7,7 @@ import (
 func (trdsql *TRDSQL) csvOutNew() Output {
 	var err error
 	c := &CSVOut{}
-	c.writer = csv.NewWriter(trdsql.outStream)
+	c.writer = csv.NewWriter(trdsql.OutStream)
 	c.writer.Comma, err = delimiter(trdsql.outDelimiter)
 	if err != nil {
 		debug.Printf("%s\n", err)

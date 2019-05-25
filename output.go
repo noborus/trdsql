@@ -1,4 +1,4 @@
-package main
+package trdsql
 
 import (
 	"encoding/hex"

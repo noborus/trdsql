@@ -1,4 +1,4 @@
-package main
+package trdsql
 
 import (
 	"bytes"
@@ -34,13 +34,13 @@ var outformat = []string{
 
 func trdsqlNew() *TRDSQL {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	return trdsql
 }
 
 func TesTCSVRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	for _, c := range TCSV {
 		sql := "SELECT * FROM " + data + c[0]
 		args := []string{"trdsql", "-driver", "sqlite3", sql}
@@ -48,7 +48,7 @@ func TesTCSVRun(t *testing.T) {
 			t.Errorf("trdsql error.")
 		}
 		if outStream.String() != c[1] {
-			t.Fatalf("trdsql error %s:%s:%s", c[0], c[1], trdsql.outStream)
+			t.Fatalf("trdsql error %s:%s:%s", c[0], c[1], trdsql.OutStream)
 		}
 		outStream.Reset()
 	}
@@ -56,7 +56,7 @@ func TesTCSVRun(t *testing.T) {
 
 func TesTCSVHeaderRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	sql := "SELECT * FROM " + data + "header.csv"
 	outstr := "1,Orange\n2,Melon\n3,Apple\n"
 	args := []string{"trdsql", "-driver", "sqlite3", "-icsv", "-ih", sql}
@@ -64,7 +64,7 @@ func TesTCSVHeaderRun(t *testing.T) {
 		t.Errorf("trdsql error.")
 	}
 	if outStream.String() != outstr {
-		t.Fatalf("trdsql error %s:%s:%s", "header.csv", outstr, trdsql.outStream)
+		t.Fatalf("trdsql error %s:%s:%s", "header.csv", outstr, trdsql.OutStream)
 	}
 	outStream.Reset()
 }
@@ -72,40 +72,40 @@ func TesTCSVHeaderRun(t *testing.T) {
 func TestOutHeaderRun(t *testing.T) {
 	outstr := "c1,c2\n1,Orange\n2,Melon\n3,Apple\n"
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	sql := "SELECT * FROM " + data + "test.csv"
 	args := []string{"trdsql", "-driver", "sqlite3", "-oh", sql}
 	if trdsql.Run(args) != 0 {
 		t.Errorf("trdsql error.")
 	}
 	if outStream.String() != outstr {
-		t.Fatalf("trdsql error %s:%s:%s", "test.csv", outstr, trdsql.outStream)
+		t.Fatalf("trdsql error %s:%s:%s", "test.csv", outstr, trdsql.OutStream)
 	}
 }
 
 func TestGzipRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	sql := "SELECT * FROM " + data + "test.csv.gz"
 	args := []string{"trdsql", "-driver", "sqlite3", sql}
 	if trdsql.Run(args) != 0 {
 		t.Errorf("trdsql error.")
 	}
 	if outStream.String() != TCSV[0][1] {
-		t.Fatalf("trdsql error %s:%s:%s", "test.csv.gz", TCSV[0][1], trdsql.outStream)
+		t.Fatalf("trdsql error %s:%s:%s", "test.csv.gz", TCSV[0][1], trdsql.OutStream)
 	}
 }
 
 func TestGzipGuessRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	sql := "SELECT * FROM " + data + "test*.csv.gz"
 	args := []string{"trdsql", "-driver", "sqlite3", "-ig", sql}
 	if trdsql.Run(args) != 0 {
 		t.Errorf("trdsql error.")
 	}
 	if outStream.String() != TCSV[0][1] {
-		t.Fatalf("trdsql error %s:%s:%s", "test*.csv.gz", TCSV[0][1], trdsql.outStream)
+		t.Fatalf("trdsql error %s:%s:%s", "test*.csv.gz", TCSV[0][1], trdsql.OutStream)
 	}
 }
 
@@ -116,7 +116,7 @@ var tltsv = []string{
 
 func TestLtsvRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	for _, c := range tltsv {
 		sql := "SELECT * FROM " + data + c
 		args := []string{"trdsql", "-driver", "sqlite3", "-iltsv", sql}
@@ -124,7 +124,7 @@ func TestLtsvRun(t *testing.T) {
 			t.Errorf("trdsql error.")
 		}
 		if outStream.String() == "" {
-			t.Fatalf("trdsql error :%s", trdsql.outStream)
+			t.Fatalf("trdsql error :%s", trdsql.OutStream)
 		}
 	}
 }
@@ -136,7 +136,7 @@ var tjson = []string{
 
 func TestJSONRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	for _, c := range tjson {
 		sql := "SELECT * FROM " + data + c
 		args := []string{"trdsql", "-driver", "sqlite3", "-ijson", sql}
@@ -144,60 +144,60 @@ func TestJSONRun(t *testing.T) {
 			t.Errorf("trdsql error.")
 		}
 		if outStream.String() == "" {
-			t.Fatalf("trdsql error :%s", trdsql.outStream)
+			t.Fatalf("trdsql error :%s", trdsql.OutStream)
 		}
 	}
 }
 
 func TestGLobFileRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	sql := "SELECT * FROM " + data + "tt*.csv"
 	args := []string{"trdsql", "-driver", "sqlite3", "-icsv", sql}
 	if trdsql.Run(args) != 0 {
 		t.Errorf("trdsql error.")
 	}
 	if outStream.String() == "" {
-		t.Fatalf("trdsql error :%s", trdsql.outStream)
+		t.Fatalf("trdsql error :%s", trdsql.OutStream)
 	}
 }
 
 func TestGLobFileLTSVRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	sql := "SELECT * FROM " + data + "tt*.ltsv"
 	args := []string{"trdsql", "-driver", "sqlite3", "-icsv", sql}
 	if trdsql.Run(args) != 0 {
 		t.Errorf("trdsql error.")
 	}
 	if outStream.String() == "" {
-		t.Fatalf("trdsql error :%s", trdsql.outStream)
+		t.Fatalf("trdsql error :%s", trdsql.OutStream)
 	}
 }
 
 func TestGLobFileJSONRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	sql := "SELECT * FROM " + data + "tt*.json"
 	args := []string{"trdsql", "-driver", "sqlite3", "-icsv", sql}
 	if trdsql.Run(args) != 0 {
 		t.Errorf("trdsql error.")
 	}
 	if outStream.String() == "" {
-		t.Fatalf("trdsql error :%s", trdsql.outStream)
+		t.Fatalf("trdsql error :%s", trdsql.OutStream)
 	}
 }
 
 func TestGuessRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	sql := "SELECT id,name,price FROM testdata/test.ltsv"
 	args := []string{"trdsql", "-driver", "sqlite3", "-ig", sql}
 	if trdsql.Run(args) != 0 {
 		t.Errorf("trdsql error.")
 	}
 	if outStream.String() != "1,Orange,50\n2,Melon,500\n3,Apple,100\n" {
-		t.Fatalf("trdsql error :%s", trdsql.outStream)
+		t.Fatalf("trdsql error :%s", trdsql.OutStream)
 	}
 	sql = "SELECT * FROM testdata/test.csv"
 	args = []string{"trdsql", "-driver", "sqlite3", "-ig", sql}
@@ -206,7 +206,7 @@ func TestGuessRun(t *testing.T) {
 	}
 	outs := outStream.String()
 	if outs[0] != '1' {
-		t.Fatalf("trdsql error %s:%s", outs, trdsql.outStream)
+		t.Fatalf("trdsql error %s:%s", outs, trdsql.OutStream)
 	}
 }
 
@@ -216,14 +216,14 @@ var tsql = []string{
 
 func TestQueryfileRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	for _, c := range tsql {
 		args := []string{"trdsql", "-driver", "sqlite3", "-q", "testdata/" + c}
 		if trdsql.Run(args) != 0 {
 			t.Errorf("trdsql error.")
 		}
 		if outStream.String() == "" {
-			t.Fatalf("trdsql error :%s", trdsql.outStream)
+			t.Fatalf("trdsql error :%s", trdsql.OutStream)
 		}
 	}
 }
@@ -242,52 +242,52 @@ func TestGuessExtension(t *testing.T) {
 
 func TestContainSpaceRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	sql := "SELECT * FROM \"testdata/a b.csv\""
 	args := []string{"trdsql", "-driver", "sqlite3", "-ig", sql}
 	if trdsql.Run(args) != 0 {
 		t.Errorf("trdsql error.")
 	}
 	if outStream.String() == "" {
-		t.Fatalf("trdsql error :%s", trdsql.outStream)
+		t.Fatalf("trdsql error :%s", trdsql.OutStream)
 	}
 }
 
 func TestTableJoinRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	sql := "SELECT t.c2,a.c2 FROM testdata/test.csv AS t LEFT JOIN testdata/hist.csv AS a USING (c1)"
 	args := []string{"trdsql", "-driver", "sqlite3", "-ig", sql}
 	if trdsql.Run(args) != 0 {
 		t.Errorf("trdsql error.")
 	}
 	if outStream.String() == "" {
-		t.Fatalf("trdsql error :%s", trdsql.outStream)
+		t.Fatalf("trdsql error :%s", trdsql.OutStream)
 	}
 }
 
 func TestFromCommaRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	sql := "SELECT * FROM testdata/test.csv, testdata/abc.csv"
 	args := []string{"trdsql", "-driver", "sqlite3", "-ig", sql}
 	if trdsql.Run(args) != 0 {
 		t.Errorf("trdsql error.")
 	}
 	if outStream.String() == "" {
-		t.Fatalf("trdsql error :%s", trdsql.outStream)
+		t.Fatalf("trdsql error :%s", trdsql.OutStream)
 	}
 }
 
 func TestNoFrom(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	args := []string{"trdsql", "-driver", "sqlite3", "SELECT 1+1"}
 	if trdsql.Run(args) != 0 {
 		t.Errorf("trdsql error.")
 	}
 	if outStream.String() != "2\n" {
-		t.Fatalf("trdsql error :%s", trdsql.outStream)
+		t.Fatalf("trdsql error :%s", trdsql.OutStream)
 	}
 }
 
@@ -295,7 +295,7 @@ func TestFromFunc(t *testing.T) {
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	args := []string{"trdsql", "-driver", "sqlite3", "SELECT * FROM func()"}
 	if trdsql.Run(args) == 0 {
 		t.Errorf("trdsql error.")
@@ -319,7 +319,7 @@ var tdb = map[string]bool{
 
 func TestDbRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	for db, dbc := range tdb {
 		if !dbc {
 			continue
@@ -332,7 +332,7 @@ func TestDbRun(t *testing.T) {
 					t.Errorf("trdsql error.")
 				}
 				if outStream.String() == "" {
-					t.Fatalf("trdsql error %s:%s:%s", c[0], c[1], trdsql.outStream)
+					t.Fatalf("trdsql error %s:%s:%s", c[0], c[1], trdsql.OutStream)
 				}
 				outStream.Reset()
 			}
@@ -343,7 +343,7 @@ func TestDbRun(t *testing.T) {
 func TestCountKENALLRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
 	log.SetOutput(errStream)
-	trdsql := &TRDSQL{outStream: outStream, errStream: errStream}
+	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	csv := "KEN_ALL.CSV"
 	count := "124165"
 	for db, dbc := range tdb {

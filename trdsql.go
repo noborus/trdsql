@@ -1,9 +1,10 @@
-package main
+package trdsql
 
 import (
 	"database/sql"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -39,6 +40,30 @@ var (
 	Ojson bool
 	Otbln bool
 )
+
+// Input format
+const (
+	CSV = iota
+	LTSV
+	JSON
+	TBLN
+)
+
+// TRDSQL is output stream define
+type TRDSQL struct {
+	OutStream    io.Writer
+	ErrStream    io.Writer
+	driver       string
+	dsn          string
+	inDelimiter  string
+	inSkip       int
+	inGuess      bool
+	inType       int
+	inHeader     bool
+	inPreRead    int
+	outDelimiter string
+	outHeader    bool
+}
 
 // Run is main routine.
 func (trdsql *TRDSQL) Run(args []string) int {

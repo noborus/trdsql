@@ -1,4 +1,4 @@
-package main
+package trdsql
 
 import (
 	"bufio"
@@ -15,7 +15,7 @@ type LTSVOut struct {
 func (trdsql *TRDSQL) ltsvOutNew() Output {
 	lw := &LTSVOut{}
 	lw.delimiter = "\t"
-	lw.writer = bufio.NewWriter(trdsql.outStream)
+	lw.writer = bufio.NewWriter(trdsql.OutStream)
 	return lw
 }
 
