@@ -21,7 +21,7 @@ test: $(SRCS)
 build: trdsql
 
 $(BINARY_NAME): $(SRCS)
-	$(GOBUILD) -o $(BINARY_NAME)
+	$(GOBUILD) -o $(BINARY_NAME) ./cmd/trdsql
 
 pkg: linux_pkg window_pkg
 
@@ -35,7 +35,7 @@ pkg_macOS:
 	$(GOXCMD) -os "darwin" -arch "amd64" -output ${TARGET}
 
 install:
-	$(GOINSTALL)
+	$(GOINSTALL) ./cmd/trdsql
 
 clean:
 	$(GOCLEAN)
