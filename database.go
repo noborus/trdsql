@@ -8,8 +8,11 @@ import (
 	"log"
 	"strings"
 
+	// MySQL driver
 	_ "github.com/go-sql-driver/mysql"
+	// PostgreSQL driver
 	_ "github.com/lib/pq"
+	// SQLite3 driver
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -51,14 +54,14 @@ func (db *DDB) Disconnect() error {
 }
 
 // CreateTable is create a temporary table
-func (db *DDB) CreateTable(table string, names []string, types []string) error {
+func (db *DDB) CreateTable(tableName string, names []string, types []string) error {
 	var sqlstr string
 	columns := make([]string, len(names))
 	for i := 0; i < len(names); i++ {
 		columns[i] = db.escape + names[i] + db.escape + " " + types[i]
 	}
 	sqlstr = "CREATE TEMPORARY TABLE "
-	sqlstr = sqlstr + table + " ( " + strings.Join(columns, ",") + " );"
+	sqlstr = sqlstr + tableName + " ( " + strings.Join(columns, ",") + " );"
 	debug.Printf(sqlstr)
 	_, err := db.tx.Exec(sqlstr)
 	return err
@@ -161,6 +164,7 @@ func (db *DDB) insertImport(itable *iTable, input Input) error {
 	var err error
 	var stmt *sql.Stmt
 	defer db.stmtClose(stmt)
+	// #nosec G202
 	itable.sqlstr = "INSERT INTO " + itable.tablename + " (" + strings.Join(itable.columns, ",") + ") VALUES "
 	itable.place = "(" + strings.Repeat("?,", len(itable.columnNames)-1) + "?)"
 	itable.maxCap = (db.maxBulk / len(itable.row)) * len(itable.row)

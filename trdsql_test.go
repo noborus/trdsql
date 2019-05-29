@@ -38,7 +38,7 @@ func trdsqlNew() *TRDSQL {
 	return trdsql
 }
 
-func TesTCSVRun(t *testing.T) {
+func TestCSVRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
 	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	for _, c := range TCSV {
@@ -54,7 +54,7 @@ func TesTCSVRun(t *testing.T) {
 	}
 }
 
-func TesTCSVHeaderRun(t *testing.T) {
+func TestCSVHeaderRun(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
 	trdsql := &TRDSQL{OutStream: outStream, ErrStream: errStream}
 	sql := "SELECT * FROM " + data + "header.csv"
@@ -369,8 +369,12 @@ func dbcheck(d string) bool {
 		log.Printf("%s:%s\n", d, err)
 		return false
 	}
-	defer db.Disconnect()
 	_, err = db.Exec("SELECT 1")
+	if err != nil {
+		log.Printf("%s:%s\n", d, err)
+		return false
+	}
+	err = db.Disconnect()
 	if err != nil {
 		log.Printf("%s:%s\n", d, err)
 		return false

@@ -29,16 +29,16 @@ func (trdsql *TRDSQL) Import(db *DDB, sqlstr string) (string, error) {
 		return sqlstr, nil
 	}
 	created := make(map[string]bool)
-	for _, tablename := range tableList {
-		if created[tablename] {
-			debug.Printf("already created \"%s\"\n", tablename)
+	for _, tableName := range tableList {
+		if created[tableName] {
+			debug.Printf("already created \"%s\"\n", tableName)
 			continue
 		}
-		sqlstr, err = trdsql.importTable(db, tablename, sqlstr)
+		sqlstr, err = trdsql.importTable(db, tableName, sqlstr)
 		if err != nil {
 			break
 		}
-		created[tablename] = true
+		created[tableName] = true
 	}
 	return sqlstr, err
 }

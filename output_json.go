@@ -40,9 +40,8 @@ func valInterface(v interface{}) interface{} {
 	case []byte:
 		if ok := utf8.Valid(t); ok {
 			return string(t)
-		} else {
-			return `\x` + hex.EncodeToString(t)
 		}
+		return `\x` + hex.EncodeToString(t)
 	default:
 		return v
 	}

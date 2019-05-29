@@ -4,6 +4,13 @@ import (
 	"encoding/csv"
 )
 
+// CSVOut provides methods of the Output interface
+type CSVOut struct {
+	writer    *csv.Writer
+	results   []string
+	outHeader bool
+}
+
 func (trdsql *TRDSQL) csvOutNew() Output {
 	var err error
 	c := &CSVOut{}

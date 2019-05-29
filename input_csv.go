@@ -16,25 +16,6 @@ type CSVIn struct {
 	inHeader bool
 }
 
-// CSVOut provides methods of the Output interface
-type CSVOut struct {
-	writer    *csv.Writer
-	results   []string
-	outHeader bool
-}
-
-func delimiter(sepString string) (rune, error) {
-	if sepString == "" {
-		return 0, nil
-	}
-	sepRunes, err := strconv.Unquote(`'` + sepString + `'`)
-	if err != nil {
-		return ',', fmt.Errorf("can not get separator: %s:\"%s\"", err, sepString)
-	}
-	sepRune := ([]rune(sepRunes))[0]
-	return sepRune, err
-}
-
 func (trdsql *TRDSQL) csvInputNew(r io.Reader) (Input, error) {
 	var err error
 	if trdsql.inHeader {
@@ -48,6 +29,18 @@ func (trdsql *TRDSQL) csvInputNew(r io.Reader) (Input, error) {
 	cr.inHeader = trdsql.inHeader
 	cr.reader.Comma, err = delimiter(trdsql.inDelimiter)
 	return cr, err
+}
+
+func delimiter(sepString string) (rune, error) {
+	if sepString == "" {
+		return 0, nil
+	}
+	sepRunes, err := strconv.Unquote(`'` + sepString + `'`)
+	if err != nil {
+		return ',', fmt.Errorf("can not get separator: %s:\"%s\"", err, sepString)
+	}
+	sepRune := ([]rune(sepRunes))[0]
+	return sepRune, err
 }
 
 // GetColumn is reads the specified number of rows and determines the column name.
