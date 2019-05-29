@@ -182,11 +182,13 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 // InputNew is create input reader.
 func (trdsql *TRDSQL) InputNew(reader io.Reader, tablename string) (Input, error) {
 	var err error
-	if trdsql.inGuess {
+	var input Input
+	if trdsql.inType == GUESS {
 		trdsql.inType = guessExtension(tablename)
 	}
-	var input Input
 	switch trdsql.inType {
+	case CSV:
+		input, err = trdsql.csvInputNew(reader)
 	case LTSV:
 		input, err = trdsql.ltsvInputNew(reader)
 	case JSON:

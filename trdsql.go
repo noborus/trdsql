@@ -43,7 +43,8 @@ var (
 
 // Input format
 const (
-	CSV = iota
+	GUESS = iota
+	CSV
 	LTSV
 	JSON
 	TBLN
@@ -95,7 +96,7 @@ func (trdsql *TRDSQL) Run(args []string) int {
 	flags.BoolVar(&dblist, "dblist", false, "display db information.")
 	flags.StringVar(&cdriver, "driver", "", "database driver.  [ "+strings.Join(sql.Drivers(), " | ")+" ]")
 	flags.StringVar(&cdsn, "dsn", "", "database connection option.")
-	flags.BoolVar(&trdsql.inGuess, "ig", false, "Guess format from extension.")
+	flags.BoolVar(&trdsql.inGuess, "ig", true, "Guess format from extension.")
 	flags.BoolVar(&Icsv, "icsv", false, "CSV format for input.")
 	flags.BoolVar(&Iltsv, "iltsv", false, "LTSV format for input.")
 	flags.BoolVar(&Ijson, "ijson", false, "JSON format for input.")
@@ -224,7 +225,7 @@ func (trdsql *TRDSQL) setInFormat() {
 	case Itbln:
 		trdsql.inType = TBLN
 	default:
-		trdsql.inType = CSV
+		trdsql.inType = GUESS
 	}
 }
 
