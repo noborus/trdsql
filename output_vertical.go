@@ -1,4 +1,4 @@
-package main
+package trdsql
 
 import (
 	"bufio"
@@ -21,7 +21,7 @@ type VfOut struct {
 func (trdsql *TRDSQL) vfOutNew() Output {
 	var err error
 	vf := &VfOut{}
-	vf.writer = bufio.NewWriter(trdsql.outStream)
+	vf.writer = bufio.NewWriter(trdsql.OutStream)
 	vf.termWidth, _, err = terminal.GetSize(0)
 	if err != nil {
 		vf.termWidth = 40

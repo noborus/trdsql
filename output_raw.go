@@ -1,4 +1,4 @@
-package main
+package trdsql
 
 import (
 	"bufio"
@@ -18,7 +18,7 @@ type RawOut struct {
 func (trdsql *TRDSQL) rawOutNew() Output {
 	var err error
 	raw := &RawOut{}
-	raw.writer = bufio.NewWriter(trdsql.outStream)
+	raw.writer = bufio.NewWriter(trdsql.OutStream)
 	raw.sep, err = strconv.Unquote(`"` + trdsql.outDelimiter + `"`)
 	if err != nil {
 		debug.Printf("%s\n", err)

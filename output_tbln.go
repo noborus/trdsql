@@ -1,4 +1,4 @@
-package main
+package trdsql
 
 import (
 	"github.com/noborus/tbln"
@@ -12,7 +12,7 @@ type TBLNOut struct {
 
 func (trdsql *TRDSQL) tblnOutNew() Output {
 	tw := &TBLNOut{}
-	tw.writer = tbln.NewWriter(trdsql.outStream)
+	tw.writer = tbln.NewWriter(trdsql.OutStream)
 	return tw
 }
 

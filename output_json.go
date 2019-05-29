@@ -1,4 +1,4 @@
-package main
+package trdsql
 
 import (
 	"encoding/hex"
@@ -14,7 +14,7 @@ type JSONOut struct {
 
 func (trdsql *TRDSQL) jsonOutNew() Output {
 	js := &JSONOut{}
-	js.writer = json.NewEncoder(trdsql.outStream)
+	js.writer = json.NewEncoder(trdsql.OutStream)
 	js.writer.SetIndent("", "  ")
 	return js
 }
@@ -40,9 +40,8 @@ func valInterface(v interface{}) interface{} {
 	case []byte:
 		if ok := utf8.Valid(t); ok {
 			return string(t)
-		} else {
-			return `\x` + hex.EncodeToString(t)
 		}
+		return `\x` + hex.EncodeToString(t)
 	default:
 		return v
 	}
