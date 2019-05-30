@@ -141,9 +141,9 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 		return sqlstr, err
 	}
 
-	if trdsql.inSkip > 0 {
+	if trdsql.InSkip > 0 {
 		skip := make([]interface{}, 1)
-		for i := 0; i < trdsql.inSkip; i++ {
+		for i := 0; i < trdsql.InSkip; i++ {
 			r, e := input.ReadRow(skip)
 			if e != nil {
 				log.Printf("ERROR: skip error %s", e)
@@ -154,7 +154,7 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 	}
 	rtable := db.EscapeTable(tablename)
 	sqlstr = db.RewriteSQL(sqlstr, tablename, rtable)
-	columnNames, err := input.GetColumn(trdsql.inPreRead)
+	columnNames, err := input.GetColumn(trdsql.InPreRead)
 	if err != nil {
 		if err != io.EOF {
 			return sqlstr, err
@@ -175,7 +175,7 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 	if err != nil {
 		return sqlstr, err
 	}
-	err = db.Import(rtable, columnNames, input, trdsql.inPreRead)
+	err = db.Import(rtable, columnNames, input, trdsql.InPreRead)
 	return sqlstr, err
 }
 
@@ -183,10 +183,10 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 func (trdsql *TRDSQL) InputNew(reader io.Reader, tablename string) (Input, error) {
 	var err error
 	var input Input
-	if trdsql.inType == GUESS {
-		trdsql.inType = guessExtension(tablename)
+	if trdsql.InFormat == GUESS {
+		trdsql.InFormat = guessExtension(tablename)
 	}
-	switch trdsql.inType {
+	switch trdsql.InFormat {
 	case CSV:
 		input, err = trdsql.csvInputNew(reader)
 	case LTSV:
@@ -279,21 +279,31 @@ func tableFileOpen(filename string) (io.ReadCloser, error) {
 	return extFileReader(filename, file), nil
 }
 
-func guessExtension(tablename string) int {
+func guessExtension(tablename string) InputFormat {
 	if strings.HasSuffix(tablename, ".gz") {
 		tablename = tablename[0 : len(tablename)-3]
 	}
 	pos := strings.LastIndex(tablename, ".")
-	if pos > 0 {
-		ext := strings.ToLower(tablename[pos:])
-		if strings.Contains(ext, ".ltsv") {
-			debug.Printf("Guess file type as LTSV: [%s]", tablename)
-			return LTSV
-		} else if strings.Contains(ext, ".json") {
-			debug.Printf("Guess file type as JSON: [%s]", tablename)
-			return JSON
-		}
+	if pos == 0 {
+		debug.Printf("Set in CSV because the extension is unknown: [%s]", tablename)
+		return CSV
 	}
-	debug.Printf("Guess file type as CSV: [%s]", tablename)
-	return CSV
+	ext := strings.ToUpper(tablename[pos+1:])
+	switch ext {
+	case "CSV":
+		debug.Printf("Guess file type as CSV: [%s]", tablename)
+		return CSV
+	case "LTSV":
+		debug.Printf("Guess file type as LTSV: [%s]", tablename)
+		return LTSV
+	case "JSON":
+		debug.Printf("Guess file type as JSON: [%s]", tablename)
+		return JSON
+	case "TBLN":
+		debug.Printf("Guess file type as TBLN: [%s]", tablename)
+		return TBLN
+	default:
+		debug.Printf("Set in CSV because the extension is unknown: [%s]", tablename)
+		return CSV
+	}
 }

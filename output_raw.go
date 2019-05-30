@@ -15,15 +15,15 @@ type RawOut struct {
 	outHeader bool
 }
 
-func (trdsql *TRDSQL) rawOutNew() Output {
+func (trdsql *TRDSQL) rawOutNew() *RawOut {
 	var err error
 	raw := &RawOut{}
 	raw.writer = bufio.NewWriter(trdsql.OutStream)
-	raw.sep, err = strconv.Unquote(`"` + trdsql.outDelimiter + `"`)
+	raw.sep, err = strconv.Unquote(`"` + trdsql.OutDelimiter + `"`)
 	if err != nil {
 		debug.Printf("%s\n", err)
 	}
-	raw.outHeader = trdsql.outHeader
+	raw.outHeader = trdsql.OutHeader
 	return raw
 }
 
@@ -39,8 +39,8 @@ func (raw *RawOut) First(columns []string, types []string) error {
 	return nil
 }
 
-// RowWrite is row output
-func (raw *RawOut) RowWrite(values []interface{}, columns []string) error {
+// WriteRow is row output
+func (raw *RawOut) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
 		raw.results[i] = valString(col)
 	}

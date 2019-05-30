@@ -31,7 +31,7 @@ func TestCsvInputNew(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	trdsql.inDelimiter = ","
+	trdsql.InDelimiter = ","
 	_, err = trdsql.csvInputNew(file)
 	if err != nil {
 		t.Error(`csvInputNew error`)
@@ -40,7 +40,7 @@ func TestCsvInputNew(t *testing.T) {
 
 func TestCsvEmptyNew(t *testing.T) {
 	trdsql := trdsqlNew()
-	trdsql.inDelimiter = ","
+	trdsql.InDelimiter = ","
 	const csvStream = ``
 	s := strings.NewReader(csvStream)
 	r, err := trdsql.csvInputNew(s)
@@ -55,8 +55,8 @@ func TestCsvEmptyNew(t *testing.T) {
 
 func TestCsvHeaderNew(t *testing.T) {
 	trdsql := trdsqlNew()
-	trdsql.inHeader = true
-	trdsql.inDelimiter = ","
+	trdsql.InHeader = true
+	trdsql.InDelimiter = ","
 	csvStream := `h1,h2
 	v1,v2`
 	s := strings.NewReader(csvStream)
@@ -69,8 +69,8 @@ func TestCsvHeaderNew(t *testing.T) {
 
 func TestCsvEmptyColumnHeaderNew(t *testing.T) {
 	trdsql := trdsqlNew()
-	trdsql.inHeader = true
-	trdsql.inDelimiter = ","
+	trdsql.InHeader = true
+	trdsql.InDelimiter = ","
 	csvStream := `h1,
 	v1,v2`
 	s := strings.NewReader(csvStream)
@@ -83,8 +83,8 @@ func TestCsvEmptyColumnHeaderNew(t *testing.T) {
 
 func TestCsvEmptyColumnRowNew(t *testing.T) {
 	trdsql := trdsqlNew()
-	trdsql.inHeader = true
-	trdsql.inDelimiter = ","
+	trdsql.InHeader = true
+	trdsql.InDelimiter = ","
 	csvStream := `h1,h2
 	,v2`
 	s := strings.NewReader(csvStream)
@@ -102,8 +102,8 @@ func TestCsvEmptyColumnRowNew(t *testing.T) {
 
 func TestCsvColumnDifferenceNew(t *testing.T) {
 	trdsql := trdsqlNew()
-	trdsql.inHeader = true
-	trdsql.inDelimiter = ","
+	trdsql.InHeader = true
+	trdsql.InDelimiter = ","
 	csvStream := `h1,h2,h3
 	v1,v2,v3
 	x1,x2
@@ -146,7 +146,7 @@ func TestCsvIndefiniteInputFile(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	trdsql.inDelimiter = ","
+	trdsql.InDelimiter = ","
 	var cr Input
 	cr, err = trdsql.csvInputNew(file)
 	if err != nil {
@@ -168,7 +168,7 @@ func TestCsvIndefiniteInputFile2(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	trdsql.inDelimiter = ","
+	trdsql.InDelimiter = ","
 	var cr Input
 	cr, err = trdsql.csvInputNew(file)
 	if err != nil {
@@ -189,7 +189,7 @@ func TestCsvIndefiniteInputFile3(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	trdsql.inDelimiter = ","
+	trdsql.InDelimiter = ","
 	var cr Input
 	cr, err = trdsql.csvInputNew(file)
 	if err != nil {

@@ -10,7 +10,7 @@ type TBLNOut struct {
 	results []string
 }
 
-func (trdsql *TRDSQL) tblnOutNew() Output {
+func (trdsql *TRDSQL) tblnOutNew() *TBLNOut {
 	tw := &TBLNOut{}
 	tw.writer = tbln.NewWriter(trdsql.OutStream)
 	return tw
@@ -35,8 +35,8 @@ func (tw *TBLNOut) First(columns []string, types []string) error {
 	return nil
 }
 
-// RowWrite is Addition to array
-func (tw *TBLNOut) RowWrite(values []interface{}, columns []string) error {
+// WriteRow is Addition to array
+func (tw *TBLNOut) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
 		tw.results[i] = valString(col)
 	}

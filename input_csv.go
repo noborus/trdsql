@@ -18,16 +18,16 @@ type CSVIn struct {
 
 func (trdsql *TRDSQL) csvInputNew(r io.Reader) (Input, error) {
 	var err error
-	if trdsql.inHeader {
-		trdsql.inPreRead--
+	if trdsql.InHeader {
+		trdsql.InPreRead--
 	}
 	cr := &CSVIn{}
 	cr.reader = csv.NewReader(r)
 	cr.reader.LazyQuotes = true
 	cr.reader.FieldsPerRecord = -1 // no check count
 	cr.reader.TrimLeadingSpace = true
-	cr.inHeader = trdsql.inHeader
-	cr.reader.Comma, err = delimiter(trdsql.inDelimiter)
+	cr.inHeader = trdsql.InHeader
+	cr.reader.Comma, err = delimiter(trdsql.InDelimiter)
 	return cr, err
 }
 

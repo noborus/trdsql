@@ -9,15 +9,15 @@ import (
 	"unicode/utf8"
 )
 
-// Output is database export
-type Output interface {
+// Exporter is database export
+type Exporter interface {
 	First([]string, []string) error
-	RowWrite([]interface{}, []string) error
+	WriteRow([]interface{}, []string) error
 	Last() error
 }
 
-// Export is execute SQL and output the result.
-func (trdsql *TRDSQL) Export(db *DDB, sqlstr string, output Output) error {
+// Export is execute SQL and Exporter the result.
+func (trdsql *TRDSQL) Export(db *DDB, sqlstr string, w Exporter) error {
 	rows, err := db.Select(sqlstr)
 	if err != nil {
 		return err
@@ -48,7 +48,7 @@ func (trdsql *TRDSQL) Export(db *DDB, sqlstr string, output Output) error {
 		types[i] = convertType(ct.DatabaseTypeName())
 	}
 
-	err = output.First(columns, types)
+	err = w.First(columns, types)
 	if err != nil {
 		return err
 	}
@@ -57,12 +57,12 @@ func (trdsql *TRDSQL) Export(db *DDB, sqlstr string, output Output) error {
 		if err != nil {
 			return err
 		}
-		err = output.RowWrite(values, columns)
+		err = w.WriteRow(values, columns)
 		if err != nil {
 			return err
 		}
 	}
-	return output.Last()
+	return w.Last()
 }
 
 func convertType(dbtype string) string {

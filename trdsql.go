@@ -11,37 +11,27 @@ import (
 	"strings"
 )
 
-var debug = debugT(false)
+// TRDSQL structure is a structure that defines the whole operation.
+type TRDSQL struct {
+	Driver string
+	Dsn    string
 
-type debugT bool
+	InFormat    InputFormat
+	InPreRead   int
+	InSkip      int
+	InDelimiter string
+	InHeader    bool
 
-func (d debugT) Printf(format string, args ...interface{}) {
-	if d {
-		log.Printf(format, args...)
-	}
+	OutStream    io.Writer
+	ErrStream    io.Writer
+	OutDelimiter string
+	OutHeader    bool
 }
 
-// (Default)input Formast
-var (
-	Icsv  bool
-	Iltsv bool
-	Ijson bool
-	Itbln bool
-)
+// InputFormat represents the input format
+type InputFormat int
 
-// Output Formast
-var (
-	Ocsv  bool
-	Oltsv bool
-	Oat   bool
-	Omd   bool
-	Ovf   bool
-	Oraw  bool
-	Ojson bool
-	Otbln bool
-)
-
-// Input format
+// Represents Input Format
 const (
 	GUESS = iota
 	CSV
@@ -50,40 +40,44 @@ const (
 	TBLN
 )
 
-// TRDSQL is output stream define
-type TRDSQL struct {
-	OutStream    io.Writer
-	ErrStream    io.Writer
-	driver       string
-	dsn          string
-	inDelimiter  string
-	inSkip       int
-	inGuess      bool
-	inType       int
-	inHeader     bool
-	inPreRead    int
-	outDelimiter string
-	outHeader    bool
-}
-
 // Run is main routine.
 func (trdsql *TRDSQL) Run(args []string) int {
 	var (
 		usage   bool
 		version bool
-		dblist  bool
+		dbList  bool
 		config  string
-		cdb     string
-		cdriver string
-		cdsn    string
+		cDB     string
+		cDriver string
+		cDSN    string
+		guess   bool
 		query   string
 		odebug  bool
 	)
 
-	var output Output
+	// input Format
+	var (
+		iCSV  bool
+		iLTSV bool
+		iJSON bool
+		iTBLN bool
+	)
+
+	// Output Format
+	var (
+		oCSV  bool
+		oLTSV bool
+		oAT   bool
+		oMD   bool
+		oVF   bool
+		oRAW  bool
+		oJSON bool
+		oTBLN bool
+	)
+
 	flags := flag.NewFlagSet("trdsql", flag.ExitOnError)
-	trdsql.driver = "sqlite3"
-	trdsql.dsn = ""
+	trdsql.Driver = "sqlite3"
+	trdsql.Dsn = ""
 	flags.Usage = func() {
 		fmt.Fprintf(os.Stderr, `Usage: %s [OPTIONS] [SQL(SELECT...)]
 `, os.Args[0])
@@ -92,34 +86,34 @@ func (trdsql *TRDSQL) Run(args []string) int {
 	}
 
 	flags.StringVar(&config, "config", config, "Configuration file location.")
-	flags.StringVar(&cdb, "db", "", "Specify db name of the setting.")
-	flags.BoolVar(&dblist, "dblist", false, "display db information.")
-	flags.StringVar(&cdriver, "driver", "", "database driver.  [ "+strings.Join(sql.Drivers(), " | ")+" ]")
-	flags.StringVar(&cdsn, "dsn", "", "database connection option.")
-	flags.BoolVar(&trdsql.inGuess, "ig", true, "Guess format from extension.")
-	flags.BoolVar(&Icsv, "icsv", false, "CSV format for input.")
-	flags.BoolVar(&Iltsv, "iltsv", false, "LTSV format for input.")
-	flags.BoolVar(&Ijson, "ijson", false, "JSON format for input.")
-	flags.BoolVar(&Itbln, "itbln", false, "TBLN format for input.")
-	flags.StringVar(&trdsql.inDelimiter, "id", ",", "Field delimiter for input.")
-	flags.StringVar(&trdsql.outDelimiter, "od", ",", "Field delimiter for output.")
-	flags.BoolVar(&trdsql.inHeader, "ih", false, "The first line is interpreted as column names(CSV only).")
-	flags.IntVar(&trdsql.inSkip, "is", 0, "Skip header row.")
-	flags.IntVar(&trdsql.inPreRead, "ir", 1, "Number of row preread for column determination.")
-	flags.BoolVar(&trdsql.outHeader, "oh", false, "Output column name as header.")
+	flags.StringVar(&cDB, "db", "", "Specify db name of the setting.")
+	flags.BoolVar(&dbList, "dblist", false, "display db information.")
+	flags.StringVar(&cDriver, "driver", "", "database driver.  [ "+strings.Join(sql.Drivers(), " | ")+" ]")
+	flags.StringVar(&cDSN, "dsn", "", "database connection option.")
+	flags.BoolVar(&guess, "ig", true, "Guess format from extension.")
+	flags.BoolVar(&iCSV, "icsv", false, "CSV format for input.")
+	flags.BoolVar(&iLTSV, "iltsv", false, "LTSV format for input.")
+	flags.BoolVar(&iJSON, "ijson", false, "JSON format for input.")
+	flags.BoolVar(&iTBLN, "itbln", false, "TBLN format for input.")
+	flags.StringVar(&trdsql.InDelimiter, "id", ",", "Field delimiter for input.")
+	flags.StringVar(&trdsql.OutDelimiter, "od", ",", "Field delimiter for output.")
+	flags.BoolVar(&trdsql.InHeader, "ih", false, "The first line is interpreted as column names(CSV only).")
+	flags.IntVar(&trdsql.InSkip, "is", 0, "Skip header row.")
+	flags.IntVar(&trdsql.InPreRead, "ir", 1, "Number of row preread for column determination.")
+	flags.BoolVar(&trdsql.OutHeader, "oh", false, "Output column name as header.")
 	flags.StringVar(&query, "q", "", "Read query from the provided filename.")
 	flags.BoolVar(&usage, "help", false, "display usage information.")
 	flags.BoolVar(&version, "version", false, "display version information.")
 	flags.BoolVar(&odebug, "debug", false, "debug print.")
 
-	flags.BoolVar(&Ocsv, "ocsv", true, "CSV format for output.")
-	flags.BoolVar(&Oltsv, "oltsv", false, "LTSV format for output.")
-	flags.BoolVar(&Oat, "oat", false, "ASCII Table format for output.")
-	flags.BoolVar(&Omd, "omd", false, "Mark Down format for output.")
-	flags.BoolVar(&Ovf, "ovf", false, "Vertical format for output.")
-	flags.BoolVar(&Oraw, "oraw", false, "Raw format for output.")
-	flags.BoolVar(&Ojson, "ojson", false, "JSON format for output.")
-	flags.BoolVar(&Otbln, "otbln", false, "TBLN format for output.")
+	flags.BoolVar(&oCSV, "ocsv", true, "CSV format for output.")
+	flags.BoolVar(&oLTSV, "oltsv", false, "LTSV format for output.")
+	flags.BoolVar(&oAT, "oat", false, "ASCII Table format for output.")
+	flags.BoolVar(&oMD, "omd", false, "Mark Down format for output.")
+	flags.BoolVar(&oVF, "ovf", false, "Vertical format for output.")
+	flags.BoolVar(&oRAW, "oraw", false, "Raw format for output.")
+	flags.BoolVar(&oJSON, "ojson", false, "JSON format for output.")
+	flags.BoolVar(&oTBLN, "otbln", false, "TBLN format for output.")
 
 	err := flags.Parse(args[1:])
 	if err != nil {
@@ -136,17 +130,28 @@ func (trdsql *TRDSQL) Run(args []string) int {
 		debug = true
 	}
 
-	trdsql.setInFormat()
+	switch {
+	case iCSV:
+		trdsql.InFormat = CSV
+	case iLTSV:
+		trdsql.InFormat = LTSV
+	case iJSON:
+		trdsql.InFormat = JSON
+	case iTBLN:
+		trdsql.InFormat = TBLN
+	default:
+		trdsql.InFormat = GUESS
+	}
 
-	cfgfile := configOpen(config)
-	cfg, err := loadConfig(cfgfile)
+	cfgFile := configOpen(config)
+	cfg, err := loadConfig(cfgFile)
 	if err != nil {
 		if config != "" {
 			log.Printf("ERROR: [%s]%s", config, err)
 			return (1)
 		}
 	}
-	if dblist {
+	if dbList {
 		for od, odb := range cfg.Database {
 			fmt.Printf("%s:%s\n", od, odb.Driver)
 		}
@@ -169,13 +174,35 @@ Options:
 		return (2)
 	}
 
-	trdsql.setDB(cfg, cdb, cdriver, cdsn)
-	output = trdsql.setOutFormat()
-	return trdsql.main(sqlstr, output)
+	trdsql.setDB(cfg, cDB, cDriver, cDSN)
+
+	var w Exporter
+	switch {
+	case oLTSV:
+		w = trdsql.ltsvOutNew()
+	case oJSON:
+		w = trdsql.jsonOutNew()
+	case oRAW:
+		w = trdsql.rawOutNew()
+	case oMD:
+		w = trdsql.twOutNew(true)
+	case oAT:
+		w = trdsql.twOutNew(false)
+	case oVF:
+		w = trdsql.vfOutNew()
+	case oTBLN:
+		w = trdsql.tblnOutNew()
+	case oCSV:
+		w = trdsql.csvOutNew()
+	default:
+		w = trdsql.csvOutNew()
+	}
+
+	return trdsql.Exec(sqlstr, w)
 }
 
-func (trdsql *TRDSQL) main(sqlstr string, output Output) int {
-	db, err := Connect(trdsql.driver, trdsql.dsn)
+func (trdsql *TRDSQL) Exec(sqlstr string, w Exporter) int {
+	db, err := Connect(trdsql.Driver, trdsql.Dsn)
 	if err != nil {
 		log.Printf("ERROR(CONNECT):%s", err)
 		return 1
@@ -199,7 +226,7 @@ func (trdsql *TRDSQL) main(sqlstr string, output Output) int {
 		return 1
 	}
 
-	err = trdsql.Export(db, sqlstr, output)
+	err = trdsql.Export(db, sqlstr, w)
 	if err != nil {
 		log.Printf("ERROR(EXPORT):%s", err)
 		return 1
@@ -214,47 +241,7 @@ func (trdsql *TRDSQL) main(sqlstr string, output Output) int {
 	return 0
 }
 
-func (trdsql *TRDSQL) setInFormat() {
-	switch {
-	case Icsv:
-		trdsql.inType = CSV
-	case Iltsv:
-		trdsql.inType = LTSV
-	case Ijson:
-		trdsql.inType = JSON
-	case Itbln:
-		trdsql.inType = TBLN
-	default:
-		trdsql.inType = GUESS
-	}
-}
-
-func (trdsql *TRDSQL) setOutFormat() Output {
-	var output Output
-	switch {
-	case Oltsv:
-		output = trdsql.ltsvOutNew()
-	case Ojson:
-		output = trdsql.jsonOutNew()
-	case Oraw:
-		output = trdsql.rawOutNew()
-	case Omd:
-		output = trdsql.twOutNew(true)
-	case Oat:
-		output = trdsql.twOutNew(false)
-	case Ovf:
-		output = trdsql.vfOutNew()
-	case Otbln:
-		output = trdsql.tblnOutNew()
-	case Ocsv:
-		output = trdsql.csvOutNew()
-	default:
-		output = trdsql.csvOutNew()
-	}
-	return output
-}
-
-func getSQL(rargs []string, query string) (string, error) {
+func getSQL(args []string, query string) (string, error) {
 	sqlstr := ""
 	if query != "" {
 		bq, err := ioutil.ReadFile(query)
@@ -263,7 +250,7 @@ func getSQL(rargs []string, query string) (string, error) {
 		}
 		sqlstr = string(bq)
 	} else {
-		sqlstr = strings.Join(rargs, " ")
+		sqlstr = strings.Join(args, " ")
 	}
 	if strings.HasSuffix(sqlstr, ";") {
 		sqlstr = sqlstr[:len(sqlstr)-1]
@@ -271,33 +258,43 @@ func getSQL(rargs []string, query string) (string, error) {
 	return sqlstr, nil
 }
 
-func (trdsql *TRDSQL) setDB(cfg *config, cdb string, cdriver string, cdsn string) {
-	if cdb == "" {
-		cdb = cfg.Db
+func (trdsql *TRDSQL) setDB(cfg *config, cDB string, cDriver string, cDSN string) {
+	if cDB == "" {
+		cDB = cfg.Db
 	}
-	if cdb != "" {
-		if cfg.Database[cdb].Driver == "" {
-			debug.Printf("ERROR: db[%s] does not found", cdb)
+	if cDB != "" {
+		if cfg.Database[cDB].Driver == "" {
+			debug.Printf("ERROR: db[%s] does not found", cDB)
 		} else {
-			trdsql.driver = cfg.Database[cdb].Driver
-			trdsql.dsn = cfg.Database[cdb].Dsn
+			trdsql.Driver = cfg.Database[cDB].Driver
+			trdsql.Dsn = cfg.Database[cDB].Dsn
 		}
 	}
 	if debug {
 		for od, odb := range cfg.Database {
-			if cdb == od {
+			if cDB == od {
 				debug.Printf(">[driver: %s:%s:%s]", od, odb.Driver, odb.Dsn)
 			} else {
 				debug.Printf(" [driver: %s:%s:%s]", od, odb.Driver, odb.Dsn)
 			}
 		}
 	}
-	if cdriver != "" {
-		trdsql.driver = cdriver
-		trdsql.dsn = cdsn
+	if cDriver != "" {
+		trdsql.Driver = cDriver
+		trdsql.Dsn = cDSN
 	}
-	if cdsn != "" {
-		trdsql.dsn = cdsn
+	if cDSN != "" {
+		trdsql.Dsn = cDSN
 	}
-	debug.Printf("driver: %s, dsn: %s", trdsql.driver, trdsql.dsn)
+	debug.Printf("driver: %s, dsn: %s", trdsql.Driver, trdsql.Dsn)
+}
+
+var debug = debugT(false)
+
+type debugT bool
+
+func (d debugT) Printf(format string, args ...interface{}) {
+	if d {
+		log.Printf(format, args...)
+	}
 }

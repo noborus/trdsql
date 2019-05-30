@@ -12,7 +12,7 @@ type JSONOut struct {
 	results []map[string]interface{}
 }
 
-func (trdsql *TRDSQL) jsonOutNew() Output {
+func (trdsql *TRDSQL) jsonOutNew() *JSONOut {
 	js := &JSONOut{}
 	js.writer = json.NewEncoder(trdsql.OutStream)
 	js.writer.SetIndent("", "  ")
@@ -25,8 +25,8 @@ func (js *JSONOut) First(columns []string, types []string) error {
 	return nil
 }
 
-// RowWrite is Addition to array
-func (js *JSONOut) RowWrite(values []interface{}, columns []string) error {
+// WriteRow is Addition to array
+func (js *JSONOut) WriteRow(values []interface{}, columns []string) error {
 	m := make(map[string]interface{}, len(columns))
 	for i, col := range values {
 		m[columns[i]] = valInterface(col)

@@ -10,7 +10,7 @@ type TwOut struct {
 	results []string
 }
 
-func (trdsql *TRDSQL) twOutNew(markdown bool) Output {
+func (trdsql *TRDSQL) twOutNew(markdown bool) *TwOut {
 	tw := &TwOut{}
 	tw.writer = tablewriter.NewWriter(trdsql.OutStream)
 	tw.writer.SetAutoFormatHeaders(false)
@@ -29,8 +29,8 @@ func (tw *TwOut) First(columns []string, types []string) error {
 	return nil
 }
 
-// RowWrite is Addition to array
-func (tw *TwOut) RowWrite(values []interface{}, columns []string) error {
+// WriteRow is Addition to array
+func (tw *TwOut) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
 		tw.results[i] = valString(col)
 	}

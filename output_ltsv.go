@@ -12,7 +12,7 @@ type LTSVOut struct {
 	results   map[string]string
 }
 
-func (trdsql *TRDSQL) ltsvOutNew() Output {
+func (trdsql *TRDSQL) ltsvOutNew() *LTSVOut {
 	lw := &LTSVOut{}
 	lw.delimiter = "\t"
 	lw.writer = bufio.NewWriter(trdsql.OutStream)
@@ -25,8 +25,8 @@ func (lw *LTSVOut) First(columns []string, types []string) error {
 	return nil
 }
 
-// RowWrite is Actual output
-func (lw *LTSVOut) RowWrite(values []interface{}, columns []string) error {
+// WriteRow is Actual output
+func (lw *LTSVOut) WriteRow(values []interface{}, columns []string) error {
 	results := make([]string, len(values))
 	for i, col := range values {
 		results[i] = columns[i] + ":" + valString(col)

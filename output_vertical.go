@@ -18,7 +18,7 @@ type VfOut struct {
 	count     int
 }
 
-func (trdsql *TRDSQL) vfOutNew() Output {
+func (trdsql *TRDSQL) vfOutNew() *VfOut {
 	var err error
 	vf := &VfOut{}
 	vf.writer = bufio.NewWriter(trdsql.OutStream)
@@ -42,8 +42,8 @@ func (vf *VfOut) First(columns []string, types []string) error {
 	return nil
 }
 
-// RowWrite is Actual output
-func (vf *VfOut) RowWrite(values []interface{}, columns []string) error {
+// WriteRow is Actual output
+func (vf *VfOut) WriteRow(values []interface{}, columns []string) error {
 	vf.count++
 	_, err := fmt.Fprintf(vf.writer,
 		"---[ %d]%s\n", vf.count, strings.Repeat("-", (vf.termWidth-16)))

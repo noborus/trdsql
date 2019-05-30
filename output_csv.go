@@ -11,15 +11,15 @@ type CSVOut struct {
 	outHeader bool
 }
 
-func (trdsql *TRDSQL) csvOutNew() Output {
+func (trdsql *TRDSQL) csvOutNew() *CSVOut {
 	var err error
 	c := &CSVOut{}
 	c.writer = csv.NewWriter(trdsql.OutStream)
-	c.writer.Comma, err = delimiter(trdsql.outDelimiter)
+	c.writer.Comma, err = delimiter(trdsql.OutDelimiter)
 	if err != nil {
 		debug.Printf("%s\n", err)
 	}
-	c.outHeader = trdsql.outHeader
+	c.outHeader = trdsql.OutHeader
 	return c
 }
 
@@ -35,8 +35,8 @@ func (c *CSVOut) First(columns []string, types []string) error {
 	return nil
 }
 
-// RowWrite is row output
-func (c *CSVOut) RowWrite(values []interface{}, columns []string) error {
+// WriteRow is row output
+func (c *CSVOut) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
 		c.results[i] = valString(col)
 	}
