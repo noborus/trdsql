@@ -4,14 +4,14 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-// TwOut is tablewriter struct
-type TwOut struct {
+// TWWrite is tablewriter struct
+type TWWrite struct {
 	writer  *tablewriter.Table
 	results []string
 }
 
-func (trdsql *TRDSQL) twOutNew(markdown bool) *TwOut {
-	tw := &TwOut{}
+func (trdsql *TRDSQL) NewTWWrite(markdown bool) *TWWrite {
+	tw := &TWWrite{}
 	tw.writer = tablewriter.NewWriter(trdsql.OutStream)
 	tw.writer.SetAutoFormatHeaders(false)
 	if markdown {
@@ -22,7 +22,7 @@ func (trdsql *TRDSQL) twOutNew(markdown bool) *TwOut {
 }
 
 // First is preparation
-func (tw *TwOut) First(columns []string, types []string) error {
+func (tw *TWWrite) First(columns []string, types []string) error {
 	tw.writer.SetHeader(columns)
 	tw.results = make([]string, len(columns))
 
@@ -30,16 +30,16 @@ func (tw *TwOut) First(columns []string, types []string) error {
 }
 
 // WriteRow is Addition to array
-func (tw *TwOut) WriteRow(values []interface{}, columns []string) error {
+func (tw *TWWrite) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
-		tw.results[i] = valString(col)
+		tw.results[i] = ValString(col)
 	}
 	tw.writer.Append(tw.results)
 	return nil
 }
 
 // Last is Actual output
-func (tw *TwOut) Last() error {
+func (tw *TWWrite) Last() error {
 	tw.writer.Render()
 	return nil
 }

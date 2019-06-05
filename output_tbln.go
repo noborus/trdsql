@@ -4,20 +4,20 @@ import (
 	"github.com/noborus/tbln"
 )
 
-// TBLNOut provides methods of the Output interface
-type TBLNOut struct {
+// TBLNWrite provides methods of the Output interface
+type TBLNWrite struct {
 	writer  *tbln.Writer
 	results []string
 }
 
-func (trdsql *TRDSQL) tblnOutNew() *TBLNOut {
-	tw := &TBLNOut{}
+func (trdsql *TRDSQL) NewTBLNWrite() *TBLNWrite {
+	tw := &TBLNWrite{}
 	tw.writer = tbln.NewWriter(trdsql.OutStream)
 	return tw
 }
 
 // First is preparation
-func (tw *TBLNOut) First(columns []string, types []string) error {
+func (tw *TBLNWrite) First(columns []string, types []string) error {
 	d := tbln.NewDefinition()
 	err := d.SetNames(columns)
 	if err != nil {
@@ -36,14 +36,14 @@ func (tw *TBLNOut) First(columns []string, types []string) error {
 }
 
 // WriteRow is Addition to array
-func (tw *TBLNOut) WriteRow(values []interface{}, columns []string) error {
+func (tw *TBLNWrite) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
-		tw.results[i] = valString(col)
+		tw.results[i] = ValString(col)
 	}
 	return tw.writer.WriteRow(tw.results)
 }
 
 // Last is Actual output
-func (tw *TBLNOut) Last() error {
+func (tw *TBLNWrite) Last() error {
 	return nil
 }

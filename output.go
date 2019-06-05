@@ -23,40 +23,43 @@ const (
 	OUT_TBLN
 )
 
-// Exporter is database export
-type Exporter interface {
+// Writer is file format writer
+type Writer interface {
 	First([]string, []string) error
 	WriteRow([]interface{}, []string) error
 	Last() error
 }
 
-func (trdsql *TRDSQL) NewExporter() Exporter {
-	o := trdsql.OutFormat
-	switch o {
+func (trdsql *TRDSQL) NewWriter() Writer {
+	switch trdsql.OutFormat {
 	case OUT_LTSV:
-		return trdsql.ltsvOutNew()
+		return trdsql.NewLTSVWrite()
 	case OUT_JSON:
-		return trdsql.jsonOutNew()
+		return trdsql.NewJSONWrite()
 	case OUT_RAW:
-		return trdsql.rawOutNew()
+		return trdsql.NewRAWWrite()
 	case OUT_MD:
-		return trdsql.twOutNew(true)
+		return trdsql.NewTWWrite(true)
 	case OUT_AT:
-		return trdsql.twOutNew(false)
+		return trdsql.NewTWWrite(false)
 	case OUT_VF:
-		return trdsql.vfOutNew()
+		return trdsql.NewVFWrite()
 	case OUT_TBLN:
-		return trdsql.tblnOutNew()
+		return trdsql.NewTBLNWrite()
 	case OUT_CSV:
-		return trdsql.csvOutNew()
+		return trdsql.NewCSVWrite()
 	default:
-		return trdsql.csvOutNew()
+		return trdsql.NewCSVWrite()
 	}
+}
+
+type Exporter interface {
+	Export(db *DDB, sqlstr string) error
 }
 
 // Export is execute SQL and Exporter the result.
 func (trdsql *TRDSQL) Export(db *DDB, sqlstr string) error {
-	w := trdsql.NewExporter()
+	w := trdsql.Writer
 	rows, err := db.Select(sqlstr)
 	if err != nil {
 		return err
@@ -123,7 +126,7 @@ func convertType(dbtype string) string {
 	}
 }
 
-func valString(v interface{}) string {
+func ValString(v interface{}) string {
 	var str string
 	switch t := v.(type) {
 	case nil:

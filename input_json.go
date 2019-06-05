@@ -133,9 +133,9 @@ func jsonString(val interface{}) string {
 		if err != nil {
 			log.Printf("ERROR: jsonString:%s", err)
 		}
-		return valString(str)
+		return ValString(str)
 	default:
-		return valString(val)
+		return ValString(val)
 	}
 }
 

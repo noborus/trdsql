@@ -5,31 +5,31 @@ import (
 	"strings"
 )
 
-// LTSVOut provides methods of the Output interface
-type LTSVOut struct {
+// LTSVWrite provides methods of the Output interface
+type LTSVWrite struct {
 	writer    *bufio.Writer
 	delimiter string
 	results   map[string]string
 }
 
-func (trdsql *TRDSQL) ltsvOutNew() *LTSVOut {
-	lw := &LTSVOut{}
+func (trdsql *TRDSQL) NewLTSVWrite() *LTSVWrite {
+	lw := &LTSVWrite{}
 	lw.delimiter = "\t"
 	lw.writer = bufio.NewWriter(trdsql.OutStream)
 	return lw
 }
 
 // First is preparation
-func (lw *LTSVOut) First(columns []string, types []string) error {
+func (lw *LTSVWrite) First(columns []string, types []string) error {
 	lw.results = make(map[string]string, len(columns))
 	return nil
 }
 
 // WriteRow is Actual output
-func (lw *LTSVOut) WriteRow(values []interface{}, columns []string) error {
+func (lw *LTSVWrite) WriteRow(values []interface{}, columns []string) error {
 	results := make([]string, len(values))
 	for i, col := range values {
-		results[i] = columns[i] + ":" + valString(col)
+		results[i] = columns[i] + ":" + ValString(col)
 	}
 	str := strings.Join(results, lw.delimiter) + "\n"
 	_, err := lw.writer.Write([]byte(str))
@@ -37,6 +37,6 @@ func (lw *LTSVOut) WriteRow(values []interface{}, columns []string) error {
 }
 
 // Last is flush
-func (lw *LTSVOut) Last() error {
+func (lw *LTSVWrite) Last() error {
 	return lw.writer.Flush()
 }

@@ -207,7 +207,7 @@ func TestCsvIndefiniteInputFile3(t *testing.T) {
 
 func TestCsvOutNew(t *testing.T) {
 	trdsql := trdsqlNew()
-	out := trdsql.csvOutNew()
+	out := trdsql.NewCSVWrite()
 	if out == nil {
 		t.Error(`csvOut error`)
 	}

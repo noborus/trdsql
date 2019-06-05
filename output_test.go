@@ -6,11 +6,11 @@ import (
 
 func TestValString(t *testing.T) {
 	str := "test"
-	if valString(str) != str {
-		t.Errorf("valString error.")
+	if ValString(str) != str {
+		t.Errorf("ValString error.")
 	}
-	if valString(nil) != "" {
-		t.Errorf("valString error.")
+	if ValString(nil) != "" {
+		t.Errorf("ValString error.")
 	}
 }
 

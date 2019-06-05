@@ -9,8 +9,8 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-// VfOut is Vertical Format output
-type VfOut struct {
+// VFWrite is Vertical Format output
+type VFWrite struct {
 	writer    *bufio.Writer
 	termWidth int
 	hsize     int
@@ -18,9 +18,9 @@ type VfOut struct {
 	count     int
 }
 
-func (trdsql *TRDSQL) vfOutNew() *VfOut {
+func (trdsql *TRDSQL) NewVFWrite() *VFWrite {
 	var err error
-	vf := &VfOut{}
+	vf := &VFWrite{}
 	vf.writer = bufio.NewWriter(trdsql.OutStream)
 	vf.termWidth, _, err = terminal.GetSize(0)
 	if err != nil {
@@ -30,7 +30,7 @@ func (trdsql *TRDSQL) vfOutNew() *VfOut {
 }
 
 // First is preparation
-func (vf *VfOut) First(columns []string, types []string) error {
+func (vf *VFWrite) First(columns []string, types []string) error {
 	vf.header = make([]string, len(columns))
 	vf.hsize = 0
 	for i, col := range columns {
@@ -43,7 +43,7 @@ func (vf *VfOut) First(columns []string, types []string) error {
 }
 
 // WriteRow is Actual output
-func (vf *VfOut) WriteRow(values []interface{}, columns []string) error {
+func (vf *VFWrite) WriteRow(values []interface{}, columns []string) error {
 	vf.count++
 	_, err := fmt.Fprintf(vf.writer,
 		"---[ %d]%s\n", vf.count, strings.Repeat("-", (vf.termWidth-16)))
@@ -56,7 +56,7 @@ func (vf *VfOut) WriteRow(values []interface{}, columns []string) error {
 			"%s%s | %-s\n",
 			strings.Repeat(" ", v+2),
 			col,
-			valString(values[i]))
+			ValString(values[i]))
 		if err != nil {
 			debug.Printf("%s\n", err)
 		}
@@ -65,6 +65,6 @@ func (vf *VfOut) WriteRow(values []interface{}, columns []string) error {
 }
 
 // Last is flush
-func (vf *VfOut) Last() error {
+func (vf *VFWrite) Last() error {
 	return vf.writer.Flush()
 }

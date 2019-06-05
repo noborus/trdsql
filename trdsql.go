@@ -11,13 +11,16 @@ import (
 type TRDSQL struct {
 	Driver string
 	Dsn    string
-	Sql    string
+
+	SQL string
 
 	InFormat    InputFormat
 	InPreRead   int
 	InSkip      int
 	InDelimiter string
 	InHeader    bool
+
+	Writer Writer
 
 	OutFormat    OutputFormat
 	OutStream    io.Writer
@@ -28,11 +31,14 @@ type TRDSQL struct {
 
 func NewTRDSQL() *TRDSQL {
 	return &TRDSQL{
-		Driver:    "sqlite3",
-		Dsn:       "",
-		Sql:       "",
-		OutStream: os.Stdout,
-		ErrStream: os.Stderr,
+		Driver:       "sqlite3",
+		Dsn:          "",
+		SQL:          "",
+		InDelimiter:  ",",
+		InPreRead:    1,
+		OutDelimiter: ",",
+		OutStream:    os.Stdout,
+		ErrStream:    os.Stderr,
 	}
 }
 
@@ -48,17 +54,21 @@ func (trdsql *TRDSQL) Exec() error {
 		}
 	}()
 
+	if trdsql.Writer == nil {
+		trdsql.Writer = trdsql.NewWriter()
+	}
+
 	db.tx, err = db.Begin()
 	if err != nil {
 		return fmt.Errorf("ERROR(BEGIN):%s", err)
 	}
 
-	trdsql.Sql, err = trdsql.Import(db, trdsql.Sql)
+	trdsql.SQL, err = trdsql.Import(db, trdsql.SQL)
 	if err != nil {
 		return fmt.Errorf("ERROR(IMPORT):%s", err)
 	}
 
-	err = trdsql.Export(db, trdsql.Sql)
+	err = trdsql.Export(db, trdsql.SQL)
 	if err != nil {
 		return fmt.Errorf("ERROR(EXPORT):%s", err)
 	}
@@ -71,15 +81,15 @@ func (trdsql *TRDSQL) Exec() error {
 	return nil
 }
 
-type DebugT bool
+type debugT bool
 
-var debug = DebugT(false)
+var debug = debugT(false)
 
 func DebugEnable() {
 	debug = true
 }
 
-func (d DebugT) Printf(format string, args ...interface{}) {
+func (d debugT) Printf(format string, args ...interface{}) {
 	if d {
 		log.Printf(format, args...)
 	}

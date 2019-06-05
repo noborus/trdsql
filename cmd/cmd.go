@@ -103,21 +103,23 @@ func Run(args []string) int {
 	flags.StringVar(&cDriver, "driver", "", "database driver.  [ "+strings.Join(sql.Drivers(), " | ")+" ]")
 	flags.StringVar(&cDSN, "dsn", "", "database connection option.")
 	flags.BoolVar(&guess, "ig", true, "Guess format from extension.")
+	flags.StringVar(&query, "q", "", "Read query from the provided filename.")
+	flags.BoolVar(&usage, "help", false, "display usage information.")
+	flags.BoolVar(&version, "version", false, "display version information.")
+	flags.BoolVar(&Debug, "debug", false, "debug print.")
+
+	flags.StringVar(&tr.InDelimiter, "id", ",", "Field delimiter for input.")
+	flags.BoolVar(&tr.InHeader, "ih", false, "The first line is interpreted as column names(CSV only).")
+	flags.IntVar(&tr.InSkip, "is", 0, "Skip header row.")
+	flags.IntVar(&tr.InPreRead, "ir", 1, "Number of row preread for column determination.")
 
 	flags.BoolVar(&inFlag.CSV, "icsv", false, "CSV format for input.")
 	flags.BoolVar(&inFlag.LTSV, "iltsv", false, "LTSV format for input.")
 	flags.BoolVar(&inFlag.JSON, "ijson", false, "JSON format for input.")
 	flags.BoolVar(&inFlag.TBLN, "itbln", false, "TBLN format for input.")
-	flags.StringVar(&tr.InDelimiter, "id", ",", "Field delimiter for input.")
+
 	flags.StringVar(&tr.OutDelimiter, "od", ",", "Field delimiter for output.")
-	flags.BoolVar(&tr.InHeader, "ih", false, "The first line is interpreted as column names(CSV only).")
-	flags.IntVar(&tr.InSkip, "is", 0, "Skip header row.")
-	flags.IntVar(&tr.InPreRead, "ir", 1, "Number of row preread for column determination.")
 	flags.BoolVar(&tr.OutHeader, "oh", false, "Output column name as header.")
-	flags.StringVar(&query, "q", "", "Read query from the provided filename.")
-	flags.BoolVar(&usage, "help", false, "display usage information.")
-	flags.BoolVar(&version, "version", false, "display version information.")
-	flags.BoolVar(&Debug, "debug", false, "debug print.")
 
 	flags.BoolVar(&outFlag.CSV, "ocsv", true, "CSV format for output.")
 	flags.BoolVar(&outFlag.LTSV, "oltsv", false, "LTSV format for output.")
@@ -158,13 +160,13 @@ func Run(args []string) int {
 		return 0
 	}
 
-	tr.Sql, err = getSQL(flags.Args(), query)
+	tr.SQL, err = getSQL(flags.Args(), query)
 	if err != nil {
 		log.Printf("ERROR: %s", err)
 		return 1
 	}
 
-	if usage || (len(tr.Sql) == 0) {
+	if usage || (len(tr.SQL) == 0) {
 		fmt.Fprintf(os.Stderr, `
 Usage: %s [OPTIONS] [SQL(SELECT...)]
 

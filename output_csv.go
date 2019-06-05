@@ -4,16 +4,16 @@ import (
 	"encoding/csv"
 )
 
-// CSVOut provides methods of the Output interface
-type CSVOut struct {
+// CSVWrite provides methods of the Output interface
+type CSVWrite struct {
 	writer    *csv.Writer
 	results   []string
 	outHeader bool
 }
 
-func (trdsql *TRDSQL) csvOutNew() *CSVOut {
+func (trdsql *TRDSQL) NewCSVWrite() *CSVWrite {
 	var err error
-	c := &CSVOut{}
+	c := &CSVWrite{}
 	c.writer = csv.NewWriter(trdsql.OutStream)
 	c.writer.Comma, err = delimiter(trdsql.OutDelimiter)
 	if err != nil {
@@ -24,7 +24,7 @@ func (trdsql *TRDSQL) csvOutNew() *CSVOut {
 }
 
 // First is output of header and preparation
-func (c *CSVOut) First(columns []string, types []string) error {
+func (c *CSVWrite) First(columns []string, types []string) error {
 	if c.outHeader {
 		err := c.writer.Write(columns)
 		if err != nil {
@@ -36,16 +36,16 @@ func (c *CSVOut) First(columns []string, types []string) error {
 }
 
 // WriteRow is row output
-func (c *CSVOut) WriteRow(values []interface{}, columns []string) error {
+func (c *CSVWrite) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
-		c.results[i] = valString(col)
+		c.results[i] = ValString(col)
 	}
 	err := c.writer.Write(c.results)
 	return err
 }
 
 // Last is flush
-func (c *CSVOut) Last() error {
+func (c *CSVWrite) Last() error {
 	c.writer.Flush()
 	return nil
 }

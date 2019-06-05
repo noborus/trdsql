@@ -7,17 +7,17 @@ import (
 	"strings"
 )
 
-// RawOut provides methods of the Output interface
-type RawOut struct {
+// RawWrite provides methods of the Output interface
+type RawWrite struct {
 	writer    *bufio.Writer
 	results   []string
 	sep       string
 	outHeader bool
 }
 
-func (trdsql *TRDSQL) rawOutNew() *RawOut {
+func (trdsql *TRDSQL) NewRAWWrite() *RawWrite {
 	var err error
-	raw := &RawOut{}
+	raw := &RawWrite{}
 	raw.writer = bufio.NewWriter(trdsql.OutStream)
 	raw.sep, err = strconv.Unquote(`"` + trdsql.OutDelimiter + `"`)
 	if err != nil {
@@ -28,7 +28,7 @@ func (trdsql *TRDSQL) rawOutNew() *RawOut {
 }
 
 // First is output of header and preparation
-func (raw *RawOut) First(columns []string, types []string) error {
+func (raw *RawWrite) First(columns []string, types []string) error {
 	if raw.outHeader {
 		_, err := fmt.Fprint(raw.writer, strings.Join(columns, raw.sep), "\n")
 		if err != nil {
@@ -40,9 +40,9 @@ func (raw *RawOut) First(columns []string, types []string) error {
 }
 
 // WriteRow is row output
-func (raw *RawOut) WriteRow(values []interface{}, columns []string) error {
+func (raw *RawWrite) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
-		raw.results[i] = valString(col)
+		raw.results[i] = ValString(col)
 	}
 	_, err := fmt.Fprint(raw.writer, strings.Join(raw.results, raw.sep), "\n")
 	if err != nil {
@@ -52,6 +52,6 @@ func (raw *RawOut) WriteRow(values []interface{}, columns []string) error {
 }
 
 // Last is flush
-func (raw *RawOut) Last() error {
+func (raw *RawWrite) Last() error {
 	return raw.writer.Flush()
 }

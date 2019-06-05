@@ -31,28 +31,68 @@ type Input interface {
 	ReadRow([]interface{}) ([]interface{}, error)
 }
 
-// Import is import the file written in SQL.
+// Import is parses the SQL statement and imports one or more tables.
+// Return the rewritten SQL and error.
+// No error is returned if there is no table to import.
 func (trdsql *TRDSQL) Import(db *DDB, sqlstr string) (string, error) {
-	var err error
-	tableList := tableList(sqlstr)
-	if len(tableList) == 0 {
+	tables := listTable(sqlstr)
+
+	if len(tables) == 0 {
 		// without FROM clause. ex. SELECT 1+1;
 		debug.Printf("table not found\n")
 		return sqlstr, nil
 	}
+
 	created := make(map[string]bool)
-	for _, tableName := range tableList {
-		if created[tableName] {
-			debug.Printf("already created \"%s\"\n", tableName)
+	for _, fileName := range tables {
+		if created[fileName] {
+			debug.Printf("already created \"%s\"\n", fileName)
 			continue
 		}
-		sqlstr, err = trdsql.importTable(db, tableName, sqlstr)
+		tableName, err := trdsql.ImportFile(db, fileName)
 		if err != nil {
-			break
+			return sqlstr, err
 		}
-		created[tableName] = true
+		if tableName != "" {
+			sqlstr = db.RewriteSQL(sqlstr, fileName, tableName)
+			debug.Printf("escaped [%s] -> [%s]\n", fileName, tableName)
+		}
+		created[fileName] = true
 	}
-	return sqlstr, err
+
+	return sqlstr, nil
+}
+
+func listTable(sqlstr string) []string {
+	var tables []string
+	var tableFlag, frontFlag bool
+	word := sqlFields(sqlstr)
+	debug.Printf("[%s]", strings.Join(word, "]["))
+	for i, w := range word {
+		frontFlag = false
+		switch {
+		case strings.ToUpper(w) == "FROM" || strings.ToUpper(w) == "JOIN":
+			tableFlag = true
+			frontFlag = true
+		case isSQLKeyWords(w):
+			tableFlag = false
+		case w == ",":
+			frontFlag = true
+		default:
+			frontFlag = false
+		}
+		if n := i + 1; n < len(word) && tableFlag && frontFlag {
+			if t := word[n]; len(t) > 0 {
+				if t[len(t)-1] == ')' {
+					t = t[:len(t)-1]
+				}
+				if !isSQLKeyWords(t) {
+					tables = append(tables, t)
+				}
+			}
+		}
+	}
+	return tables
 }
 
 func sqlFields(line string) []string {
@@ -93,64 +133,28 @@ func sqlFields(line string) []string {
 	return parsed
 }
 
-func isSQLkey(str string) bool {
+func isSQLKeyWords(str string) bool {
 	switch strings.ToUpper(str) {
-	case "WHERE", "GROUP", "HAVING", "WINDOW", "UNION", "ORDER", "LIMIT", "OFFSET", "FETCH", "FOR", "LEFT", "RIGHT", "CROSS", "INNER", "FULL", "LETERAL", "(SELECT":
+	case "WHERE", "GROUP", "HAVING", "WINDOW", "UNION", "ORDER", "LIMIT", "OFFSET", "FETCH",
+		"FOR", "LEFT", "RIGHT", "CROSS", "INNER", "FULL", "LETERAL", "(SELECT":
 		return true
 	}
 	return false
 }
 
-func tableList(sqlstr string) []string {
-	var tableList []string
-	var tableFlag, frontFlag bool
-	word := sqlFields(sqlstr)
-	debug.Printf("[%s]", strings.Join(word, "]["))
-	for i, w := range word {
-		frontFlag = false
-		switch {
-		case strings.ToUpper(w) == "FROM" || strings.ToUpper(w) == "JOIN":
-			tableFlag = true
-			frontFlag = true
-		case isSQLkey(w):
-			tableFlag = false
-		case w == ",":
-			frontFlag = true
-		default:
-			frontFlag = false
-		}
-		if n := i + 1; n < len(word) && tableFlag && frontFlag {
-			if t := word[n]; len(t) > 0 {
-				if t[len(t)-1] == ')' {
-					t = t[:len(t)-1]
-				}
-				if !isSQLkey(t) {
-					tableList = append(tableList, t)
-				}
-			}
-		}
-	}
-	return tableList
-}
-
-func (trdsql *TRDSQL) inputFileOpen(tablename string) (io.ReadCloser, error) {
-	r := regexp.MustCompile(`\*|\?|\[`)
-	if r.MatchString(tablename) {
-		return globFileOpen(tablename)
-	}
-	return tableFileOpen(tablename)
-}
-
-func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (string, error) {
-	file, err := trdsql.inputFileOpen(tablename)
+// ImportFile is imports a file.
+// Return the escaped table name and error.
+// Do not import if file not found (no error)
+func (trdsql *TRDSQL) ImportFile(db *DDB, fileName string) (string, error) {
+	file, err := trdsql.importFileOpen(fileName)
 	if err != nil {
 		debug.Printf("%s\n", err)
-		return sqlstr, nil
+		return "", nil
 	}
 	defer file.Close()
-	input, err := trdsql.InputNew(file, tablename)
+	input, err := trdsql.NewImporter(file, fileName)
 	if err != nil {
-		return sqlstr, err
+		return "", err
 	}
 
 	if trdsql.InSkip > 0 {
@@ -164,90 +168,110 @@ func (trdsql *TRDSQL) importTable(db *DDB, tablename string, sqlstr string) (str
 			debug.Printf("Skip row:%s\n", r)
 		}
 	}
-	rtable := db.EscapeTable(tablename)
-	sqlstr = db.RewriteSQL(sqlstr, tablename, rtable)
+	tableName := db.EscapeTable(fileName)
 	columnNames, err := input.GetColumn(trdsql.InPreRead)
 	if err != nil {
 		if err != io.EOF {
-			return sqlstr, err
+			return tableName, err
 		}
 		debug.Printf("EOF reached before argument number of rows")
 	}
 	columnTypes, err := input.GetTypes()
 	if err != nil {
 		if err != io.EOF {
-			return sqlstr, err
+			return tableName, err
 		}
 		debug.Printf("EOF reached before argument number of rows")
 	}
-
 	debug.Printf("Column Names: [%v]", strings.Join(columnNames, ","))
 	debug.Printf("Column Types: [%v]", strings.Join(columnTypes, ","))
-	err = db.CreateTable(rtable, columnNames, columnTypes)
+
+	err = db.CreateTable(tableName, columnNames, columnTypes)
 	if err != nil {
-		return sqlstr, err
+		return tableName, err
 	}
-	err = db.Import(rtable, columnNames, input, trdsql.InPreRead)
-	return sqlstr, err
+	err = db.Import(tableName, columnNames, input, trdsql.InPreRead)
+	return tableName, err
 }
 
-// InputNew is create input reader.
-func (trdsql *TRDSQL) InputNew(reader io.Reader, tablename string) (Input, error) {
-	var err error
-	var input Input
+// NewImporter returns an importer interface
+// depending on the file to be imported.
+func (trdsql *TRDSQL) NewImporter(reader io.Reader, fileName string) (Input, error) {
 	if trdsql.InFormat == GUESS {
-		trdsql.InFormat = guessExtension(tablename)
+		trdsql.InFormat = guessExtension(fileName)
 	}
+
 	switch trdsql.InFormat {
 	case CSV:
-		input, err = trdsql.csvInputNew(reader)
+		return trdsql.csvInputNew(reader)
 	case LTSV:
-		input, err = trdsql.ltsvInputNew(reader)
+		return trdsql.ltsvInputNew(reader)
 	case JSON:
-		input, err = trdsql.jsonInputNew(reader)
+		return trdsql.jsonInputNew(reader)
 	case TBLN:
-		input, err = trdsql.tblnInputNew(reader)
+		return trdsql.tblnInputNew(reader)
 	default:
-		input, err = trdsql.csvInputNew(reader)
+		return nil, fmt.Errorf("unknown formatt")
 	}
-	return input, err
 }
 
-func trimQuote(filename string) string {
-	if filename[0] == '`' {
-		filename = strings.Replace(filename, "`", "", 2)
+func guessExtension(tableName string) InputFormat {
+	if strings.HasSuffix(tableName, ".gz") {
+		tableName = tableName[0 : len(tableName)-3]
 	}
-	if filename[0] == '"' {
-		filename = strings.Replace(filename, "\"", "", 2)
+	pos := strings.LastIndex(tableName, ".")
+	if pos == 0 {
+		debug.Printf("Set in CSV because the extension is unknown: [%s]", tableName)
+		return CSV
 	}
-	return filename
+	ext := strings.ToUpper(tableName[pos+1:])
+	switch ext {
+	case "CSV":
+		debug.Printf("Guess file type as CSV: [%s]", tableName)
+		return CSV
+	case "LTSV":
+		debug.Printf("Guess file type as LTSV: [%s]", tableName)
+		return LTSV
+	case "JSON":
+		debug.Printf("Guess file type as JSON: [%s]", tableName)
+		return JSON
+	case "TBLN":
+		debug.Printf("Guess file type as TBLN: [%s]", tableName)
+		return TBLN
+	default:
+		debug.Printf("Set in CSV because the extension is unknown: [%s]", tableName)
+		return CSV
+	}
 }
 
-func extFileReader(filename string, reader *os.File) io.ReadCloser {
-	if strings.HasSuffix(filename, ".gz") {
-		z, err := gzip.NewReader(reader)
-		if err != nil {
-			debug.Printf("No gzip file: [%s]", filename)
-			_, err := reader.Seek(0, io.SeekStart)
-			if err != nil {
-				return nil
-			}
-			return reader
-		}
-		debug.Printf("decompress gzip file: [%s]", filename)
-		return z
+func (trdsql *TRDSQL) importFileOpen(tableName string) (io.ReadCloser, error) {
+	r := regexp.MustCompile(`\*|\?|\[`)
+	if r.MatchString(tableName) {
+		return globFileOpen(tableName)
 	}
-	return reader
+	return tableFileOpen(tableName)
 }
 
-func globFileOpen(filename string) (*io.PipeReader, error) {
-	filename = trimQuote(filename)
-	files, err := filepath.Glob(filename)
+func tableFileOpen(fileName string) (io.ReadCloser, error) {
+	if len(fileName) == 0 || fileName == "-" || strings.ToLower(fileName) == "stdin" {
+		return os.Stdin, nil
+	}
+	fileName = trimQuote(fileName)
+	file, err := os.Open(fileName)
+	if err != nil {
+		return nil, err
+	}
+	return extFileReader(fileName, file), nil
+}
+
+func globFileOpen(fileName string) (*io.PipeReader, error) {
+	fileName = trimQuote(fileName)
+	files, err := filepath.Glob(fileName)
 	if err != nil {
 		return nil, err
 	}
 	if len(files) == 0 {
-		return nil, fmt.Errorf("no matches found: %s", filename)
+		return nil, fmt.Errorf("no matches found: %s", fileName)
 	}
 	pipeReader, pipeWriter := io.Pipe()
 	go func() {
@@ -279,43 +303,29 @@ func globFileOpen(filename string) (*io.PipeReader, error) {
 	return pipeReader, nil
 }
 
-func tableFileOpen(filename string) (io.ReadCloser, error) {
-	if len(filename) == 0 || filename == "-" || strings.ToLower(filename) == "stdin" {
-		return os.Stdin, nil
+func trimQuote(fileName string) string {
+	if fileName[0] == '`' {
+		fileName = strings.Replace(fileName, "`", "", 2)
 	}
-	filename = trimQuote(filename)
-	file, err := os.Open(filename)
-	if err != nil {
-		return nil, err
+	if fileName[0] == '"' {
+		fileName = strings.Replace(fileName, "\"", "", 2)
 	}
-	return extFileReader(filename, file), nil
+	return fileName
 }
 
-func guessExtension(tablename string) InputFormat {
-	if strings.HasSuffix(tablename, ".gz") {
-		tablename = tablename[0 : len(tablename)-3]
+func extFileReader(fileName string, reader *os.File) io.ReadCloser {
+	if strings.HasSuffix(fileName, ".gz") {
+		z, err := gzip.NewReader(reader)
+		if err != nil {
+			debug.Printf("No gzip file: [%s]", fileName)
+			_, err := reader.Seek(0, io.SeekStart)
+			if err != nil {
+				return nil
+			}
+			return reader
+		}
+		debug.Printf("decompress gzip file: [%s]", fileName)
+		return z
 	}
-	pos := strings.LastIndex(tablename, ".")
-	if pos == 0 {
-		debug.Printf("Set in CSV because the extension is unknown: [%s]", tablename)
-		return CSV
-	}
-	ext := strings.ToUpper(tablename[pos+1:])
-	switch ext {
-	case "CSV":
-		debug.Printf("Guess file type as CSV: [%s]", tablename)
-		return CSV
-	case "LTSV":
-		debug.Printf("Guess file type as LTSV: [%s]", tablename)
-		return LTSV
-	case "JSON":
-		debug.Printf("Guess file type as JSON: [%s]", tablename)
-		return JSON
-	case "TBLN":
-		debug.Printf("Guess file type as TBLN: [%s]", tablename)
-		return TBLN
-	default:
-		debug.Printf("Set in CSV because the extension is unknown: [%s]", tablename)
-		return CSV
-	}
+	return reader
 }
