@@ -11,6 +11,18 @@ import (
 	"strings"
 )
 
+// InputFormat represents the input format
+type InputFormat int
+
+// Represents Input Format
+const (
+	GUESS InputFormat = iota
+	CSV
+	LTSV
+	JSON
+	TBLN
+)
+
 // Input is wrap the reader.
 type Input interface {
 	GetColumn(rowNum int) ([]string, error)

@@ -43,6 +43,7 @@ func Connect(driver, dsn string) (*DDB, error) {
 	case "postgres":
 		db.escape = "\""
 	}
+	debug.Printf("driver: %s, dsn: %s", driver, dsn)
 	db.DB, err = sql.Open(db.driver, db.dsn)
 	return &db, err
 }

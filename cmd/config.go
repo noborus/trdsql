@@ -1,9 +1,10 @@
-package trdsql
+package cmd
 
 import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -20,21 +21,23 @@ type config struct {
 }
 
 func configOpen(config string) io.Reader {
-	var fname string
+	var fileName string
 	switch {
 	case config != "":
-		fname = config
+		fileName = config
 	case runtime.GOOS == "windows":
-		fname = filepath.Join(os.Getenv("APPDATA"), "trdsql", "config.json")
+		fileName = filepath.Join(os.Getenv("APPDATA"), "trdsql", "config.json")
 	default:
-		fname = filepath.Join(os.Getenv("HOME"), ".config", "trdsql", "config.json")
+		fileName = filepath.Join(os.Getenv("HOME"), ".config", "trdsql", "config.json")
 	}
-	cfg, err := os.Open(fname)
+	cfg, err := os.Open(fileName)
 	if err != nil {
-		debug.Printf("configOpen: %s", err.Error())
+		log.Printf("configOpen: %s", err.Error())
 		return nil
 	}
-	debug.Printf("config found: %s", fname)
+	if Debug {
+		log.Printf("config found: %s", fileName)
+	}
 	return cfg
 }
 

@@ -1,4 +1,4 @@
-package trdsql
+package cmd
 
 import (
 	"strings"

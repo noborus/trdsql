@@ -9,6 +9,20 @@ import (
 	"unicode/utf8"
 )
 
+type OutputFormat int
+
+// OutPutFormat
+const (
+	OUT_CSV OutputFormat = iota
+	OUT_LTSV
+	OUT_JSON
+	OUT_RAW
+	OUT_MD
+	OUT_AT
+	OUT_VF
+	OUT_TBLN
+)
+
 // Exporter is database export
 type Exporter interface {
 	First([]string, []string) error
@@ -16,8 +30,33 @@ type Exporter interface {
 	Last() error
 }
 
+func (trdsql *TRDSQL) NewExporter() Exporter {
+	o := trdsql.OutFormat
+	switch o {
+	case OUT_LTSV:
+		return trdsql.ltsvOutNew()
+	case OUT_JSON:
+		return trdsql.jsonOutNew()
+	case OUT_RAW:
+		return trdsql.rawOutNew()
+	case OUT_MD:
+		return trdsql.twOutNew(true)
+	case OUT_AT:
+		return trdsql.twOutNew(false)
+	case OUT_VF:
+		return trdsql.vfOutNew()
+	case OUT_TBLN:
+		return trdsql.tblnOutNew()
+	case OUT_CSV:
+		return trdsql.csvOutNew()
+	default:
+		return trdsql.csvOutNew()
+	}
+}
+
 // Export is execute SQL and Exporter the result.
-func (trdsql *TRDSQL) Export(db *DDB, sqlstr string, w Exporter) error {
+func (trdsql *TRDSQL) Export(db *DDB, sqlstr string) error {
+	w := trdsql.NewExporter()
 	rows, err := db.Select(sqlstr)
 	if err != nil {
 		return err
