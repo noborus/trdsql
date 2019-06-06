@@ -10,22 +10,8 @@ import (
 	"unicode/utf8"
 )
 
-type OutputFormat int
-
-// OutPutFormat
-const (
-	OUT_CSV OutputFormat = iota
-	OUT_LTSV
-	OUT_JSON
-	OUT_RAW
-	OUT_MD
-	OUT_AT
-	OUT_VF
-	OUT_TBLN
-)
-
 type WriteOpts struct {
-	OutFormat    OutputFormat
+	OutFormat    Format
 	OutDelimiter string
 	OutHeader    bool
 	OutStream    io.Writer
@@ -41,21 +27,21 @@ type Writer interface {
 
 func NewWriter() Writer {
 	switch DefaultWriteOpts.OutFormat {
-	case OUT_LTSV:
+	case LTSV:
 		return NewLTSVWrite()
-	case OUT_JSON:
+	case JSON:
 		return NewJSONWrite()
-	case OUT_RAW:
+	case RAW:
 		return NewRAWWrite(DefaultWriteOpts.OutDelimiter, DefaultWriteOpts.OutHeader)
-	case OUT_MD:
+	case MD:
 		return NewTWWrite(true)
-	case OUT_AT:
+	case AT:
 		return NewTWWrite(false)
-	case OUT_VF:
+	case VF:
 		return NewVFWrite()
-	case OUT_TBLN:
+	case TBLN:
 		return NewTBLNWrite()
-	case OUT_CSV:
+	case CSV:
 		return NewCSVWrite(DefaultWriteOpts.OutDelimiter, DefaultWriteOpts.OutHeader)
 	default:
 		return NewCSVWrite(DefaultWriteOpts.OutDelimiter, DefaultWriteOpts.OutHeader)

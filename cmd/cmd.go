@@ -32,7 +32,7 @@ type outputFlag struct {
 	TBLN bool
 }
 
-func inputFormat(i inputFlag) trdsql.InputFormat {
+func inputFormat(i inputFlag) trdsql.Format {
 	switch {
 	case i.CSV:
 		return trdsql.CSV
@@ -47,26 +47,26 @@ func inputFormat(i inputFlag) trdsql.InputFormat {
 	}
 }
 
-func outputFormat(o outputFlag) trdsql.OutputFormat {
+func outputFormat(o outputFlag) trdsql.Format {
 	switch {
 	case o.LTSV:
-		return trdsql.OUT_LTSV
+		return trdsql.LTSV
 	case o.JSON:
-		return trdsql.OUT_JSON
+		return trdsql.JSON
 	case o.RAW:
-		return trdsql.OUT_RAW
+		return trdsql.RAW
 	case o.MD:
-		return trdsql.OUT_MD
+		return trdsql.MD
 	case o.AT:
-		return trdsql.OUT_AT
+		return trdsql.AT
 	case o.VF:
-		return trdsql.OUT_VF
+		return trdsql.VF
 	case o.TBLN:
-		return trdsql.OUT_TBLN
+		return trdsql.TBLN
 	case o.CSV:
-		return trdsql.OUT_CSV
+		return trdsql.CSV
 	default:
-		return trdsql.OUT_CSV
+		return trdsql.CSV
 	}
 }
 

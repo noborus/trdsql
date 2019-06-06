@@ -11,18 +11,6 @@ import (
 	"strings"
 )
 
-// InputFormat represents the input format
-type InputFormat int
-
-// Represents Input Format
-const (
-	GUESS InputFormat = iota
-	CSV
-	LTSV
-	JSON
-	TBLN
-)
-
 // Input is wrap the reader.
 type Input interface {
 	GetColumn(rowNum int) ([]string, error)
@@ -215,7 +203,7 @@ func (trdsql *TRDSQL) NewImporter(reader io.Reader, fileName string) (Input, err
 	}
 }
 
-func guessExtension(tableName string) InputFormat {
+func guessExtension(tableName string) Format {
 	if strings.HasSuffix(tableName, ".gz") {
 		tableName = tableName[0 : len(tableName)-3]
 	}

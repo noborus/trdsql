@@ -13,7 +13,7 @@ type TRDSQL struct {
 
 	SQL string
 
-	InFormat    InputFormat
+	InFormat    Format
 	InPreRead   int
 	InSkip      int
 	InDelimiter string
@@ -38,6 +38,22 @@ var DefaultWriteOpts = &WriteOpts{
 	OutStream:    os.Stdout,
 	ErrStream:    os.Stderr,
 }
+
+// Format represents the input/output format
+type Format int
+
+// Represents Format
+const (
+	GUESS Format = iota
+	CSV
+	LTSV
+	JSON
+	TBLN
+	RAW
+	MD
+	AT
+	VF
+)
 
 func (trdsql *TRDSQL) Exec() error {
 	db, err := Connect(trdsql.Driver, trdsql.Dsn)
