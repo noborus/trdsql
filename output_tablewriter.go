@@ -10,9 +10,9 @@ type TWWrite struct {
 	results []string
 }
 
-func (trdsql *TRDSQL) NewTWWrite(markdown bool) *TWWrite {
+func NewTWWrite(markdown bool) *TWWrite {
 	tw := &TWWrite{}
-	tw.writer = tablewriter.NewWriter(trdsql.OutStream)
+	tw.writer = tablewriter.NewWriter(DefaultWriteOpts.OutStream)
 	tw.writer.SetAutoFormatHeaders(false)
 	if markdown {
 		tw.writer.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})

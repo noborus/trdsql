@@ -15,15 +15,15 @@ type RawWrite struct {
 	outHeader bool
 }
 
-func (trdsql *TRDSQL) NewRAWWrite() *RawWrite {
+func NewRAWWrite(delim string, header bool) *RawWrite {
 	var err error
 	raw := &RawWrite{}
-	raw.writer = bufio.NewWriter(trdsql.OutStream)
-	raw.sep, err = strconv.Unquote(`"` + trdsql.OutDelimiter + `"`)
+	raw.writer = bufio.NewWriter(DefaultWriteOpts.OutStream)
+	raw.sep, err = strconv.Unquote(`"` + delim + `"`)
 	if err != nil {
 		debug.Printf("%s\n", err)
 	}
-	raw.outHeader = trdsql.OutHeader
+	raw.outHeader = header
 	return raw
 }
 

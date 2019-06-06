@@ -12,10 +12,10 @@ type LTSVWrite struct {
 	results   map[string]string
 }
 
-func (trdsql *TRDSQL) NewLTSVWrite() *LTSVWrite {
+func NewLTSVWrite() *LTSVWrite {
 	lw := &LTSVWrite{}
 	lw.delimiter = "\t"
-	lw.writer = bufio.NewWriter(trdsql.OutStream)
+	lw.writer = bufio.NewWriter(DefaultWriteOpts.OutStream)
 	return lw
 }
 

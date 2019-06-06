@@ -12,9 +12,9 @@ type JSONWrite struct {
 	results []map[string]interface{}
 }
 
-func (trdsql *TRDSQL) NewJSONWrite() *JSONWrite {
+func NewJSONWrite() *JSONWrite {
 	js := &JSONWrite{}
-	js.writer = json.NewEncoder(trdsql.OutStream)
+	js.writer = json.NewEncoder(DefaultWriteOpts.OutStream)
 	js.writer.SetIndent("", "  ")
 	return js
 }

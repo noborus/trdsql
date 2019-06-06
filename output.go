@@ -3,6 +3,7 @@ package trdsql
 import (
 	"encoding/hex"
 	"fmt"
+	"io"
 	"log"
 	"strings"
 	"time"
@@ -23,6 +24,14 @@ const (
 	OUT_TBLN
 )
 
+type WriteOpts struct {
+	OutFormat    OutputFormat
+	OutDelimiter string
+	OutHeader    bool
+	OutStream    io.Writer
+	ErrStream    io.Writer
+}
+
 // Writer is file format writer
 type Writer interface {
 	First([]string, []string) error
@@ -30,31 +39,27 @@ type Writer interface {
 	Last() error
 }
 
-func (trdsql *TRDSQL) NewWriter() Writer {
-	switch trdsql.OutFormat {
+func NewWriter() Writer {
+	switch DefaultWriteOpts.OutFormat {
 	case OUT_LTSV:
-		return trdsql.NewLTSVWrite()
+		return NewLTSVWrite()
 	case OUT_JSON:
-		return trdsql.NewJSONWrite()
+		return NewJSONWrite()
 	case OUT_RAW:
-		return trdsql.NewRAWWrite()
+		return NewRAWWrite(DefaultWriteOpts.OutDelimiter, DefaultWriteOpts.OutHeader)
 	case OUT_MD:
-		return trdsql.NewTWWrite(true)
+		return NewTWWrite(true)
 	case OUT_AT:
-		return trdsql.NewTWWrite(false)
+		return NewTWWrite(false)
 	case OUT_VF:
-		return trdsql.NewVFWrite()
+		return NewVFWrite()
 	case OUT_TBLN:
-		return trdsql.NewTBLNWrite()
+		return NewTBLNWrite()
 	case OUT_CSV:
-		return trdsql.NewCSVWrite()
+		return NewCSVWrite(DefaultWriteOpts.OutDelimiter, DefaultWriteOpts.OutHeader)
 	default:
-		return trdsql.NewCSVWrite()
+		return NewCSVWrite(DefaultWriteOpts.OutDelimiter, DefaultWriteOpts.OutHeader)
 	}
-}
-
-type Exporter interface {
-	Export(db *DDB, sqlstr string) error
 }
 
 // Export is execute SQL and Exporter the result.
@@ -87,7 +92,7 @@ func (trdsql *TRDSQL) Export(db *DDB, sqlstr string) error {
 	}
 	types := make([]string, len(columns))
 	for i, ct := range columnTypes {
-		types[i] = convertType(ct.DatabaseTypeName())
+		types[i] = ct.DatabaseTypeName()
 	}
 
 	err = w.First(columns, types)
@@ -107,8 +112,16 @@ func (trdsql *TRDSQL) Export(db *DDB, sqlstr string) error {
 	return w.Last()
 }
 
-func convertType(dbtype string) string {
-	switch strings.ToLower(dbtype) {
+func ConvertTypes(dbTypes []string) []string {
+	ret := make([]string, len(dbTypes))
+	for i, t := range dbTypes {
+		ret[i] = convertType(t)
+	}
+	return ret
+}
+
+func convertType(dbType string) string {
+	switch strings.ToLower(dbType) {
 	case "smallint", "integer", "int", "int2", "int4", "smallserial", "serial":
 		return "int"
 	case "bigint", "int8", "bigserial":

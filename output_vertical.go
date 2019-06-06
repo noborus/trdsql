@@ -18,10 +18,10 @@ type VFWrite struct {
 	count     int
 }
 
-func (trdsql *TRDSQL) NewVFWrite() *VFWrite {
+func NewVFWrite() *VFWrite {
 	var err error
 	vf := &VFWrite{}
-	vf.writer = bufio.NewWriter(trdsql.OutStream)
+	vf.writer = bufio.NewWriter(DefaultWriteOpts.OutStream)
 	vf.termWidth, _, err = terminal.GetSize(0)
 	if err != nil {
 		vf.termWidth = 40

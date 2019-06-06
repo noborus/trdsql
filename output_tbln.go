@@ -10,9 +10,9 @@ type TBLNWrite struct {
 	results []string
 }
 
-func (trdsql *TRDSQL) NewTBLNWrite() *TBLNWrite {
+func NewTBLNWrite() *TBLNWrite {
 	tw := &TBLNWrite{}
-	tw.writer = tbln.NewWriter(trdsql.OutStream)
+	tw.writer = tbln.NewWriter(DefaultWriteOpts.OutStream)
 	return tw
 }
 
@@ -23,7 +23,7 @@ func (tw *TBLNWrite) First(columns []string, types []string) error {
 	if err != nil {
 		return err
 	}
-	err = d.SetTypes(types)
+	err = d.SetTypes(ConvertTypes(types))
 	if err != nil {
 		return err
 	}

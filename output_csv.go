@@ -11,15 +11,15 @@ type CSVWrite struct {
 	outHeader bool
 }
 
-func (trdsql *TRDSQL) NewCSVWrite() *CSVWrite {
+func NewCSVWrite(delim string, header bool) *CSVWrite {
 	var err error
 	c := &CSVWrite{}
-	c.writer = csv.NewWriter(trdsql.OutStream)
-	c.writer.Comma, err = delimiter(trdsql.OutDelimiter)
+	c.writer = csv.NewWriter(DefaultWriteOpts.OutStream)
+	c.writer.Comma, err = delimiter(delim)
 	if err != nil {
 		debug.Printf("%s\n", err)
 	}
-	c.outHeader = trdsql.OutHeader
+	c.outHeader = header
 	return c
 }
 

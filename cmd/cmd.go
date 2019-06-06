@@ -91,6 +91,8 @@ func Run(args []string) int {
 	flags := flag.NewFlagSet("trdsql", flag.ExitOnError)
 
 	tr := trdsql.NewTRDSQL()
+	wo := trdsql.DefaultWriteOpts
+
 	flags.Usage = func() {
 		fmt.Fprintf(os.Stderr, `Usage: %s [OPTIONS] [SQL(SELECT...)]
 `, os.Args[0])
@@ -118,8 +120,8 @@ func Run(args []string) int {
 	flags.BoolVar(&inFlag.JSON, "ijson", false, "JSON format for input.")
 	flags.BoolVar(&inFlag.TBLN, "itbln", false, "TBLN format for input.")
 
-	flags.StringVar(&tr.OutDelimiter, "od", ",", "Field delimiter for output.")
-	flags.BoolVar(&tr.OutHeader, "oh", false, "Output column name as header.")
+	flags.StringVar(&wo.OutDelimiter, "od", ",", "Field delimiter for output.")
+	flags.BoolVar(&wo.OutHeader, "oh", false, "Output column name as header.")
 
 	flags.BoolVar(&outFlag.CSV, "ocsv", true, "CSV format for output.")
 	flags.BoolVar(&outFlag.LTSV, "oltsv", false, "LTSV format for output.")
@@ -185,7 +187,7 @@ Options:
 	}
 
 	tr.InFormat = inputFormat(inFlag)
-	tr.OutFormat = outputFormat(outFlag)
+	wo.OutFormat = outputFormat(outFlag)
 	err = tr.Exec()
 	if err != nil {
 		log.Fatal(err)

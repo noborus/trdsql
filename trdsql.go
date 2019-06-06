@@ -2,7 +2,6 @@ package trdsql
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
 )
@@ -21,25 +20,23 @@ type TRDSQL struct {
 	InHeader    bool
 
 	Writer Writer
-
-	OutFormat    OutputFormat
-	OutStream    io.Writer
-	ErrStream    io.Writer
-	OutDelimiter string
-	OutHeader    bool
 }
 
 func NewTRDSQL() *TRDSQL {
 	return &TRDSQL{
-		Driver:       "sqlite3",
-		Dsn:          "",
-		SQL:          "",
-		InDelimiter:  ",",
-		InPreRead:    1,
-		OutDelimiter: ",",
-		OutStream:    os.Stdout,
-		ErrStream:    os.Stderr,
+		Driver:      "sqlite3",
+		Dsn:         "",
+		SQL:         "",
+		InDelimiter: ",",
+		InPreRead:   1,
 	}
+}
+
+var DefaultWriteOpts = &WriteOpts{
+	OutDelimiter: ",",
+	OutHeader:    false,
+	OutStream:    os.Stdout,
+	ErrStream:    os.Stderr,
 }
 
 func (trdsql *TRDSQL) Exec() error {
@@ -55,7 +52,7 @@ func (trdsql *TRDSQL) Exec() error {
 	}()
 
 	if trdsql.Writer == nil {
-		trdsql.Writer = trdsql.NewWriter()
+		trdsql.Writer = NewWriter()
 	}
 
 	db.tx, err = db.Begin()
