@@ -10,8 +10,7 @@ func TestTblnInputNew(t *testing.T) {
 	const tblnStream = `; name: | id | name |
 | 1 | test |`
 	s := strings.NewReader(tblnStream)
-	trdsql := trdsqlNew()
-	tr, err := trdsql.tblnInputNew(s)
+	tr, err := NewTBLNReader(s)
 	if err != nil {
 		t.Errorf(`tblnInputNew error: %s`, err)
 	}
@@ -25,14 +24,12 @@ func TestTblnInputNew(t *testing.T) {
 }
 
 func TestTblnFile(t *testing.T) {
-	trdsql := trdsqlNew()
 	file, err := tableFileOpen("testdata/test.tbln")
 	want := [][]interface{}{{"1", "Bob"}}
 	if err != nil {
 		t.Error(err)
 	}
-	var tr Input
-	tr, err = trdsql.tblnInputNew(file)
+	tr, err := NewTBLNReader(file)
 	if err != nil {
 		t.Error(`tblnInputNew error`)
 	}

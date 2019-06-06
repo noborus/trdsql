@@ -7,8 +7,8 @@ import (
 	"strconv"
 )
 
-// CSVIn provides methods of the Input interface
-type CSVIn struct {
+// CSVRead provides methods of the Reader interface
+type CSVRead struct {
 	reader   *csv.Reader
 	names    []string
 	types    []string
@@ -16,18 +16,18 @@ type CSVIn struct {
 	inHeader bool
 }
 
-func (trdsql *TRDSQL) csvInputNew(r io.Reader) (Input, error) {
+func NewCSVReader(r io.Reader, opts *ReadOpts) (Reader, error) {
 	var err error
-	if trdsql.InHeader {
-		trdsql.InPreRead--
+	if opts.InHeader {
+		opts.InPreRead--
 	}
-	cr := &CSVIn{}
+	cr := &CSVRead{}
 	cr.reader = csv.NewReader(r)
 	cr.reader.LazyQuotes = true
 	cr.reader.FieldsPerRecord = -1 // no check count
 	cr.reader.TrimLeadingSpace = true
-	cr.inHeader = trdsql.InHeader
-	cr.reader.Comma, err = delimiter(trdsql.InDelimiter)
+	cr.inHeader = opts.InHeader
+	cr.reader.Comma, err = delimiter(opts.InDelimiter)
 	return cr, err
 }
 
@@ -45,7 +45,7 @@ func delimiter(sepString string) (rune, error) {
 
 // GetColumn is reads the specified number of rows and determines the column name.
 // The previously read row is stored in preRead.
-func (cr *CSVIn) GetColumn(rowNum int) ([]string, error) {
+func (cr *CSVRead) GetColumn(rowNum int) ([]string, error) {
 	// Header
 	if cr.inHeader {
 		row, err := cr.reader.Read()
@@ -80,7 +80,7 @@ func (cr *CSVIn) GetColumn(rowNum int) ([]string, error) {
 }
 
 // GetTypes is reads the specified number of rows and determines the column type.
-func (cr *CSVIn) GetTypes() ([]string, error) {
+func (cr *CSVRead) GetTypes() ([]string, error) {
 	cr.types = make([]string, len(cr.names))
 	for i := 0; i < len(cr.names); i++ {
 		cr.types[i] = "text"
@@ -89,7 +89,7 @@ func (cr *CSVIn) GetTypes() ([]string, error) {
 }
 
 // PreReadRow is returns only columns that store preread rows.
-func (cr *CSVIn) PreReadRow() [][]interface{} {
+func (cr *CSVRead) PreReadRow() [][]interface{} {
 	rowNum := len(cr.preRead)
 	rows := make([][]interface{}, rowNum)
 	for n := 0; n < rowNum; n++ {
@@ -102,7 +102,7 @@ func (cr *CSVIn) PreReadRow() [][]interface{} {
 }
 
 // ReadRow is read the rest of the row.
-func (cr *CSVIn) ReadRow(row []interface{}) ([]interface{}, error) {
+func (cr *CSVRead) ReadRow(row []interface{}) ([]interface{}, error) {
 	record, err := cr.reader.Read()
 	if err != nil {
 		return row, err

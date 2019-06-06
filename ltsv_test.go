@@ -9,10 +9,9 @@ import (
 func TestLtsvInputNew(t *testing.T) {
 	const ltsvStream = `ID:1	name:test`
 	s := strings.NewReader(ltsvStream)
-	trdsql := trdsqlNew()
-	lr, err := trdsql.ltsvInputNew(s)
+	lr, err := NewLTSVReader(s)
 	if err != nil {
-		t.Error(`ltsvInputNew error`)
+		t.Error(`NewLTSVReader error`)
 	}
 	list, err := lr.GetColumn(1)
 	if err != nil {
@@ -26,8 +25,7 @@ func TestLtsvInputNew(t *testing.T) {
 func TestLtsvInvalidInputNew(t *testing.T) {
 	const ltsvStream = `ID;1	name:test`
 	s := strings.NewReader(ltsvStream)
-	trdsql := trdsqlNew()
-	lr, _ := trdsql.ltsvInputNew(s)
+	lr, _ := NewLTSVReader(s)
 	_, err := lr.GetColumn(1)
 	if err.Error() != "LTSV format error" {
 		t.Error()
@@ -35,15 +33,13 @@ func TestLtsvInvalidInputNew(t *testing.T) {
 }
 
 func TestLtsvFile(t *testing.T) {
-	trdsql := trdsqlNew()
 	file, err := tableFileOpen("testdata/test.ltsv")
 	if err != nil {
 		t.Error(err)
 	}
-	var lr Input
-	lr, err = trdsql.ltsvInputNew(file)
+	lr, err := NewLTSVReader(file)
 	if err != nil {
-		t.Error(`ltsvInputNew error`)
+		t.Error(`NewLTSVReader error`)
 	}
 	list, err := lr.GetColumn(1)
 	if err != nil {
@@ -55,15 +51,13 @@ func TestLtsvFile(t *testing.T) {
 }
 
 func TestIndefiniteLtsvFile1(t *testing.T) {
-	trdsql := trdsqlNew()
 	file, err := tableFileOpen("testdata/test_indefinite.ltsv")
 	if err != nil {
 		t.Error(err)
 	}
-	var lr Input
-	lr, err = trdsql.ltsvInputNew(file)
+	lr, err := NewLTSVReader(file)
 	if err != nil {
-		t.Error(`ltsvInputNew error`)
+		t.Error(`NewLTSVReader error`)
 	}
 	list, err := lr.GetColumn(1)
 	if err != nil {
@@ -75,15 +69,13 @@ func TestIndefiniteLtsvFile1(t *testing.T) {
 }
 
 func TestIndefiniteLtsvFile2(t *testing.T) {
-	trdsql := trdsqlNew()
 	file, err := tableFileOpen("testdata/test_indefinite.ltsv")
 	if err != nil {
 		t.Error(err)
 	}
-	var lr Input
-	lr, err = trdsql.ltsvInputNew(file)
+	lr, err := NewLTSVReader(file)
 	if err != nil {
-		t.Error(`ltsvInputNew error`)
+		t.Error(`NewLTSVReader error`)
 	}
 	list, err := lr.GetColumn(2)
 	if err != nil {
@@ -95,15 +87,13 @@ func TestIndefiniteLtsvFile2(t *testing.T) {
 }
 
 func TestIndefiniteLtsvFile3(t *testing.T) {
-	trdsql := trdsqlNew()
 	file, err := tableFileOpen("testdata/test_indefinite.ltsv")
 	if err != nil {
 		t.Error(err)
 	}
-	var lr Input
-	lr, err = trdsql.ltsvInputNew(file)
+	lr, err := NewLTSVReader(file)
 	if err != nil {
-		t.Error(`ltsvInputNew error`)
+		t.Error(`NewLTSVReader error`)
 	}
 	list, err := lr.GetColumn(100)
 	if err != nil && err != io.EOF {

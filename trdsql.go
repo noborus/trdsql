@@ -2,6 +2,7 @@ package trdsql
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 )
@@ -10,26 +11,39 @@ import (
 type TRDSQL struct {
 	Driver string
 	Dsn    string
-
-	SQL string
-
-	InFormat    Format
-	InPreRead   int
-	InSkip      int
-	InDelimiter string
-	InHeader    bool
-
+	SQL    string
 	Writer Writer
 }
 
 func NewTRDSQL() *TRDSQL {
 	return &TRDSQL{
-		Driver:      "sqlite3",
-		Dsn:         "",
-		SQL:         "",
-		InDelimiter: ",",
-		InPreRead:   1,
+		Driver: "sqlite3",
+		Dsn:    "",
+		SQL:    "",
 	}
+}
+
+type ReadOpts struct {
+	InFormat    Format
+	InPreRead   int
+	InSkip      int
+	InDelimiter string
+	InHeader    bool
+}
+
+var DefaultReadOpts = &ReadOpts{
+	InDelimiter: ",",
+	InHeader:    false,
+	InPreRead:   1,
+	InSkip:      0,
+}
+
+type WriteOpts struct {
+	OutFormat    Format
+	OutDelimiter string
+	OutHeader    bool
+	OutStream    io.Writer
+	ErrStream    io.Writer
 }
 
 var DefaultWriteOpts = &WriteOpts{
@@ -44,14 +58,23 @@ type Format int
 
 // Represents Format
 const (
+	// READ (guesses for read format)
 	GUESS Format = iota
+	// READ/WRITE
 	CSV
+	// READ/WRITE
 	LTSV
+	// READ/WRITE
 	JSON
+	// READ/WRITE
 	TBLN
+	// WRITE
 	RAW
+	// WRITE
 	MD
+	// WRITE
 	AT
+	// WRITE
 	VF
 )
 

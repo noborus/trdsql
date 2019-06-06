@@ -9,13 +9,11 @@ import (
 
 
 func TestJSONIndefiniteInputFile(t *testing.T) {
-	trdsql := trdsqlNew()
 	file, err := tableFileOpen("testdata/test_indefinite.json")
 	if err != nil {
 		t.Error(err)
 	}
-	var jr Input
-	jr, err = trdsql.jsonInputNew(file)
+	jr, err := NewJSONReader(file)
 	if err != nil {
 		t.Error(`csvInputNew error`)
 	}
@@ -30,13 +28,11 @@ func TestJSONIndefiniteInputFile(t *testing.T) {
 }
 
 func TestJSONIndefiniteInputFile2(t *testing.T) {
-	trdsql := trdsqlNew()
 	file, err := tableFileOpen("testdata/test_indefinite.json")
 	if err != nil {
 		t.Error(err)
 	}
-	var jr Input
-	jr, err = trdsql.jsonInputNew(file)
+	jr, err := NewJSONReader(file)
 	if err != nil {
 		t.Error(`csvInputNew error`)
 	}
@@ -50,13 +46,11 @@ func TestJSONIndefiniteInputFile2(t *testing.T) {
 }
 
 func TestJSONIndefiniteInputFile3(t *testing.T) {
-	trdsql := trdsqlNew()
 	file, err := tableFileOpen("testdata/test_indefinite.json")
 	if err != nil {
 		t.Error(err)
 	}
-	var jr Input
-	jr, err = trdsql.jsonInputNew(file)
+	jr, err := NewJSONReader(file)
 	if err != nil {
 		t.Error(`csvInputNew error`)
 	}

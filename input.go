@@ -11,8 +11,8 @@ import (
 	"strings"
 )
 
-// Input is wrap the reader.
-type Input interface {
+// Reader is wrap the reader.
+type Reader interface {
 	GetColumn(rowNum int) ([]string, error)
 	GetTypes() ([]string, error)
 	PreReadRow() [][]interface{}
@@ -140,15 +140,15 @@ func (trdsql *TRDSQL) ImportFile(db *DDB, fileName string) (string, error) {
 		return "", nil
 	}
 	defer file.Close()
-	input, err := trdsql.NewImporter(file, fileName)
+	reader, err := trdsql.NewReader(file, fileName)
 	if err != nil {
 		return "", err
 	}
 
-	if trdsql.InSkip > 0 {
+	if DefaultReadOpts.InSkip > 0 {
 		skip := make([]interface{}, 1)
-		for i := 0; i < trdsql.InSkip; i++ {
-			r, e := input.ReadRow(skip)
+		for i := 0; i < DefaultReadOpts.InSkip; i++ {
+			r, e := reader.ReadRow(skip)
 			if e != nil {
 				log.Printf("ERROR: skip error %s", e)
 				break
@@ -157,14 +157,14 @@ func (trdsql *TRDSQL) ImportFile(db *DDB, fileName string) (string, error) {
 		}
 	}
 	tableName := db.EscapeTable(fileName)
-	columnNames, err := input.GetColumn(trdsql.InPreRead)
+	columnNames, err := reader.GetColumn(DefaultReadOpts.InPreRead)
 	if err != nil {
 		if err != io.EOF {
 			return tableName, err
 		}
 		debug.Printf("EOF reached before argument number of rows")
 	}
-	columnTypes, err := input.GetTypes()
+	columnTypes, err := reader.GetTypes()
 	if err != nil {
 		if err != io.EOF {
 			return tableName, err
@@ -178,26 +178,26 @@ func (trdsql *TRDSQL) ImportFile(db *DDB, fileName string) (string, error) {
 	if err != nil {
 		return tableName, err
 	}
-	err = db.Import(tableName, columnNames, input, trdsql.InPreRead)
+	err = db.Import(tableName, columnNames, reader, DefaultReadOpts.InPreRead)
 	return tableName, err
 }
 
-// NewImporter returns an importer interface
+// NewReader returns an Reader interface
 // depending on the file to be imported.
-func (trdsql *TRDSQL) NewImporter(reader io.Reader, fileName string) (Input, error) {
-	if trdsql.InFormat == GUESS {
-		trdsql.InFormat = guessExtension(fileName)
+func (trdsql *TRDSQL) NewReader(reader io.Reader, fileName string) (Reader, error) {
+	if DefaultReadOpts.InFormat == GUESS {
+		DefaultReadOpts.InFormat = guessExtension(fileName)
 	}
 
-	switch trdsql.InFormat {
+	switch DefaultReadOpts.InFormat {
 	case CSV:
-		return trdsql.csvInputNew(reader)
+		return NewCSVReader(reader, DefaultReadOpts)
 	case LTSV:
-		return trdsql.ltsvInputNew(reader)
+		return NewLTSVReader(reader)
 	case JSON:
-		return trdsql.jsonInputNew(reader)
+		return NewJSONReader(reader)
 	case TBLN:
-		return trdsql.tblnInputNew(reader)
+		return NewTBLNReader(reader)
 	default:
 		return nil, fmt.Errorf("unknown formatt")
 	}

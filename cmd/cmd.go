@@ -91,6 +91,7 @@ func Run(args []string) int {
 	flags := flag.NewFlagSet("trdsql", flag.ExitOnError)
 
 	tr := trdsql.NewTRDSQL()
+	ro := trdsql.DefaultReadOpts
 	wo := trdsql.DefaultWriteOpts
 
 	flags.Usage = func() {
@@ -110,10 +111,10 @@ func Run(args []string) int {
 	flags.BoolVar(&version, "version", false, "display version information.")
 	flags.BoolVar(&Debug, "debug", false, "debug print.")
 
-	flags.StringVar(&tr.InDelimiter, "id", ",", "Field delimiter for input.")
-	flags.BoolVar(&tr.InHeader, "ih", false, "The first line is interpreted as column names(CSV only).")
-	flags.IntVar(&tr.InSkip, "is", 0, "Skip header row.")
-	flags.IntVar(&tr.InPreRead, "ir", 1, "Number of row preread for column determination.")
+	flags.StringVar(&ro.InDelimiter, "id", ",", "Field delimiter for input.")
+	flags.BoolVar(&ro.InHeader, "ih", false, "The first line is interpreted as column names(CSV only).")
+	flags.IntVar(&ro.InSkip, "is", 0, "Skip header row.")
+	flags.IntVar(&ro.InPreRead, "ir", 1, "Number of row preread for column determination.")
 
 	flags.BoolVar(&inFlag.CSV, "icsv", false, "CSV format for input.")
 	flags.BoolVar(&inFlag.LTSV, "iltsv", false, "LTSV format for input.")
@@ -186,7 +187,7 @@ Options:
 		tr.Dsn = dsn
 	}
 
-	tr.InFormat = inputFormat(inFlag)
+	ro.InFormat = inputFormat(inFlag)
 	wo.OutFormat = outputFormat(outFlag)
 	err = tr.Exec()
 	if err != nil {

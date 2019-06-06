@@ -3,20 +3,11 @@ package trdsql
 import (
 	"encoding/hex"
 	"fmt"
-	"io"
 	"log"
 	"strings"
 	"time"
 	"unicode/utf8"
 )
-
-type WriteOpts struct {
-	OutFormat    Format
-	OutDelimiter string
-	OutHeader    bool
-	OutStream    io.Writer
-	ErrStream    io.Writer
-}
 
 // Writer is file format writer
 type Writer interface {
