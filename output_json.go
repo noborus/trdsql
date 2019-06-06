@@ -12,9 +12,9 @@ type JSONWrite struct {
 	results []map[string]interface{}
 }
 
-func NewJSONWrite() *JSONWrite {
+func NewJSONWrite(writeOpts WriteOpts) *JSONWrite {
 	js := &JSONWrite{}
-	js.writer = json.NewEncoder(DefaultWriteOpts.OutStream)
+	js.writer = json.NewEncoder(writeOpts.OutStream)
 	js.writer.SetIndent("", "  ")
 	return js
 }

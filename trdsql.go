@@ -9,17 +9,39 @@ import (
 
 // TRDSQL structure is a structure that defines the whole operation.
 type TRDSQL struct {
-	Driver string
-	Dsn    string
-	SQL    string
-	Writer Writer
+	Driver    string
+	Dsn       string
+	SQL       string
+	ReadOpts  ReadOpts
+	WriteOpts WriteOpts
+	Writer    Writer
 }
 
 func NewTRDSQL() *TRDSQL {
 	return &TRDSQL{
-		Driver: "sqlite3",
-		Dsn:    "",
-		SQL:    "",
+		Driver:    "sqlite3",
+		Dsn:       "",
+		SQL:       "",
+		ReadOpts:  NewReadOpts(),
+		WriteOpts: NewWriteOpts(),
+	}
+}
+
+func NewReadOpts() ReadOpts {
+	return ReadOpts{
+		InDelimiter: ",",
+		InHeader:    false,
+		InPreRead:   1,
+		InSkip:      0,
+	}
+}
+
+func NewWriteOpts() WriteOpts {
+	return WriteOpts{
+		OutDelimiter: ",",
+		OutHeader:    false,
+		OutStream:    os.Stdout,
+		ErrStream:    os.Stderr,
 	}
 }
 
@@ -31,26 +53,12 @@ type ReadOpts struct {
 	InHeader    bool
 }
 
-var DefaultReadOpts = &ReadOpts{
-	InDelimiter: ",",
-	InHeader:    false,
-	InPreRead:   1,
-	InSkip:      0,
-}
-
 type WriteOpts struct {
 	OutFormat    Format
 	OutDelimiter string
 	OutHeader    bool
 	OutStream    io.Writer
 	ErrStream    io.Writer
-}
-
-var DefaultWriteOpts = &WriteOpts{
-	OutDelimiter: ",",
-	OutHeader:    false,
-	OutStream:    os.Stdout,
-	ErrStream:    os.Stderr,
 }
 
 // Format represents the input/output format
@@ -78,8 +86,11 @@ const (
 	VF
 )
 
-func (trdsql *TRDSQL) Exec() error {
-	db, err := Connect(trdsql.Driver, trdsql.Dsn)
+// Default database type
+const DefaultDBType = "text"
+
+func (trd *TRDSQL) Exec() error {
+	db, err := Connect(trd.Driver, trd.Dsn)
 	if err != nil {
 		return fmt.Errorf("ERROR(CONNECT):%s", err)
 	}
@@ -90,8 +101,8 @@ func (trdsql *TRDSQL) Exec() error {
 		}
 	}()
 
-	if trdsql.Writer == nil {
-		trdsql.Writer = NewWriter()
+	if trd.Writer == nil {
+		trd.Writer = trd.NewWriter()
 	}
 
 	db.tx, err = db.Begin()
@@ -99,12 +110,12 @@ func (trdsql *TRDSQL) Exec() error {
 		return fmt.Errorf("ERROR(BEGIN):%s", err)
 	}
 
-	trdsql.SQL, err = trdsql.Import(db, trdsql.SQL)
+	trd.SQL, err = trd.Import(db, trd.SQL)
 	if err != nil {
 		return fmt.Errorf("ERROR(IMPORT):%s", err)
 	}
 
-	err = trdsql.Export(db, trdsql.SQL)
+	err = trd.Export(db, trd.SQL)
 	if err != nil {
 		return fmt.Errorf("ERROR(EXPORT):%s", err)
 	}

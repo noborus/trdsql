@@ -16,32 +16,32 @@ type Writer interface {
 	Last() error
 }
 
-func NewWriter() Writer {
-	switch DefaultWriteOpts.OutFormat {
+func (trd *TRDSQL) NewWriter() Writer {
+	switch trd.WriteOpts.OutFormat {
 	case LTSV:
-		return NewLTSVWrite()
+		return NewLTSVWrite(trd.WriteOpts)
 	case JSON:
-		return NewJSONWrite()
+		return NewJSONWrite(trd.WriteOpts)
 	case RAW:
-		return NewRAWWrite(DefaultWriteOpts.OutDelimiter, DefaultWriteOpts.OutHeader)
+		return NewRAWWrite(trd.WriteOpts)
 	case MD:
-		return NewTWWrite(true)
+		return NewTWWrite(trd.WriteOpts, true)
 	case AT:
-		return NewTWWrite(false)
+		return NewTWWrite(trd.WriteOpts, false)
 	case VF:
-		return NewVFWrite()
+		return NewVFWrite(trd.WriteOpts)
 	case TBLN:
-		return NewTBLNWrite()
+		return NewTBLNWrite(trd.WriteOpts)
 	case CSV:
-		return NewCSVWrite(DefaultWriteOpts.OutDelimiter, DefaultWriteOpts.OutHeader)
+		return NewCSVWrite(trd.WriteOpts)
 	default:
-		return NewCSVWrite(DefaultWriteOpts.OutDelimiter, DefaultWriteOpts.OutHeader)
+		return NewCSVWrite(trd.WriteOpts)
 	}
 }
 
 // Export is execute SQL and Exporter the result.
-func (trdsql *TRDSQL) Export(db *DDB, sqlstr string) error {
-	w := trdsql.Writer
+func (trd *TRDSQL) Export(db *DDB, sqlstr string) error {
+	w := trd.Writer
 	rows, err := db.Select(sqlstr)
 	if err != nil {
 		return err

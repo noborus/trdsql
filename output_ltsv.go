@@ -12,10 +12,10 @@ type LTSVWrite struct {
 	results   map[string]string
 }
 
-func NewLTSVWrite() *LTSVWrite {
+func NewLTSVWrite(writeOpts WriteOpts) *LTSVWrite {
 	lw := &LTSVWrite{}
 	lw.delimiter = "\t"
-	lw.writer = bufio.NewWriter(DefaultWriteOpts.OutStream)
+	lw.writer = bufio.NewWriter(writeOpts.OutStream)
 	return lw
 }
 

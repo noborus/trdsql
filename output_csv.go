@@ -11,15 +11,15 @@ type CSVWrite struct {
 	outHeader bool
 }
 
-func NewCSVWrite(delim string, header bool) *CSVWrite {
+func NewCSVWrite(writeOpts WriteOpts) *CSVWrite {
 	var err error
 	c := &CSVWrite{}
-	c.writer = csv.NewWriter(DefaultWriteOpts.OutStream)
-	c.writer.Comma, err = delimiter(delim)
+	c.writer = csv.NewWriter(writeOpts.OutStream)
+	c.writer.Comma, err = delimiter(writeOpts.OutDelimiter)
 	if err != nil {
 		debug.Printf("%s\n", err)
 	}
-	c.outHeader = header
+	c.outHeader = writeOpts.OutHeader
 	return c
 }
 

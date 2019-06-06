@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"io"
+	"log"
 	"strings"
 )
 
@@ -16,10 +17,23 @@ type LTSVRead struct {
 	types     []string
 }
 
-func NewLTSVReader(r io.Reader) (Reader, error) {
+func NewLTSVReader(r io.Reader, opts ReadOpts) (Reader, error) {
 	lr := &LTSVRead{}
 	lr.reader = bufio.NewReader(r)
 	lr.delimiter = "\t"
+
+	if opts.InSkip > 0 {
+		skip := make([]interface{}, 1)
+		for i := 0; i < opts.InSkip; i++ {
+			r, e := lr.ReadRow(skip)
+			if e != nil {
+				log.Printf("ERROR: skip error %s", e)
+				break
+			}
+			debug.Printf("Skip row:%s\n", r)
+		}
+	}
+
 	return lr, nil
 }
 
@@ -48,7 +62,7 @@ func (lr *LTSVRead) GetColumn(rowNum int) ([]string, error) {
 func (lr *LTSVRead) GetTypes() ([]string, error) {
 	lr.types = make([]string, len(lr.names))
 	for i := 0; i < len(lr.names); i++ {
-		lr.types[i] = "text"
+		lr.types[i] = DefaultDBType
 	}
 	return lr.types, nil
 }
@@ -89,7 +103,7 @@ func (lr *LTSVRead) read() (map[string]string, []string, error) {
 	for _, column := range columns {
 		kv := strings.SplitN(column, ":", 2)
 		if len(kv) != 2 {
-			return nil, nil, errors.New("LTSV format error")
+			return nil, nil, errors.New("invalid column")
 		}
 		lvs[kv[0]] = kv[1]
 		keys = append(keys, kv[0])
@@ -103,9 +117,9 @@ func (lr *LTSVRead) readline() (string, error) {
 		if err != nil {
 			return "", err
 		}
-		tline := strings.TrimSpace(string(line))
-		if len(tline) != 0 {
-			return tline, nil
+		str := strings.TrimSpace(string(line))
+		if len(str) != 0 {
+			return str, nil
 		}
 	}
 }

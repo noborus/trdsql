@@ -30,7 +30,7 @@ func TestCsvInputNew(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = NewCSVReader(file, DefaultReadOpts)
+	_, err = NewCSVReader(file, NewReadOpts())
 	if err != nil {
 		t.Error(`NewCSVReader error`)
 	}
@@ -39,7 +39,7 @@ func TestCsvInputNew(t *testing.T) {
 func TestCsvEmptyNew(t *testing.T) {
 	const csvStream = ``
 	s := strings.NewReader(csvStream)
-	r, err := NewCSVReader(s, DefaultReadOpts)
+	r, err := NewCSVReader(s, NewReadOpts())
 	if err != nil {
 		t.Error(err)
 	}
@@ -50,26 +50,27 @@ func TestCsvEmptyNew(t *testing.T) {
 }
 
 func TestCsvHeaderNew(t *testing.T) {
-	DefaultReadOpts.InHeader = true
-	DefaultReadOpts.InDelimiter = ","
+	ro := NewReadOpts()
+	ro.InHeader = true
+	ro.InDelimiter = ","
 	csvStream := `h1,h2
 	v1,v2`
 	s := strings.NewReader(csvStream)
-	r, _ := NewCSVReader(s, DefaultReadOpts)
+	r, _ := NewCSVReader(s, ro)
 	header, _ := r.GetColumn(1)
 	if header[0] != "h1" || header[1] != "h2" {
 		t.Error("invalid header")
 	}
-	DefaultReadOpts.InHeader = false
 }
 
 func TestCsvEmptyColumnHeaderNew(t *testing.T) {
-	DefaultReadOpts.InHeader = true
-	DefaultReadOpts.InDelimiter = ","
+	ro := NewReadOpts()
+	ro.InHeader = true
+	ro.InDelimiter = ","
 	csvStream := `h1,
 	v1,v2`
 	s := strings.NewReader(csvStream)
-	r, _ := NewCSVReader(s, DefaultReadOpts)
+	r, _ := NewCSVReader(s, ro)
 	header, _ := r.GetColumn(1)
 	if header[0] != "h1" || header[1] != "c2" {
 		t.Error("invalid header")
@@ -77,12 +78,13 @@ func TestCsvEmptyColumnHeaderNew(t *testing.T) {
 }
 
 func TestCsvEmptyColumnRowNew(t *testing.T) {
-	DefaultReadOpts.InHeader = true
-	DefaultReadOpts.InDelimiter = ","
+	ro := NewReadOpts()
+	ro.InHeader = true
+	ro.InDelimiter = ","
 	csvStream := `h1,h2
 	,v2`
 	s := strings.NewReader(csvStream)
-	r, _ := NewCSVReader(s, DefaultReadOpts)
+	r, _ := NewCSVReader(s, ro)
 	_, err := r.GetColumn(0)
 	if err != nil {
 		t.Error(err)
@@ -95,14 +97,15 @@ func TestCsvEmptyColumnRowNew(t *testing.T) {
 }
 
 func TestCsvColumnDifferenceNew(t *testing.T) {
-	DefaultReadOpts.InHeader = true
-	DefaultReadOpts.InDelimiter = ","
+	ro := NewReadOpts()
+	ro.InHeader = true
+	ro.InDelimiter = ","
 	csvStream := `h1,h2,h3
 	v1,v2,v3
 	x1,x2
 	z1`
 	s := strings.NewReader(csvStream)
-	r, _ := NewCSVReader(s, DefaultReadOpts)
+	r, _ := NewCSVReader(s, ro)
 	_, err := r.GetColumn(1)
 	if err != nil {
 		t.Error(err)
@@ -126,20 +129,22 @@ func TestCsvNoInputNew(t *testing.T) {
 	if err == nil {
 		t.Error(`Should error`)
 	}
-	_, err = NewCSVReader(file, DefaultReadOpts)
+	_, err = NewCSVReader(file, NewReadOpts())
 	if err != nil {
 		t.Error(`NewCSVReader error`)
 	}
 }
 
 func TestCsvIndefiniteInputFile(t *testing.T) {
+	ro := NewReadOpts()
+	ro.InHeader = false
+	ro.InDelimiter = ","
+
 	file, err := tableFileOpen("testdata/test_indefinite.csv")
 	if err != nil {
 		t.Error(err)
 	}
-	DefaultReadOpts.InHeader = false
-	DefaultReadOpts.InDelimiter = ","
-	cr, err := NewCSVReader(file, DefaultReadOpts)
+	cr, err := NewCSVReader(file, ro)
 	if err != nil {
 		t.Error(`NewCSVReader error`)
 	}
@@ -158,8 +163,10 @@ func TestCsvIndefiniteInputFile2(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	DefaultReadOpts.InDelimiter = ","
-	cr, err := NewCSVReader(file, DefaultReadOpts)
+	ro := NewReadOpts()
+	ro.InHeader = false
+	ro.InDelimiter = ","
+	cr, err := NewCSVReader(file, ro)
 	if err != nil {
 		t.Error(`NewCSVReader error`)
 	}
@@ -177,8 +184,10 @@ func TestCsvIndefiniteInputFile3(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	DefaultReadOpts.InDelimiter = ","
-	cr, err := NewCSVReader(file, DefaultReadOpts)
+	ro := NewReadOpts()
+	ro.InHeader = false
+	ro.InDelimiter = ","
+	cr, err := NewCSVReader(file, ro)
 	if err != nil {
 		t.Error(`NewCSVReader error`)
 	}
@@ -193,7 +202,7 @@ func TestCsvIndefiniteInputFile3(t *testing.T) {
 }
 
 func TestCsvOutNew(t *testing.T) {
-	out := NewCSVWrite(",", false)
+	out := NewCSVWrite(NewWriteOpts())
 	if out == nil {
 		t.Error(`csvOut error`)
 	}

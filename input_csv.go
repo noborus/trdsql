@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"log"
 	"strconv"
 )
 
@@ -16,8 +17,9 @@ type CSVRead struct {
 	inHeader bool
 }
 
-func NewCSVReader(r io.Reader, opts *ReadOpts) (Reader, error) {
+func NewCSVReader(r io.Reader, opts ReadOpts) (Reader, error) {
 	var err error
+
 	if opts.InHeader {
 		opts.InPreRead--
 	}
@@ -28,6 +30,19 @@ func NewCSVReader(r io.Reader, opts *ReadOpts) (Reader, error) {
 	cr.reader.TrimLeadingSpace = true
 	cr.inHeader = opts.InHeader
 	cr.reader.Comma, err = delimiter(opts.InDelimiter)
+
+	if opts.InSkip > 0 {
+		skip := make([]interface{}, 1)
+		for i := 0; i < opts.InSkip; i++ {
+			r, e := cr.ReadRow(skip)
+			if e != nil {
+				log.Printf("ERROR: skip error %s", e)
+				break
+			}
+			debug.Printf("Skip row:%s\n", r)
+		}
+	}
+
 	return cr, err
 }
 
@@ -83,7 +98,7 @@ func (cr *CSVRead) GetColumn(rowNum int) ([]string, error) {
 func (cr *CSVRead) GetTypes() ([]string, error) {
 	cr.types = make([]string, len(cr.names))
 	for i := 0; i < len(cr.names); i++ {
-		cr.types[i] = "text"
+		cr.types[i] = DefaultDBType
 	}
 	return cr.types, nil
 }

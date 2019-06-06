@@ -28,9 +28,9 @@ var outformat = []string{
 }
 
 func trdsqlNew() *TRDSQL {
-	trdsql := NewTRDSQL()
+	trd := NewTRDSQL()
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
-	DefaultWriteOpts.OutStream = outStream
-	DefaultWriteOpts.ErrStream = errStream
-	return trdsql
+	trd.WriteOpts.OutStream = outStream
+	trd.WriteOpts.ErrStream = errStream
+	return trd
 }

@@ -39,7 +39,7 @@ func (tr *TBLNRead) GetTypes() ([]string, error) {
 	if len(tr.reader.Types) == 0 {
 		tr.reader.Types = make([]string, len(tr.reader.Names))
 		for i := 0; i < len(tr.reader.Names); i++ {
-			tr.reader.Types[i] = "text"
+			tr.reader.Types[i] = DefaultDBType
 		}
 	}
 	return tr.reader.Types, nil
@@ -51,11 +51,14 @@ func (tr *TBLNRead) PreReadRow() [][]interface{} {
 }
 
 // ReadRow is read the rest of the row.
-func (tr *TBLNRead) ReadRow([]interface{}) ([]interface{}, error) {
+func (tr *TBLNRead) ReadRow(row []interface{}) ([]interface{}, error) {
 	rec, err := tr.reader.ReadRow()
-	row := make([]interface{}, len(rec))
+	if err != nil {
+		return row, err
+	}
+	row = make([]interface{}, len(rec))
 	for i, c := range rec {
 		row[i] = c
 	}
-	return row, err
+	return row, nil
 }

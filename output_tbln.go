@@ -10,9 +10,9 @@ type TBLNWrite struct {
 	results []string
 }
 
-func NewTBLNWrite() *TBLNWrite {
+func NewTBLNWrite(writeOpts WriteOpts) *TBLNWrite {
 	tw := &TBLNWrite{}
-	tw.writer = tbln.NewWriter(DefaultWriteOpts.OutStream)
+	tw.writer = tbln.NewWriter(writeOpts.OutStream)
 	return tw
 }
 

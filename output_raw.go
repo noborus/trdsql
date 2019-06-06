@@ -15,15 +15,15 @@ type RawWrite struct {
 	outHeader bool
 }
 
-func NewRAWWrite(delim string, header bool) *RawWrite {
+func NewRAWWrite(writeOpts WriteOpts) *RawWrite {
 	var err error
 	raw := &RawWrite{}
-	raw.writer = bufio.NewWriter(DefaultWriteOpts.OutStream)
-	raw.sep, err = strconv.Unquote(`"` + delim + `"`)
+	raw.writer = bufio.NewWriter(writeOpts.OutStream)
+	raw.sep, err = strconv.Unquote(`"` + writeOpts.OutDelimiter + `"`)
 	if err != nil {
 		debug.Printf("%s\n", err)
 	}
-	raw.outHeader = header
+	raw.outHeader = writeOpts.OutHeader
 	return raw
 }
 

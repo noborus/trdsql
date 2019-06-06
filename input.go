@@ -22,22 +22,22 @@ type Reader interface {
 // Import is parses the SQL statement and imports one or more tables.
 // Return the rewritten SQL and error.
 // No error is returned if there is no table to import.
-func (trdsql *TRDSQL) Import(db *DDB, sqlstr string) (string, error) {
+func (trd *TRDSQL) Import(db *DDB, sqlstr string) (string, error) {
 	tables := listTable(sqlstr)
-
 	if len(tables) == 0 {
 		// without FROM clause. ex. SELECT 1+1;
 		debug.Printf("table not found\n")
 		return sqlstr, nil
 	}
 
+	opts := trd.ReadOpts
 	created := make(map[string]bool)
 	for _, fileName := range tables {
 		if created[fileName] {
 			debug.Printf("already created \"%s\"\n", fileName)
 			continue
 		}
-		tableName, err := trdsql.ImportFile(db, fileName)
+		tableName, err := ImportFile(db, fileName, opts)
 		if err != nil {
 			return sqlstr, err
 		}
@@ -133,31 +133,24 @@ func isSQLKeyWords(str string) bool {
 // ImportFile is imports a file.
 // Return the escaped table name and error.
 // Do not import if file not found (no error)
-func (trdsql *TRDSQL) ImportFile(db *DDB, fileName string) (string, error) {
-	file, err := trdsql.importFileOpen(fileName)
+func ImportFile(db *DDB, fileName string, opts ReadOpts) (string, error) {
+	file, err := importFileOpen(fileName)
 	if err != nil {
 		debug.Printf("%s\n", err)
 		return "", nil
 	}
 	defer file.Close()
-	reader, err := trdsql.NewReader(file, fileName)
+
+	if opts.InFormat == GUESS {
+		opts.InFormat = guessExtension(fileName)
+	}
+	reader, err := NewReader(file, opts)
 	if err != nil {
 		return "", err
 	}
 
-	if DefaultReadOpts.InSkip > 0 {
-		skip := make([]interface{}, 1)
-		for i := 0; i < DefaultReadOpts.InSkip; i++ {
-			r, e := reader.ReadRow(skip)
-			if e != nil {
-				log.Printf("ERROR: skip error %s", e)
-				break
-			}
-			debug.Printf("Skip row:%s\n", r)
-		}
-	}
 	tableName := db.EscapeTable(fileName)
-	columnNames, err := reader.GetColumn(DefaultReadOpts.InPreRead)
+	columnNames, err := reader.GetColumn(opts.InPreRead)
 	if err != nil {
 		if err != io.EOF {
 			return tableName, err
@@ -165,6 +158,7 @@ func (trdsql *TRDSQL) ImportFile(db *DDB, fileName string) (string, error) {
 		debug.Printf("EOF reached before argument number of rows")
 	}
 	columnTypes, err := reader.GetTypes()
+
 	if err != nil {
 		if err != io.EOF {
 			return tableName, err
@@ -178,28 +172,24 @@ func (trdsql *TRDSQL) ImportFile(db *DDB, fileName string) (string, error) {
 	if err != nil {
 		return tableName, err
 	}
-	err = db.Import(tableName, columnNames, reader, DefaultReadOpts.InPreRead)
+	err = db.Import(tableName, columnNames, reader, opts.InPreRead)
 	return tableName, err
 }
 
 // NewReader returns an Reader interface
 // depending on the file to be imported.
-func (trdsql *TRDSQL) NewReader(reader io.Reader, fileName string) (Reader, error) {
-	if DefaultReadOpts.InFormat == GUESS {
-		DefaultReadOpts.InFormat = guessExtension(fileName)
-	}
-
-	switch DefaultReadOpts.InFormat {
+func NewReader(reader io.Reader, opts ReadOpts) (Reader, error) {
+	switch opts.InFormat {
 	case CSV:
-		return NewCSVReader(reader, DefaultReadOpts)
+		return NewCSVReader(reader, opts)
 	case LTSV:
-		return NewLTSVReader(reader)
+		return NewLTSVReader(reader, opts)
 	case JSON:
 		return NewJSONReader(reader)
 	case TBLN:
 		return NewTBLNReader(reader)
 	default:
-		return nil, fmt.Errorf("unknown formatt")
+		return nil, fmt.Errorf("unknown format")
 	}
 }
 
@@ -232,7 +222,7 @@ func guessExtension(tableName string) Format {
 	}
 }
 
-func (trdsql *TRDSQL) importFileOpen(tableName string) (io.ReadCloser, error) {
+func importFileOpen(tableName string) (io.ReadCloser, error) {
 	r := regexp.MustCompile(`\*|\?|\[`)
 	if r.MatchString(tableName) {
 		return globFileOpen(tableName)

@@ -53,16 +53,16 @@ func (jr *JSONRead) GetColumn(rowNum int) ([]string, error) {
 func (jr *JSONRead) GetTypes() ([]string, error) {
 	jr.types = make([]string, len(jr.names))
 	for i := 0; i < len(jr.names); i++ {
-		jr.types[i] = "text"
+		jr.types[i] = DefaultDBType
 	}
 	return jr.types, nil
 }
 
-func (jr *JSONRead) readAhead(top interface{}, rcount int) (map[string]string, []string, error) {
+func (jr *JSONRead) readAhead(top interface{}, count int) (map[string]string, []string, error) {
 	if jr.inArray != nil {
-		if len(jr.inArray) > rcount {
+		if len(jr.inArray) > count {
 			jr.count++
-			return jr.secondLevel(top, jr.inArray[rcount])
+			return jr.secondLevel(top, jr.inArray[count])
 		}
 		return nil, nil, io.EOF
 	}
@@ -173,7 +173,7 @@ func (jr *JSONRead) ReadRow(row []interface{}) ([]interface{}, error) {
 		var data interface{}
 		err := jr.reader.Decode(&data)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("json format error:%s", err)
 		}
 		row = jr.rowParse(row, data)
 	}
@@ -181,10 +181,10 @@ func (jr *JSONRead) ReadRow(row []interface{}) ([]interface{}, error) {
 }
 
 func (jr *JSONRead) rowParse(row []interface{}, jsonRow interface{}) []interface{} {
-	switch dmap := jsonRow.(type) {
+	switch m := jsonRow.(type) {
 	case map[string]interface{}:
 		for i := range jr.names {
-			row[i] = jsonString(dmap[jr.names[i]])
+			row[i] = jsonString(m[jr.names[i]])
 		}
 	default:
 		for i := range jr.names {

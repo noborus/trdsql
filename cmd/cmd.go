@@ -91,8 +91,8 @@ func Run(args []string) int {
 	flags := flag.NewFlagSet("trdsql", flag.ExitOnError)
 
 	tr := trdsql.NewTRDSQL()
-	ro := trdsql.DefaultReadOpts
-	wo := trdsql.DefaultWriteOpts
+	ro := &tr.ReadOpts
+	wo := &tr.WriteOpts
 
 	flags.Usage = func() {
 		fmt.Fprintf(os.Stderr, `Usage: %s [OPTIONS] [SQL(SELECT...)]

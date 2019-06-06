@@ -9,7 +9,7 @@ import (
 func TestLtsvInputNew(t *testing.T) {
 	const ltsvStream = `ID:1	name:test`
 	s := strings.NewReader(ltsvStream)
-	lr, err := NewLTSVReader(s)
+	lr, err := NewLTSVReader(s, NewReadOpts())
 	if err != nil {
 		t.Error(`NewLTSVReader error`)
 	}
@@ -25,10 +25,10 @@ func TestLtsvInputNew(t *testing.T) {
 func TestLtsvInvalidInputNew(t *testing.T) {
 	const ltsvStream = `ID;1	name:test`
 	s := strings.NewReader(ltsvStream)
-	lr, _ := NewLTSVReader(s)
+	lr, _ := NewLTSVReader(s, NewReadOpts())
 	_, err := lr.GetColumn(1)
-	if err.Error() != "LTSV format error" {
-		t.Error()
+	if err.Error() != "invalid column" {
+		t.Error(err)
 	}
 }
 
@@ -37,7 +37,7 @@ func TestLtsvFile(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	lr, err := NewLTSVReader(file)
+	lr, err := NewLTSVReader(file, NewReadOpts())
 	if err != nil {
 		t.Error(`NewLTSVReader error`)
 	}
@@ -55,7 +55,7 @@ func TestIndefiniteLtsvFile1(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	lr, err := NewLTSVReader(file)
+	lr, err := NewLTSVReader(file, NewReadOpts())
 	if err != nil {
 		t.Error(`NewLTSVReader error`)
 	}
@@ -73,7 +73,7 @@ func TestIndefiniteLtsvFile2(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	lr, err := NewLTSVReader(file)
+	lr, err := NewLTSVReader(file, NewReadOpts())
 	if err != nil {
 		t.Error(`NewLTSVReader error`)
 	}
@@ -91,13 +91,13 @@ func TestIndefiniteLtsvFile3(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	lr, err := NewLTSVReader(file)
+	lr, err := NewLTSVReader(file, NewReadOpts())
 	if err != nil {
 		t.Error(`NewLTSVReader error`)
 	}
 	list, err := lr.GetColumn(100)
 	if err != nil && err != io.EOF {
-		t.Error(`GetColumn error`)
+		t.Error(err)
 	}
 	if len(list) != 5 {
 		t.Error(`invalid column`)
