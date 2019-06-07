@@ -19,18 +19,24 @@ type Reader interface {
 	ReadRow([]interface{}) ([]interface{}, error)
 }
 
+type ImportFunc func(opts ReadOpts, db *DDB, sqlstr string)
+
+var Import ImportFunc
+
+type Importer interface {
+	Import(opts ReadOpts, db *DDB, sqlstr string) (string, error)
+}
+
 // Import is parses the SQL statement and imports one or more tables.
 // Return the rewritten SQL and error.
 // No error is returned if there is no table to import.
-func (trd *TRDSQL) Import(db *DDB, sqlstr string) (string, error) {
+func (f *ImportFunc) Import(opts ReadOpts, db *DDB, sqlstr string) (string, error) {
 	tables := listTable(sqlstr)
 	if len(tables) == 0 {
 		// without FROM clause. ex. SELECT 1+1;
 		debug.Printf("table not found\n")
 		return sqlstr, nil
 	}
-
-	opts := trd.ReadOpts
 	created := make(map[string]bool)
 	for _, fileName := range tables {
 		if created[fileName] {

@@ -90,7 +90,7 @@ func Run(args []string) int {
 
 	flags := flag.NewFlagSet("trdsql", flag.ExitOnError)
 
-	tr := trdsql.NewTRDSQL()
+	tr := trdsql.NewTRDSQL(&trdsql.Import, &trdsql.Export)
 	ro := &tr.ReadOpts
 	wo := &tr.WriteOpts
 
@@ -163,13 +163,13 @@ func Run(args []string) int {
 		return 0
 	}
 
-	tr.SQL, err = getSQL(flags.Args(), query)
+	sql, err := getSQL(flags.Args(), query)
 	if err != nil {
 		log.Printf("ERROR: %s", err)
 		return 1
 	}
 
-	if usage || (len(tr.SQL) == 0) {
+	if usage || (len(sql) == 0) {
 		fmt.Fprintf(os.Stderr, `
 Usage: %s [OPTIONS] [SQL(SELECT...)]
 
@@ -189,7 +189,7 @@ Options:
 
 	ro.InFormat = inputFormat(inFlag)
 	wo.OutFormat = outputFormat(outFlag)
-	err = tr.Exec()
+	err = tr.Exec(sql)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -39,9 +39,16 @@ func (trd *TRDSQL) NewWriter() Writer {
 	}
 }
 
+type ExportFunc func(writer Writer, db *DDB, sqlstr string)
+
+var Export ExportFunc
+
+type Exporter interface {
+	Export(writer Writer, db *DDB, sqlstr string) error
+}
+
 // Export is execute SQL and Exporter the result.
-func (trd *TRDSQL) Export(db *DDB, sqlstr string) error {
-	w := trd.Writer
+func (f *ExportFunc) Export(writer Writer, db *DDB, sqlstr string) error {
 	rows, err := db.Select(sqlstr)
 	if err != nil {
 		return err
@@ -72,7 +79,7 @@ func (trd *TRDSQL) Export(db *DDB, sqlstr string) error {
 		types[i] = ct.DatabaseTypeName()
 	}
 
-	err = w.First(columns, types)
+	err = writer.First(columns, types)
 	if err != nil {
 		return err
 	}
@@ -81,12 +88,12 @@ func (trd *TRDSQL) Export(db *DDB, sqlstr string) error {
 		if err != nil {
 			return err
 		}
-		err = w.WriteRow(values, columns)
+		err = writer.WriteRow(values, columns)
 		if err != nil {
 			return err
 		}
 	}
-	return w.Last()
+	return writer.Last()
 }
 
 func ConvertTypes(dbTypes []string) []string {

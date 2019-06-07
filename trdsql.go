@@ -11,20 +11,11 @@ import (
 type TRDSQL struct {
 	Driver    string
 	Dsn       string
-	SQL       string
 	ReadOpts  ReadOpts
 	WriteOpts WriteOpts
+	Importer  Importer
+	Exporter  Exporter
 	Writer    Writer
-}
-
-func NewTRDSQL() *TRDSQL {
-	return &TRDSQL{
-		Driver:    "sqlite3",
-		Dsn:       "",
-		SQL:       "",
-		ReadOpts:  NewReadOpts(),
-		WriteOpts: NewWriteOpts(),
-	}
 }
 
 func NewReadOpts() ReadOpts {
@@ -89,7 +80,18 @@ const (
 // Default database type
 const DefaultDBType = "text"
 
-func (trd *TRDSQL) Exec() error {
+func NewTRDSQL(im Importer, ex Exporter) *TRDSQL {
+	return &TRDSQL{
+		Driver:    "sqlite3",
+		Dsn:       "",
+		ReadOpts:  NewReadOpts(),
+		WriteOpts: NewWriteOpts(),
+		Importer:  im,
+		Exporter:  ex,
+	}
+}
+
+func (trd *TRDSQL) Exec(sql string) error {
 	db, err := Connect(trd.Driver, trd.Dsn)
 	if err != nil {
 		return fmt.Errorf("ERROR(CONNECT):%s", err)
@@ -110,14 +112,18 @@ func (trd *TRDSQL) Exec() error {
 		return fmt.Errorf("ERROR(BEGIN):%s", err)
 	}
 
-	trd.SQL, err = trd.Import(db, trd.SQL)
-	if err != nil {
-		return fmt.Errorf("ERROR(IMPORT):%s", err)
+	if trd.Importer != nil {
+		sql, err = trd.Importer.Import(trd.ReadOpts, db, sql)
+		if err != nil {
+			return fmt.Errorf("ERROR(IMPORT):%s", err)
+		}
 	}
 
-	err = trd.Export(db, trd.SQL)
-	if err != nil {
-		return fmt.Errorf("ERROR(EXPORT):%s", err)
+	if trd.Exporter != nil {
+		err = trd.Exporter.Export(trd.Writer, db, sql)
+		if err != nil {
+			return fmt.Errorf("ERROR(EXPORT):%s", err)
+		}
 	}
 
 	err = db.tx.Commit()
