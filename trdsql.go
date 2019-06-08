@@ -103,11 +103,7 @@ func (trd *TRDSQL) Exec(sql string) error {
 		}
 	}()
 
-	if trd.Writer == nil {
-		trd.Writer = trd.NewWriter()
-	}
-
-	db.tx, err = db.Begin()
+	db.Tx, err = db.Begin()
 	if err != nil {
 		return fmt.Errorf("ERROR(BEGIN):%s", err)
 	}
@@ -120,13 +116,16 @@ func (trd *TRDSQL) Exec(sql string) error {
 	}
 
 	if trd.Exporter != nil {
+		if trd.Writer == nil {
+			trd.Writer = trd.NewWriter()
+		}
 		err = trd.Exporter.Export(trd.Writer, db, sql)
 		if err != nil {
 			return fmt.Errorf("ERROR(EXPORT):%s", err)
 		}
 	}
 
-	err = db.tx.Commit()
+	err = db.Tx.Commit()
 	if err != nil {
 		return fmt.Errorf("ERROR(COMMIT):%s", err)
 	}

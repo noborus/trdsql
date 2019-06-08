@@ -24,7 +24,7 @@ type DDB struct {
 	rewritten []string
 	maxBulk   int
 	*sql.DB
-	tx *sql.Tx
+	Tx *sql.Tx
 }
 
 // Connect is connects to the database
@@ -64,7 +64,7 @@ func (db *DDB) CreateTable(tableName string, names []string, types []string) err
 	sqlstr = "CREATE TEMPORARY TABLE "
 	sqlstr = sqlstr + tableName + " ( " + strings.Join(columns, ",") + " );"
 	debug.Printf(sqlstr)
-	_, err := db.tx.Exec(sqlstr)
+	_, err := db.Tx.Exec(sqlstr)
 	return err
 }
 
@@ -75,7 +75,7 @@ func (db *DDB) Select(sqlstr string) (*sql.Rows, error) {
 		return nil, errors.New("no SQL statement")
 	}
 	debug.Printf(sqlstr)
-	rows, err := db.tx.Query(sqlstr)
+	rows, err := db.Tx.Query(sqlstr)
 	if err != nil {
 		return rows, fmt.Errorf("SQL:%s\n[%s]", err, sqlstr)
 	}
@@ -124,7 +124,7 @@ func (db *DDB) Import(tableName string, columnNames []string, reader Reader, pre
 func (db *DDB) copyImport(table *Table, reader Reader) error {
 	sqlstr := "COPY " + table.tableName + " (" + strings.Join(table.columns, ",") + ") FROM STDIN"
 	debug.Printf(sqlstr)
-	stmt, err := db.tx.Prepare(sqlstr)
+	stmt, err := db.Tx.Prepare(sqlstr)
 	if err != nil {
 		return fmt.Errorf("COPY Prepare: %s", err)
 	}
@@ -256,7 +256,7 @@ func (db *DDB) insertPrepare(table *Table) (*sql.Stmt, error) {
 	sqlstr := table.sqlstr +
 		strings.Repeat(table.place+",", table.count-1) + table.place
 	debug.Printf(sqlstr)
-	stmt, err := db.tx.Prepare(sqlstr)
+	stmt, err := db.Tx.Prepare(sqlstr)
 	if err != nil {
 		return nil, fmt.Errorf("INSERT Prepare: %s:%s", sqlstr, err)
 	}
