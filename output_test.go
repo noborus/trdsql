@@ -13,4 +13,3 @@ func TestValString(t *testing.T) {
 		t.Errorf("ValString error.")
 	}
 }
-

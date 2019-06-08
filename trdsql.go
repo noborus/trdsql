@@ -109,17 +109,18 @@ func (trd *TRDSQL) Exec(sql string) error {
 	}
 
 	if trd.Importer != nil {
-		sql, err = trd.Importer.Import(trd.ReadOpts, db, sql)
+		sql, err = trd.Importer.Import(db, sql, trd.ReadOpts)
 		if err != nil {
 			return fmt.Errorf("ERROR(IMPORT):%s", err)
 		}
 	}
 
 	if trd.Exporter != nil {
-		if trd.Writer == nil {
-			trd.Writer = trd.NewWriter()
+		writer := trd.Writer
+		if writer == nil {
+			writer = trd.NewWriter()
 		}
-		err = trd.Exporter.Export(trd.Writer, db, sql)
+		err = trd.Exporter.Export(db, sql, writer)
 		if err != nil {
 			return fmt.Errorf("ERROR(EXPORT):%s", err)
 		}

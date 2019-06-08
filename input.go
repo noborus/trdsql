@@ -19,18 +19,18 @@ type Reader interface {
 	ReadRow([]interface{}) ([]interface{}, error)
 }
 
-type ImportFunc func(opts ReadOpts, db *DDB, sqlstr string)
+type ImportFunc func(db *DDB, sqlstr string, opts ReadOpts)
 
 var Import ImportFunc
 
 type Importer interface {
-	Import(opts ReadOpts, db *DDB, sqlstr string) (string, error)
+	Import(db *DDB, sqlstr string, opts ReadOpts) (string, error)
 }
 
 // Import is parses the SQL statement and imports one or more tables.
 // Return the rewritten SQL and error.
 // No error is returned if there is no table to import.
-func (f *ImportFunc) Import(opts ReadOpts, db *DDB, sqlstr string) (string, error) {
+func (f *ImportFunc) Import(db *DDB, sqlstr string, opts ReadOpts) (string, error) {
 	tables := listTable(sqlstr)
 	if len(tables) == 0 {
 		// without FROM clause. ex. SELECT 1+1;

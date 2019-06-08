@@ -39,16 +39,16 @@ func (trd *TRDSQL) NewWriter() Writer {
 	}
 }
 
-type ExportFunc func(writer Writer, db *DDB, sqlstr string)
+type ExportFunc func(db *DDB, sqlstr string, writer Writer)
 
 var Export ExportFunc
 
 type Exporter interface {
-	Export(writer Writer, db *DDB, sqlstr string) error
+	Export(db *DDB, sqlstr string, writer Writer) error
 }
 
 // Export is execute SQL and Exporter the result.
-func (f *ExportFunc) Export(writer Writer, db *DDB, sqlstr string) error {
+func (f *ExportFunc) Export(db *DDB, sqlstr string, writer Writer) error {
 	rows, err := db.Select(sqlstr)
 	if err != nil {
 		return err
