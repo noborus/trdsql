@@ -11,35 +11,35 @@ type TWWrite struct {
 }
 
 func NewTWWrite(writeOpts WriteOpts, markdown bool) *TWWrite {
-	tw := &TWWrite{}
-	tw.writer = tablewriter.NewWriter(writeOpts.OutStream)
-	tw.writer.SetAutoFormatHeaders(false)
+	w := &TWWrite{}
+	w.writer = tablewriter.NewWriter(writeOpts.OutStream)
+	w.writer.SetAutoFormatHeaders(false)
 	if markdown {
-		tw.writer.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
-		tw.writer.SetCenterSeparator("|")
+		w.writer.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+		w.writer.SetCenterSeparator("|")
 	}
-	return tw
+	return w
 }
 
-// First is preparation
-func (tw *TWWrite) First(columns []string, types []string) error {
-	tw.writer.SetHeader(columns)
-	tw.results = make([]string, len(columns))
+// PreWrite is preparation
+func (w *TWWrite) PreWrite(columns []string, types []string) error {
+	w.writer.SetHeader(columns)
+	w.results = make([]string, len(columns))
 
 	return nil
 }
 
 // WriteRow is Addition to array
-func (tw *TWWrite) WriteRow(values []interface{}, columns []string) error {
+func (w *TWWrite) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
-		tw.results[i] = ValString(col)
+		w.results[i] = ValString(col)
 	}
-	tw.writer.Append(tw.results)
+	w.writer.Append(w.results)
 	return nil
 }
 
-// Last is Actual output
-func (tw *TWWrite) Last() error {
-	tw.writer.Render()
+// PostWrite is Actual output
+func (w *TWWrite) PostWrite() error {
+	w.writer.Render()
 	return nil
 }

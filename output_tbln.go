@@ -11,13 +11,13 @@ type TBLNWrite struct {
 }
 
 func NewTBLNWrite(writeOpts WriteOpts) *TBLNWrite {
-	tw := &TBLNWrite{}
-	tw.writer = tbln.NewWriter(writeOpts.OutStream)
-	return tw
+	w := &TBLNWrite{}
+	w.writer = tbln.NewWriter(writeOpts.OutStream)
+	return w
 }
 
-// First is preparation
-func (tw *TBLNWrite) First(columns []string, types []string) error {
+// PreWrite is preparation
+func (w *TBLNWrite) PreWrite(columns []string, types []string) error {
 	d := tbln.NewDefinition()
 	err := d.SetNames(columns)
 	if err != nil {
@@ -27,23 +27,23 @@ func (tw *TBLNWrite) First(columns []string, types []string) error {
 	if err != nil {
 		return err
 	}
-	err = tw.writer.WriteDefinition(d)
+	err = w.writer.WriteDefinition(d)
 	if err != nil {
 		return err
 	}
-	tw.results = make([]string, len(columns))
+	w.results = make([]string, len(columns))
 	return nil
 }
 
 // WriteRow is Addition to array
-func (tw *TBLNWrite) WriteRow(values []interface{}, columns []string) error {
+func (w *TBLNWrite) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
-		tw.results[i] = ValString(col)
+		w.results[i] = ValString(col)
 	}
-	return tw.writer.WriteRow(tw.results)
+	return w.writer.WriteRow(w.results)
 }
 
-// Last is Actual output
-func (tw *TBLNWrite) Last() error {
+// PostWrite is Actual output
+func (w *TBLNWrite) PostWrite() error {
 	return nil
 }

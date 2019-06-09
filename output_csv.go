@@ -13,39 +13,39 @@ type CSVWrite struct {
 
 func NewCSVWrite(writeOpts WriteOpts) *CSVWrite {
 	var err error
-	c := &CSVWrite{}
-	c.writer = csv.NewWriter(writeOpts.OutStream)
-	c.writer.Comma, err = delimiter(writeOpts.OutDelimiter)
+	w := &CSVWrite{}
+	w.writer = csv.NewWriter(writeOpts.OutStream)
+	w.writer.Comma, err = delimiter(writeOpts.OutDelimiter)
 	if err != nil {
 		debug.Printf("%s\n", err)
 	}
-	c.outHeader = writeOpts.OutHeader
-	return c
+	w.outHeader = writeOpts.OutHeader
+	return w
 }
 
-// First is output of header and preparation
-func (c *CSVWrite) First(columns []string, types []string) error {
-	if c.outHeader {
-		err := c.writer.Write(columns)
+// PreWrite is output of header and preparation
+func (w *CSVWrite) PreWrite(columns []string, types []string) error {
+	if w.outHeader {
+		err := w.writer.Write(columns)
 		if err != nil {
 			return err
 		}
 	}
-	c.results = make([]string, len(columns))
+	w.results = make([]string, len(columns))
 	return nil
 }
 
 // WriteRow is row output
-func (c *CSVWrite) WriteRow(values []interface{}, columns []string) error {
+func (w *CSVWrite) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
-		c.results[i] = ValString(col)
+		w.results[i] = ValString(col)
 	}
-	err := c.writer.Write(c.results)
+	err := w.writer.Write(w.results)
 	return err
 }
 
-// Last is flush
-func (c *CSVWrite) Last() error {
-	c.writer.Flush()
+// PostWrite is flush
+func (w *CSVWrite) PostWrite() error {
+	w.writer.Flush()
 	return nil
 }

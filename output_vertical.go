@@ -20,39 +20,39 @@ type VFWrite struct {
 
 func NewVFWrite(writeOpts WriteOpts) *VFWrite {
 	var err error
-	vf := &VFWrite{}
-	vf.writer = bufio.NewWriter(writeOpts.OutStream)
-	vf.termWidth, _, err = terminal.GetSize(0)
+	w := &VFWrite{}
+	w.writer = bufio.NewWriter(writeOpts.OutStream)
+	w.termWidth, _, err = terminal.GetSize(0)
 	if err != nil {
-		vf.termWidth = 40
+		w.termWidth = 40
 	}
-	return vf
+	return w
 }
 
-// First is preparation
-func (vf *VFWrite) First(columns []string, types []string) error {
-	vf.header = make([]string, len(columns))
-	vf.hSize = 0
+// PreWrite is preparation
+func (w *VFWrite) PreWrite(columns []string, types []string) error {
+	w.header = make([]string, len(columns))
+	w.hSize = 0
 	for i, col := range columns {
-		if vf.hSize < runewidth.StringWidth(col) {
-			vf.hSize = runewidth.StringWidth(col)
+		if w.hSize < runewidth.StringWidth(col) {
+			w.hSize = runewidth.StringWidth(col)
 		}
-		vf.header[i] = col
+		w.header[i] = col
 	}
 	return nil
 }
 
 // WriteRow is Actual output
-func (vf *VFWrite) WriteRow(values []interface{}, columns []string) error {
-	vf.count++
-	_, err := fmt.Fprintf(vf.writer,
-		"---[ %d]%s\n", vf.count, strings.Repeat("-", (vf.termWidth-16)))
+func (w *VFWrite) WriteRow(values []interface{}, columns []string) error {
+	w.count++
+	_, err := fmt.Fprintf(w.writer,
+		"---[ %d]%s\n", w.count, strings.Repeat("-", (w.termWidth-16)))
 	if err != nil {
 		debug.Printf("%s\n", err)
 	}
-	for i, col := range vf.header {
-		v := vf.hSize - runewidth.StringWidth(col)
-		_, err := fmt.Fprintf(vf.writer,
+	for i, col := range w.header {
+		v := w.hSize - runewidth.StringWidth(col)
+		_, err := fmt.Fprintf(w.writer,
 			"%s%s | %-s\n",
 			strings.Repeat(" ", v+2),
 			col,
@@ -64,7 +64,7 @@ func (vf *VFWrite) WriteRow(values []interface{}, columns []string) error {
 	return nil
 }
 
-// Last is flush
-func (vf *VFWrite) Last() error {
-	return vf.writer.Flush()
+// PostWrite is flush
+func (w *VFWrite) PostWrite() error {
+	return w.writer.Flush()
 }

@@ -13,25 +13,25 @@ type JSONWrite struct {
 }
 
 func NewJSONWrite(writeOpts WriteOpts) *JSONWrite {
-	js := &JSONWrite{}
-	js.writer = json.NewEncoder(writeOpts.OutStream)
-	js.writer.SetIndent("", "  ")
-	return js
+	w := &JSONWrite{}
+	w.writer = json.NewEncoder(writeOpts.OutStream)
+	w.writer.SetIndent("", "  ")
+	return w
 }
 
-// First is preparation
-func (js *JSONWrite) First(columns []string, types []string) error {
-	js.results = make([]map[string]interface{}, 0)
+// PreWrite is preparation
+func (w *JSONWrite) PreWrite(columns []string, types []string) error {
+	w.results = make([]map[string]interface{}, 0)
 	return nil
 }
 
 // WriteRow is Addition to array
-func (js *JSONWrite) WriteRow(values []interface{}, columns []string) error {
+func (w *JSONWrite) WriteRow(values []interface{}, columns []string) error {
 	m := make(map[string]interface{}, len(columns))
 	for i, col := range values {
 		m[columns[i]] = valInterface(col)
 	}
-	js.results = append(js.results, m)
+	w.results = append(w.results, m)
 	return nil
 }
 
@@ -47,7 +47,7 @@ func valInterface(v interface{}) interface{} {
 	}
 }
 
-// Last is Actual output
-func (js *JSONWrite) Last() error {
-	return js.writer.Encode(js.results)
+// PostWrite is Actual output
+func (w *JSONWrite) PostWrite() error {
+	return w.writer.Encode(w.results)
 }

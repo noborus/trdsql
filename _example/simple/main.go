@@ -11,7 +11,7 @@ type ArrayTable struct {
 	table [][]string
 }
 
-func (a *ArrayTable) First(columns []string, types []string) error {
+func (a *ArrayTable) PreWrite(columns []string, types []string) error {
 	a.table = make([][]string, 0)
 	fmt.Println(columns, types)
 	return nil
@@ -24,7 +24,7 @@ func (a *ArrayTable) WriteRow(values []interface{}, columns []string) error {
 	a.table = append(a.table, row)
 	return nil
 }
-func (a *ArrayTable) Last() error {
+func (a *ArrayTable) PostWrite() error {
 	return nil
 }
 

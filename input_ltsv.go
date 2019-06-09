@@ -17,87 +17,87 @@ type LTSVRead struct {
 	types     []string
 }
 
-func NewLTSVReader(r io.Reader, opts ReadOpts) (Reader, error) {
-	lr := &LTSVRead{}
-	lr.reader = bufio.NewReader(r)
-	lr.delimiter = "\t"
+func NewLTSVReader(reader io.Reader, opts ReadOpts) (Reader, error) {
+	r := &LTSVRead{}
+	r.reader = bufio.NewReader(reader)
+	r.delimiter = "\t"
 
 	if opts.InSkip > 0 {
 		skip := make([]interface{}, 1)
 		for i := 0; i < opts.InSkip; i++ {
-			r, e := lr.ReadRow(skip)
-			if e != nil {
-				log.Printf("ERROR: skip error %s", e)
+			row, err := r.ReadRow(skip)
+			if err != nil {
+				log.Printf("ERROR: skip error %s", err)
 				break
 			}
-			debug.Printf("Skip row:%s\n", r)
+			debug.Printf("Skip row:%s\n", row)
 		}
 	}
 
-	return lr, nil
+	return r, nil
 }
 
 // GetColumn is reads the specified number of rows and determines the column name.
 // The previously read row is stored in preRead.
-func (lr *LTSVRead) GetColumn(rowNum int) ([]string, error) {
+func (r *LTSVRead) GetColumn(rowNum int) ([]string, error) {
 	names := map[string]bool{}
 	for i := 0; i < rowNum; i++ {
-		row, keys, err := lr.read()
+		row, keys, err := r.read()
 		if err != nil {
-			return lr.names, err
+			return r.names, err
 		}
 		// Add only unique column names.
 		for k := 0; k < len(keys); k++ {
 			if !names[keys[k]] {
 				names[keys[k]] = true
-				lr.names = append(lr.names, keys[k])
+				r.names = append(r.names, keys[k])
 			}
 		}
-		lr.preRead = append(lr.preRead, row)
+		r.preRead = append(r.preRead, row)
 	}
-	return lr.names, nil
+	return r.names, nil
 }
 
 // GetTypes is reads the specified number of rows and determines the column type.
-func (lr *LTSVRead) GetTypes() ([]string, error) {
-	lr.types = make([]string, len(lr.names))
-	for i := 0; i < len(lr.names); i++ {
-		lr.types[i] = DefaultDBType
+func (r *LTSVRead) GetTypes() ([]string, error) {
+	r.types = make([]string, len(r.names))
+	for i := 0; i < len(r.names); i++ {
+		r.types[i] = DefaultDBType
 	}
-	return lr.types, nil
+	return r.types, nil
 }
 
 // PreReadRow is returns only columns that store preread rows.
-func (lr *LTSVRead) PreReadRow() [][]interface{} {
-	rowNum := len(lr.preRead)
+func (r *LTSVRead) PreReadRow() [][]interface{} {
+	rowNum := len(r.preRead)
 	rows := make([][]interface{}, rowNum)
 	for n := 0; n < rowNum; n++ {
-		rows[n] = make([]interface{}, len(lr.names))
-		for i := range lr.names {
-			rows[n][i] = lr.preRead[n][lr.names[i]]
+		rows[n] = make([]interface{}, len(r.names))
+		for i := range r.names {
+			rows[n][i] = r.preRead[n][r.names[i]]
 		}
 	}
 	return rows
 }
 
 // ReadRow is read the rest of the row.
-func (lr *LTSVRead) ReadRow(row []interface{}) ([]interface{}, error) {
-	record, _, err := lr.read()
+func (r *LTSVRead) ReadRow(row []interface{}) ([]interface{}, error) {
+	record, _, err := r.read()
 	if err != nil {
 		return row, err
 	}
-	for i := range lr.names {
-		row[i] = record[lr.names[i]]
+	for i := range r.names {
+		row[i] = record[r.names[i]]
 	}
 	return row, nil
 }
 
-func (lr *LTSVRead) read() (map[string]string, []string, error) {
-	line, err := lr.readline()
+func (r *LTSVRead) read() (map[string]string, []string, error) {
+	line, err := r.readline()
 	if err != nil {
 		return nil, nil, err
 	}
-	columns := strings.Split(line, lr.delimiter)
+	columns := strings.Split(line, r.delimiter)
 	lvs := make(map[string]string)
 	keys := make([]string, 0, len(columns))
 	for _, column := range columns {
@@ -111,9 +111,9 @@ func (lr *LTSVRead) read() (map[string]string, []string, error) {
 	return lvs, keys, nil
 }
 
-func (lr *LTSVRead) readline() (string, error) {
+func (r *LTSVRead) readline() (string, error) {
 	for {
-		line, _, err := lr.reader.ReadLine()
+		line, _, err := r.reader.ReadLine()
 		if err != nil {
 			return "", err
 		}

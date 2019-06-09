@@ -76,7 +76,7 @@ func (e *exporter) Export(db *DB, query string) error {
 		types[i] = ct.DatabaseTypeName()
 	}
 
-	err = e.Writer.First(columns, types)
+	err = e.Writer.PreWrite(columns, types)
 	if err != nil {
 		return err
 	}
@@ -90,7 +90,7 @@ func (e *exporter) Export(db *DB, query string) error {
 			return err
 		}
 	}
-	return e.Writer.Last()
+	return e.Writer.PostWrite()
 }
 
 func ConvertTypes(dbTypes []string) []string {
@@ -138,34 +138,4 @@ func ValString(v interface{}) string {
 		str = strings.ReplaceAll(str, "\n", "\\n")
 	}
 	return str
-}
-
-// Writer is file format writer
-type Writer interface {
-	First([]string, []string) error
-	WriteRow([]interface{}, []string) error
-	Last() error
-}
-
-func NewWriter(writeOpts WriteOpts) Writer {
-	switch writeOpts.OutFormat {
-	case LTSV:
-		return NewLTSVWrite(writeOpts)
-	case JSON:
-		return NewJSONWrite(writeOpts)
-	case RAW:
-		return NewRAWWrite(writeOpts)
-	case MD:
-		return NewTWWrite(writeOpts, true)
-	case AT:
-		return NewTWWrite(writeOpts, false)
-	case VF:
-		return NewVFWrite(writeOpts)
-	case TBLN:
-		return NewTBLNWrite(writeOpts)
-	case CSV:
-		return NewCSVWrite(writeOpts)
-	default:
-		return NewCSVWrite(writeOpts)
-	}
 }
