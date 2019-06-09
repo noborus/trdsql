@@ -12,7 +12,7 @@ import (
 )
 
 type Importer interface {
-	Import(db *DDB, sqlstr string) (string, error)
+	Import(db *DB, query string) (string, error)
 }
 
 type ReadOpts struct {
@@ -45,12 +45,12 @@ func NewImporter(readOpts ReadOpts) *importer {
 // Import is parses the SQL statement and imports one or more tables.
 // Return the rewritten SQL and error.
 // No error is returned if there is no table to import.
-func (i *importer) Import(db *DDB, sqlstr string) (string, error) {
-	tables := listTable(sqlstr)
+func (i *importer) Import(db *DB, query string) (string, error) {
+	tables := listTable(query)
 	if len(tables) == 0 {
 		// without FROM clause. ex. SELECT 1+1;
 		debug.Printf("table not found\n")
-		return sqlstr, nil
+		return query, nil
 	}
 	created := make(map[string]bool)
 	for _, fileName := range tables {
@@ -60,22 +60,22 @@ func (i *importer) Import(db *DDB, sqlstr string) (string, error) {
 		}
 		tableName, err := ImportFile(db, fileName, i.ReadOpts)
 		if err != nil {
-			return sqlstr, err
+			return query, err
 		}
 		if tableName != "" {
-			sqlstr = db.RewriteSQL(sqlstr, fileName, tableName)
+			query = db.RewriteSQL(query, fileName, tableName)
 			debug.Printf("escaped [%s] -> [%s]\n", fileName, tableName)
 		}
 		created[fileName] = true
 	}
 
-	return sqlstr, nil
+	return query, nil
 }
 
-func listTable(sqlstr string) []string {
+func listTable(query string) []string {
 	var tables []string
 	var tableFlag, frontFlag bool
-	word := sqlFields(sqlstr)
+	word := sqlFields(query)
 	debug.Printf("[%s]", strings.Join(word, "]["))
 	for i, w := range word {
 		frontFlag = false
@@ -154,7 +154,7 @@ func isSQLKeyWords(str string) bool {
 // ImportFile is imports a file.
 // Return the escaped table name and error.
 // Do not import if file not found (no error)
-func ImportFile(db *DDB, fileName string, opts ReadOpts) (string, error) {
+func ImportFile(db *DB, fileName string, opts ReadOpts) (string, error) {
 	file, err := importFileOpen(fileName)
 	if err != nil {
 		debug.Printf("%s\n", err)
@@ -246,39 +246,39 @@ func tableFileOpen(fileName string) (io.ReadCloser, error) {
 	return extFileReader(fileName, file), nil
 }
 
-func globFileOpen(fileName string) (*io.PipeReader, error) {
-	fileName = trimQuote(fileName)
-	files, err := filepath.Glob(fileName)
+func globFileOpen(globName string) (*io.PipeReader, error) {
+	globName = trimQuote(globName)
+	fileNames, err := filepath.Glob(globName)
 	if err != nil {
 		return nil, err
 	}
-	if len(files) == 0 {
-		return nil, fmt.Errorf("no matches found: %s", fileName)
+	if len(fileNames) == 0 {
+		return nil, fmt.Errorf("no matches found: %s", fileNames)
 	}
 	pipeReader, pipeWriter := io.Pipe()
 	go func() {
 		defer pipeWriter.Close()
-		for _, file := range files {
-			f, err := os.Open(file)
-			debug.Printf("Open: [%s]", file)
+		for _, fileName := range fileNames {
+			f, err := os.Open(fileName)
+			debug.Printf("Open: [%s]", fileName)
 			if err != nil {
-				log.Printf("ERROR: %s:%s", file, err)
+				log.Printf("ERROR: %s:%s", fileName, err)
 				continue
 			}
-			r := extFileReader(file, f)
+			r := extFileReader(fileName, f)
 			_, err = io.Copy(pipeWriter, r)
 			if err != nil {
-				log.Printf("ERROR: %s:%s", file, err)
+				log.Printf("ERROR: %s:%s", fileName, err)
 				continue
 			}
 			_, err = pipeWriter.Write([]byte("\n"))
 			if err != nil {
-				log.Printf("ERROR: %s:%s", file, err)
+				log.Printf("ERROR: %s:%s", fileName, err)
 				continue
 			}
 			err = f.Close()
 			if err != nil {
-				log.Printf("ERROR: %s:%s", file, err)
+				log.Printf("ERROR: %s:%s", fileName, err)
 			}
 		}
 	}()

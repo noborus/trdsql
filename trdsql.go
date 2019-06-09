@@ -1,3 +1,4 @@
+// package trdsql execute SQL queries on csv and other tabular data.
 package trdsql
 
 import (

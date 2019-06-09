@@ -12,7 +12,7 @@ import (
 )
 
 type Exporter interface {
-	Export(db *DDB, sqlstr string) error
+	Export(db *DB, query string) error
 }
 
 type WriteOpts struct {
@@ -45,8 +45,8 @@ func NewExporter(writeOpts WriteOpts, writer Writer) *exporter {
 }
 
 // Export is execute SQL and Exporter the result.
-func (e *exporter) Export(db *DDB, sqlstr string) error {
-	rows, err := db.Select(sqlstr)
+func (e *exporter) Export(db *DB, query string) error {
+	rows, err := db.Select(query)
 	if err != nil {
 		return err
 	}

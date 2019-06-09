@@ -75,17 +75,17 @@ var Debug bool
 // Run is main routine.
 func Run(args []string) int {
 	var (
-		usage   bool
-		version bool
-		dbList  bool
-		config  string
-		cDB     string
-		cDriver string
-		cDSN    string
-		guess   bool
-		query   string
-		inFlag  inputFlag
-		outFlag outputFlag
+		usage     bool
+		version   bool
+		dbList    bool
+		config    string
+		cDB       string
+		cDriver   string
+		cDSN      string
+		guess     bool
+		queryFile string
+		inFlag    inputFlag
+		outFlag   outputFlag
 	)
 
 	readOpts := trdsql.NewReadOpts()
@@ -105,7 +105,7 @@ func Run(args []string) int {
 	flags.StringVar(&cDriver, "driver", "", "database driver.  [ "+strings.Join(sql.Drivers(), " | ")+" ]")
 	flags.StringVar(&cDSN, "dsn", "", "database connection option.")
 	flags.BoolVar(&guess, "ig", true, "Guess format from extension.")
-	flags.StringVar(&query, "q", "", "Read query from the provided filename.")
+	flags.StringVar(&queryFile, "q", "", "Read query from the provided filename.")
 	flags.BoolVar(&usage, "help", false, "display usage information.")
 	flags.BoolVar(&version, "version", false, "display version information.")
 	flags.BoolVar(&Debug, "debug", false, "debug print.")
@@ -162,13 +162,13 @@ func Run(args []string) int {
 		return 0
 	}
 
-	sql, err := getSQL(flags.Args(), query)
+	query, err := getQuery(flags.Args(), queryFile)
 	if err != nil {
 		log.Printf("ERROR: %s", err)
 		return 1
 	}
 
-	if usage || (len(sql) == 0) {
+	if usage || (len(query) == 0) {
 		fmt.Fprintf(os.Stderr, `
 Usage: %s [OPTIONS] [SQL(SELECT...)]
 
@@ -194,28 +194,28 @@ Options:
 		trd.Dsn = dsn
 	}
 
-	err = trd.Exec(sql)
+	err = trd.Exec(query)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return 0
 }
 
-func getSQL(args []string, fileName string) (string, error) {
-	sqlstr := ""
+func getQuery(args []string, fileName string) (string, error) {
+	query := ""
 	if fileName != "" {
-		sqlbyte, err := ioutil.ReadFile(fileName)
+		sqlByte, err := ioutil.ReadFile(fileName)
 		if err != nil {
 			return "", err
 		}
-		sqlstr = string(sqlbyte)
+		query = string(sqlByte)
 	} else {
-		sqlstr = strings.Join(args, " ")
+		query = strings.Join(args, " ")
 	}
-	if strings.HasSuffix(sqlstr, ";") {
-		sqlstr = sqlstr[:len(sqlstr)-1]
+	if strings.HasSuffix(query, ";") {
+		query = query[:len(query)-1]
 	}
-	return sqlstr, nil
+	return query, nil
 }
 
 func getDB(cfg *config, cDB string, cDriver string, cDSN string) (string, string) {

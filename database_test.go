@@ -66,14 +66,14 @@ func TestRewrite(t *testing.T) {
 		}
 	}()
 	orgstr := "SELECT test.csv.* FROM test.csv"
-	sqlstr := orgstr
-	sqlstr = db.RewriteSQL(sqlstr, "test.csv", "`test.csv`")
-	if sqlstr != "SELECT `test.csv`.* FROM `test.csv`" {
+	query := orgstr
+	query = db.RewriteSQL(query, "test.csv", "`test.csv`")
+	if query != "SELECT `test.csv`.* FROM `test.csv`" {
 		t.Fatal("Rewrite error")
 	}
 	// Do not rewrite more than 2 times
-	sqlstr = db.RewriteSQL(sqlstr, "test.csv", "`test.csv`")
-	if sqlstr != "SELECT `test.csv`.* FROM `test.csv`" {
+	query = db.RewriteSQL(query, "test.csv", "`test.csv`")
+	if query != "SELECT `test.csv`.* FROM `test.csv`" {
 		t.Fatal("Rewrite error")
 	}
 }
