@@ -1,64 +1,26 @@
+// package trdsql execute SQL queries on csv and other tabular data.
 package trdsql
 
 import (
 	"fmt"
-	"io"
 	"log"
-	"os"
 )
 
 // TRDSQL structure is a structure that defines the whole operation.
 type TRDSQL struct {
-	Driver    string
-	Dsn       string
-	SQL       string
-	ReadOpts  ReadOpts
-	WriteOpts WriteOpts
-	Writer    Writer
+	Driver   string
+	Dsn      string
+	Importer Importer
+	Exporter Exporter
 }
 
-func NewTRDSQL() *TRDSQL {
+func NewTRDSQL(im Importer, ex Exporter) *TRDSQL {
 	return &TRDSQL{
-		Driver:    "sqlite3",
-		Dsn:       "",
-		SQL:       "",
-		ReadOpts:  NewReadOpts(),
-		WriteOpts: NewWriteOpts(),
+		Driver:   "sqlite3",
+		Dsn:      "",
+		Importer: im,
+		Exporter: ex,
 	}
-}
-
-func NewReadOpts() ReadOpts {
-	return ReadOpts{
-		InDelimiter: ",",
-		InHeader:    false,
-		InPreRead:   1,
-		InSkip:      0,
-	}
-}
-
-func NewWriteOpts() WriteOpts {
-	return WriteOpts{
-		OutDelimiter: ",",
-		OutHeader:    false,
-		OutStream:    os.Stdout,
-		ErrStream:    os.Stderr,
-	}
-}
-
-type ReadOpts struct {
-	InFormat    Format
-	InPreRead   int
-	InSkip      int
-	InDelimiter string
-	InHeader    bool
-}
-
-type WriteOpts struct {
-	OutFormat    Format
-	OutDelimiter string
-	OutHeader    bool
-	OutStream    io.Writer
-	ErrStream    io.Writer
 }
 
 // Format represents the input/output format
@@ -86,10 +48,35 @@ const (
 	VF
 )
 
+func (f Format) String() string {
+	switch f {
+	case GUESS:
+		return "GUESS"
+	case CSV:
+		return "CSV"
+	case LTSV:
+		return "LTSV"
+	case JSON:
+		return "JSON"
+	case TBLN:
+		return "TBLN"
+	case RAW:
+		return "RAW"
+	case MD:
+		return "MD"
+	case AT:
+		return "AT"
+	case VF:
+		return "VF"
+	default:
+		return "Unknown"
+	}
+}
+
 // Default database type
 const DefaultDBType = "text"
 
-func (trd *TRDSQL) Exec() error {
+func (trd *TRDSQL) Exec(sql string) error {
 	db, err := Connect(trd.Driver, trd.Dsn)
 	if err != nil {
 		return fmt.Errorf("ERROR(CONNECT):%s", err)
@@ -101,43 +88,29 @@ func (trd *TRDSQL) Exec() error {
 		}
 	}()
 
-	if trd.Writer == nil {
-		trd.Writer = trd.NewWriter()
-	}
-
-	db.tx, err = db.Begin()
+	db.Tx, err = db.Begin()
 	if err != nil {
 		return fmt.Errorf("ERROR(BEGIN):%s", err)
 	}
 
-	trd.SQL, err = trd.Import(db, trd.SQL)
-	if err != nil {
-		return fmt.Errorf("ERROR(IMPORT):%s", err)
+	if trd.Importer != nil {
+		sql, err = trd.Importer.Import(db, sql)
+		if err != nil {
+			return fmt.Errorf("ERROR(IMPORT):%s", err)
+		}
 	}
 
-	err = trd.Export(db, trd.SQL)
-	if err != nil {
-		return fmt.Errorf("ERROR(EXPORT):%s", err)
+	if trd.Exporter != nil {
+		err = trd.Exporter.Export(db, sql)
+		if err != nil {
+			return fmt.Errorf("ERROR(EXPORT):%s", err)
+		}
 	}
 
-	err = db.tx.Commit()
+	err = db.Tx.Commit()
 	if err != nil {
 		return fmt.Errorf("ERROR(COMMIT):%s", err)
 	}
 
 	return nil
-}
-
-type debugT bool
-
-var debug = debugT(false)
-
-func DebugEnable() {
-	debug = true
-}
-
-func (d debugT) Printf(format string, args ...interface{}) {
-	if d {
-		log.Printf(format, args...)
-	}
 }

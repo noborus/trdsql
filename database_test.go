@@ -26,7 +26,7 @@ func TestErrorSelect(t *testing.T) {
 			t.Fatalf("Disconnect error")
 		}
 	}()
-	db.tx, err = db.DB.Begin()
+	db.Tx, err = db.DB.Begin()
 	if err != nil {
 		t.Fatalf("Begin error")
 	}
@@ -34,12 +34,12 @@ func TestErrorSelect(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Select error")
 	}
-	err = db.tx.Commit()
+	err = db.Tx.Commit()
 	if err != nil {
 		t.Fatalf("Commit error")
 	}
 
-	db.tx, err = db.DB.Begin()
+	db.Tx, err = db.DB.Begin()
 	if err != nil {
 		t.Fatalf("Begin error")
 
@@ -48,7 +48,7 @@ func TestErrorSelect(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Select error")
 	}
-	err = db.tx.Commit()
+	err = db.Tx.Commit()
 	if err != nil {
 		t.Fatalf("Commit error")
 	}
@@ -66,14 +66,14 @@ func TestRewrite(t *testing.T) {
 		}
 	}()
 	orgstr := "SELECT test.csv.* FROM test.csv"
-	sqlstr := orgstr
-	sqlstr = db.RewriteSQL(sqlstr, "test.csv", "`test.csv`")
-	if sqlstr != "SELECT `test.csv`.* FROM `test.csv`" {
+	query := orgstr
+	query = db.RewriteSQL(query, "test.csv", "`test.csv`")
+	if query != "SELECT `test.csv`.* FROM `test.csv`" {
 		t.Fatal("Rewrite error")
 	}
 	// Do not rewrite more than 2 times
-	sqlstr = db.RewriteSQL(sqlstr, "test.csv", "`test.csv`")
-	if sqlstr != "SELECT `test.csv`.* FROM `test.csv`" {
+	query = db.RewriteSQL(query, "test.csv", "`test.csv`")
+	if query != "SELECT `test.csv`.* FROM `test.csv`" {
 		t.Fatal("Rewrite error")
 	}
 }

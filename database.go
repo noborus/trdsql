@@ -16,20 +16,20 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-// DDB is *sql.DB wrapper.
-type DDB struct {
+// DB is *sql.DB wrapper.
+type DB struct {
 	driver    string
 	dsn       string
 	escape    string
 	rewritten []string
 	maxBulk   int
 	*sql.DB
-	tx *sql.Tx
+	Tx *sql.Tx
 }
 
 // Connect is connects to the database
-func Connect(driver, dsn string) (*DDB, error) {
-	var db DDB
+func Connect(driver, dsn string) (*DB, error) {
+	var db DB
 	var err error
 	db.driver = driver
 	db.dsn = dsn
@@ -49,35 +49,35 @@ func Connect(driver, dsn string) (*DDB, error) {
 }
 
 // Disconnect is disconnect the database
-func (db *DDB) Disconnect() error {
+func (db *DB) Disconnect() error {
 	err := db.Close()
 	return err
 }
 
 // CreateTable is create a temporary table
-func (db *DDB) CreateTable(tableName string, names []string, types []string) error {
-	var sqlstr string
+func (db *DB) CreateTable(tableName string, names []string, types []string) error {
+	var query string
 	columns := make([]string, len(names))
 	for i := 0; i < len(names); i++ {
 		columns[i] = db.escape + names[i] + db.escape + " " + types[i]
 	}
-	sqlstr = "CREATE TEMPORARY TABLE "
-	sqlstr = sqlstr + tableName + " ( " + strings.Join(columns, ",") + " );"
-	debug.Printf(sqlstr)
-	_, err := db.tx.Exec(sqlstr)
+	query = "CREATE TEMPORARY TABLE "
+	query = query + tableName + " ( " + strings.Join(columns, ",") + " );"
+	debug.Printf(query)
+	_, err := db.Tx.Exec(query)
 	return err
 }
 
 // Select is executes SQL select statements
-func (db *DDB) Select(sqlstr string) (*sql.Rows, error) {
-	sqlstr = strings.TrimSpace(sqlstr)
-	if sqlstr == "" {
+func (db *DB) Select(query string) (*sql.Rows, error) {
+	query = strings.TrimSpace(query)
+	if query == "" {
 		return nil, errors.New("no SQL statement")
 	}
-	debug.Printf(sqlstr)
-	rows, err := db.tx.Query(sqlstr)
+	debug.Printf(query)
+	rows, err := db.Tx.Query(query)
 	if err != nil {
-		return rows, fmt.Errorf("SQL:%s\n[%s]", err, sqlstr)
+		return rows, fmt.Errorf("SQL:%s\n[%s]", err, query)
 	}
 	return rows, nil
 }
@@ -87,7 +87,7 @@ type Table struct {
 	tableName   string
 	columnNames []string
 	columns     []string
-	sqlstr      string
+	query       string
 	place       string
 	maxCap      int
 	preRead     int
@@ -97,7 +97,7 @@ type Table struct {
 }
 
 // Import is import to the table.
-func (db *DDB) Import(tableName string, columnNames []string, reader Reader, preRead int) error {
+func (db *DB) Import(tableName string, columnNames []string, reader Reader, preRead int) error {
 	var err error
 	columns := make([]string, len(columnNames))
 	for i := range columnNames {
@@ -121,10 +121,10 @@ func (db *DDB) Import(tableName string, columnNames []string, reader Reader, pre
 	return err
 }
 
-func (db *DDB) copyImport(table *Table, reader Reader) error {
-	sqlstr := "COPY " + table.tableName + " (" + strings.Join(table.columns, ",") + ") FROM STDIN"
-	debug.Printf(sqlstr)
-	stmt, err := db.tx.Prepare(sqlstr)
+func (db *DB) copyImport(table *Table, reader Reader) error {
+	query := "COPY " + table.tableName + " (" + strings.Join(table.columns, ",") + ") FROM STDIN"
+	debug.Printf(query)
+	stmt, err := db.Tx.Prepare(query)
 	if err != nil {
 		return fmt.Errorf("COPY Prepare: %s", err)
 	}
@@ -161,12 +161,12 @@ func (db *DDB) copyImport(table *Table, reader Reader) error {
 	return err
 }
 
-func (db *DDB) insertImport(table *Table, reader Reader) error {
+func (db *DB) insertImport(table *Table, reader Reader) error {
 	var err error
 	var stmt *sql.Stmt
 	defer db.stmtClose(stmt)
 	// #nosec G202
-	table.sqlstr = "INSERT INTO " + table.tableName + " (" + strings.Join(table.columns, ",") + ") VALUES "
+	table.query = "INSERT INTO " + table.tableName + " (" + strings.Join(table.columns, ",") + ") VALUES "
 	table.place = "(" + strings.Repeat("?,", len(table.columnNames)-1) + "?)"
 	table.maxCap = (db.maxBulk / len(table.row)) * len(table.row)
 	bulk := make([]interface{}, 0, table.maxCap)
@@ -224,7 +224,7 @@ func bulkPush(table *Table, input Reader, bulk []interface{}) ([]interface{}, er
 	return bulk, nil
 }
 
-func (db *DDB) bulkStmtOpen(table *Table, stmt *sql.Stmt) (*sql.Stmt, error) {
+func (db *DB) bulkStmtOpen(table *Table, stmt *sql.Stmt) (*sql.Stmt, error) {
 	var err error
 
 	if table.lastCount != table.count {
@@ -243,7 +243,7 @@ func (db *DDB) bulkStmtOpen(table *Table, stmt *sql.Stmt) (*sql.Stmt, error) {
 	return stmt, nil
 }
 
-func (db *DDB) stmtClose(stmt *sql.Stmt) {
+func (db *DB) stmtClose(stmt *sql.Stmt) {
 	if stmt != nil {
 		err := stmt.Close()
 		if err != nil {
@@ -252,19 +252,19 @@ func (db *DDB) stmtClose(stmt *sql.Stmt) {
 	}
 }
 
-func (db *DDB) insertPrepare(table *Table) (*sql.Stmt, error) {
-	sqlstr := table.sqlstr +
+func (db *DB) insertPrepare(table *Table) (*sql.Stmt, error) {
+	query := table.query +
 		strings.Repeat(table.place+",", table.count-1) + table.place
-	debug.Printf(sqlstr)
-	stmt, err := db.tx.Prepare(sqlstr)
+	debug.Printf(query)
+	stmt, err := db.Tx.Prepare(query)
 	if err != nil {
-		return nil, fmt.Errorf("INSERT Prepare: %s:%s", sqlstr, err)
+		return nil, fmt.Errorf("INSERT Prepare: %s:%s", query, err)
 	}
 	return stmt, nil
 }
 
 // EscapeTable is escape table name.
-func (db *DDB) EscapeTable(oldName string) string {
+func (db *DB) EscapeTable(oldName string) string {
 	var newName string
 	if oldName[0] != db.escape[0] {
 		newName = db.escape + oldName + db.escape
@@ -275,14 +275,14 @@ func (db *DDB) EscapeTable(oldName string) string {
 }
 
 // RewriteSQL is rewrite SQL from file name to table name.
-func (db *DDB) RewriteSQL(sqlstr string, oldName string, newName string) (rewrite string) {
+func (db *DB) RewriteSQL(query string, oldName string, newName string) (rewrite string) {
 	for _, rewritten := range db.rewritten {
 		if rewritten == newName {
 			// Rewritten
-			return sqlstr
+			return query
 		}
 	}
-	rewrite = strings.Replace(sqlstr, oldName, newName, -1)
+	rewrite = strings.Replace(query, oldName, newName, -1)
 	db.rewritten = append(db.rewritten, newName)
 	return rewrite
 }

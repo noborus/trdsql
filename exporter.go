@@ -3,46 +3,50 @@ package trdsql
 import (
 	"encoding/hex"
 	"fmt"
+	"io"
 	"log"
+	"os"
 	"strings"
 	"time"
 	"unicode/utf8"
 )
 
-// Writer is file format writer
-type Writer interface {
-	First([]string, []string) error
-	WriteRow([]interface{}, []string) error
-	Last() error
+type Exporter interface {
+	Export(db *DB, query string) error
 }
 
-func (trd *TRDSQL) NewWriter() Writer {
-	switch trd.WriteOpts.OutFormat {
-	case LTSV:
-		return NewLTSVWrite(trd.WriteOpts)
-	case JSON:
-		return NewJSONWrite(trd.WriteOpts)
-	case RAW:
-		return NewRAWWrite(trd.WriteOpts)
-	case MD:
-		return NewTWWrite(trd.WriteOpts, true)
-	case AT:
-		return NewTWWrite(trd.WriteOpts, false)
-	case VF:
-		return NewVFWrite(trd.WriteOpts)
-	case TBLN:
-		return NewTBLNWrite(trd.WriteOpts)
-	case CSV:
-		return NewCSVWrite(trd.WriteOpts)
-	default:
-		return NewCSVWrite(trd.WriteOpts)
+type WriteOpts struct {
+	OutFormat    Format
+	OutDelimiter string
+	OutHeader    bool
+	OutStream    io.Writer
+	ErrStream    io.Writer
+}
+
+func NewWriteOpts() WriteOpts {
+	return WriteOpts{
+		OutDelimiter: ",",
+		OutHeader:    false,
+		OutStream:    os.Stdout,
+		ErrStream:    os.Stderr,
+	}
+}
+
+type exporter struct {
+	WriteOpts
+	Writer
+}
+
+func NewExporter(writeOpts WriteOpts, writer Writer) *exporter {
+	return &exporter{
+		WriteOpts: writeOpts,
+		Writer:    writer,
 	}
 }
 
 // Export is execute SQL and Exporter the result.
-func (trd *TRDSQL) Export(db *DDB, sqlstr string) error {
-	w := trd.Writer
-	rows, err := db.Select(sqlstr)
+func (e *exporter) Export(db *DB, query string) error {
+	rows, err := db.Select(query)
 	if err != nil {
 		return err
 	}
@@ -72,7 +76,7 @@ func (trd *TRDSQL) Export(db *DDB, sqlstr string) error {
 		types[i] = ct.DatabaseTypeName()
 	}
 
-	err = w.First(columns, types)
+	err = e.Writer.First(columns, types)
 	if err != nil {
 		return err
 	}
@@ -81,12 +85,12 @@ func (trd *TRDSQL) Export(db *DDB, sqlstr string) error {
 		if err != nil {
 			return err
 		}
-		err = w.WriteRow(values, columns)
+		err = e.Writer.WriteRow(values, columns)
 		if err != nil {
 			return err
 		}
 	}
-	return w.Last()
+	return e.Writer.Last()
 }
 
 func ConvertTypes(dbTypes []string) []string {
@@ -134,4 +138,34 @@ func ValString(v interface{}) string {
 		str = strings.ReplaceAll(str, "\n", "\\n")
 	}
 	return str
+}
+
+// Writer is file format writer
+type Writer interface {
+	First([]string, []string) error
+	WriteRow([]interface{}, []string) error
+	Last() error
+}
+
+func NewWriter(writeOpts WriteOpts) Writer {
+	switch writeOpts.OutFormat {
+	case LTSV:
+		return NewLTSVWrite(writeOpts)
+	case JSON:
+		return NewJSONWrite(writeOpts)
+	case RAW:
+		return NewRAWWrite(writeOpts)
+	case MD:
+		return NewTWWrite(writeOpts, true)
+	case AT:
+		return NewTWWrite(writeOpts, false)
+	case VF:
+		return NewVFWrite(writeOpts)
+	case TBLN:
+		return NewTBLNWrite(writeOpts)
+	case CSV:
+		return NewCSVWrite(writeOpts)
+	default:
+		return NewCSVWrite(writeOpts)
+	}
 }

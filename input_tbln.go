@@ -8,7 +8,7 @@ import (
 
 // TBLNRead provides methods of the Reader interface
 type TBLNRead struct {
-	reader  *tbln.Reader
+	reader  tbln.Reader
 	preRead [][]interface{}
 }
 
@@ -31,18 +31,22 @@ func (tr *TBLNRead) GetColumn(rowNum int) ([]string, error) {
 		row[i] = c
 	}
 	tr.preRead[0] = row
-	return tr.reader.Names, nil
+	d := tr.reader.GetDefinition()
+	return d.Names(), nil
 }
 
 // GetTypes is reads the specified number of rows and determines the column type.
 func (tr *TBLNRead) GetTypes() ([]string, error) {
-	if len(tr.reader.Types) == 0 {
-		tr.reader.Types = make([]string, len(tr.reader.Names))
-		for i := 0; i < len(tr.reader.Names); i++ {
-			tr.reader.Types[i] = DefaultDBType
+	d := tr.reader.GetDefinition()
+	names := d.Names()
+	types := d.Types()
+	if len(types) == 0 {
+		types = make([]string, len(names))
+		for i := 0; i < len(names); i++ {
+			types[i] = DefaultDBType
 		}
 	}
-	return tr.reader.Types, nil
+	return types, nil
 }
 
 // PreReadRow is returns only columns that store preread rows.
