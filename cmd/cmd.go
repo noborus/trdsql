@@ -144,7 +144,7 @@ func Run(args []string) int {
 	}
 
 	if Debug {
-		trdsql.DebugEnable()
+		trdsql.EnableDebug()
 	}
 
 	cfgFile := configOpen(config)

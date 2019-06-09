@@ -3,30 +3,49 @@ package trdsql
 import (
 	"encoding/hex"
 	"fmt"
+	"io"
 	"log"
+	"os"
 	"strings"
 	"time"
 	"unicode/utf8"
 )
 
-type Exp struct {
+type Exporter interface {
+	Export(db *DDB, sqlstr string) error
+}
+
+type WriteOpts struct {
+	OutFormat    Format
+	OutDelimiter string
+	OutHeader    bool
+	OutStream    io.Writer
+	ErrStream    io.Writer
+}
+
+func NewWriteOpts() WriteOpts {
+	return WriteOpts{
+		OutDelimiter: ",",
+		OutHeader:    false,
+		OutStream:    os.Stdout,
+		ErrStream:    os.Stderr,
+	}
+}
+
+type exporter struct {
 	WriteOpts
 	Writer
 }
 
-func NewExporter(writeOpts WriteOpts, writer Writer) *Exp {
-	return &Exp{
+func NewExporter(writeOpts WriteOpts, writer Writer) *exporter {
+	return &exporter{
 		WriteOpts: writeOpts,
 		Writer:    writer,
 	}
 }
 
-type Exporter interface {
-	Export(db *DDB, sqlstr string) error
-}
-
 // Export is execute SQL and Exporter the result.
-func (e *Exp) Export(db *DDB, sqlstr string) error {
+func (e *exporter) Export(db *DDB, sqlstr string) error {
 	rows, err := db.Select(sqlstr)
 	if err != nil {
 		return err

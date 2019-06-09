@@ -15,12 +15,29 @@ type Importer interface {
 	Import(db *DDB, sqlstr string) (string, error)
 }
 
-type Imp struct {
+type ReadOpts struct {
+	InFormat    Format
+	InPreRead   int
+	InSkip      int
+	InDelimiter string
+	InHeader    bool
+}
+
+func NewReadOpts() ReadOpts {
+	return ReadOpts{
+		InDelimiter: ",",
+		InHeader:    false,
+		InPreRead:   1,
+		InSkip:      0,
+	}
+}
+
+type importer struct {
 	ReadOpts
 }
 
-func NewImporter(readOpts ReadOpts) *Imp {
-	return &Imp{
+func NewImporter(readOpts ReadOpts) *importer {
+	return &importer{
 		ReadOpts: readOpts,
 	}
 }
@@ -28,7 +45,7 @@ func NewImporter(readOpts ReadOpts) *Imp {
 // Import is parses the SQL statement and imports one or more tables.
 // Return the rewritten SQL and error.
 // No error is returned if there is no table to import.
-func (i *Imp) Import(db *DDB, sqlstr string) (string, error) {
+func (i *importer) Import(db *DDB, sqlstr string) (string, error) {
 	tables := listTable(sqlstr)
 	if len(tables) == 0 {
 		// without FROM clause. ex. SELECT 1+1;
@@ -178,31 +195,6 @@ func ImportFile(db *DDB, fileName string, opts ReadOpts) (string, error) {
 	}
 	err = db.Import(tableName, columnNames, reader, opts.InPreRead)
 	return tableName, err
-}
-
-// Reader is wrap the reader.
-type Reader interface {
-	GetColumn(rowNum int) ([]string, error)
-	GetTypes() ([]string, error)
-	PreReadRow() [][]interface{}
-	ReadRow([]interface{}) ([]interface{}, error)
-}
-
-// NewReader returns an Reader interface
-// depending on the file to be imported.
-func NewReader(reader io.Reader, opts ReadOpts) (Reader, error) {
-	switch opts.InFormat {
-	case CSV:
-		return NewCSVReader(reader, opts)
-	case LTSV:
-		return NewLTSVReader(reader, opts)
-	case JSON:
-		return NewJSONReader(reader)
-	case TBLN:
-		return NewTBLNReader(reader)
-	default:
-		return nil, fmt.Errorf("unknown format")
-	}
 }
 
 func guessExtension(tableName string) Format {
