@@ -9,46 +9,24 @@ import (
 	"unicode/utf8"
 )
 
-// Writer is file format writer
-type Writer interface {
-	First([]string, []string) error
-	WriteRow([]interface{}, []string) error
-	Last() error
+type Exp struct {
+	WriteOpts
+	Writer
 }
 
-func (trd *TRDSQL) NewWriter() Writer {
-	switch trd.WriteOpts.OutFormat {
-	case LTSV:
-		return NewLTSVWrite(trd.WriteOpts)
-	case JSON:
-		return NewJSONWrite(trd.WriteOpts)
-	case RAW:
-		return NewRAWWrite(trd.WriteOpts)
-	case MD:
-		return NewTWWrite(trd.WriteOpts, true)
-	case AT:
-		return NewTWWrite(trd.WriteOpts, false)
-	case VF:
-		return NewVFWrite(trd.WriteOpts)
-	case TBLN:
-		return NewTBLNWrite(trd.WriteOpts)
-	case CSV:
-		return NewCSVWrite(trd.WriteOpts)
-	default:
-		return NewCSVWrite(trd.WriteOpts)
+func NewExporter(writeOpts WriteOpts, writer Writer) *Exp {
+	return &Exp{
+		WriteOpts: writeOpts,
+		Writer:    writer,
 	}
 }
 
-type ExportFunc func(db *DDB, sqlstr string, writer Writer)
-
-var Export ExportFunc
-
 type Exporter interface {
-	Export(db *DDB, sqlstr string, writer Writer) error
+	Export(db *DDB, sqlstr string) error
 }
 
 // Export is execute SQL and Exporter the result.
-func (f *ExportFunc) Export(db *DDB, sqlstr string, writer Writer) error {
+func (e *Exp) Export(db *DDB, sqlstr string) error {
 	rows, err := db.Select(sqlstr)
 	if err != nil {
 		return err
@@ -79,7 +57,7 @@ func (f *ExportFunc) Export(db *DDB, sqlstr string, writer Writer) error {
 		types[i] = ct.DatabaseTypeName()
 	}
 
-	err = writer.First(columns, types)
+	err = e.Writer.First(columns, types)
 	if err != nil {
 		return err
 	}
@@ -88,12 +66,12 @@ func (f *ExportFunc) Export(db *DDB, sqlstr string, writer Writer) error {
 		if err != nil {
 			return err
 		}
-		err = writer.WriteRow(values, columns)
+		err = e.Writer.WriteRow(values, columns)
 		if err != nil {
 			return err
 		}
 	}
-	return writer.Last()
+	return e.Writer.Last()
 }
 
 func ConvertTypes(dbTypes []string) []string {
@@ -141,4 +119,34 @@ func ValString(v interface{}) string {
 		str = strings.ReplaceAll(str, "\n", "\\n")
 	}
 	return str
+}
+
+// Writer is file format writer
+type Writer interface {
+	First([]string, []string) error
+	WriteRow([]interface{}, []string) error
+	Last() error
+}
+
+func NewWriter(writeOpts WriteOpts) Writer {
+	switch writeOpts.OutFormat {
+	case LTSV:
+		return NewLTSVWrite(writeOpts)
+	case JSON:
+		return NewJSONWrite(writeOpts)
+	case RAW:
+		return NewRAWWrite(writeOpts)
+	case MD:
+		return NewTWWrite(writeOpts, true)
+	case AT:
+		return NewTWWrite(writeOpts, false)
+	case VF:
+		return NewVFWrite(writeOpts)
+	case TBLN:
+		return NewTBLNWrite(writeOpts)
+	case CSV:
+		return NewCSVWrite(writeOpts)
+	default:
+		return NewCSVWrite(writeOpts)
+	}
 }

@@ -11,26 +11,24 @@ import (
 	"strings"
 )
 
-// Reader is wrap the reader.
-type Reader interface {
-	GetColumn(rowNum int) ([]string, error)
-	GetTypes() ([]string, error)
-	PreReadRow() [][]interface{}
-	ReadRow([]interface{}) ([]interface{}, error)
+type Importer interface {
+	Import(db *DDB, sqlstr string) (string, error)
 }
 
-type ImportFunc func(db *DDB, sqlstr string, opts ReadOpts)
+type Imp struct {
+	ReadOpts
+}
 
-var Import ImportFunc
-
-type Importer interface {
-	Import(db *DDB, sqlstr string, opts ReadOpts) (string, error)
+func NewImporter(readOpts ReadOpts) *Imp {
+	return &Imp{
+		ReadOpts: readOpts,
+	}
 }
 
 // Import is parses the SQL statement and imports one or more tables.
 // Return the rewritten SQL and error.
 // No error is returned if there is no table to import.
-func (f *ImportFunc) Import(db *DDB, sqlstr string, opts ReadOpts) (string, error) {
+func (i *Imp) Import(db *DDB, sqlstr string) (string, error) {
 	tables := listTable(sqlstr)
 	if len(tables) == 0 {
 		// without FROM clause. ex. SELECT 1+1;
@@ -43,7 +41,7 @@ func (f *ImportFunc) Import(db *DDB, sqlstr string, opts ReadOpts) (string, erro
 			debug.Printf("already created \"%s\"\n", fileName)
 			continue
 		}
-		tableName, err := ImportFile(db, fileName, opts)
+		tableName, err := ImportFile(db, fileName, i.ReadOpts)
 		if err != nil {
 			return sqlstr, err
 		}
@@ -180,6 +178,14 @@ func ImportFile(db *DDB, fileName string, opts ReadOpts) (string, error) {
 	}
 	err = db.Import(tableName, columnNames, reader, opts.InPreRead)
 	return tableName, err
+}
+
+// Reader is wrap the reader.
+type Reader interface {
+	GetColumn(rowNum int) ([]string, error)
+	GetTypes() ([]string, error)
+	PreReadRow() [][]interface{}
+	ReadRow([]interface{}) ([]interface{}, error)
 }
 
 // NewReader returns an Reader interface

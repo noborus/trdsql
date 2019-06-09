@@ -88,11 +88,10 @@ func Run(args []string) int {
 		outFlag outputFlag
 	)
 
-	flags := flag.NewFlagSet("trdsql", flag.ExitOnError)
+	readOpts := trdsql.NewReadOpts()
+	writeOpts := trdsql.NewWriteOpts()
 
-	tr := trdsql.NewTRDSQL(&trdsql.Import, &trdsql.Export)
-	ro := &tr.ReadOpts
-	wo := &tr.WriteOpts
+	flags := flag.NewFlagSet("trdsql", flag.ExitOnError)
 
 	flags.Usage = func() {
 		fmt.Fprintf(os.Stderr, `Usage: %s [OPTIONS] [SQL(SELECT...)]
@@ -111,18 +110,18 @@ func Run(args []string) int {
 	flags.BoolVar(&version, "version", false, "display version information.")
 	flags.BoolVar(&Debug, "debug", false, "debug print.")
 
-	flags.StringVar(&ro.InDelimiter, "id", ",", "Field delimiter for input.")
-	flags.BoolVar(&ro.InHeader, "ih", false, "The first line is interpreted as column names(CSV only).")
-	flags.IntVar(&ro.InSkip, "is", 0, "Skip header row.")
-	flags.IntVar(&ro.InPreRead, "ir", 1, "Number of row preread for column determination.")
+	flags.StringVar(&readOpts.InDelimiter, "id", ",", "Field delimiter for input.")
+	flags.BoolVar(&readOpts.InHeader, "ih", false, "The first line is interpreted as column names(CSV only).")
+	flags.IntVar(&readOpts.InSkip, "is", 0, "Skip header row.")
+	flags.IntVar(&readOpts.InPreRead, "ir", 1, "Number of row preread for column determination.")
 
 	flags.BoolVar(&inFlag.CSV, "icsv", false, "CSV format for input.")
 	flags.BoolVar(&inFlag.LTSV, "iltsv", false, "LTSV format for input.")
 	flags.BoolVar(&inFlag.JSON, "ijson", false, "JSON format for input.")
 	flags.BoolVar(&inFlag.TBLN, "itbln", false, "TBLN format for input.")
 
-	flags.StringVar(&wo.OutDelimiter, "od", ",", "Field delimiter for output.")
-	flags.BoolVar(&wo.OutHeader, "oh", false, "Output column name as header.")
+	flags.StringVar(&writeOpts.OutDelimiter, "od", ",", "Field delimiter for output.")
+	flags.BoolVar(&writeOpts.OutHeader, "oh", false, "Output column name as header.")
 
 	flags.BoolVar(&outFlag.CSV, "ocsv", true, "CSV format for output.")
 	flags.BoolVar(&outFlag.LTSV, "oltsv", false, "LTSV format for output.")
@@ -179,17 +178,23 @@ Options:
 		return 2
 	}
 
+	readOpts.InFormat = inputFormat(inFlag)
+	importer := trdsql.NewImporter(readOpts)
+
+	writeOpts.OutFormat = outputFormat(outFlag)
+	exporter := trdsql.NewExporter(writeOpts, trdsql.NewWriter(writeOpts))
+
+	trd := trdsql.NewTRDSQL(importer, exporter)
+
 	driver, dsn := getDB(cfg, cDB, cDriver, cDSN)
 	if driver != "" {
-		tr.Driver = driver
+		trd.Driver = driver
 	}
 	if dsn != "" {
-		tr.Dsn = dsn
+		trd.Dsn = dsn
 	}
 
-	ro.InFormat = inputFormat(inFlag)
-	wo.OutFormat = outputFormat(outFlag)
-	err = tr.Exec(sql)
+	err = trd.Exec(sql)
 	if err != nil {
 		log.Fatal(err)
 	}

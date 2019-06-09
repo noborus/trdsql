@@ -9,13 +9,26 @@ import (
 
 // TRDSQL structure is a structure that defines the whole operation.
 type TRDSQL struct {
-	Driver    string
-	Dsn       string
-	ReadOpts  ReadOpts
-	WriteOpts WriteOpts
-	Importer  Importer
-	Exporter  Exporter
-	Writer    Writer
+	Driver   string
+	Dsn      string
+	Importer Importer
+	Exporter Exporter
+}
+
+type ReadOpts struct {
+	InFormat    Format
+	InPreRead   int
+	InSkip      int
+	InDelimiter string
+	InHeader    bool
+}
+
+type WriteOpts struct {
+	OutFormat    Format
+	OutDelimiter string
+	OutHeader    bool
+	OutStream    io.Writer
+	ErrStream    io.Writer
 }
 
 func NewReadOpts() ReadOpts {
@@ -34,22 +47,6 @@ func NewWriteOpts() WriteOpts {
 		OutStream:    os.Stdout,
 		ErrStream:    os.Stderr,
 	}
-}
-
-type ReadOpts struct {
-	InFormat    Format
-	InPreRead   int
-	InSkip      int
-	InDelimiter string
-	InHeader    bool
-}
-
-type WriteOpts struct {
-	OutFormat    Format
-	OutDelimiter string
-	OutHeader    bool
-	OutStream    io.Writer
-	ErrStream    io.Writer
 }
 
 // Format represents the input/output format
@@ -82,12 +79,10 @@ const DefaultDBType = "text"
 
 func NewTRDSQL(im Importer, ex Exporter) *TRDSQL {
 	return &TRDSQL{
-		Driver:    "sqlite3",
-		Dsn:       "",
-		ReadOpts:  NewReadOpts(),
-		WriteOpts: NewWriteOpts(),
-		Importer:  im,
-		Exporter:  ex,
+		Driver:   "sqlite3",
+		Dsn:      "",
+		Importer: im,
+		Exporter: ex,
 	}
 }
 
@@ -109,18 +104,14 @@ func (trd *TRDSQL) Exec(sql string) error {
 	}
 
 	if trd.Importer != nil {
-		sql, err = trd.Importer.Import(db, sql, trd.ReadOpts)
+		sql, err = trd.Importer.Import(db, sql)
 		if err != nil {
 			return fmt.Errorf("ERROR(IMPORT):%s", err)
 		}
 	}
 
 	if trd.Exporter != nil {
-		writer := trd.Writer
-		if writer == nil {
-			writer = trd.NewWriter()
-		}
-		err = trd.Exporter.Export(db, sql, writer)
+		err = trd.Exporter.Export(db, sql)
 		if err != nil {
 			return fmt.Errorf("ERROR(EXPORT):%s", err)
 		}
