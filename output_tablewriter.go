@@ -4,14 +4,15 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-// TWWrite is tablewriter struct
-type TWWrite struct {
+// TWWriter is tablewriter struct
+type TWWriter struct {
 	writer  *tablewriter.Table
 	results []string
 }
 
-func NewTWWrite(writeOpts WriteOpts, markdown bool) *TWWrite {
-	w := &TWWrite{}
+// NewTWWriter returns TWWriter.
+func NewTWWriter(writeOpts WriteOpts, markdown bool) *TWWriter {
+	w := &TWWriter{}
 	w.writer = tablewriter.NewWriter(writeOpts.OutStream)
 	w.writer.SetAutoFormatHeaders(false)
 	if markdown {
@@ -21,16 +22,16 @@ func NewTWWrite(writeOpts WriteOpts, markdown bool) *TWWrite {
 	return w
 }
 
-// PreWrite is preparation
-func (w *TWWrite) PreWrite(columns []string, types []string) error {
+// PreWrite is preparation.
+func (w *TWWriter) PreWrite(columns []string, types []string) error {
 	w.writer.SetHeader(columns)
 	w.results = make([]string, len(columns))
 
 	return nil
 }
 
-// WriteRow is Addition to array
-func (w *TWWrite) WriteRow(values []interface{}, columns []string) error {
+// WriteRow is Addition to array.
+func (w *TWWriter) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
 		w.results[i] = ValString(col)
 	}
@@ -38,8 +39,8 @@ func (w *TWWrite) WriteRow(values []interface{}, columns []string) error {
 	return nil
 }
 
-// PostWrite is Actual output
-func (w *TWWrite) PostWrite() error {
+// PostWrite is Actual output.
+func (w *TWWriter) PostWrite() error {
 	w.writer.Render()
 	return nil
 }

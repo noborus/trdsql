@@ -8,8 +8,8 @@ import (
 	"strconv"
 )
 
-// CSVRead provides methods of the Reader interface
-type CSVRead struct {
+// CSVReader provides methods of the Reader interface.
+type CSVReader struct {
 	reader   *csv.Reader
 	names    []string
 	types    []string
@@ -17,13 +17,14 @@ type CSVRead struct {
 	inHeader bool
 }
 
-func NewCSVReader(reader io.Reader, opts ReadOpts) (Reader, error) {
+// NewCSVReader returns CSVReader and error.
+func NewCSVReader(reader io.Reader, opts ReadOpts) (*CSVReader, error) {
 	var err error
 
 	if opts.InHeader {
 		opts.InPreRead--
 	}
-	r := &CSVRead{}
+	r := &CSVReader{}
 	r.reader = csv.NewReader(reader)
 	r.reader.LazyQuotes = true
 	r.reader.FieldsPerRecord = -1 // no check count
@@ -60,7 +61,7 @@ func delimiter(sepString string) (rune, error) {
 
 // GetColumn is reads the specified number of rows and determines the column name.
 // The previously read row is stored in preRead.
-func (r *CSVRead) GetColumn(rowNum int) ([]string, error) {
+func (r *CSVReader) GetColumn(rowNum int) ([]string, error) {
 	// Header
 	if r.inHeader {
 		row, err := r.reader.Read()
@@ -95,7 +96,7 @@ func (r *CSVRead) GetColumn(rowNum int) ([]string, error) {
 }
 
 // GetTypes is reads the specified number of rows and determines the column type.
-func (r *CSVRead) GetTypes() ([]string, error) {
+func (r *CSVReader) GetTypes() ([]string, error) {
 	r.types = make([]string, len(r.names))
 	for i := 0; i < len(r.names); i++ {
 		r.types[i] = DefaultDBType
@@ -104,7 +105,7 @@ func (r *CSVRead) GetTypes() ([]string, error) {
 }
 
 // PreReadRow is returns only columns that store preread rows.
-func (r *CSVRead) PreReadRow() [][]interface{} {
+func (r *CSVReader) PreReadRow() [][]interface{} {
 	rowNum := len(r.preRead)
 	rows := make([][]interface{}, rowNum)
 	for n := 0; n < rowNum; n++ {
@@ -117,7 +118,7 @@ func (r *CSVRead) PreReadRow() [][]interface{} {
 }
 
 // ReadRow is read the rest of the row.
-func (r *CSVRead) ReadRow(row []interface{}) ([]interface{}, error) {
+func (r *CSVReader) ReadRow(row []interface{}) ([]interface{}, error) {
 	record, err := r.reader.Read()
 	if err != nil {
 		return row, err

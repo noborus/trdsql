@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-// LTSVRead provides methods of the Reader interface
-type LTSVRead struct {
+// LTSVReader provides methods of the Reader interface
+type LTSVReader struct {
 	reader    *bufio.Reader
 	preRead   []map[string]string
 	delimiter string
@@ -17,8 +17,9 @@ type LTSVRead struct {
 	types     []string
 }
 
-func NewLTSVReader(reader io.Reader, opts ReadOpts) (Reader, error) {
-	r := &LTSVRead{}
+// NewLTSVReader returns LTSVReader and error.
+func NewLTSVReader(reader io.Reader, opts ReadOpts) (*LTSVReader, error) {
+	r := &LTSVReader{}
 	r.reader = bufio.NewReader(reader)
 	r.delimiter = "\t"
 
@@ -39,7 +40,7 @@ func NewLTSVReader(reader io.Reader, opts ReadOpts) (Reader, error) {
 
 // GetColumn is reads the specified number of rows and determines the column name.
 // The previously read row is stored in preRead.
-func (r *LTSVRead) GetColumn(rowNum int) ([]string, error) {
+func (r *LTSVReader) GetColumn(rowNum int) ([]string, error) {
 	names := map[string]bool{}
 	for i := 0; i < rowNum; i++ {
 		row, keys, err := r.read()
@@ -59,7 +60,7 @@ func (r *LTSVRead) GetColumn(rowNum int) ([]string, error) {
 }
 
 // GetTypes is reads the specified number of rows and determines the column type.
-func (r *LTSVRead) GetTypes() ([]string, error) {
+func (r *LTSVReader) GetTypes() ([]string, error) {
 	r.types = make([]string, len(r.names))
 	for i := 0; i < len(r.names); i++ {
 		r.types[i] = DefaultDBType
@@ -68,7 +69,7 @@ func (r *LTSVRead) GetTypes() ([]string, error) {
 }
 
 // PreReadRow is returns only columns that store preread rows.
-func (r *LTSVRead) PreReadRow() [][]interface{} {
+func (r *LTSVReader) PreReadRow() [][]interface{} {
 	rowNum := len(r.preRead)
 	rows := make([][]interface{}, rowNum)
 	for n := 0; n < rowNum; n++ {
@@ -81,7 +82,7 @@ func (r *LTSVRead) PreReadRow() [][]interface{} {
 }
 
 // ReadRow is read the rest of the row.
-func (r *LTSVRead) ReadRow(row []interface{}) ([]interface{}, error) {
+func (r *LTSVReader) ReadRow(row []interface{}) ([]interface{}, error) {
 	record, _, err := r.read()
 	if err != nil {
 		return row, err
@@ -92,7 +93,7 @@ func (r *LTSVRead) ReadRow(row []interface{}) ([]interface{}, error) {
 	return row, nil
 }
 
-func (r *LTSVRead) read() (map[string]string, []string, error) {
+func (r *LTSVReader) read() (map[string]string, []string, error) {
 	line, err := r.readline()
 	if err != nil {
 		return nil, nil, err
@@ -111,7 +112,7 @@ func (r *LTSVRead) read() (map[string]string, []string, error) {
 	return lvs, keys, nil
 }
 
-func (r *LTSVRead) readline() (string, error) {
+func (r *LTSVReader) readline() (string, error) {
 	for {
 		line, _, err := r.reader.ReadLine()
 		if err != nil {

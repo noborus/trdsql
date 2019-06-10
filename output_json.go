@@ -6,27 +6,28 @@ import (
 	"unicode/utf8"
 )
 
-// JSONWrite provides methods of the Output interface
-type JSONWrite struct {
+// JSONWriter provides methods of the Writer interface.
+type JSONWriter struct {
 	writer  *json.Encoder
 	results []map[string]interface{}
 }
 
-func NewJSONWrite(writeOpts WriteOpts) *JSONWrite {
-	w := &JSONWrite{}
+// NewJSONWriter returns JSONWriter.
+func NewJSONWriter(writeOpts WriteOpts) *JSONWriter {
+	w := &JSONWriter{}
 	w.writer = json.NewEncoder(writeOpts.OutStream)
 	w.writer.SetIndent("", "  ")
 	return w
 }
 
-// PreWrite is preparation
-func (w *JSONWrite) PreWrite(columns []string, types []string) error {
+// PreWrite is area preparation.
+func (w *JSONWriter) PreWrite(columns []string, types []string) error {
 	w.results = make([]map[string]interface{}, 0)
 	return nil
 }
 
-// WriteRow is Addition to array
-func (w *JSONWrite) WriteRow(values []interface{}, columns []string) error {
+// WriteRow is Addition to array.
+func (w *JSONWriter) WriteRow(values []interface{}, columns []string) error {
 	m := make(map[string]interface{}, len(columns))
 	for i, col := range values {
 		m[columns[i]] = valInterface(col)
@@ -48,6 +49,6 @@ func valInterface(v interface{}) interface{} {
 }
 
 // PostWrite is Actual output
-func (w *JSONWrite) PostWrite() error {
+func (w *JSONWriter) PostWrite() error {
 	return w.writer.Encode(w.results)
 }

@@ -9,8 +9,8 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-// VFWrite is Vertical Format output
-type VFWrite struct {
+// VFWriter is Vertical Format output.
+type VFWriter struct {
 	writer    *bufio.Writer
 	termWidth int
 	hSize     int
@@ -18,9 +18,10 @@ type VFWrite struct {
 	count     int
 }
 
-func NewVFWrite(writeOpts WriteOpts) *VFWrite {
+// NewVFWriter returns VFWriter.
+func NewVFWriter(writeOpts WriteOpts) *VFWriter {
 	var err error
-	w := &VFWrite{}
+	w := &VFWriter{}
 	w.writer = bufio.NewWriter(writeOpts.OutStream)
 	w.termWidth, _, err = terminal.GetSize(0)
 	if err != nil {
@@ -29,8 +30,8 @@ func NewVFWrite(writeOpts WriteOpts) *VFWrite {
 	return w
 }
 
-// PreWrite is preparation
-func (w *VFWrite) PreWrite(columns []string, types []string) error {
+// PreWrite is preparation.
+func (w *VFWriter) PreWrite(columns []string, types []string) error {
 	w.header = make([]string, len(columns))
 	w.hSize = 0
 	for i, col := range columns {
@@ -42,8 +43,8 @@ func (w *VFWrite) PreWrite(columns []string, types []string) error {
 	return nil
 }
 
-// WriteRow is Actual output
-func (w *VFWrite) WriteRow(values []interface{}, columns []string) error {
+// WriteRow is Actual output.
+func (w *VFWriter) WriteRow(values []interface{}, columns []string) error {
 	w.count++
 	_, err := fmt.Fprintf(w.writer,
 		"---[ %d]%s\n", w.count, strings.Repeat("-", (w.termWidth-16)))
@@ -64,7 +65,7 @@ func (w *VFWrite) WriteRow(values []interface{}, columns []string) error {
 	return nil
 }
 
-// PostWrite is flush
-func (w *VFWrite) PostWrite() error {
+// PostWrite is flush.
+func (w *VFWriter) PostWrite() error {
 	return w.writer.Flush()
 }

@@ -7,25 +7,26 @@ type Writer interface {
 	PostWrite() error
 }
 
+// NewWriter returns a Writer interface
 func NewWriter(writeOpts WriteOpts) Writer {
 	switch writeOpts.OutFormat {
 	case LTSV:
-		return NewLTSVWrite(writeOpts)
+		return NewLTSVWriter(writeOpts)
 	case JSON:
-		return NewJSONWrite(writeOpts)
+		return NewJSONWriter(writeOpts)
 	case RAW:
-		return NewRAWWrite(writeOpts)
+		return NewRAWWriter(writeOpts)
 	case MD:
-		return NewTWWrite(writeOpts, true)
+		return NewTWWriter(writeOpts, true)
 	case AT:
-		return NewTWWrite(writeOpts, false)
+		return NewTWWriter(writeOpts, false)
 	case VF:
-		return NewVFWrite(writeOpts)
+		return NewVFWriter(writeOpts)
 	case TBLN:
-		return NewTBLNWrite(writeOpts)
+		return NewTBLNWriter(writeOpts)
 	case CSV:
-		return NewCSVWrite(writeOpts)
+		return NewCSVWriter(writeOpts)
 	default:
-		return NewCSVWrite(writeOpts)
+		return NewCSVWriter(writeOpts)
 	}
 }

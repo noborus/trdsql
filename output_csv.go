@@ -4,16 +4,17 @@ import (
 	"encoding/csv"
 )
 
-// CSVWrite provides methods of the Output interface
-type CSVWrite struct {
+// CSVWriter provides methods of the Writer interface.
+type CSVWriter struct {
 	writer    *csv.Writer
 	results   []string
 	outHeader bool
 }
 
-func NewCSVWrite(writeOpts WriteOpts) *CSVWrite {
+// NewCSVWriter returns CSVWriter.
+func NewCSVWriter(writeOpts WriteOpts) *CSVWriter {
 	var err error
-	w := &CSVWrite{}
+	w := &CSVWriter{}
 	w.writer = csv.NewWriter(writeOpts.OutStream)
 	w.writer.Comma, err = delimiter(writeOpts.OutDelimiter)
 	if err != nil {
@@ -23,8 +24,8 @@ func NewCSVWrite(writeOpts WriteOpts) *CSVWrite {
 	return w
 }
 
-// PreWrite is output of header and preparation
-func (w *CSVWrite) PreWrite(columns []string, types []string) error {
+// PreWrite is output of header and preparation.
+func (w *CSVWriter) PreWrite(columns []string, types []string) error {
 	if w.outHeader {
 		err := w.writer.Write(columns)
 		if err != nil {
@@ -35,8 +36,8 @@ func (w *CSVWrite) PreWrite(columns []string, types []string) error {
 	return nil
 }
 
-// WriteRow is row output
-func (w *CSVWrite) WriteRow(values []interface{}, columns []string) error {
+// WriteRow is row write.
+func (w *CSVWriter) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
 		w.results[i] = ValString(col)
 	}
@@ -44,8 +45,8 @@ func (w *CSVWrite) WriteRow(values []interface{}, columns []string) error {
 	return err
 }
 
-// PostWrite is flush
-func (w *CSVWrite) PostWrite() error {
+// PostWrite is flush.
+func (w *CSVWriter) PostWrite() error {
 	w.writer.Flush()
 	return nil
 }

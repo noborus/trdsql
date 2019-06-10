@@ -78,10 +78,10 @@ func TestRewrite(t *testing.T) {
 	}
 }
 
-func TestEscapetable(t *testing.T) {
+func TestEscapeName(t *testing.T) {
 	db, err := Connect("sqlite3", "")
 	if err != nil {
-		t.Fatal("Escapetable error")
+		t.Fatal("EscapeName error")
 	}
 	defer func() {
 		err = db.Disconnect()
@@ -89,12 +89,12 @@ func TestEscapetable(t *testing.T) {
 			t.Fatalf("Disconnect error")
 		}
 	}()
-	es := db.EscapeTable("test.csv")
+	es := db.EscapeName("test.csv")
 	if es != "`test.csv`" {
-		t.Fatalf("Escapetable error %s", es)
+		t.Fatalf("EscapeName error %s", es)
 	}
-	es = db.EscapeTable("`test.csv`")
+	es = db.EscapeName("`test.csv`")
 	if es != "`test.csv`" {
-		t.Fatalf("Escapetable error %s", es)
+		t.Fatalf("EscapeName error %s", es)
 	}
 }

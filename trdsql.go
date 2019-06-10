@@ -1,4 +1,7 @@
-// package trdsql execute SQL queries on csv and other tabular data.
+// Package trdsql implements execute SQL queries on tabular data.
+//
+// trdsql imports tabular data into a database,
+// executes SQL queries, and executes exports.
 package trdsql
 
 import (
@@ -14,6 +17,7 @@ type TRDSQL struct {
 	Exporter Exporter
 }
 
+// NewTRDSQL returns a new TRDSQL structure.
 func NewTRDSQL(im Importer, ex Exporter) *TRDSQL {
 	return &TRDSQL{
 		Driver:   "sqlite3",
@@ -23,28 +27,28 @@ func NewTRDSQL(im Importer, ex Exporter) *TRDSQL {
 	}
 }
 
-// Format represents the input/output format
+// Format represents the import/export format
 type Format int
 
 // Represents Format
 const (
-	// READ (guesses for read format)
+	// import (guesses for import format)
 	GUESS Format = iota
-	// READ/WRITE
+	// import/export
 	CSV
-	// READ/WRITE
+	// import/export
 	LTSV
-	// READ/WRITE
+	// import/export
 	JSON
-	// READ/WRITE
+	// import/export
 	TBLN
-	// WRITE
+	// export
 	RAW
-	// WRITE
+	// export
 	MD
-	// WRITE
+	// export
 	AT
-	// WRITE
+	// export
 	VF
 )
 
@@ -73,9 +77,7 @@ func (f Format) String() string {
 	}
 }
 
-// Default database type
-const DefaultDBType = "text"
-
+// Exec is actually executed.
 func (trd *TRDSQL) Exec(sql string) error {
 	db, err := Connect(trd.Driver, trd.Dsn)
 	if err != nil {

@@ -11,10 +11,12 @@ import (
 	"unicode/utf8"
 )
 
+// Exporter is the interface for processing query results.
 type Exporter interface {
 	Export(db *DB, query string) error
 }
 
+// WriteOpts is the option to determine the writer process.
 type WriteOpts struct {
 	OutFormat    Format
 	OutDelimiter string
@@ -23,6 +25,7 @@ type WriteOpts struct {
 	ErrStream    io.Writer
 }
 
+// NewWriteOpts Returns WriteOpts.
 func NewWriteOpts() WriteOpts {
 	return WriteOpts{
 		OutDelimiter: ",",
@@ -32,20 +35,23 @@ func NewWriteOpts() WriteOpts {
 	}
 }
 
-type exporter struct {
+// WriteFormat is a structure that includes Writer and WriteOpts,
+// and is an implementation of the Exporter interface.
+type WriteFormat struct {
 	WriteOpts
 	Writer
 }
 
-func NewExporter(writeOpts WriteOpts, writer Writer) *exporter {
-	return &exporter{
+// NewExporter returns trdsql default Exporter.
+func NewExporter(writeOpts WriteOpts, writer Writer) *WriteFormat {
+	return &WriteFormat{
 		WriteOpts: writeOpts,
 		Writer:    writer,
 	}
 }
 
 // Export is execute SQL and Exporter the result.
-func (e *exporter) Export(db *DB, query string) error {
+func (e *WriteFormat) Export(db *DB, query string) error {
 	rows, err := db.Select(query)
 	if err != nil {
 		return err
@@ -93,33 +99,7 @@ func (e *exporter) Export(db *DB, query string) error {
 	return e.Writer.PostWrite()
 }
 
-func ConvertTypes(dbTypes []string) []string {
-	ret := make([]string, len(dbTypes))
-	for i, t := range dbTypes {
-		ret[i] = convertType(t)
-	}
-	return ret
-}
-
-func convertType(dbType string) string {
-	switch strings.ToLower(dbType) {
-	case "smallint", "integer", "int", "int2", "int4", "smallserial", "serial":
-		return "int"
-	case "bigint", "int8", "bigserial":
-		return "bigint"
-	case "float", "decimal", "numeric", "real", "double precision":
-		return "numeric"
-	case "bool":
-		return "bool"
-	case "timestamp", "timestamptz", "date", "time":
-		return "timestamp"
-	case "string", "text", "char", "varchar":
-		return "text"
-	default:
-		return "text"
-	}
-}
-
+// ValString converts database value to string.
 func ValString(v interface{}) string {
 	var str string
 	switch t := v.(type) {

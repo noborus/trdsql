@@ -84,16 +84,15 @@ func (db *DB) Select(query string) (*sql.Rows, error) {
 
 // Table is import Table data
 type Table struct {
-	tableName   string
-	columnNames []string
-	columns     []string
-	query       string
-	place       string
-	maxCap      int
-	preRead     int
-	row         []interface{}
-	lastCount   int
-	count       int
+	tableName string
+	columns   []string
+	query     string
+	place     string
+	maxCap    int
+	preRead   int
+	row       []interface{}
+	lastCount int
+	count     int
 }
 
 // Import is import to the table.
@@ -105,13 +104,12 @@ func (db *DB) Import(tableName string, columnNames []string, reader Reader, preR
 	}
 	row := make([]interface{}, len(columnNames))
 	table := &Table{
-		tableName:   tableName,
-		columnNames: columnNames,
-		columns:     columns,
-		preRead:     preRead,
-		row:         row,
-		lastCount:   0,
-		count:       0,
+		tableName: tableName,
+		columns:   columns,
+		preRead:   preRead,
+		row:       row,
+		lastCount: 0,
+		count:     0,
 	}
 	if db.driver == "postgres" {
 		err = db.copyImport(table, reader)
@@ -167,7 +165,7 @@ func (db *DB) insertImport(table *Table, reader Reader) error {
 	defer db.stmtClose(stmt)
 	// #nosec G202
 	table.query = "INSERT INTO " + table.tableName + " (" + strings.Join(table.columns, ",") + ") VALUES "
-	table.place = "(" + strings.Repeat("?,", len(table.columnNames)-1) + "?)"
+	table.place = "(" + strings.Repeat("?,", len(table.columns)-1) + "?)"
 	table.maxCap = (db.maxBulk / len(table.row)) * len(table.row)
 	bulk := make([]interface{}, 0, table.maxCap)
 
@@ -263,8 +261,8 @@ func (db *DB) insertPrepare(table *Table) (*sql.Stmt, error) {
 	return stmt, nil
 }
 
-// EscapeTable is escape table name.
-func (db *DB) EscapeTable(oldName string) string {
+// EscapeName is escape table name.
+func (db *DB) EscapeName(oldName string) string {
 	var newName string
 	if oldName[0] != db.escape[0] {
 		newName = db.escape + oldName + db.escape

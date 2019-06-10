@@ -11,10 +11,12 @@ import (
 	"strings"
 )
 
+// Importer is the interface import data into the database.
 type Importer interface {
 	Import(db *DB, query string) (string, error)
 }
 
+// ReadOpts option to determine reader.
 type ReadOpts struct {
 	InFormat    Format
 	InPreRead   int
@@ -23,6 +25,7 @@ type ReadOpts struct {
 	InHeader    bool
 }
 
+// NewReadOpts Returns ReadOpts.
 func NewReadOpts() ReadOpts {
 	return ReadOpts{
 		InDelimiter: ",",
@@ -32,20 +35,26 @@ func NewReadOpts() ReadOpts {
 	}
 }
 
-type importer struct {
+// ReadFormat is a structure that includes ReadOpts,
+//  and is an implementation of the Importer interface.
+type ReadFormat struct {
 	ReadOpts
 }
 
-func NewImporter(readOpts ReadOpts) *importer {
-	return &importer{
+// NewImporter returns trdsql default Importer.
+func NewImporter(readOpts ReadOpts) *ReadFormat {
+	return &ReadFormat{
 		ReadOpts: readOpts,
 	}
 }
 
+// DefaultDBType is default type.
+const DefaultDBType = "text"
+
 // Import is parses the SQL statement and imports one or more tables.
 // Return the rewritten SQL and error.
 // No error is returned if there is no table to import.
-func (i *importer) Import(db *DB, query string) (string, error) {
+func (i *ReadFormat) Import(db *DB, query string) (string, error) {
 	tables := listTable(query)
 	if len(tables) == 0 {
 		// without FROM clause. ex. SELECT 1+1;
@@ -160,7 +169,12 @@ func ImportFile(db *DB, fileName string, opts ReadOpts) (string, error) {
 		debug.Printf("%s\n", err)
 		return "", nil
 	}
-	defer file.Close()
+	defer func() {
+		err = file.Close()
+		if err != nil {
+			log.Printf("file close:%s", err)
+		}
+	}()
 
 	if opts.InFormat == GUESS {
 		opts.InFormat = guessExtension(fileName)
@@ -170,7 +184,7 @@ func ImportFile(db *DB, fileName string, opts ReadOpts) (string, error) {
 		return "", err
 	}
 
-	tableName := db.EscapeTable(fileName)
+	tableName := db.EscapeName(fileName)
 	columnNames, err := reader.GetColumn(opts.InPreRead)
 	if err != nil {
 		if err != io.EOF {
@@ -257,7 +271,12 @@ func globFileOpen(globName string) (*io.PipeReader, error) {
 	}
 	pipeReader, pipeWriter := io.Pipe()
 	go func() {
-		defer pipeWriter.Close()
+		defer func() {
+			err = pipeWriter.Close()
+			if err != nil {
+				log.Printf("pipe close:%s", err)
+			}
+		}()
 		for _, fileName := range fileNames {
 			f, err := os.Open(fileName)
 			debug.Printf("Open: [%s]", fileName)

@@ -5,28 +5,29 @@ import (
 	"strings"
 )
 
-// LTSVWrite provides methods of the Output interface
-type LTSVWrite struct {
+// LTSVWriter provides methods of the Writer interface.
+type LTSVWriter struct {
 	writer    *bufio.Writer
 	delimiter string
 	results   map[string]string
 }
 
-func NewLTSVWrite(writeOpts WriteOpts) *LTSVWrite {
-	w := &LTSVWrite{}
+// NewLTSVWriter returns LTSVWriter.
+func NewLTSVWriter(writeOpts WriteOpts) *LTSVWriter {
+	w := &LTSVWriter{}
 	w.delimiter = "\t"
 	w.writer = bufio.NewWriter(writeOpts.OutStream)
 	return w
 }
 
-// PreWrite is preparation
-func (w *LTSVWrite) PreWrite(columns []string, types []string) error {
+// PreWrite is area preparation.
+func (w *LTSVWriter) PreWrite(columns []string, types []string) error {
 	w.results = make(map[string]string, len(columns))
 	return nil
 }
 
-// WriteRow is Actual output
-func (w *LTSVWrite) WriteRow(values []interface{}, columns []string) error {
+// WriteRow is row write.
+func (w *LTSVWriter) WriteRow(values []interface{}, columns []string) error {
 	results := make([]string, len(values))
 	for i, col := range values {
 		results[i] = columns[i] + ":" + ValString(col)
@@ -36,7 +37,7 @@ func (w *LTSVWrite) WriteRow(values []interface{}, columns []string) error {
 	return err
 }
 
-// PostWrite is flush
-func (w *LTSVWrite) PostWrite() error {
+// PostWrite is flush.
+func (w *LTSVWriter) PostWrite() error {
 	return w.writer.Flush()
 }

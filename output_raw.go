@@ -7,17 +7,18 @@ import (
 	"strings"
 )
 
-// RawWrite provides methods of the Output interface
-type RawWrite struct {
+// RawWriter provides methods of the Writer interface.
+type RawWriter struct {
 	writer    *bufio.Writer
 	results   []string
 	sep       string
 	outHeader bool
 }
 
-func NewRAWWrite(writeOpts WriteOpts) *RawWrite {
+// NewRAWWriter returns RawWriter.
+func NewRAWWriter(writeOpts WriteOpts) *RawWriter {
 	var err error
-	w := &RawWrite{}
+	w := &RawWriter{}
 	w.writer = bufio.NewWriter(writeOpts.OutStream)
 	w.sep, err = strconv.Unquote(`"` + writeOpts.OutDelimiter + `"`)
 	if err != nil {
@@ -27,8 +28,8 @@ func NewRAWWrite(writeOpts WriteOpts) *RawWrite {
 	return w
 }
 
-// PreWrite is output of header and preparation
-func (w *RawWrite) PreWrite(columns []string, types []string) error {
+// PreWrite is output of header and preparation.
+func (w *RawWriter) PreWrite(columns []string, types []string) error {
 	if w.outHeader {
 		_, err := fmt.Fprint(w.writer, strings.Join(columns, w.sep), "\n")
 		if err != nil {
@@ -39,8 +40,8 @@ func (w *RawWrite) PreWrite(columns []string, types []string) error {
 	return nil
 }
 
-// WriteRow is row output
-func (w *RawWrite) WriteRow(values []interface{}, columns []string) error {
+// WriteRow is row write.
+func (w *RawWriter) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
 		w.results[i] = ValString(col)
 	}
@@ -51,7 +52,7 @@ func (w *RawWrite) WriteRow(values []interface{}, columns []string) error {
 	return nil
 }
 
-// PostWrite is flush
-func (w *RawWrite) PostWrite() error {
+// PostWrite is flush.
+func (w *RawWriter) PostWrite() error {
 	return w.writer.Flush()
 }

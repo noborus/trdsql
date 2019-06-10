@@ -202,7 +202,7 @@ func TestCsvIndefiniteInputFile3(t *testing.T) {
 }
 
 func TestCsvOutNew(t *testing.T) {
-	out := NewCSVWrite(NewWriteOpts())
+	out := NewCSVWriter(NewWriteOpts())
 	if out == nil {
 		t.Error(`csvOut error`)
 	}

@@ -6,13 +6,14 @@ import (
 	"github.com/noborus/tbln"
 )
 
-// TBLNRead provides methods of the Reader interface
+// TBLNRead provides methods of the Reader interface.
 type TBLNRead struct {
 	reader  tbln.Reader
 	preRead [][]interface{}
 }
 
-func NewTBLNReader(r io.Reader) (Reader, error) {
+// NewTBLNReader returns TBLNRead and error.
+func NewTBLNReader(r io.Reader) (*TBLNRead, error) {
 	tr := &TBLNRead{}
 	tr.reader = tbln.NewReader(r)
 	return tr, nil
