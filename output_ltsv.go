@@ -9,7 +9,7 @@ import (
 type LTSVWriter struct {
 	writer    *bufio.Writer
 	delimiter string
-	results   map[string]string
+	results   []string
 }
 
 // NewLTSVWriter returns LTSVWriter.
@@ -22,17 +22,16 @@ func NewLTSVWriter(writeOpts WriteOpts) *LTSVWriter {
 
 // PreWrite is area preparation.
 func (w *LTSVWriter) PreWrite(columns []string, types []string) error {
-	w.results = make(map[string]string, len(columns))
+	w.results = make([]string, len(columns))
 	return nil
 }
 
 // WriteRow is row write.
 func (w *LTSVWriter) WriteRow(values []interface{}, columns []string) error {
-	results := make([]string, len(values))
 	for i, col := range values {
-		results[i] = columns[i] + ":" + ValString(col)
+		w.results[i] = columns[i] + ":" + ValString(col)
 	}
-	str := strings.Join(results, w.delimiter) + "\n"
+	str := strings.Join(w.results, w.delimiter) + "\n"
 	_, err := w.writer.Write([]byte(str))
 	return err
 }

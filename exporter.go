@@ -28,6 +28,7 @@ type WriteOpts struct {
 // NewWriteOpts Returns WriteOpts.
 func NewWriteOpts() WriteOpts {
 	return WriteOpts{
+		OutFormat:    CSV,
 		OutDelimiter: ",",
 		OutHeader:    false,
 		OutStream:    os.Stdout,

@@ -86,6 +86,9 @@ func (db *DB) CreateTable(tableName string, names []string, types []string, isTe
 
 // Select is executes SQL select statements
 func (db *DB) Select(query string) (*sql.Rows, error) {
+	if db.Tx == nil {
+		return nil, fmt.Errorf("transaction has not been started")
+	}
 	query = strings.TrimSpace(query)
 	if query == "" {
 		return nil, errors.New("no SQL statement")

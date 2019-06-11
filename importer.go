@@ -29,6 +29,7 @@ type ReadOpts struct {
 // NewReadOpts Returns ReadOpts.
 func NewReadOpts() ReadOpts {
 	return ReadOpts{
+		InFormat:    GUESS,
 		InDelimiter: ",",
 		InHeader:    false,
 		InPreRead:   1,
