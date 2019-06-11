@@ -31,6 +31,10 @@ type DB struct {
 func Connect(driver, dsn string) (*DB, error) {
 	var db DB
 	var err error
+	db.DB, err = sql.Open(driver, dsn)
+	if err != nil {
+		return nil, err
+	}
 	db.driver = driver
 	db.dsn = dsn
 	switch driver {
@@ -44,8 +48,7 @@ func Connect(driver, dsn string) (*DB, error) {
 		db.escape = "\""
 	}
 	debug.Printf("driver: %s, dsn: %s", driver, dsn)
-	db.DB, err = sql.Open(db.driver, db.dsn)
-	return &db, err
+	return &db, nil
 }
 
 // Disconnect is disconnect the database
@@ -55,14 +58,27 @@ func (db *DB) Disconnect() error {
 }
 
 // CreateTable is create a temporary table
-func (db *DB) CreateTable(tableName string, names []string, types []string) error {
-	var query string
+func (db *DB) CreateTable(tableName string, names []string, types []string, isTemporary bool) error {
+	if len(names) == 0 {
+		return fmt.Errorf("missing column")
+	}
+	if len(names) != len(types) {
+		return fmt.Errorf("missing types")
+	}
+	if db.Tx == nil {
+		return fmt.Errorf("transaction has not been started")
+	}
 	columns := make([]string, len(names))
 	for i := 0; i < len(names); i++ {
 		columns[i] = db.escape + names[i] + db.escape + " " + types[i]
 	}
-	query = "CREATE TEMPORARY TABLE "
-	query = query + tableName + " ( " + strings.Join(columns, ",") + " );"
+	query := "CREATE "
+	if isTemporary {
+		query += "TEMPORARY TABLE "
+	} else {
+		query += "TABLE "
+	}
+	query += tableName + " ( " + strings.Join(columns, ",") + " );"
 	debug.Printf(query)
 	_, err := db.Tx.Exec(query)
 	return err

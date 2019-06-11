@@ -23,6 +23,7 @@ type ReadOpts struct {
 	InSkip      int
 	InDelimiter string
 	InHeader    bool
+	IsTemporary bool
 }
 
 // NewReadOpts Returns ReadOpts.
@@ -32,6 +33,7 @@ func NewReadOpts() ReadOpts {
 		InHeader:    false,
 		InPreRead:   1,
 		InSkip:      0,
+		IsTemporary: true,
 	}
 }
 
@@ -203,7 +205,7 @@ func ImportFile(db *DB, fileName string, opts ReadOpts) (string, error) {
 	debug.Printf("Column Names: [%v]", strings.Join(columnNames, ","))
 	debug.Printf("Column Types: [%v]", strings.Join(columnTypes, ","))
 
-	err = db.CreateTable(tableName, columnNames, columnTypes)
+	err = db.CreateTable(tableName, columnNames, columnTypes, opts.IsTemporary)
 	if err != nil {
 		return tableName, err
 	}

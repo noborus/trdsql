@@ -10,7 +10,7 @@ type importer struct {
 }
 
 func (f *importer) Import(db *trdsql.DB, query string) (string, error) {
-	err := db.CreateTable("test", []string{"a"}, []string{"text"})
+	err := db.CreateTable("test", []string{"a"}, []string{"text"}, true)
 	if err != nil {
 		return query, err
 	}

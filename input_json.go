@@ -174,7 +174,7 @@ func (r *JSONReader) ReadRow(row []interface{}) ([]interface{}, error) {
 		var data interface{}
 		err := r.reader.Decode(&data)
 		if err != nil {
-			return nil, fmt.Errorf("json format error:%s", err)
+			return nil, err
 		}
 		row = r.rowParse(row, data)
 	}
