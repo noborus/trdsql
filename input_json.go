@@ -1,7 +1,13 @@
 package trdsql
 
+// Convert JSON to a table.
+// Supports the following JSON container types.
+// * Array ([{c1: 1}, {c1: 2}, {c1: 3}])
+// * Multiple JSON ({c1: 1}\n {c1: 2}\n {c1: 3}\n)
+
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -18,26 +24,21 @@ type JSONReader struct {
 }
 
 // NewJSONReader returns JSONReader and error.
-func NewJSONReader(reader io.Reader) (*JSONReader, error) {
+func NewJSONReader(reader io.Reader, opts ReadOpts) (*JSONReader, error) {
+	if reader == nil {
+		return nil, errors.New("nil reader")
+	}
 	r := &JSONReader{}
 	r.reader = json.NewDecoder(reader)
-	return r, nil
-}
-
-// Convert JSON to a table.
-// Supports the following JSON container types.
-// * Array ([{c1: 1}, {c1: 2}, {c1: 3}])
-// * Multiple JSON ({c1: 1}\n {c1: 2}\n {c1: 3}\n)
-
-// GetColumn is reads the specified number of rows and determines the column name.
-// The previously read row is stored in preRead.
-func (r *JSONReader) GetColumn(rowNum int) ([]string, error) {
 	var top interface{}
 	names := map[string]bool{}
-	for i := 0; i < rowNum; i++ {
+	for i := 0; i < opts.InPreRead; i++ {
 		row, keys, err := r.readAhead(top, i)
 		if err != nil {
-			return r.names, err
+			if err != io.EOF {
+				return r, err
+			}
+			return r, nil
 		}
 		r.preRead = append(r.preRead, row)
 		for k := 0; k < len(keys); k++ {
@@ -47,11 +48,18 @@ func (r *JSONReader) GetColumn(rowNum int) ([]string, error) {
 			}
 		}
 	}
+
+	return r, nil
+}
+
+// Names returns column names.
+func (r *JSONReader) Names() ([]string, error) {
 	return r.names, nil
 }
 
-// GetTypes is reads the specified number of rows and determines the column type.
-func (r *JSONReader) GetTypes() ([]string, error) {
+// Types returns column types.
+// All JSON types return the DefaultDBType.
+func (r *JSONReader) Types() ([]string, error) {
 	r.types = make([]string, len(r.names))
 	for i := 0; i < len(r.names); i++ {
 		r.types[i] = DefaultDBType

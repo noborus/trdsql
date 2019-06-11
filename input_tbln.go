@@ -1,6 +1,7 @@
 package trdsql
 
 import (
+	"errors"
 	"io"
 
 	"github.com/noborus/tbln"
@@ -13,32 +14,37 @@ type TBLNRead struct {
 }
 
 // NewTBLNReader returns TBLNRead and error.
-func NewTBLNReader(r io.Reader) (*TBLNRead, error) {
-	tr := &TBLNRead{}
-	tr.reader = tbln.NewReader(r)
-	return tr, nil
-}
+func NewTBLNReader(reader io.Reader) (*TBLNRead, error) {
+	if reader == nil {
+		return nil, errors.New("nil reader")
+	}
+	r := &TBLNRead{}
+	r.reader = tbln.NewReader(reader)
 
-// GetColumn is reads the specified number of rows and determines the column name.
-func (tr *TBLNRead) GetColumn(rowNum int) ([]string, error) {
-	rec, err := tr.reader.ReadRow()
+	rec, err := r.reader.ReadRow()
 	if err != nil {
 		return nil, err
 	}
-	tr.preRead = make([][]interface{}, 1)
+	r.preRead = make([][]interface{}, 1)
 	row := make([]interface{}, len(rec))
 
 	for i, c := range rec {
 		row[i] = c
 	}
-	tr.preRead[0] = row
-	d := tr.reader.GetDefinition()
+	r.preRead[0] = row
+
+	return r, nil
+}
+
+// Names returns column names.
+func (r *TBLNRead) Names() ([]string, error) {
+	d := r.reader.GetDefinition()
 	return d.Names(), nil
 }
 
-// GetTypes is reads the specified number of rows and determines the column type.
-func (tr *TBLNRead) GetTypes() ([]string, error) {
-	d := tr.reader.GetDefinition()
+// Types returns column types.
+func (r *TBLNRead) Types() ([]string, error) {
+	d := r.reader.GetDefinition()
 	names := d.Names()
 	types := d.Types()
 	if len(types) == 0 {
@@ -51,13 +57,13 @@ func (tr *TBLNRead) GetTypes() ([]string, error) {
 }
 
 // PreReadRow is returns only columns that store preread rows.
-func (tr *TBLNRead) PreReadRow() [][]interface{} {
-	return tr.preRead
+func (r *TBLNRead) PreReadRow() [][]interface{} {
+	return r.preRead
 }
 
 // ReadRow is read the rest of the row.
-func (tr *TBLNRead) ReadRow(row []interface{}) ([]interface{}, error) {
-	rec, err := tr.reader.ReadRow()
+func (r *TBLNRead) ReadRow(row []interface{}) ([]interface{}, error) {
+	rec, err := r.reader.ReadRow()
 	if err != nil {
 		return row, err
 	}

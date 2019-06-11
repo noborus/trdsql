@@ -19,6 +19,9 @@ type LTSVReader struct {
 
 // NewLTSVReader returns LTSVReader and error.
 func NewLTSVReader(reader io.Reader, opts ReadOpts) (*LTSVReader, error) {
+	if reader == nil {
+		return nil, errors.New("nil reader")
+	}
 	r := &LTSVReader{}
 	r.reader = bufio.NewReader(reader)
 	r.delimiter = "\t"
@@ -34,18 +37,14 @@ func NewLTSVReader(reader io.Reader, opts ReadOpts) (*LTSVReader, error) {
 			debug.Printf("Skip row:%s\n", row)
 		}
 	}
-
-	return r, nil
-}
-
-// GetColumn is reads the specified number of rows and determines the column name.
-// The previously read row is stored in preRead.
-func (r *LTSVReader) GetColumn(rowNum int) ([]string, error) {
 	names := map[string]bool{}
-	for i := 0; i < rowNum; i++ {
+	for i := 0; i < opts.InPreRead; i++ {
 		row, keys, err := r.read()
 		if err != nil {
-			return r.names, err
+			if err != io.EOF {
+				return r, err
+			}
+			return r, nil
 		}
 		// Add only unique column names.
 		for k := 0; k < len(keys); k++ {
@@ -56,11 +55,18 @@ func (r *LTSVReader) GetColumn(rowNum int) ([]string, error) {
 		}
 		r.preRead = append(r.preRead, row)
 	}
+
+	return r, nil
+}
+
+// Names returns column names.
+func (r *LTSVReader) Names() ([]string, error) {
 	return r.names, nil
 }
 
-// GetTypes is reads the specified number of rows and determines the column type.
-func (r *LTSVReader) GetTypes() ([]string, error) {
+// Types returns column types.
+// All LTSV types return the DefaultDBType.
+func (r *LTSVReader) Types() ([]string, error) {
 	r.types = make([]string, len(r.names))
 	for i := 0; i < len(r.names); i++ {
 		r.types[i] = DefaultDBType

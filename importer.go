@@ -188,14 +188,14 @@ func ImportFile(db *DB, fileName string, opts ReadOpts) (string, error) {
 	}
 
 	tableName := db.EscapeName(fileName)
-	columnNames, err := reader.GetColumn(opts.InPreRead)
+	columnNames, err := reader.Names()
 	if err != nil {
 		if err != io.EOF {
 			return tableName, err
 		}
 		debug.Printf("EOF reached before argument number of rows")
 	}
-	columnTypes, err := reader.GetTypes()
+	columnTypes, err := reader.Types()
 
 	if err != nil {
 		if err != io.EOF {

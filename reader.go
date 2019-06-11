@@ -7,8 +7,8 @@ import (
 
 // Reader is wrap the reader.
 type Reader interface {
-	GetColumn(rowNum int) ([]string, error)
-	GetTypes() ([]string, error)
+	Names() ([]string, error)
+	Types() ([]string, error)
 	PreReadRow() [][]interface{}
 	ReadRow([]interface{}) ([]interface{}, error)
 }
@@ -22,7 +22,7 @@ func NewReader(reader io.Reader, opts ReadOpts) (Reader, error) {
 	case LTSV:
 		return NewLTSVReader(reader, opts)
 	case JSON:
-		return NewJSONReader(reader)
+		return NewJSONReader(reader, opts)
 	case TBLN:
 		return NewTBLNReader(reader)
 	default:

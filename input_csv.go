@@ -2,6 +2,7 @@ package trdsql
 
 import (
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -10,26 +11,23 @@ import (
 
 // CSVReader provides methods of the Reader interface.
 type CSVReader struct {
-	reader   *csv.Reader
-	names    []string
-	types    []string
-	preRead  [][]string
-	inHeader bool
+	reader  *csv.Reader
+	names   []string
+	types   []string
+	preRead [][]string
 }
 
 // NewCSVReader returns CSVReader and error.
 func NewCSVReader(reader io.Reader, opts ReadOpts) (*CSVReader, error) {
 	var err error
-
-	if opts.InHeader {
-		opts.InPreRead--
-	}
 	r := &CSVReader{}
+	if reader == nil {
+		return nil, errors.New("nil reader")
+	}
 	r.reader = csv.NewReader(reader)
 	r.reader.LazyQuotes = true
 	r.reader.FieldsPerRecord = -1 // no check count
 	r.reader.TrimLeadingSpace = true
-	r.inHeader = opts.InHeader
 	r.reader.Comma, err = delimiter(opts.InDelimiter)
 
 	if opts.InSkip > 0 {
@@ -42,6 +40,41 @@ func NewCSVReader(reader io.Reader, opts ReadOpts) (*CSVReader, error) {
 			}
 			debug.Printf("Skip row:%s\n", row)
 		}
+	}
+
+	// Header
+	if opts.InHeader {
+		row, err := r.reader.Read()
+		if err != nil && err != io.EOF {
+			return nil, err
+		}
+		r.names = make([]string, len(row))
+		for i, col := range row {
+			if col == "" {
+				r.names[i] = "c" + strconv.Itoa(i+1)
+			} else {
+				r.names[i] = col
+			}
+		}
+		opts.InPreRead--
+	}
+
+	for n := 0; n < opts.InPreRead; n++ {
+		row, err := r.reader.Read()
+		if err != nil {
+			if err != io.EOF {
+				return r, err
+			}
+			return r, nil
+		}
+		rows := make([]string, len(row))
+		for i, col := range row {
+			rows[i] = col
+			if len(r.names) < i+1 {
+				r.names = append(r.names, "c"+strconv.Itoa(i+1))
+			}
+		}
+		r.preRead = append(r.preRead, rows)
 	}
 
 	return r, err
@@ -59,44 +92,17 @@ func delimiter(sepString string) (rune, error) {
 	return sepRune, err
 }
 
-// GetColumn is reads the specified number of rows and determines the column name.
-// The previously read row is stored in preRead.
-func (r *CSVReader) GetColumn(rowNum int) ([]string, error) {
-	// Header
-	if r.inHeader {
-		row, err := r.reader.Read()
-		if err != nil {
-			return nil, err
-		}
-		r.names = make([]string, len(row))
-		for i, col := range row {
-			if col == "" {
-				r.names[i] = "c" + strconv.Itoa(i+1)
-			} else {
-				r.names[i] = col
-			}
-		}
-	}
-
-	for n := 0; n < rowNum; n++ {
-		row, err := r.reader.Read()
-		if err != nil {
-			return r.names, err
-		}
-		rows := make([]string, len(row))
-		for i, col := range row {
-			rows[i] = col
-			if len(r.names) < i+1 {
-				r.names = append(r.names, "c"+strconv.Itoa(i+1))
-			}
-		}
-		r.preRead = append(r.preRead, rows)
+// Names returns column names.
+func (r *CSVReader) Names() ([]string, error) {
+	if len(r.names) == 0 {
+		return r.names, fmt.Errorf("no rows")
 	}
 	return r.names, nil
 }
 
-// GetTypes is reads the specified number of rows and determines the column type.
-func (r *CSVReader) GetTypes() ([]string, error) {
+// Types returns column types.
+// All CSV types return the DefaultDBType.
+func (r *CSVReader) Types() ([]string, error) {
 	r.types = make([]string, len(r.names))
 	for i := 0; i < len(r.names); i++ {
 		r.types[i] = DefaultDBType

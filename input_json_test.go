@@ -10,6 +10,7 @@ import (
 func TestNewJSONReader(t *testing.T) {
 	type args struct {
 		reader io.Reader
+		opts   ReadOpts
 	}
 	tests := []struct {
 		name    string
@@ -21,95 +22,13 @@ func TestNewJSONReader(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewJSONReader(tt.args.reader)
+			got, err := NewJSONReader(tt.args.reader, tt.args.opts)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewJSONReader() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewJSONReader() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestJSONReader_GetColumn(t *testing.T) {
-	type fields struct {
-		reader  *json.Decoder
-		preRead []map[string]string
-		names   []string
-		types   []string
-		inArray []interface{}
-		count   int
-	}
-	type args struct {
-		rowNum int
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    []string
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := &JSONReader{
-				reader:  tt.fields.reader,
-				preRead: tt.fields.preRead,
-				names:   tt.fields.names,
-				types:   tt.fields.types,
-				inArray: tt.fields.inArray,
-				count:   tt.fields.count,
-			}
-			got, err := r.GetColumn(tt.args.rowNum)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("JSONReader.GetColumn() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("JSONReader.GetColumn() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestJSONReader_GetTypes(t *testing.T) {
-	type fields struct {
-		reader  *json.Decoder
-		preRead []map[string]string
-		names   []string
-		types   []string
-		inArray []interface{}
-		count   int
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		want    []string
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := &JSONReader{
-				reader:  tt.fields.reader,
-				preRead: tt.fields.preRead,
-				names:   tt.fields.names,
-				types:   tt.fields.types,
-				inArray: tt.fields.inArray,
-				count:   tt.fields.count,
-			}
-			got, err := r.GetTypes()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("JSONReader.GetTypes() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("JSONReader.GetTypes() = %v, want %v", got, tt.want)
 			}
 		})
 	}

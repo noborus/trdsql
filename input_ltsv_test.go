@@ -13,9 +13,9 @@ func TestLtsvInputNew(t *testing.T) {
 	if err != nil {
 		t.Error(`NewLTSVReader error`)
 	}
-	list, err := lr.GetColumn(1)
+	list, err := lr.Names()
 	if err != nil {
-		t.Error(`GetColumn error`)
+		t.Error(`Names error`)
 	}
 	if len(list) == 0 {
 		t.Error(`0 column`)
@@ -25,10 +25,14 @@ func TestLtsvInputNew(t *testing.T) {
 func TestLtsvInvalidInputNew(t *testing.T) {
 	const ltsvStream = `ID;1	name:test`
 	s := strings.NewReader(ltsvStream)
-	lr, _ := NewLTSVReader(s, NewReadOpts())
-	_, err := lr.GetColumn(1)
-	if err.Error() != "invalid column" {
-		t.Error(err)
+	ro := NewReadOpts()
+	ro.InPreRead = 1
+	lr, _ := NewLTSVReader(s, ro)
+	_, err := lr.Names()
+	if err != nil {
+		if err.Error() != "invalid column" {
+			t.Error(err)
+		}
 	}
 }
 
@@ -41,9 +45,9 @@ func TestLtsvFile(t *testing.T) {
 	if err != nil {
 		t.Error(`NewLTSVReader error`)
 	}
-	list, err := lr.GetColumn(1)
+	list, err := lr.Names()
 	if err != nil {
-		t.Error(`GetColumn error`)
+		t.Error(`Names error`)
 	}
 	if len(list) != 3 {
 		t.Error(`invalid column`)
@@ -59,9 +63,9 @@ func TestIndefiniteLtsvFile1(t *testing.T) {
 	if err != nil {
 		t.Error(`NewLTSVReader error`)
 	}
-	list, err := lr.GetColumn(1)
+	list, err := lr.Names()
 	if err != nil {
-		t.Error(`GetColumn error`)
+		t.Error(`Names error`)
 	}
 	if len(list) != 3 {
 		t.Error(`invalid column`)
@@ -73,13 +77,15 @@ func TestIndefiniteLtsvFile2(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	lr, err := NewLTSVReader(file, NewReadOpts())
+	ro := NewReadOpts()
+	ro.InPreRead = 2
+	lr, err := NewLTSVReader(file, ro)
 	if err != nil {
 		t.Error(`NewLTSVReader error`)
 	}
-	list, err := lr.GetColumn(2)
+	list, err := lr.Names()
 	if err != nil {
-		t.Error(`GetColumn error`)
+		t.Error(`Names error`)
 	}
 	if len(list) != 4 {
 		t.Error(`invalid column`)
@@ -91,11 +97,13 @@ func TestIndefiniteLtsvFile3(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	lr, err := NewLTSVReader(file, NewReadOpts())
+	ro := NewReadOpts()
+	ro.InPreRead = 100
+	lr, err := NewLTSVReader(file, ro)
 	if err != nil {
 		t.Error(`NewLTSVReader error`)
 	}
-	list, err := lr.GetColumn(100)
+	list, err := lr.Names()
 	if err != nil && err != io.EOF {
 		t.Error(err)
 	}

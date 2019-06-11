@@ -14,9 +14,9 @@ func TestTblnInputNew(t *testing.T) {
 	if err != nil {
 		t.Errorf(`tblnInputNew error: %s`, err)
 	}
-	list, err := tr.GetColumn(1)
+	list, err := tr.Names()
 	if err != nil {
-		t.Errorf(`GetColumn error: %s`, err)
+		t.Errorf(`Names error: %s`, err)
 	}
 	if len(list) == 0 {
 		t.Error(`0 column`)
@@ -33,9 +33,9 @@ func TestTblnFile(t *testing.T) {
 	if err != nil {
 		t.Error(`tblnInputNew error`)
 	}
-	list, err := tr.GetColumn(1)
+	list, err := tr.Names()
 	if err != nil {
-		t.Error(`GetColumn error`)
+		t.Error(`Names error`)
 	}
 	if len(list) != 2 {
 		t.Error(`invalid column`)
