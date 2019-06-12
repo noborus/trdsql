@@ -72,14 +72,22 @@ func newDBTestSqlite3(t *testing.T) *DB {
 func newDBTestPostgres(t *testing.T) *DB {
 	db, err := Connect("postgres", "dbname=trdsql_test")
 	if err != nil {
-		t.Fatal(err)
+		return nil
+	}
+	err = db.Ping()
+	if err != nil {
+		return nil
 	}
 	return db
 }
 func newDBTestMysql(t *testing.T) *DB {
 	db, err := Connect("mysql", "root@/trdsql_test")
 	if err != nil {
-		t.Fatal(err)
+		return nil
+	}
+	err = db.Ping()
+	if err != nil {
+		return nil
 	}
 	return db
 }
@@ -159,6 +167,9 @@ func TestImportFile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.args.db == nil {
+				t.SkipNow()
+			}
 			var err error
 			tt.args.db.Tx, err = tt.args.db.Begin()
 			if err != nil {
