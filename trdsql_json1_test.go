@@ -9,7 +9,7 @@ import (
 
 
 func TestJSONIndefiniteInputFile(t *testing.T) {
-	file, err := tableFileOpen("testdata/test_indefinite.json")
+	file, err := singleFileOpen("testdata/test_indefinite.json")
 	if err != nil {
 		t.Error(err)
 	}
@@ -28,7 +28,7 @@ func TestJSONIndefiniteInputFile(t *testing.T) {
 }
 
 func TestJSONIndefiniteInputFile2(t *testing.T) {
-	file, err := tableFileOpen("testdata/test_indefinite.json")
+	file, err := singleFileOpen("testdata/test_indefinite.json")
 	if err != nil {
 		t.Error(err)
 	}
@@ -48,7 +48,7 @@ func TestJSONIndefiniteInputFile2(t *testing.T) {
 }
 
 func TestJSONIndefiniteInputFile3(t *testing.T) {
-	file, err := tableFileOpen("testdata/test_indefinite.json")
+	file, err := singleFileOpen("testdata/test_indefinite.json")
 	if err != nil {
 		t.Error(err)
 	}

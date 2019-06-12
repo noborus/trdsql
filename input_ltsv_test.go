@@ -37,7 +37,7 @@ func TestLtsvInvalidInputNew(t *testing.T) {
 }
 
 func TestLtsvFile(t *testing.T) {
-	file, err := tableFileOpen("testdata/test.ltsv")
+	file, err := singleFileOpen("testdata/test.ltsv")
 	if err != nil {
 		t.Error(err)
 	}
@@ -55,7 +55,7 @@ func TestLtsvFile(t *testing.T) {
 }
 
 func TestIndefiniteLtsvFile1(t *testing.T) {
-	file, err := tableFileOpen("testdata/test_indefinite.ltsv")
+	file, err := singleFileOpen("testdata/test_indefinite.ltsv")
 	if err != nil {
 		t.Error(err)
 	}
@@ -73,7 +73,7 @@ func TestIndefiniteLtsvFile1(t *testing.T) {
 }
 
 func TestIndefiniteLtsvFile2(t *testing.T) {
-	file, err := tableFileOpen("testdata/test_indefinite.ltsv")
+	file, err := singleFileOpen("testdata/test_indefinite.ltsv")
 	if err != nil {
 		t.Error(err)
 	}
@@ -93,7 +93,7 @@ func TestIndefiniteLtsvFile2(t *testing.T) {
 }
 
 func TestIndefiniteLtsvFile3(t *testing.T) {
-	file, err := tableFileOpen("testdata/test_indefinite.ltsv")
+	file, err := singleFileOpen("testdata/test_indefinite.ltsv")
 	if err != nil {
 		t.Error(err)
 	}

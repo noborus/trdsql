@@ -28,9 +28,7 @@ func (a *ArrayTable) PostWrite() error {
 	return nil
 }
 
-func main() {
-	trdsql.EnableDebug()
-
+func exec(query string) [][]string {
 	readOpts := trdsql.NewReadOpts()
 	readOpts.InFormat = trdsql.CSV
 
@@ -40,9 +38,15 @@ func main() {
 	trd := trdsql.NewTRDSQL(nil, trdsql.NewExporter(writeOpts, writer))
 	trd.Driver = "postgres"
 	trd.Dsn = ""
-	err := trd.Exec("SELECT * FROM test")
+	err := trd.Exec(query)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(writer.table)
+	return writer.table
+}
+
+func main() {
+	trdsql.EnableDebug()
+	table := exec("SELECT * FROM test")
+	fmt.Println(table)
 }

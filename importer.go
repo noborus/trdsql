@@ -30,10 +30,10 @@ type ReadOpts struct {
 func NewReadOpts() ReadOpts {
 	return ReadOpts{
 		InFormat:    GUESS,
-		InDelimiter: ",",
-		InHeader:    false,
 		InPreRead:   1,
 		InSkip:      0,
+		InDelimiter: ",",
+		InHeader:    false,
 		IsTemporary: true,
 	}
 }
@@ -219,7 +219,7 @@ func guessExtension(tableName string) Format {
 		tableName = tableName[0 : len(tableName)-3]
 	}
 	pos := strings.LastIndex(tableName, ".")
-	if pos == 0 {
+	if pos <= 0 {
 		debug.Printf("Set in CSV because the extension is unknown: [%s]", tableName)
 		return CSV
 	}
@@ -248,10 +248,10 @@ func importFileOpen(tableName string) (io.ReadCloser, error) {
 	if r.MatchString(tableName) {
 		return globFileOpen(tableName)
 	}
-	return tableFileOpen(tableName)
+	return singleFileOpen(tableName)
 }
 
-func tableFileOpen(fileName string) (io.ReadCloser, error) {
+func singleFileOpen(fileName string) (io.ReadCloser, error) {
 	if len(fileName) == 0 || fileName == "-" || strings.ToLower(fileName) == "stdin" {
 		return os.Stdin, nil
 	}

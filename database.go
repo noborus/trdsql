@@ -60,13 +60,13 @@ func (db *DB) Disconnect() error {
 // CreateTable is create a temporary table
 func (db *DB) CreateTable(tableName string, names []string, types []string, isTemporary bool) error {
 	if len(names) == 0 {
-		return fmt.Errorf("missing column")
+		return errors.New("missing names")
 	}
 	if len(names) != len(types) {
-		return fmt.Errorf("missing types")
+		return errors.New("missing types")
 	}
 	if db.Tx == nil {
-		return fmt.Errorf("transaction has not been started")
+		return errors.New("transaction has not been started")
 	}
 	columns := make([]string, len(names))
 	for i := 0; i < len(names); i++ {
@@ -87,7 +87,7 @@ func (db *DB) CreateTable(tableName string, names []string, types []string, isTe
 // Select is executes SQL select statements
 func (db *DB) Select(query string) (*sql.Rows, error) {
 	if db.Tx == nil {
-		return nil, fmt.Errorf("transaction has not been started")
+		return nil, errors.New("transaction has not been started")
 	}
 	query = strings.TrimSpace(query)
 	if query == "" {
@@ -116,6 +116,12 @@ type Table struct {
 
 // Import is import to the table.
 func (db *DB) Import(tableName string, columnNames []string, reader Reader, preRead int) error {
+	if db.Tx == nil {
+		return errors.New("transaction has not been started")
+	}
+	if reader == nil {
+		return errors.New("nil reader")
+	}
 	var err error
 	columns := make([]string, len(columnNames))
 	for i := range columnNames {

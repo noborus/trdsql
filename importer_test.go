@@ -1,8 +1,6 @@
 package trdsql
 
 import (
-	"io"
-	"os"
 	"reflect"
 	"testing"
 )
@@ -64,6 +62,28 @@ func Test_listTable(t *testing.T) {
 	}
 }
 
+func newDBTestSqlite3(t *testing.T) *DB {
+	db, err := Connect("sqlite3", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return db
+}
+func newDBTestPostgres(t *testing.T) *DB {
+	db, err := Connect("postgres", "dbname=trdsql_test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return db
+}
+func newDBTestMysql(t *testing.T) *DB {
+	db, err := Connect("mysql", "root@/trdsql_test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return db
+}
+
 func TestImportFile(t *testing.T) {
 	type args struct {
 		db       *DB
@@ -76,10 +96,74 @@ func TestImportFile(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "testNoFile",
+			args: args{
+				db:       newDBTestSqlite3(t),
+				fileName: "nofile",
+				opts:     NewReadOpts(),
+			},
+			want:    "",
+			wantErr: false,
+		},
+		{
+			name: "testSqlite",
+			args: args{
+				db:       newDBTestSqlite3(t),
+				fileName: "testdata/test.csv",
+				opts:     NewReadOpts(),
+			},
+			want:    "`testdata/test.csv`",
+			wantErr: false,
+		},
+		{
+			name: "testGlobFile",
+			args: args{
+				db:       newDBTestSqlite3(t),
+				fileName: "testdata/test*.csv",
+				opts:     NewReadOpts(),
+			},
+			want:    "`testdata/test*.csv`",
+			wantErr: false,
+		},
+		{
+			name: "testNoMatch",
+			args: args{
+				db:       newDBTestSqlite3(t),
+				fileName: "testdata/testtttttt*.csv",
+				opts:     NewReadOpts(),
+			},
+			want:    "",
+			wantErr: false,
+		},
+		{
+			name: "testPostgres",
+			args: args{
+				db:       newDBTestPostgres(t),
+				fileName: "testdata/test.csv",
+				opts:     NewReadOpts(),
+			},
+			want:    "\"testdata/test.csv\"",
+			wantErr: false,
+		},
+		{
+			name: "testMysql",
+			args: args{
+				db:       newDBTestMysql(t),
+				fileName: "testdata/test.csv",
+				opts:     NewReadOpts(),
+			},
+			want:    "`testdata/test.csv`",
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			var err error
+			tt.args.db.Tx, err = tt.args.db.Begin()
+			if err != nil {
+				t.Fatal(err)
+			}
 			got, err := ImportFile(tt.args.db, tt.args.fileName, tt.args.opts)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ImportFile() error = %v, wantErr %v", err, tt.wantErr)
@@ -87,6 +171,14 @@ func TestImportFile(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("ImportFile() = %v, want %v", got, tt.want)
+			}
+			err = tt.args.db.Tx.Commit()
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = tt.args.db.Disconnect()
+			if err != nil {
+				t.Fatal(err)
 			}
 		})
 	}
@@ -100,92 +192,16 @@ func Test_guessExtension(t *testing.T) {
 	}{
 		{name: "testCSV", tableName: "test.csv", want: CSV},
 		{name: "testLTSV", tableName: "test.ltsv", want: LTSV},
+		{name: "testLTSV2", tableName: "test.ltsv.gz", want: LTSV},
 		{name: "testJSON", tableName: "test.json", want: JSON},
 		{name: "testTBLN", tableName: "test.tbln", want: TBLN},
 		{name: "testunknown", tableName: "test.go", want: CSV},
+		{name: "testunknown2", tableName: "testltsv", want: CSV},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := guessExtension(tt.tableName); got != tt.want {
 				t.Errorf("guessExtension() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_importFileOpen(t *testing.T) {
-	type args struct {
-		tableName string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    io.ReadCloser
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := importFileOpen(tt.args.tableName)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("importFileOpen() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("importFileOpen() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_tableFileOpen(t *testing.T) {
-	type args struct {
-		fileName string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    io.ReadCloser
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tableFileOpen(tt.args.fileName)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("tableFileOpen() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("tableFileOpen() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_globFileOpen(t *testing.T) {
-	type args struct {
-		globName string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *io.PipeReader
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := globFileOpen(tt.args.globName)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("globFileOpen() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("globFileOpen() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -200,33 +216,26 @@ func Test_trimQuote(t *testing.T) {
 		args args
 		want string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "test1",
+			args: args{"test"},
+			want: "test",
+		},
+		{
+			name: "test2",
+			args: args{"`test`"},
+			want: "test",
+		},
+		{
+			name: "test3",
+			args: args{"\"test\""},
+			want: "test",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := trimQuote(tt.args.fileName); got != tt.want {
 				t.Errorf("trimQuote() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_extFileReader(t *testing.T) {
-	type args struct {
-		fileName string
-		reader   *os.File
-	}
-	tests := []struct {
-		name string
-		args args
-		want io.ReadCloser
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := extFileReader(tt.args.fileName, tt.args.reader); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("extFileReader() = %v, want %v", got, tt.want)
 			}
 		})
 	}

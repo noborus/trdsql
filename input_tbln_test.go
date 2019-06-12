@@ -24,7 +24,7 @@ func TestTblnInputNew(t *testing.T) {
 }
 
 func TestTblnFile(t *testing.T) {
-	file, err := tableFileOpen("testdata/test.tbln")
+	file, err := singleFileOpen("testdata/test.tbln")
 	want := [][]interface{}{{"1", "Bob"}}
 	if err != nil {
 		t.Error(err)

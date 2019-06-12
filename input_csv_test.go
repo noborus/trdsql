@@ -26,7 +26,7 @@ func TestGetDelimiter(t *testing.T) {
 }
 
 func TestCsvInputNew(t *testing.T) {
-	file, err := tableFileOpen("testdata/test.csv")
+	file, err := singleFileOpen("testdata/test.csv")
 	if err != nil {
 		t.Error(err)
 	}
@@ -130,7 +130,7 @@ func TestCsvColumnDifferenceNew(t *testing.T) {
 }
 
 func TestCsvNoInputNew(t *testing.T) {
-	file, err := tableFileOpen("nofile")
+	file, err := singleFileOpen("nofile")
 	if err == nil {
 		t.Error(`Should error`)
 	}
@@ -146,7 +146,7 @@ func TestCsvIndefiniteInputFile(t *testing.T) {
 	ro.InHeader = false
 	ro.InDelimiter = ","
 
-	file, err := tableFileOpen("testdata/test_indefinite.csv")
+	file, err := singleFileOpen("testdata/test_indefinite.csv")
 	if err != nil {
 		t.Error(err)
 	}
@@ -165,7 +165,7 @@ func TestCsvIndefiniteInputFile(t *testing.T) {
 }
 
 func TestCsvIndefiniteInputFile2(t *testing.T) {
-	file, err := tableFileOpen("testdata/test_indefinite.csv")
+	file, err := singleFileOpen("testdata/test_indefinite.csv")
 	if err != nil {
 		t.Error(err)
 	}
@@ -187,7 +187,7 @@ func TestCsvIndefiniteInputFile2(t *testing.T) {
 }
 
 func TestCsvIndefiniteInputFile3(t *testing.T) {
-	file, err := tableFileOpen("testdata/test_indefinite.csv")
+	file, err := singleFileOpen("testdata/test_indefinite.csv")
 	if err != nil {
 		t.Error(err)
 	}
