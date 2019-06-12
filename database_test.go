@@ -240,7 +240,6 @@ func TestDB_Import(t *testing.T) {
 		tableName   string
 		columnNames []string
 		reader      Reader
-		preRead     int
 	}
 	tests := []struct {
 		name    string
@@ -255,7 +254,6 @@ func TestDB_Import(t *testing.T) {
 				tableName:   "test",
 				columnNames: []string{"c1"},
 				reader:      nil,
-				preRead:     1,
 			},
 			wantErr: true,
 		},
@@ -270,7 +268,7 @@ func TestDB_Import(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if err := db.Import(tt.args.tableName, tt.args.columnNames, tt.args.reader, tt.args.preRead); (err != nil) != tt.wantErr {
+			if err := db.Import(tt.args.tableName, tt.args.columnNames, tt.args.reader); (err != nil) != tt.wantErr {
 				t.Errorf("DB.Import() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			err = db.Tx.Commit()

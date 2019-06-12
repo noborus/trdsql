@@ -108,14 +108,13 @@ type Table struct {
 	query     string
 	place     string
 	maxCap    int
-	preRead   int
 	row       []interface{}
 	lastCount int
 	count     int
 }
 
 // Import is import to the table.
-func (db *DB) Import(tableName string, columnNames []string, reader Reader, preRead int) error {
+func (db *DB) Import(tableName string, columnNames []string, reader Reader) error {
 	if db.Tx == nil {
 		return errors.New("transaction has not been started")
 	}
@@ -131,7 +130,6 @@ func (db *DB) Import(tableName string, columnNames []string, reader Reader, preR
 	table := &Table{
 		tableName: tableName,
 		columns:   columns,
-		preRead:   preRead,
 		row:       row,
 		lastCount: 0,
 		count:     0,
@@ -151,16 +149,14 @@ func (db *DB) copyImport(table *Table, reader Reader) error {
 	if err != nil {
 		return fmt.Errorf("COPY Prepare: %s", err)
 	}
-	if table.preRead > 0 {
-		preReadRows := reader.PreReadRow()
-		for _, row := range preReadRows {
-			if row == nil {
-				break
-			}
-			_, err = stmt.Exec(row...)
-			if err != nil {
-				return err
-			}
+	preReadRows := reader.PreReadRow()
+	for _, row := range preReadRows {
+		if row == nil {
+			break
+		}
+		_, err = stmt.Exec(row...)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -194,10 +190,7 @@ func (db *DB) insertImport(table *Table, reader Reader) error {
 	table.maxCap = (db.maxBulk / len(table.row)) * len(table.row)
 	bulk := make([]interface{}, 0, table.maxCap)
 
-	var pRows [][]interface{}
-	if table.preRead > 0 {
-		pRows = reader.PreReadRow()
-	}
+	pRows := reader.PreReadRow()
 	for eof := false; !eof; {
 		if len(pRows) > 0 {
 			for (table.count * len(table.row)) < table.maxCap {

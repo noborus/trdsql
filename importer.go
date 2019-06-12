@@ -210,7 +210,7 @@ func ImportFile(db *DB, fileName string, opts ReadOpts) (string, error) {
 	if err != nil {
 		return tableName, err
 	}
-	err = db.Import(tableName, columnNames, reader, opts.InPreRead)
+	err = db.Import(tableName, columnNames, reader)
 	return tableName, err
 }
 
