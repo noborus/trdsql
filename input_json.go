@@ -1,14 +1,20 @@
 package trdsql
 
+// Convert JSON to a table.
+// Supports the following JSON container types.
+// * Array ([{c1: 1}, {c1: 2}, {c1: 3}])
+// * Multiple JSON ({c1: 1}\n {c1: 2}\n {c1: 3}\n)
+
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 )
 
-// JSONIn provides methods of the Input interface
-type JSONIn struct {
+// JSONReader provides methods of the Reader interface.
+type JSONReader struct {
 	reader  *json.Decoder
 	preRead []map[string]string
 	names   []string
@@ -17,93 +23,96 @@ type JSONIn struct {
 	count   int
 }
 
-func (trdsql *TRDSQL) jsonInputNew(r io.Reader) (Input, error) {
-	jr := &JSONIn{}
-	jr.reader = json.NewDecoder(r)
-	return jr, nil
-}
-
-// Convert JSON to a table.
-// Supports the following JSON container types.
-// * Array ([{c1: 1}, {c1: 2}, {c1: 3}])
-// * Multiple JSON ({c1: 1}\n {c1: 2}\n {c1: 3}\n)
-
-// GetColumn is reads the specified number of rows and determines the column name.
-// The previously read row is stored in preRead.
-func (jr *JSONIn) GetColumn(rowNum int) ([]string, error) {
+// NewJSONReader returns JSONReader and error.
+func NewJSONReader(reader io.Reader, opts ReadOpts) (*JSONReader, error) {
+	if reader == nil {
+		return nil, errors.New("nil reader")
+	}
+	r := &JSONReader{}
+	r.reader = json.NewDecoder(reader)
 	var top interface{}
 	names := map[string]bool{}
-	for i := 0; i < rowNum; i++ {
-		row, keys, err := jr.readAhead(top, i)
+	for i := 0; i < opts.InPreRead; i++ {
+		row, keys, err := r.readAhead(top, i)
 		if err != nil {
-			return jr.names, err
+			if err != io.EOF {
+				return r, err
+			}
+			return r, nil
 		}
-		jr.preRead = append(jr.preRead, row)
+		r.preRead = append(r.preRead, row)
 		for k := 0; k < len(keys); k++ {
 			if !names[keys[k]] {
 				names[keys[k]] = true
-				jr.names = append(jr.names, keys[k])
+				r.names = append(r.names, keys[k])
 			}
 		}
 	}
-	return jr.names, nil
+
+	return r, nil
 }
 
-// GetTypes is reads the specified number of rows and determines the column type.
-func (jr *JSONIn) GetTypes() ([]string, error) {
-	jr.types = make([]string, len(jr.names))
-	for i := 0; i < len(jr.names); i++ {
-		jr.types[i] = "text"
+// Names returns column names.
+func (r *JSONReader) Names() ([]string, error) {
+	return r.names, nil
+}
+
+// Types returns column types.
+// All JSON types return the DefaultDBType.
+func (r *JSONReader) Types() ([]string, error) {
+	r.types = make([]string, len(r.names))
+	for i := 0; i < len(r.names); i++ {
+		r.types[i] = DefaultDBType
 	}
-	return jr.types, nil
+	return r.types, nil
 }
 
-func (jr *JSONIn) readAhead(top interface{}, rcount int) (map[string]string, []string, error) {
-	if jr.inArray != nil {
-		if len(jr.inArray) > rcount {
-			jr.count++
-			return jr.secondLevel(top, jr.inArray[rcount])
+func (r *JSONReader) readAhead(top interface{}, count int) (map[string]string, []string, error) {
+	if r.inArray != nil {
+		if len(r.inArray) > count {
+			r.count++
+			return r.secondLevel(top, r.inArray[count])
 		}
 		return nil, nil, io.EOF
 	}
-	err := jr.reader.Decode(&top)
+	err := r.reader.Decode(&top)
 	if err != nil {
 		return nil, nil, err
 	}
-	return jr.topLevel(top)
+	return r.topLevel(top)
 }
 
-func (jr *JSONIn) topLevel(top interface{}) (map[string]string, []string, error) {
+func (r *JSONReader) topLevel(top interface{}) (map[string]string, []string, error) {
 	switch obj := top.(type) {
 	case []interface{}:
 		// [{} or [] or etc...]
-		jr.inArray = obj
-		return jr.secondLevel(top, jr.inArray[0])
+		r.inArray = obj
+		return r.secondLevel(top, r.inArray[0])
 	case map[string]interface{}:
 		// {"a":"b"} object
-		jr.inArray = nil
-		return jr.objectFirstRow(obj)
+		r.inArray = nil
+		return r.objectFirstRow(obj)
 	}
 	return nil, nil, fmt.Errorf("JSON format could not be converted")
 }
 
 // Analyze second when top is array
-func (jr *JSONIn) secondLevel(top interface{}, second interface{}) (map[string]string, []string, error) {
+func (r *JSONReader) secondLevel(top interface{}, second interface{}) (map[string]string, []string, error) {
 	switch obj := second.(type) {
 	case map[string]interface{}:
 		// [{}]
-		return jr.objectFirstRow(obj)
+		return r.objectFirstRow(obj)
 	case []interface{}:
 		// [[]]
-		return jr.etcFirstRow(second)
+		return r.etcFirstRow(second)
 	default:
 		// ["a","b"]
-		jr.inArray = nil
-		return jr.etcFirstRow(top)
+		r.inArray = nil
+		return r.etcFirstRow(top)
 	}
 }
 
-func (jr *JSONIn) objectFirstRow(obj map[string]interface{}) (map[string]string, []string, error) {
+func (r *JSONReader) objectFirstRow(obj map[string]interface{}) (map[string]string, []string, error) {
 	// {"a":"b"} object
 	name := make([]string, 0, len(obj))
 	row := make(map[string]string)
@@ -114,7 +123,7 @@ func (jr *JSONIn) objectFirstRow(obj map[string]interface{}) (map[string]string,
 	return row, name, nil
 }
 
-func (jr *JSONIn) etcFirstRow(val interface{}) (map[string]string, []string, error) {
+func (r *JSONReader) etcFirstRow(val interface{}) (map[string]string, []string, error) {
 	// ex. array array
 	// [["a"],
 	//  ["b"]]
@@ -133,61 +142,61 @@ func jsonString(val interface{}) string {
 		if err != nil {
 			log.Printf("ERROR: jsonString:%s", err)
 		}
-		return valString(str)
+		return ValString(str)
 	default:
-		return valString(val)
+		return ValString(val)
 	}
 }
 
 // PreReadRow is returns only columns that store preread rows.
-func (jr *JSONIn) PreReadRow() [][]interface{} {
-	rowNum := len(jr.preRead)
+func (r *JSONReader) PreReadRow() [][]interface{} {
+	rowNum := len(r.preRead)
 	rows := make([][]interface{}, rowNum)
 	for n := 0; n < rowNum; n++ {
-		rows[n] = make([]interface{}, len(jr.names))
-		for i := range jr.names {
-			rows[n][i] = jr.preRead[n][jr.names[i]]
+		rows[n] = make([]interface{}, len(r.names))
+		for i := range r.names {
+			rows[n][i] = r.preRead[n][r.names[i]]
 		}
 	}
 	return rows
 }
 
 // ReadRow is read the rest of the row.
-func (jr *JSONIn) ReadRow(row []interface{}) ([]interface{}, error) {
-	if jr.inArray != nil {
+func (r *JSONReader) ReadRow(row []interface{}) ([]interface{}, error) {
+	if r.inArray != nil {
 		// [] array
-		jr.count++
-		if jr.count >= len(jr.inArray) {
+		r.count++
+		if r.count >= len(r.inArray) {
 			var top interface{}
-			err := jr.reader.Decode(&top)
+			err := r.reader.Decode(&top)
 			if err != nil {
 				return nil, err
 			}
-			jr.count = 0
+			r.count = 0
 		}
-		if len(jr.inArray) > 0 {
-			row = jr.rowParse(row, jr.inArray[jr.count])
+		if len(r.inArray) > 0 {
+			row = r.rowParse(row, r.inArray[r.count])
 		}
 	} else {
 		// {} object
 		var data interface{}
-		err := jr.reader.Decode(&data)
+		err := r.reader.Decode(&data)
 		if err != nil {
 			return nil, err
 		}
-		row = jr.rowParse(row, data)
+		row = r.rowParse(row, data)
 	}
 	return row, nil
 }
 
-func (jr *JSONIn) rowParse(row []interface{}, jsonRow interface{}) []interface{} {
-	switch dmap := jsonRow.(type) {
+func (r *JSONReader) rowParse(row []interface{}, jsonRow interface{}) []interface{} {
+	switch m := jsonRow.(type) {
 	case map[string]interface{}:
-		for i := range jr.names {
-			row[i] = jsonString(dmap[jr.names[i]])
+		for i := range r.names {
+			row[i] = jsonString(m[r.names[i]])
 		}
 	default:
-		for i := range jr.names {
+		for i := range r.names {
 			row[i] = nil
 		}
 		row[0] = jsonString(jsonRow)

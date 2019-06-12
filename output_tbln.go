@@ -1,49 +1,80 @@
 package trdsql
 
 import (
+	"strings"
+
 	"github.com/noborus/tbln"
 )
 
-// TBLNOut provides methods of the Output interface
-type TBLNOut struct {
+// TBLNWriter provides methods of the Writer interface.
+type TBLNWriter struct {
 	writer  *tbln.Writer
 	results []string
 }
 
-func (trdsql *TRDSQL) tblnOutNew() Output {
-	tw := &TBLNOut{}
-	tw.writer = tbln.NewWriter(trdsql.OutStream)
-	return tw
+// NewTBLNWriter returns TBLNWriter.
+func NewTBLNWriter(writeOpts WriteOpts) *TBLNWriter {
+	w := &TBLNWriter{}
+	w.writer = tbln.NewWriter(writeOpts.OutStream)
+	return w
 }
 
-// First is preparation
-func (tw *TBLNOut) First(columns []string, types []string) error {
+// PreWrite is prepare tbln definition body.
+func (w *TBLNWriter) PreWrite(columns []string, types []string) error {
 	d := tbln.NewDefinition()
 	err := d.SetNames(columns)
 	if err != nil {
 		return err
 	}
-	err = d.SetTypes(types)
+	err = d.SetTypes(ConvertTypes(types))
 	if err != nil {
 		return err
 	}
-	err = tw.writer.WriteDefinition(d)
+	err = w.writer.WriteDefinition(d)
 	if err != nil {
 		return err
 	}
-	tw.results = make([]string, len(columns))
+	w.results = make([]string, len(columns))
 	return nil
 }
 
-// RowWrite is Addition to array
-func (tw *TBLNOut) RowWrite(values []interface{}, columns []string) error {
+// WriteRow is row write.
+func (w *TBLNWriter) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
-		tw.results[i] = valString(col)
+		w.results[i] = ValString(col)
 	}
-	return tw.writer.WriteRow(tw.results)
+	return w.writer.WriteRow(w.results)
 }
 
-// Last is Actual output
-func (tw *TBLNOut) Last() error {
+// PostWrite is nil.
+func (w *TBLNWriter) PostWrite() error {
 	return nil
+}
+
+// ConvertTypes is converts database types to common types.
+func ConvertTypes(dbTypes []string) []string {
+	ret := make([]string, len(dbTypes))
+	for i, t := range dbTypes {
+		ret[i] = convertType(t)
+	}
+	return ret
+}
+
+func convertType(dbType string) string {
+	switch strings.ToLower(dbType) {
+	case "smallint", "integer", "int", "int2", "int4", "smallserial", "serial":
+		return "int"
+	case "bigint", "int8", "bigserial":
+		return "bigint"
+	case "float", "decimal", "numeric", "real", "double precision":
+		return "numeric"
+	case "bool":
+		return "bool"
+	case "timestamp", "timestamptz", "date", "time":
+		return "timestamp"
+	case "string", "text", "char", "varchar":
+		return "text"
+	default:
+		return "text"
+	}
 }

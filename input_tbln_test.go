@@ -10,14 +10,13 @@ func TestTblnInputNew(t *testing.T) {
 	const tblnStream = `; name: | id | name |
 | 1 | test |`
 	s := strings.NewReader(tblnStream)
-	trdsql := trdsqlNew()
-	tr, err := trdsql.tblnInputNew(s)
+	tr, err := NewTBLNReader(s)
 	if err != nil {
 		t.Errorf(`tblnInputNew error: %s`, err)
 	}
-	list, err := tr.GetColumn(1)
+	list, err := tr.Names()
 	if err != nil {
-		t.Errorf(`GetColumn error: %s`, err)
+		t.Errorf(`Names error: %s`, err)
 	}
 	if len(list) == 0 {
 		t.Error(`0 column`)
@@ -25,20 +24,18 @@ func TestTblnInputNew(t *testing.T) {
 }
 
 func TestTblnFile(t *testing.T) {
-	trdsql := trdsqlNew()
-	file, err := tableFileOpen("testdata/test.tbln")
+	file, err := singleFileOpen("testdata/test.tbln")
 	want := [][]interface{}{{"1", "Bob"}}
 	if err != nil {
 		t.Error(err)
 	}
-	var tr Input
-	tr, err = trdsql.tblnInputNew(file)
+	tr, err := NewTBLNReader(file)
 	if err != nil {
 		t.Error(`tblnInputNew error`)
 	}
-	list, err := tr.GetColumn(1)
+	list, err := tr.Names()
 	if err != nil {
-		t.Error(`GetColumn error`)
+		t.Error(`Names error`)
 	}
 	if len(list) != 2 {
 		t.Error(`invalid column`)

@@ -17,25 +17,25 @@ func TestSqlFields(t *testing.T) {
 }
 
 func TestTableFileOpen(t *testing.T) {
-	stdin, err := tableFileOpen("-")
+	stdin, err := singleFileOpen("-")
 	if err != nil && stdin == os.Stdin {
 		t.Error(err)
 	}
-	f, err := tableFileOpen("input_test.go")
+	f, err := singleFileOpen("input_test.go")
 	if err != nil {
 		t.Error(err)
 	}
 	f.Close()
 
 	// SQLite3 & MySQL escape
-	f, err = tableFileOpen("`input_test.go`")
+	f, err = singleFileOpen("`input_test.go`")
 	if err != nil {
 		t.Error(err)
 	}
 	f.Close()
 
 	// PostgreSQL escape
-	f, err = tableFileOpen("\"input_test.go\"")
+	f, err = singleFileOpen("\"input_test.go\"")
 	if err != nil {
 		t.Error(err)
 	}

@@ -51,9 +51,9 @@ $ trdsql [options] SQL
 ### Input format
 
 * `-ig`
-        Guess format from extension.
+        Guess format from extension(default).
 * `-icsv`
-        CSV format for input(default).
+        CSV format for input.
 * `-ijson`
         JSON format for input.
 * `-iltsv`
@@ -88,7 +88,7 @@ $ trdsql [options] SQL
         Raw format for output.
 * `-ovf`
         Vertical format for output.
-* `-tbln`
+* `-otbln`
         TBLN format for output.
 
 #### Output option

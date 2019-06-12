@@ -9,54 +9,55 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-// VfOut is Vertical Format output
-type VfOut struct {
+// VFWriter is Vertical Format output.
+type VFWriter struct {
 	writer    *bufio.Writer
 	termWidth int
-	hsize     int
+	hSize     int
 	header    []string
 	count     int
 }
 
-func (trdsql *TRDSQL) vfOutNew() Output {
+// NewVFWriter returns VFWriter.
+func NewVFWriter(writeOpts WriteOpts) *VFWriter {
 	var err error
-	vf := &VfOut{}
-	vf.writer = bufio.NewWriter(trdsql.OutStream)
-	vf.termWidth, _, err = terminal.GetSize(0)
+	w := &VFWriter{}
+	w.writer = bufio.NewWriter(writeOpts.OutStream)
+	w.termWidth, _, err = terminal.GetSize(0)
 	if err != nil {
-		vf.termWidth = 40
+		w.termWidth = 40
 	}
-	return vf
+	return w
 }
 
-// First is preparation
-func (vf *VfOut) First(columns []string, types []string) error {
-	vf.header = make([]string, len(columns))
-	vf.hsize = 0
+// PreWrite is preparation.
+func (w *VFWriter) PreWrite(columns []string, types []string) error {
+	w.header = make([]string, len(columns))
+	w.hSize = 0
 	for i, col := range columns {
-		if vf.hsize < runewidth.StringWidth(col) {
-			vf.hsize = runewidth.StringWidth(col)
+		if w.hSize < runewidth.StringWidth(col) {
+			w.hSize = runewidth.StringWidth(col)
 		}
-		vf.header[i] = col
+		w.header[i] = col
 	}
 	return nil
 }
 
-// RowWrite is Actual output
-func (vf *VfOut) RowWrite(values []interface{}, columns []string) error {
-	vf.count++
-	_, err := fmt.Fprintf(vf.writer,
-		"---[ %d]%s\n", vf.count, strings.Repeat("-", (vf.termWidth-16)))
+// WriteRow is Actual output.
+func (w *VFWriter) WriteRow(values []interface{}, columns []string) error {
+	w.count++
+	_, err := fmt.Fprintf(w.writer,
+		"---[ %d]%s\n", w.count, strings.Repeat("-", (w.termWidth-16)))
 	if err != nil {
 		debug.Printf("%s\n", err)
 	}
-	for i, col := range vf.header {
-		v := vf.hsize - runewidth.StringWidth(col)
-		_, err := fmt.Fprintf(vf.writer,
+	for i, col := range w.header {
+		v := w.hSize - runewidth.StringWidth(col)
+		_, err := fmt.Fprintf(w.writer,
 			"%s%s | %-s\n",
 			strings.Repeat(" ", v+2),
 			col,
-			valString(values[i]))
+			ValString(values[i]))
 		if err != nil {
 			debug.Printf("%s\n", err)
 		}
@@ -64,7 +65,7 @@ func (vf *VfOut) RowWrite(values []interface{}, columns []string) error {
 	return nil
 }
 
-// Last is flush
-func (vf *VfOut) Last() error {
-	return vf.writer.Flush()
+// PostWrite is flush.
+func (w *VFWriter) PostWrite() error {
+	return w.writer.Flush()
 }

@@ -1,61 +1,75 @@
 package trdsql
 
 import (
+	"errors"
 	"io"
 
 	"github.com/noborus/tbln"
 )
 
-// TBLNIn provides methods of the Input interface
-type TBLNIn struct {
-	reader  *tbln.Reader
+// TBLNRead provides methods of the Reader interface.
+type TBLNRead struct {
+	reader  tbln.Reader
 	preRead [][]interface{}
 }
 
-func (trdsql *TRDSQL) tblnInputNew(r io.Reader) (Input, error) {
-	tr := &TBLNIn{}
-	tr.reader = tbln.NewReader(r)
-	return tr, nil
-}
+// NewTBLNReader returns TBLNRead and error.
+func NewTBLNReader(reader io.Reader) (*TBLNRead, error) {
+	if reader == nil {
+		return nil, errors.New("nil reader")
+	}
+	r := &TBLNRead{}
+	r.reader = tbln.NewReader(reader)
 
-// GetColumn is reads the specified number of rows and determines the column name.
-func (tr *TBLNIn) GetColumn(rowNum int) ([]string, error) {
-	rec, err := tr.reader.ReadRow()
+	rec, err := r.reader.ReadRow()
 	if err != nil {
 		return nil, err
 	}
-	tr.preRead = make([][]interface{}, 1)
+	r.preRead = make([][]interface{}, 1)
 	row := make([]interface{}, len(rec))
 
 	for i, c := range rec {
 		row[i] = c
 	}
-	tr.preRead[0] = row
-	return tr.reader.Names, nil
+	r.preRead[0] = row
+
+	return r, nil
 }
 
-// GetTypes is reads the specified number of rows and determines the column type.
-func (tr *TBLNIn) GetTypes() ([]string, error) {
-	if len(tr.reader.Types) == 0 {
-		tr.reader.Types = make([]string, len(tr.reader.Names))
-		for i := 0; i < len(tr.reader.Names); i++ {
-			tr.reader.Types[i] = "text"
+// Names returns column names.
+func (r *TBLNRead) Names() ([]string, error) {
+	d := r.reader.GetDefinition()
+	return d.Names(), nil
+}
+
+// Types returns column types.
+func (r *TBLNRead) Types() ([]string, error) {
+	d := r.reader.GetDefinition()
+	names := d.Names()
+	types := d.Types()
+	if len(types) == 0 {
+		types = make([]string, len(names))
+		for i := 0; i < len(names); i++ {
+			types[i] = DefaultDBType
 		}
 	}
-	return tr.reader.Types, nil
+	return types, nil
 }
 
 // PreReadRow is returns only columns that store preread rows.
-func (tr *TBLNIn) PreReadRow() [][]interface{} {
-	return tr.preRead
+func (r *TBLNRead) PreReadRow() [][]interface{} {
+	return r.preRead
 }
 
 // ReadRow is read the rest of the row.
-func (tr *TBLNIn) ReadRow([]interface{}) ([]interface{}, error) {
-	rec, err := tr.reader.ReadRow()
-	row := make([]interface{}, len(rec))
+func (r *TBLNRead) ReadRow(row []interface{}) ([]interface{}, error) {
+	rec, err := r.reader.ReadRow()
+	if err != nil {
+		return row, err
+	}
+	row = make([]interface{}, len(rec))
 	for i, c := range rec {
 		row[i] = c
 	}
-	return row, err
+	return row, nil
 }

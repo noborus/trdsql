@@ -4,42 +4,43 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-// TwOut is tablewriter struct
-type TwOut struct {
+// TWWriter is tablewriter struct
+type TWWriter struct {
 	writer  *tablewriter.Table
 	results []string
 }
 
-func (trdsql *TRDSQL) twOutNew(markdown bool) Output {
-	tw := &TwOut{}
-	tw.writer = tablewriter.NewWriter(trdsql.OutStream)
-	tw.writer.SetAutoFormatHeaders(false)
+// NewTWWriter returns TWWriter.
+func NewTWWriter(writeOpts WriteOpts, markdown bool) *TWWriter {
+	w := &TWWriter{}
+	w.writer = tablewriter.NewWriter(writeOpts.OutStream)
+	w.writer.SetAutoFormatHeaders(false)
 	if markdown {
-		tw.writer.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
-		tw.writer.SetCenterSeparator("|")
+		w.writer.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+		w.writer.SetCenterSeparator("|")
 	}
-	return tw
+	return w
 }
 
-// First is preparation
-func (tw *TwOut) First(columns []string, types []string) error {
-	tw.writer.SetHeader(columns)
-	tw.results = make([]string, len(columns))
+// PreWrite is preparation.
+func (w *TWWriter) PreWrite(columns []string, types []string) error {
+	w.writer.SetHeader(columns)
+	w.results = make([]string, len(columns))
 
 	return nil
 }
 
-// RowWrite is Addition to array
-func (tw *TwOut) RowWrite(values []interface{}, columns []string) error {
+// WriteRow is Addition to array.
+func (w *TWWriter) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
-		tw.results[i] = valString(col)
+		w.results[i] = ValString(col)
 	}
-	tw.writer.Append(tw.results)
+	w.writer.Append(w.results)
 	return nil
 }
 
-// Last is Actual output
-func (tw *TwOut) Last() error {
-	tw.writer.Render()
+// PostWrite is Actual output.
+func (w *TWWriter) PostWrite() error {
+	w.writer.Render()
 	return nil
 }

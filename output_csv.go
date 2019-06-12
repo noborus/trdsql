@@ -4,48 +4,49 @@ import (
 	"encoding/csv"
 )
 
-// CSVOut provides methods of the Output interface
-type CSVOut struct {
+// CSVWriter provides methods of the Writer interface.
+type CSVWriter struct {
 	writer    *csv.Writer
 	results   []string
 	outHeader bool
 }
 
-func (trdsql *TRDSQL) csvOutNew() Output {
+// NewCSVWriter returns CSVWriter.
+func NewCSVWriter(writeOpts WriteOpts) *CSVWriter {
 	var err error
-	c := &CSVOut{}
-	c.writer = csv.NewWriter(trdsql.OutStream)
-	c.writer.Comma, err = delimiter(trdsql.outDelimiter)
+	w := &CSVWriter{}
+	w.writer = csv.NewWriter(writeOpts.OutStream)
+	w.writer.Comma, err = delimiter(writeOpts.OutDelimiter)
 	if err != nil {
 		debug.Printf("%s\n", err)
 	}
-	c.outHeader = trdsql.outHeader
-	return c
+	w.outHeader = writeOpts.OutHeader
+	return w
 }
 
-// First is output of header and preparation
-func (c *CSVOut) First(columns []string, types []string) error {
-	if c.outHeader {
-		err := c.writer.Write(columns)
+// PreWrite is output of header and preparation.
+func (w *CSVWriter) PreWrite(columns []string, types []string) error {
+	if w.outHeader {
+		err := w.writer.Write(columns)
 		if err != nil {
 			return err
 		}
 	}
-	c.results = make([]string, len(columns))
+	w.results = make([]string, len(columns))
 	return nil
 }
 
-// RowWrite is row output
-func (c *CSVOut) RowWrite(values []interface{}, columns []string) error {
+// WriteRow is row write.
+func (w *CSVWriter) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
-		c.results[i] = valString(col)
+		w.results[i] = ValString(col)
 	}
-	err := c.writer.Write(c.results)
+	err := w.writer.Write(w.results)
 	return err
 }
 
-// Last is flush
-func (c *CSVOut) Last() error {
-	c.writer.Flush()
+// PostWrite is flush.
+func (w *CSVWriter) PostWrite() error {
+	w.writer.Flush()
 	return nil
 }

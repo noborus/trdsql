@@ -2,33 +2,82 @@ package trdsql
 
 import (
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
+	"log"
 	"strconv"
 )
 
-// CSVIn provides methods of the Input interface
-type CSVIn struct {
-	reader   *csv.Reader
-	names    []string
-	types    []string
-	preRead  [][]string
-	inHeader bool
+// CSVReader provides methods of the Reader interface.
+type CSVReader struct {
+	reader  *csv.Reader
+	names   []string
+	types   []string
+	preRead [][]string
 }
 
-func (trdsql *TRDSQL) csvInputNew(r io.Reader) (Input, error) {
+// NewCSVReader returns CSVReader and error.
+func NewCSVReader(reader io.Reader, opts ReadOpts) (*CSVReader, error) {
 	var err error
-	if trdsql.inHeader {
-		trdsql.inPreRead--
+	r := &CSVReader{}
+	if reader == nil {
+		return nil, errors.New("nil reader")
 	}
-	cr := &CSVIn{}
-	cr.reader = csv.NewReader(r)
-	cr.reader.LazyQuotes = true
-	cr.reader.FieldsPerRecord = -1 // no check count
-	cr.reader.TrimLeadingSpace = true
-	cr.inHeader = trdsql.inHeader
-	cr.reader.Comma, err = delimiter(trdsql.inDelimiter)
-	return cr, err
+	r.reader = csv.NewReader(reader)
+	r.reader.LazyQuotes = true
+	r.reader.FieldsPerRecord = -1 // no check count
+	r.reader.TrimLeadingSpace = true
+	r.reader.Comma, err = delimiter(opts.InDelimiter)
+
+	if opts.InSkip > 0 {
+		skip := make([]interface{}, 1)
+		for i := 0; i < opts.InSkip; i++ {
+			row, err := r.ReadRow(skip)
+			if err != nil {
+				log.Printf("ERROR: skip error %s", err)
+				break
+			}
+			debug.Printf("Skip row:%s\n", row)
+		}
+	}
+
+	// Header
+	if opts.InHeader {
+		row, err := r.reader.Read()
+		if err != nil && err != io.EOF {
+			return nil, err
+		}
+		r.names = make([]string, len(row))
+		for i, col := range row {
+			if col == "" {
+				r.names[i] = "c" + strconv.Itoa(i+1)
+			} else {
+				r.names[i] = col
+			}
+		}
+		opts.InPreRead--
+	}
+
+	for n := 0; n < opts.InPreRead; n++ {
+		row, err := r.reader.Read()
+		if err != nil {
+			if err != io.EOF {
+				return r, err
+			}
+			return r, nil
+		}
+		rows := make([]string, len(row))
+		for i, col := range row {
+			rows[i] = col
+			if len(r.names) < i+1 {
+				r.names = append(r.names, "c"+strconv.Itoa(i+1))
+			}
+		}
+		r.preRead = append(r.preRead, rows)
+	}
+
+	return r, err
 }
 
 func delimiter(sepString string) (rune, error) {
@@ -43,58 +92,31 @@ func delimiter(sepString string) (rune, error) {
 	return sepRune, err
 }
 
-// GetColumn is reads the specified number of rows and determines the column name.
-// The previously read row is stored in preRead.
-func (cr *CSVIn) GetColumn(rowNum int) ([]string, error) {
-	// Header
-	if cr.inHeader {
-		row, err := cr.reader.Read()
-		if err != nil {
-			return nil, err
-		}
-		cr.names = make([]string, len(row))
-		for i, col := range row {
-			if col == "" {
-				cr.names[i] = "c" + strconv.Itoa(i+1)
-			} else {
-				cr.names[i] = col
-			}
-		}
+// Names returns column names.
+func (r *CSVReader) Names() ([]string, error) {
+	if len(r.names) == 0 {
+		return r.names, fmt.Errorf("no rows")
 	}
-
-	for n := 0; n < rowNum; n++ {
-		row, err := cr.reader.Read()
-		if err != nil {
-			return cr.names, err
-		}
-		rows := make([]string, len(row))
-		for i, col := range row {
-			rows[i] = col
-			if len(cr.names) < i+1 {
-				cr.names = append(cr.names, "c"+strconv.Itoa(i+1))
-			}
-		}
-		cr.preRead = append(cr.preRead, rows)
-	}
-	return cr.names, nil
+	return r.names, nil
 }
 
-// GetTypes is reads the specified number of rows and determines the column type.
-func (cr *CSVIn) GetTypes() ([]string, error) {
-	cr.types = make([]string, len(cr.names))
-	for i := 0; i < len(cr.names); i++ {
-		cr.types[i] = "text"
+// Types returns column types.
+// All CSV types return the DefaultDBType.
+func (r *CSVReader) Types() ([]string, error) {
+	r.types = make([]string, len(r.names))
+	for i := 0; i < len(r.names); i++ {
+		r.types[i] = DefaultDBType
 	}
-	return cr.types, nil
+	return r.types, nil
 }
 
 // PreReadRow is returns only columns that store preread rows.
-func (cr *CSVIn) PreReadRow() [][]interface{} {
-	rowNum := len(cr.preRead)
+func (r *CSVReader) PreReadRow() [][]interface{} {
+	rowNum := len(r.preRead)
 	rows := make([][]interface{}, rowNum)
 	for n := 0; n < rowNum; n++ {
-		rows[n] = make([]interface{}, len(cr.names))
-		for i, f := range cr.preRead[n] {
+		rows[n] = make([]interface{}, len(r.names))
+		for i, f := range r.preRead[n] {
 			rows[n][i] = f
 		}
 	}
@@ -102,8 +124,8 @@ func (cr *CSVIn) PreReadRow() [][]interface{} {
 }
 
 // ReadRow is read the rest of the row.
-func (cr *CSVIn) ReadRow(row []interface{}) ([]interface{}, error) {
-	record, err := cr.reader.Read()
+func (r *CSVReader) ReadRow(row []interface{}) ([]interface{}, error) {
+	record, err := r.reader.Read()
 	if err != nil {
 		return row, err
 	}
