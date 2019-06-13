@@ -16,19 +16,15 @@ type Importer interface {
 	Import(db *DB, query string) (string, error)
 }
 
-// ReadOpts option to determine reader.
-type ReadOpts struct {
-	InFormat    Format
-	InPreRead   int
-	InSkip      int
-	InDelimiter string
-	InHeader    bool
-	IsTemporary bool
+// ReadFormat is a structure that includes ReadOpts,
+//  and is an implementation of the Importer interface.
+type ReadFormat struct {
+	*ReadOpts
 }
 
 // NewReadOpts Returns ReadOpts.
-func NewReadOpts() ReadOpts {
-	return ReadOpts{
+func NewReadOpts() *ReadOpts {
+	return &ReadOpts{
 		InFormat:    GUESS,
 		InPreRead:   1,
 		InSkip:      0,
@@ -38,14 +34,13 @@ func NewReadOpts() ReadOpts {
 	}
 }
 
-// ReadFormat is a structure that includes ReadOpts,
-//  and is an implementation of the Importer interface.
-type ReadFormat struct {
-	ReadOpts
-}
-
 // NewImporter returns trdsql default Importer.
-func NewImporter(readOpts ReadOpts) *ReadFormat {
+func NewImporter(options ...ReadOpt) *ReadFormat {
+	readOpts := NewReadOpts()
+	for _, option := range options {
+		option(readOpts)
+	}
+
 	return &ReadFormat{
 		ReadOpts: readOpts,
 	}
@@ -167,7 +162,7 @@ func isSQLKeyWords(str string) bool {
 // ImportFile is imports a file.
 // Return the escaped table name and error.
 // Do not import if file not found (no error)
-func ImportFile(db *DB, fileName string, opts ReadOpts) (string, error) {
+func ImportFile(db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 	file, err := importFileOpen(fileName)
 	if err != nil {
 		debug.Printf("%s\n", err)
@@ -180,10 +175,12 @@ func ImportFile(db *DB, fileName string, opts ReadOpts) (string, error) {
 		}
 	}()
 
-	if opts.InFormat == GUESS {
-		opts.InFormat = guessExtension(fileName)
+	if readOpts.InFormat == GUESS {
+		readOpts.realFormat = guessExtension(fileName)
+	} else {
+		readOpts.realFormat = readOpts.InFormat
 	}
-	reader, err := NewReader(file, opts)
+	reader, err := NewReader(file, readOpts)
 	if err != nil {
 		return "", err
 	}
@@ -207,7 +204,7 @@ func ImportFile(db *DB, fileName string, opts ReadOpts) (string, error) {
 	debug.Printf("Column Names: [%v]", strings.Join(columnNames, ","))
 	debug.Printf("Column Types: [%v]", strings.Join(columnTypes, ","))
 
-	err = db.CreateTable(tableName, columnNames, columnTypes, opts.IsTemporary)
+	err = db.CreateTable(tableName, columnNames, columnTypes, readOpts.IsTemporary)
 	if err != nil {
 		return tableName, err
 	}

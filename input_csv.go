@@ -18,7 +18,7 @@ type CSVReader struct {
 }
 
 // NewCSVReader returns CSVReader and error.
-func NewCSVReader(reader io.Reader, opts ReadOpts) (*CSVReader, error) {
+func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 	var err error
 	r := &CSVReader{}
 	if reader == nil {

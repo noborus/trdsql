@@ -1,6 +1,7 @@
 # trdsql
 
 [![Build Status](https://travis-ci.org/noborus/trdsql.svg?branch=master)](https://travis-ci.org/noborus/trdsql)
+[![GoDoc](https://godoc.org/github.com/noborus/trdsql?status.svg)](https://https://godoc.org/github.com/noborus/trdsql)
 
 A tool that can execute SQL queries on [CSV](https://tools.ietf.org/html/rfc4180), [LTSV](http://ltsv.org/), [JSON](https://tools.ietf.org/html/rfc7159) and [TBLN](https://tbln.dev/).
 
@@ -70,7 +71,7 @@ $ trdsql [options] SQL
 * `-is` **int**
         Skip header row.
 * `-ir` **int**
-        Number of row preread for column determination. (default 1)
+        Number of row pre-read for column determination. (default 1)
 
 ### Output format
 
@@ -521,7 +522,7 @@ The SQL JOIN can be used.
 user.csv
 ```CSV
 1,userA
-2,uesrB
+2,userB
 ```
 
 hist.csv
@@ -536,8 +537,8 @@ $ trdsql "SELECT u.c1,u.c2,h.c2 FROM user.csv as u LEFT JOIN hist.csv as h ON(u.
 ```
 ```
 1,userA,2017-7-10
-2,uesrB,2017-7-10
-2,uesrB,2017-7-11
+2,userB,2017-7-10
+2,userB,2017-7-11
 ```
 
 ### PostgreSQL

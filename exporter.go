@@ -3,9 +3,7 @@ package trdsql
 import (
 	"encoding/hex"
 	"fmt"
-	"io"
 	"log"
-	"os"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -16,38 +14,16 @@ type Exporter interface {
 	Export(db *DB, query string) error
 }
 
-// WriteOpts is the option to determine the writer process.
-type WriteOpts struct {
-	OutFormat    Format
-	OutDelimiter string
-	OutHeader    bool
-	OutStream    io.Writer
-	ErrStream    io.Writer
-}
-
-// NewWriteOpts Returns WriteOpts.
-func NewWriteOpts() WriteOpts {
-	return WriteOpts{
-		OutFormat:    CSV,
-		OutDelimiter: ",",
-		OutHeader:    false,
-		OutStream:    os.Stdout,
-		ErrStream:    os.Stderr,
-	}
-}
-
 // WriteFormat is a structure that includes Writer and WriteOpts,
 // and is an implementation of the Exporter interface.
 type WriteFormat struct {
-	WriteOpts
 	Writer
 }
 
 // NewExporter returns trdsql default Exporter.
-func NewExporter(writeOpts WriteOpts, writer Writer) *WriteFormat {
+func NewExporter(writer Writer) *WriteFormat {
 	return &WriteFormat{
-		WriteOpts: writeOpts,
-		Writer:    writer,
+		Writer: writer,
 	}
 }
 

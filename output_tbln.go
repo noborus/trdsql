@@ -13,7 +13,7 @@ type TBLNWriter struct {
 }
 
 // NewTBLNWriter returns TBLNWriter.
-func NewTBLNWriter(writeOpts WriteOpts) *TBLNWriter {
+func NewTBLNWriter(writeOpts *WriteOpts) *TBLNWriter {
 	w := &TBLNWriter{}
 	w.writer = tbln.NewWriter(writeOpts.OutStream)
 	return w

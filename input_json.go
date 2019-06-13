@@ -24,7 +24,7 @@ type JSONReader struct {
 }
 
 // NewJSONReader returns JSONReader and error.
-func NewJSONReader(reader io.Reader, opts ReadOpts) (*JSONReader, error) {
+func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 	if reader == nil {
 		return nil, errors.New("nil reader")
 	}

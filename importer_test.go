@@ -22,9 +22,7 @@ func TestNewImporter(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			readOpts := NewReadOpts()
-			readOpts.InFormat = CSV
-			if got := NewImporter(readOpts); !reflect.DeepEqual(got.ReadOpts.InFormat, tt.want) {
+			if got := NewImporter(InFormat(CSV)); !reflect.DeepEqual(got.ReadOpts.InFormat, tt.want) {
 				t.Errorf("NewImporter() = %v, want %v", got, tt.want)
 			}
 		})
@@ -140,7 +138,7 @@ func TestImportFile(t *testing.T) {
 	type args struct {
 		db       *DB
 		fileName string
-		opts     ReadOpts
+		opts     *ReadOpts
 	}
 	tests := []struct {
 		name    string

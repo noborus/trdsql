@@ -50,12 +50,8 @@ func TestTRDSQL_Exec(t *testing.T) {
 }
 
 func setDefaultTRDSQL(outStream io.Writer) *TRDSQL {
-	readOpts := NewReadOpts()
-	readOpts.InFormat = GUESS
-	writeOpts := NewWriteOpts()
-	writeOpts.OutStream = outStream
-	importer := NewImporter(readOpts)
-	exporter := NewExporter(writeOpts, NewWriter(writeOpts))
+	importer := NewImporter(InFormat(GUESS))
+	exporter := NewExporter(NewWriter(OutStream(outStream)))
 	trd := NewTRDSQL(importer, exporter)
 	trd.Driver = "sqlite3"
 	trd.Dsn = ""
@@ -148,13 +144,13 @@ func TestTBLNRun(t *testing.T) {
 }
 
 func setOutFormatTRDSQL(outFormat Format, outStream io.Writer) *TRDSQL {
-	readOpts := NewReadOpts()
-	readOpts.InFormat = GUESS
-	writeOpts := NewWriteOpts()
-	writeOpts.OutFormat = outFormat
-	writeOpts.OutStream = outStream
-	importer := NewImporter(readOpts)
-	exporter := NewExporter(writeOpts, NewWriter(writeOpts))
+	importer := NewImporter(
+		InFormat(GUESS),
+	)
+	exporter := NewExporter(NewWriter(
+		OutFormat(outFormat),
+		OutStream(outStream),
+	))
 	trd := NewTRDSQL(importer, exporter)
 	trd.Driver = "sqlite3"
 	trd.Dsn = ""

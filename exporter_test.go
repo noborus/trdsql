@@ -1,7 +1,6 @@
 package trdsql
 
 import (
-	"reflect"
 	"testing"
 )
 
@@ -22,9 +21,7 @@ func TestNewExporter(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			writeOpts := NewWriteOpts()
-			writeOpts.OutFormat = CSV
-			if got := NewExporter(writeOpts, NewWriter(writeOpts)); !reflect.DeepEqual(got.WriteOpts.OutFormat, tt.want) {
+			if got := NewExporter(NewWriter(OutFormat(tt.args.outFormat))); got == nil {
 				t.Errorf("NewExporter() = %v, want %v", got, tt.want)
 			}
 		})
@@ -58,7 +55,7 @@ func TestWriteFormat_Export(t *testing.T) {
 			if err != nil {
 				t.Fatal("Connect error")
 			}
-			e := NewExporter(NewWriteOpts(), nil)
+			e := NewExporter(nil)
 			if err := e.Export(db, tt.args.query); (err != nil) != tt.wantErr {
 				t.Errorf("WriteFormat.Export() error = %v, wantErr %v", err, tt.wantErr)
 			}

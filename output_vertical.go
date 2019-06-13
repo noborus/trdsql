@@ -19,7 +19,7 @@ type VFWriter struct {
 }
 
 // NewVFWriter returns VFWriter.
-func NewVFWriter(writeOpts WriteOpts) *VFWriter {
+func NewVFWriter(writeOpts *WriteOpts) *VFWriter {
 	var err error
 	w := &VFWriter{}
 	w.writer = bufio.NewWriter(writeOpts.OutStream)
