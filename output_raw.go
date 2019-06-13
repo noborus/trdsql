@@ -16,7 +16,7 @@ type RAWWriter struct {
 }
 
 // NewRAWWriter returns RAWWriter.
-func NewRAWWriter(writeOpts WriteOpts) *RAWWriter {
+func NewRAWWriter(writeOpts *WriteOpts) *RAWWriter {
 	var err error
 	w := &RAWWriter{}
 	w.writer = bufio.NewWriter(writeOpts.OutStream)

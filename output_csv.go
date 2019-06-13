@@ -12,7 +12,7 @@ type CSVWriter struct {
 }
 
 // NewCSVWriter returns CSVWriter.
-func NewCSVWriter(writeOpts WriteOpts) *CSVWriter {
+func NewCSVWriter(writeOpts *WriteOpts) *CSVWriter {
 	var err error
 	w := &CSVWriter{}
 	w.writer = csv.NewWriter(writeOpts.OutStream)

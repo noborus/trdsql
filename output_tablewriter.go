@@ -11,7 +11,7 @@ type TWWriter struct {
 }
 
 // NewTWWriter returns TWWriter.
-func NewTWWriter(writeOpts WriteOpts, markdown bool) *TWWriter {
+func NewTWWriter(writeOpts *WriteOpts, markdown bool) *TWWriter {
 	w := &TWWriter{}
 	w.writer = tablewriter.NewWriter(writeOpts.OutStream)
 	w.writer.SetAutoFormatHeaders(false)

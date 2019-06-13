@@ -24,9 +24,8 @@ func (f *importer) Import(db *trdsql.DB, query string) (string, error) {
 func main() {
 	trdsql.EnableDebug()
 	d := importer{}
-	writeOpts := trdsql.NewWriteOpts()
 
-	trd := trdsql.NewTRDSQL(&d, trdsql.NewExporter(writeOpts, trdsql.NewWriter(writeOpts)))
+	trd := trdsql.NewTRDSQL(&d, trdsql.NewExporter(trdsql.NewWriter()))
 	err := trd.Exec("SELECT * FROM test")
 	if err != nil {
 		log.Fatal(err)

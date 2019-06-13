@@ -84,12 +84,17 @@ func Run(args []string) int {
 		cDSN      string
 		guess     bool
 		queryFile string
-		inFlag    inputFlag
-		outFlag   outputFlag
-	)
 
-	readOpts := trdsql.NewReadOpts()
-	writeOpts := trdsql.NewWriteOpts()
+		inFlag      inputFlag
+		inDelimiter string
+		inHeader    bool
+		inSkip      int
+		inPreRead   int
+
+		outFlag      outputFlag
+		outDelimiter string
+		outHeader    bool
+	)
 
 	flags := flag.NewFlagSet("trdsql", flag.ExitOnError)
 
@@ -110,18 +115,18 @@ func Run(args []string) int {
 	flags.BoolVar(&version, "version", false, "display version information.")
 	flags.BoolVar(&Debug, "debug", false, "debug print.")
 
-	flags.StringVar(&readOpts.InDelimiter, "id", ",", "Field delimiter for input.")
-	flags.BoolVar(&readOpts.InHeader, "ih", false, "The first line is interpreted as column names(CSV only).")
-	flags.IntVar(&readOpts.InSkip, "is", 0, "Skip header row.")
-	flags.IntVar(&readOpts.InPreRead, "ir", 1, "Number of row preread for column determination.")
+	flags.StringVar(&inDelimiter, "id", ",", "Field delimiter for input.")
+	flags.BoolVar(&inHeader, "ih", false, "The first line is interpreted as column names(CSV only).")
+	flags.IntVar(&inSkip, "is", 0, "Skip header row.")
+	flags.IntVar(&inPreRead, "ir", 1, "Number of row preread for column determination.")
 
 	flags.BoolVar(&inFlag.CSV, "icsv", false, "CSV format for input.")
 	flags.BoolVar(&inFlag.LTSV, "iltsv", false, "LTSV format for input.")
 	flags.BoolVar(&inFlag.JSON, "ijson", false, "JSON format for input.")
 	flags.BoolVar(&inFlag.TBLN, "itbln", false, "TBLN format for input.")
 
-	flags.StringVar(&writeOpts.OutDelimiter, "od", ",", "Field delimiter for output.")
-	flags.BoolVar(&writeOpts.OutHeader, "oh", false, "Output column name as header.")
+	flags.StringVar(&outDelimiter, "od", ",", "Field delimiter for output.")
+	flags.BoolVar(&outHeader, "oh", false, "Output column name as header.")
 
 	flags.BoolVar(&outFlag.CSV, "ocsv", true, "CSV format for output.")
 	flags.BoolVar(&outFlag.LTSV, "oltsv", false, "LTSV format for output.")
@@ -178,11 +183,20 @@ Options:
 		return 2
 	}
 
-	readOpts.InFormat = inputFormat(inFlag)
-	importer := trdsql.NewImporter(readOpts)
+	importer := trdsql.NewImporter(
+		trdsql.InFormat(inputFormat(inFlag)),
+		trdsql.InDelimiter(inDelimiter),
+		trdsql.InHeader(inHeader),
+		trdsql.InSkip(inSkip),
+		trdsql.InPreRead(inPreRead),
+	)
 
-	writeOpts.OutFormat = outputFormat(outFlag)
-	exporter := trdsql.NewExporter(writeOpts, trdsql.NewWriter(writeOpts))
+	w := trdsql.NewWriter(
+		trdsql.OutFormat(outputFormat(outFlag)),
+		trdsql.OutDelimiter(outDelimiter),
+		trdsql.OutHeader(outHeader),
+	)
+	exporter := trdsql.NewExporter(w)
 
 	trd := trdsql.NewTRDSQL(importer, exporter)
 

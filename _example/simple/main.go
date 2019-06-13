@@ -29,13 +29,8 @@ func (a *ArrayTable) PostWrite() error {
 }
 
 func exec(query string) [][]string {
-	readOpts := trdsql.NewReadOpts()
-	readOpts.InFormat = trdsql.CSV
-
-	writeOpts := trdsql.NewWriteOpts()
 	writer := &ArrayTable{}
-	// trd := trdsql.NewTRDSQL(trdsql.NewImporter(readOpts), trdsql.NewExporter(writeOpts, writer))
-	trd := trdsql.NewTRDSQL(nil, trdsql.NewExporter(writeOpts, writer))
+	trd := trdsql.NewTRDSQL(trdsql.NewImporter(), trdsql.NewExporter(writer))
 	trd.Driver = "postgres"
 	trd.Dsn = ""
 	err := trd.Exec(query)

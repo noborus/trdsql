@@ -13,7 +13,7 @@ type LTSVWriter struct {
 }
 
 // NewLTSVWriter returns LTSVWriter.
-func NewLTSVWriter(writeOpts WriteOpts) *LTSVWriter {
+func NewLTSVWriter(writeOpts *WriteOpts) *LTSVWriter {
 	w := &LTSVWriter{}
 	w.delimiter = "\t"
 	w.writer = bufio.NewWriter(writeOpts.OutStream)

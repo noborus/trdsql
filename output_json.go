@@ -13,7 +13,7 @@ type JSONWriter struct {
 }
 
 // NewJSONWriter returns JSONWriter.
-func NewJSONWriter(writeOpts WriteOpts) *JSONWriter {
+func NewJSONWriter(writeOpts *WriteOpts) *JSONWriter {
 	w := &JSONWriter{}
 	w.writer = json.NewEncoder(writeOpts.OutStream)
 	w.writer.SetIndent("", "  ")
