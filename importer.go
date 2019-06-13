@@ -55,6 +55,7 @@ func NewImporter(readOpts ReadOpts) *ReadFormat {
 const DefaultDBType = "text"
 
 // Import is parses the SQL statement and imports one or more tables.
+// Import is called from Exec.
 // Return the rewritten SQL and error.
 // No error is returned if there is no table to import.
 func (i *ReadFormat) Import(db *DB, query string) (string, error) {
@@ -116,11 +117,11 @@ func listTable(query string) []string {
 	return tables
 }
 
-func sqlFields(line string) []string {
+func sqlFields(query string) []string {
 	parsed := []string{}
 	buf := ""
 	var singleQuoted, doubleQuoted, backQuote bool
-	for _, r := range line {
+	for _, r := range query {
 		switch r {
 		case ' ', '\t', '\r', '\n', ',', ';', '=':
 			if !singleQuoted && !doubleQuoted && !backQuote {

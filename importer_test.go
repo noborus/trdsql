@@ -62,6 +62,50 @@ func Test_listTable(t *testing.T) {
 	}
 }
 
+func Test_sqlFields(t *testing.T) {
+	type args struct {
+		query string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "testNo",
+			args: args{query: ""},
+			want: []string{""},
+		},
+		{
+			name: "testDoubleQuote",
+			args: args{query: `SELECT * FROM "C:\file with a space.csv"`},
+			want: []string{`SELECT`, `*`, `FROM`, `"C:\file with a space.csv"`},
+		},
+		{
+			name: "testSingleQuote",
+			args: args{query: `SELECT * FROM 'C:\file with a space.csv'`},
+			want: []string{`SELECT`, `*`, `FROM`, `'C:\file with a space.csv'`},
+		},
+		{
+			name: "testSingleQuote2",
+			args: args{query: "SELECT * FROM jame's.csv"},
+			want: []string{"SELECT", "*", "FROM", "jame's.csv"},
+		},
+		{
+			name: "testBackQuote",
+			args: args{query: "SELECT * FROM `C:\file with a space.csv`"},
+			want: []string{`SELECT`, `*`, `FROM`, "`C:\file with a space.csv`"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := sqlFields(tt.args.query); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("sqlFields() = %#v, want %#v", got, tt.want)
+			}
+		})
+	}
+}
+
 func newDBTestSqlite3(t *testing.T) *DB {
 	db, err := Connect("sqlite3", "")
 	if err != nil {

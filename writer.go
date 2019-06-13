@@ -1,13 +1,14 @@
 package trdsql
 
-// Writer is file format writer
+// Writer is file format writer.
+// Writer is a group of methods called from Export.
 type Writer interface {
 	PreWrite([]string, []string) error
 	WriteRow([]interface{}, []string) error
 	PostWrite() error
 }
 
-// NewWriter returns a Writer interface
+// NewWriter returns a Writer interface.
 func NewWriter(writeOpts WriteOpts) Writer {
 	switch writeOpts.OutFormat {
 	case LTSV:

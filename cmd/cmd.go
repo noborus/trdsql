@@ -12,7 +12,7 @@ import (
 	"github.com/noborus/trdsql"
 )
 
-// input Format
+// input format flag
 type inputFlag struct {
 	CSV  bool
 	LTSV bool
@@ -20,7 +20,7 @@ type inputFlag struct {
 	TBLN bool
 }
 
-// Output Flag
+// Output format flag
 type outputFlag struct {
 	CSV  bool
 	LTSV bool

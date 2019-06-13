@@ -51,7 +51,9 @@ func NewExporter(writeOpts WriteOpts, writer Writer) *WriteFormat {
 	}
 }
 
-// Export is execute SQL and Exporter the result.
+// Export is execute SQL(Select) and
+// the result is written out by the writer.
+// Export is called from Exec.
 func (e *WriteFormat) Export(db *DB, query string) error {
 	rows, err := db.Select(query)
 	if err != nil {
