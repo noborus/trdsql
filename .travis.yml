@@ -10,7 +10,7 @@ services:
   - postgresql
   - mysql
 before_script:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then psql -c 'create database trdsql_test;' -U postgres && mysql -e 'CREATE DATABASE trdsql_test;'; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then psql -c 'CREATE DATABASE trdsql_test ENCODING 'utf8' TEMPLATE template0;' -U postgres && mysql -e 'CREATE DATABASE trdsql_test CHARACTER SET utf8mb4;'; fi
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -y ; sudo apt-get install -y binutils-mingw-w64-x86-64 gcc-mingw-w64-base gcc-mingw-w64-x86-64 ; fi
 script:
