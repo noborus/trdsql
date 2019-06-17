@@ -30,4 +30,6 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println(table)
+	// Output:
+	// [[Henry 3] [Alice 2] [Bod 1]]
 }
