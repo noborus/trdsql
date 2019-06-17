@@ -17,21 +17,9 @@ type Importer interface {
 }
 
 // ReadFormat is a structure that includes ReadOpts,
-//  and is an implementation of the Importer interface.
+// and is an implementation of the Importer interface.
 type ReadFormat struct {
 	*ReadOpts
-}
-
-// NewReadOpts Returns ReadOpts.
-func NewReadOpts() *ReadOpts {
-	return &ReadOpts{
-		InFormat:    GUESS,
-		InPreRead:   1,
-		InSkip:      0,
-		InDelimiter: ",",
-		InHeader:    false,
-		IsTemporary: true,
-	}
 }
 
 // NewImporter returns trdsql default Importer.
