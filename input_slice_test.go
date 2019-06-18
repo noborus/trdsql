@@ -16,7 +16,7 @@ func TestNewSliceReader(t *testing.T) {
 		want *SliceReader
 	}{
 		{
-			name: "one",
+			name: "string",
 			args: args{
 				tableName: "one",
 				args:      "one",
@@ -79,6 +79,46 @@ func TestNewSliceReader(t *testing.T) {
 				tableName: "struct",
 				names:     []string{"id", "name"},
 				types:     []string{"int", "text"},
+				data: [][]interface{}{
+					{"1", "one"},
+					{"2", "two"},
+					{"3", "three"},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewSliceReader(tt.args.tableName, tt.args.args); len(got.data) != len(tt.want.data) {
+				t.Errorf("NewSliceReader() = %#v, want %#v", got, tt.want)
+			}
+		})
+	}
+}
+func TestNewMapSliceReader(t *testing.T) {
+	type args struct {
+		tableName string
+		args      interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want *SliceReader
+	}{
+		{
+			name: "map",
+			args: args{
+				tableName: "map",
+				args: map[string]string{
+					"1": "one",
+					"2": "two",
+					"3": "three",
+				},
+			},
+			want: &SliceReader{
+				tableName: "map",
+				names:     []string{"c1", "c2"},
+				types:     []string{"text", "text"},
 				data: [][]interface{}{
 					{"1", "one"},
 					{"2", "two"},
