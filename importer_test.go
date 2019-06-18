@@ -104,14 +104,14 @@ func Test_sqlFields(t *testing.T) {
 	}
 }
 
-func newDBTestSqlite3(t *testing.T) *DB {
+func newDBTestSqlite3() *DB {
 	db, err := Connect("sqlite3", "")
 	if err != nil {
-		t.Fatal(err)
+		return nil
 	}
 	return db
 }
-func newDBTestPostgres(t *testing.T) *DB {
+func newDBTestPostgres() *DB {
 	db, err := Connect("postgres", "dbname=trdsql_test")
 	if err != nil {
 		return nil
@@ -122,7 +122,7 @@ func newDBTestPostgres(t *testing.T) *DB {
 	}
 	return db
 }
-func newDBTestMysql(t *testing.T) *DB {
+func newDBTestMysql() *DB {
 	db, err := Connect("mysql", "root@/trdsql_test")
 	if err != nil {
 		return nil
@@ -133,7 +133,11 @@ func newDBTestMysql(t *testing.T) *DB {
 	}
 	return db
 }
-
+func csvReadOpts() *ReadOpts {
+	opts := NewReadOpts()
+	opts.InFormat = CSV
+	return opts
+}
 func TestImportFile(t *testing.T) {
 	type args struct {
 		db       *DB
@@ -149,7 +153,7 @@ func TestImportFile(t *testing.T) {
 		{
 			name: "testNoFile",
 			args: args{
-				db:       newDBTestSqlite3(t),
+				db:       newDBTestSqlite3(),
 				fileName: "nofile",
 				opts:     NewReadOpts(),
 			},
@@ -157,19 +161,9 @@ func TestImportFile(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "testSqlite",
-			args: args{
-				db:       newDBTestSqlite3(t),
-				fileName: "testdata/test.csv",
-				opts:     NewReadOpts(),
-			},
-			want:    "`testdata/test.csv`",
-			wantErr: false,
-		},
-		{
 			name: "testGlobFile",
 			args: args{
-				db:       newDBTestSqlite3(t),
+				db:       newDBTestSqlite3(),
 				fileName: "testdata/test*.csv",
 				opts:     NewReadOpts(),
 			},
@@ -179,7 +173,7 @@ func TestImportFile(t *testing.T) {
 		{
 			name: "testNoMatch",
 			args: args{
-				db:       newDBTestSqlite3(t),
+				db:       newDBTestSqlite3(),
 				fileName: "testdata/testtttttt*.csv",
 				opts:     NewReadOpts(),
 			},
@@ -187,9 +181,29 @@ func TestImportFile(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "testCSV",
+			args: args{
+				db:       newDBTestSqlite3(),
+				fileName: "testdata/test.csv",
+				opts:     csvReadOpts(),
+			},
+			want:    "`testdata/test.csv`",
+			wantErr: false,
+		},
+		{
+			name: "testSqlite",
+			args: args{
+				db:       newDBTestSqlite3(),
+				fileName: "testdata/test.csv",
+				opts:     NewReadOpts(),
+			},
+			want:    "`testdata/test.csv`",
+			wantErr: false,
+		},
+		{
 			name: "testPostgres",
 			args: args{
-				db:       newDBTestPostgres(t),
+				db:       newDBTestPostgres(),
 				fileName: "testdata/test.csv",
 				opts:     NewReadOpts(),
 			},
@@ -199,7 +213,7 @@ func TestImportFile(t *testing.T) {
 		{
 			name: "testMysql",
 			args: args{
-				db:       newDBTestMysql(t),
+				db:       newDBTestMysql(),
 				fileName: "testdata/test.csv",
 				opts:     NewReadOpts(),
 			},

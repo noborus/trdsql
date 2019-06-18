@@ -11,9 +11,16 @@ import (
 
 // TRDSQL structure is a structure that defines the whole operation.
 type TRDSQL struct {
-	Driver   string
-	Dsn      string
+	// Driver is database driver name(sqlite3/mysql/postgres).
+	Driver string
+	// Dsn is data source name.
+	Dsn string
+
+	// Importer is interface of processing to
+	// import(create/insert) data.
 	Importer Importer
+	// Exporter is interface export to the process of
+	//  export(select) from the database.
 	Exporter Exporter
 }
 
@@ -34,21 +41,38 @@ type Format int
 const (
 	// import (guesses for import format)
 	GUESS Format = iota
+
 	// import/export
+	// Format using go standard CSV library.
 	CSV
+
 	// import/export
+	// Labeled Tab-separated Values.
 	LTSV
+
 	// import/export
+	// Format using go standard JSON library.
 	JSON
+
 	// import/export
+	// TBLN format(https://tbln.dev).
 	TBLN
+
 	// export
+	// Output as it is.
+	// Multiple characters can be selected as delimiter.
 	RAW
+
 	// export
+	// MarkDown format.
 	MD
+
 	// export
+	// ASCII Table format.
 	AT
+
 	// export
+	// Vertical format.
 	VF
 )
 
