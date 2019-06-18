@@ -45,7 +45,7 @@ func NewSliceReader(tableName string, args interface{}) *SliceReader {
 		for i := 0; i < columnNum; i++ {
 			f := t.Field(i)
 			names[i] = f.Name
-			types[i] = "text"
+			types[i] = typeToDBType(f.Type.Kind())
 		}
 
 		data = make([][]interface{}, 0)
@@ -64,7 +64,7 @@ func NewSliceReader(tableName string, args interface{}) *SliceReader {
 		types = make([]string, columnNum)
 		for i := 0; i < columnNum; i++ {
 			names[i] = fmt.Sprintf("c%d", i+1)
-			types[i] = "text"
+			types[i] = DefaultDBType
 		}
 
 		data = make([][]interface{}, 0)
@@ -86,6 +86,15 @@ func NewSliceReader(tableName string, args interface{}) *SliceReader {
 		names:     names,
 		types:     types,
 		data:      data,
+	}
+}
+
+func typeToDBType(t reflect.Kind) string {
+	switch t {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return "int"
+	default:
+		return DefaultDBType
 	}
 }
 

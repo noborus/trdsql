@@ -14,19 +14,23 @@ func Example() {
 Ken,Thompson,ken
 "Robert","Griesemer","gri"
 `)
-	err := ioutil.WriteFile("/tmp/in.csv", in, 0644)
+	tmpfile, err := ioutil.TempFile("/tmp", "xxx")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer func() {
-		os.Remove("/tmp/in.csv")
+		defer os.Remove(tmpfile.Name())
 	}()
-
+	_, err = tmpfile.Write(in)
+	if err != nil {
+		log.Fatal(err)
+	}
 	trd := trdsql.NewTRDSQL(
 		trdsql.NewImporter(),
 		trdsql.NewExporter(trdsql.NewWriter()),
 	)
-	err = trd.Exec("SELECT c1 FROM /tmp/in.csv ORDER BY c1")
+	query := fmt.Sprintf("SELECT c1 FROM %s ORDER BY c1", tmpfile.Name())
+	err = trd.Exec(query)
 	if err != nil {
 		log.Fatal(err)
 	}
