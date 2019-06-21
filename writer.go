@@ -22,28 +22,38 @@ type WriteOpts struct {
 	ErrStream    io.Writer
 }
 
+// WriteOpt is a function to set WriteOpts.
 type WriteOpt func(*WriteOpts)
 
+// OutFormat sets Format.
 func OutFormat(f Format) WriteOpt {
 	return func(args *WriteOpts) {
 		args.OutFormat = f
 	}
 }
+
+// OutDelimiter sets delimiter.
 func OutDelimiter(d string) WriteOpt {
 	return func(args *WriteOpts) {
 		args.OutDelimiter = d
 	}
 }
+
+// OutHeader sets flag to output header.
 func OutHeader(h bool) WriteOpt {
 	return func(args *WriteOpts) {
 		args.OutHeader = h
 	}
 }
+
+// OutStream sets the output destination.
 func OutStream(w io.Writer) WriteOpt {
 	return func(args *WriteOpts) {
 		args.OutStream = w
 	}
 }
+
+// ErrStream sets the error output destination.
 func ErrStream(w io.Writer) WriteOpt {
 	return func(args *WriteOpts) {
 		args.ErrStream = w
