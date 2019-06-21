@@ -51,6 +51,14 @@ func ErrStream(w io.Writer) WriteOpt {
 }
 
 // NewWriter returns a Writer interface.
+// The argument is an option of Functional Option Pattern.
+//
+// usage:
+//		NewWriter(
+//			trdsql.OutFormat(trdsql.CSV),
+//			trdsql.OutHeader(true),
+//			trdsql.OutDelimiter(";"),
+//		)
 func NewWriter(options ...WriteOpt) Writer {
 	writeOpts := &WriteOpts{
 		OutFormat:    CSV,

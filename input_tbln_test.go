@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestTblnInputNew(t *testing.T) {
+func TestTBLNInputNew(t *testing.T) {
 	const tblnStream = `; name: | id | name |
 | 1 | test |`
 	s := strings.NewReader(tblnStream)
@@ -23,7 +23,7 @@ func TestTblnInputNew(t *testing.T) {
 	}
 }
 
-func TestTblnFile(t *testing.T) {
+func TestTBLNFile(t *testing.T) {
 	file, err := singleFileOpen("testdata/test.tbln")
 	want := [][]interface{}{{"1", "Bob"}}
 	if err != nil {
@@ -42,6 +42,6 @@ func TestTblnFile(t *testing.T) {
 	}
 	got := tr.PreReadRow()
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Tbln file %v, want %v", got, want)
+		t.Errorf("TBLN file %v, want %v", got, want)
 	}
 }
