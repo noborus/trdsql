@@ -70,6 +70,7 @@ func outputFormat(o outputFlag) trdsql.Format {
 	}
 }
 
+// Debug flag for a detailed output
 var Debug bool
 
 // Run is main routine.

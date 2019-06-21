@@ -7,7 +7,6 @@ import (
 	"testing"
 )
 
-
 func TestJSONIndefiniteInputFile(t *testing.T) {
 	file, err := singleFileOpen("testdata/test_indefinite.json")
 	if err != nil {
@@ -56,7 +55,7 @@ func TestJSONIndefiniteInputFile3(t *testing.T) {
 	ro.InPreRead = 100
 	jr, err := NewJSONReader(file, ro)
 	if err != nil {
-		t.Errorf("NewJSONReader error: %s",err)
+		t.Errorf("NewJSONReader error: %s", err)
 	}
 	list, err := jr.Names()
 	if err != nil && err != io.EOF {

@@ -89,7 +89,7 @@ func TestNewSliceReader(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewSliceReader(tt.args.tableName, tt.args.args);!reflect.DeepEqual(got, tt.want) {
+			if got := NewSliceReader(tt.args.tableName, tt.args.args); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewSliceReader() = %#v, want %#v", got, tt.want)
 			}
 		})
