@@ -12,6 +12,8 @@ import (
 )
 
 // Importer is the interface import data into the database.
+// Importer parses sql query to decide which file to Import.
+// Therefore, the reader does not receive it directly.
 type Importer interface {
 	Import(db *DB, query string) (string, error)
 }
@@ -23,6 +25,14 @@ type ReadFormat struct {
 }
 
 // NewImporter returns trdsql default Importer.
+// The argument is an option of Functional Option Pattern.
+//
+// usage:
+//		trdsql.NewImporter(
+//			trdsql.InFormat(trdsql.CSV),
+//			trdsql.InHeader(true),
+//			trdsql.InDelimiter(";"),
+//		)
 func NewImporter(options ...ReadOpt) *ReadFormat {
 	readOpts := NewReadOpts()
 	for _, option := range options {
@@ -149,7 +159,8 @@ func isSQLKeyWords(str string) bool {
 
 // ImportFile is imports a file.
 // Return the escaped table name and error.
-// Do not import if file not found (no error)
+// Do not import if file not found (no error).
+// Wildcards can be passed as fileName.
 func ImportFile(db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 	file, err := importFileOpen(fileName)
 	if err != nil {
