@@ -26,13 +26,13 @@ $(BINARY_NAME): $(SRCS)
 pkg: linux_pkg window_pkg
 
 linux_pkg:
-	$(GOXCMD) -os "linux" -arch "amd64" -output $(TARGET)
+	$(GOXCMD) -os "linux" -arch "amd64" -output $(TARGET) ./cmd/trdsql
 
 window_pkg:
-	CC=x86_64-w64-mingw32-gcc $(GOXCMD) -os "windows" -arch "amd64" -output $(TARGET)
+	CC=x86_64-w64-mingw32-gcc $(GOXCMD) -os "windows" -arch "amd64" -output $(TARGET) ./cmd/trdsql
 
 pkg_macOS:
-	$(GOXCMD) -os "darwin" -arch "amd64" -output ${TARGET}
+	$(GOXCMD) -os "darwin" -arch "amd64" -output ${TARGET} ./cmd/trdsql
 
 install:
 	$(GOINSTALL) ./cmd/trdsql
