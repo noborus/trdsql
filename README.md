@@ -1,13 +1,15 @@
 # trdsql
 
-[![Build Status](https://travis-ci.org/noborus/trdsql.svg?branch=master)](https://travis-ci.org/noborus/trdsql)
 [![GoDoc](https://godoc.org/github.com/noborus/trdsql?status.svg)](https://godoc.org/github.com/noborus/trdsql)
+[![Build Status](https://travis-ci.org/noborus/trdsql.svg?branch=master)](https://travis-ci.org/noborus/trdsql)
 
 A tool that can execute SQL queries on [CSV](https://tools.ietf.org/html/rfc4180), [LTSV](http://ltsv.org/), [JSON](https://tools.ietf.org/html/rfc7159) and [TBLN](https://tbln.dev/).
 
 It is a tool like [q](https://github.com/harelba/q) , [textql](https://github.com/dinedal/textql) and others.
 
 The difference from these tools is that the syntax of PostgreSQL or MySQL can be used.
+
+Please refer to [godoc](https://godoc.org/github.com/noborus/trdsql) and _example for usage as a library.
 
 ![trdsql.gif](doc/trdsql.gif)
 
@@ -697,6 +699,33 @@ $ trdsql -debug -db pdb "SELECT * FROM test.csv"
 2,Melon
 3,Apple
 ```
+
+## Library
+
+Example of use as a library.
+
+```
+package main
+
+import (
+        "log"
+
+        "github.com/noborus/trdsql"
+)
+
+func main() {
+        trd := trdsql.NewTRDSQL(
+                trdsql.NewImporter(trdsql.InDelimiter(":")),
+                trdsql.NewExporter(trdsql.NewWriter()),
+        )
+        err := trd.Exec("SELECT c1 FROM /etc/passwd")
+        if err != nil {
+                log.Fatal(err)
+        }
+}
+```
+
+Please refer to [godoc](https://godoc.org/github.com/noborus/trdsql) and _example for usage as a library.
 
 ## License
 
