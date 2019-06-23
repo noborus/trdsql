@@ -34,11 +34,7 @@ type ReadFormat struct {
 //			trdsql.InDelimiter(";"),
 //		)
 func NewImporter(options ...ReadOpt) *ReadFormat {
-	readOpts := NewReadOpts()
-	for _, option := range options {
-		option(readOpts)
-	}
-
+	readOpts := NewReadOpts(options...)
 	return &ReadFormat{
 		ReadOpts: readOpts,
 	}
@@ -173,7 +169,6 @@ func ImportFile(db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 			log.Printf("file close:%s", err)
 		}
 	}()
-
 	if readOpts.InFormat == GUESS {
 		readOpts.realFormat = guessExtension(fileName)
 	} else {

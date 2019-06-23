@@ -1,6 +1,7 @@
 package trdsql_test
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -95,7 +96,6 @@ Ken,Thompson,ken
 	//   }
 	//]
 }
-
 func ExampleSliceImporter() {
 	data := []struct {
 		id   int
@@ -141,4 +141,74 @@ func ExampleSliceWriter() {
 	fmt.Print(table)
 	// Output:
 	// [[Henry 3] [Alice 2] [Bod 1]]
+}
+
+func ExampleBufferImporter() {
+	jsonString := `
+	[
+		{
+		  "name": "Sarah Carpenter",
+		  "gender": "female",
+		  "company": "ACCUSAGE",
+		  "tags": [
+			"veniam",
+			"exercitation",
+			"nulla",
+			"anim",
+			"ea",
+			"ullamco",
+			"ut"
+		  ],
+		  "greeting": "Hello, Sarah Carpenter! You have 1 unread messages."
+		},
+		{
+		  "name": "Perez Atkinson",
+		  "gender": "male",
+		  "company": "JOVIOLD",
+		  "tags": [
+			"minim",
+			"adipisicing",
+			"ad",
+			"occaecat",
+			"incididunt",
+			"eu",
+			"esse"
+		  ],
+		  "greeting": "Hello, Perez Atkinson! You have 10 unread messages."
+		},
+		{
+		  "name": "Valeria Potts",
+		  "gender": "female",
+		  "company": "EXOZENT",
+		  "tags": [
+			"esse",
+			"pariatur",
+			"nisi",
+			"commodo",
+			"adipisicing",
+			"ut",
+			"consectetur"
+		  ],
+		  "greeting": "Hello, Valeria Potts! You have 8 unread messages."
+		}
+	  ]
+`
+	r := bytes.NewBufferString(jsonString)
+	importer, err := trdsql.NewBufferImporter("test", r, trdsql.InFormat(trdsql.JSON))
+	if err != nil {
+		log.Fatal(err)
+	}
+	writer := trdsql.NewWriter(
+		trdsql.OutFormat(trdsql.CSV),
+		trdsql.OutDelimiter("\t"),
+	)
+	trd := trdsql.NewTRDSQL(importer, trdsql.NewExporter(writer))
+	err = trd.Exec("SELECT name,gender,company FROM test")
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Output:
+	//Sarah Carpenter	female	ACCUSAGE
+	//Perez Atkinson	male	JOVIOLD
+	//Valeria Potts	female	EXOZENT
 }

@@ -43,8 +43,8 @@ type ReadOpts struct {
 }
 
 // NewReadOpts Returns ReadOpts.
-func NewReadOpts() *ReadOpts {
-	return &ReadOpts{
+func NewReadOpts(options ...ReadOpt) *ReadOpts {
+	readOpts := &ReadOpts{
 		InFormat:    GUESS,
 		InPreRead:   1,
 		InSkip:      0,
@@ -52,6 +52,10 @@ func NewReadOpts() *ReadOpts {
 		InHeader:    false,
 		IsTemporary: true,
 	}
+	for _, option := range options {
+		option(readOpts)
+	}
+	return readOpts
 }
 
 // ReadOpt returns a *ReadOpts structure.

@@ -1,6 +1,6 @@
 package trdsql
 
-// SliceImporter is is a structure that includes SliceReader.
+// SliceImporter is a structure that includes SliceReader.
 // SliceImporter can be used as a library from another program.
 // It is not used from the command.
 // SliceImporter is an importer that reads one slice data.
