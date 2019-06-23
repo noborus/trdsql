@@ -29,6 +29,64 @@ func TestNewImporter(t *testing.T) {
 	}
 }
 
+func TestImporter_Import(t *testing.T) {
+	type fields struct {
+		ReadOpts *ReadOpts
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		query   string
+		want    string
+		wantErr bool
+	}{
+		{
+			name:    "test1",
+			fields:  fields{ReadOpts: NewReadOpts()},
+			query:   "SELECT 1",
+			want:    "SELECT 1",
+			wantErr: false,
+		},
+		{
+			name:    "testNoFile",
+			fields:  fields{ReadOpts: NewReadOpts()},
+			query:   "SELECT * FROM ttttnofile.csv",
+			want:    "SELECT * FROM ttttnofile.csv",
+			wantErr: false,
+		},
+		{
+			name:    "test3",
+			fields:  fields{ReadOpts: NewReadOpts(InDelimiter("ddd"))},
+			query:   "SELECT * FROM testdata/test.csv",
+			want:    "SELECT * FROM testdata/test.csv",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db, err := Connect("sqlite3", "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			db.Tx, err = db.Begin()
+			if err != nil {
+				t.Fatal(err)
+			}
+			i := &ReadFormat{
+				ReadOpts: tt.fields.ReadOpts,
+			}
+			got, err := i.Import(db, tt.query)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Importer.Import() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("Importer.Import() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func Test_listTable(t *testing.T) {
 	tests := []struct {
 		name  string
