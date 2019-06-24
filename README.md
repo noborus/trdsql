@@ -15,7 +15,7 @@ Please refer to [godoc](https://godoc.org/github.com/noborus/trdsql) and _exampl
 
 ## INSTALL
 
-```
+```console
 go get -d github.com/noborus/trdsql
 cd $GOPATH/src/github.com/noborus/trdsql
 make
@@ -26,7 +26,7 @@ Or download binaries from the [releases](https://github.com/noborus/trdsql/relea
 
 ## Usage
 
-```
+```console
 $ trdsql [options] SQL
 ```
 
@@ -210,9 +210,6 @@ id:3	name:Apple	price:100
 
 ```console
 $ trdsql -iltsv "SELECT * FROM sample.ltsv"
-```
-
-```csv
 1,Orange,50
 2,Melon,500
 3,Apple,100
@@ -224,9 +221,6 @@ $ trdsql -iltsv "SELECT * FROM sample.ltsv"
 
 ```console
 $ trdsql -iltsv -oltsv "SELECT * FROM sample.ltsv"
-```
-
-```ltsv
 id:1	name:Orange	price:50
 id:2	name:Melon	price:500
 id:3	name:Apple	price:100
@@ -259,9 +253,6 @@ sample.json
 
 ```console
 $ trdsql -ijson "SELECT * FROM sample.json"
-```
-
-```csv
 1,Orange,50
 2,Melon,500
 3,Apple,100
@@ -291,10 +282,7 @@ sample2.json
 ```
 
 ```console
-trdsql -ijson "SELECT * FROM sample2.json"
-```
-
-```csv
+$ trdsql -ijson "SELECT * FROM sample2.json"
 1,Drolet,"{""color"":""burlywood"",""country"":""Maldives""}"
 2,Shelly,"{""color"":""plum"",""country"":""Yemen""}"
 3,Tuck,"{""color"":""antiquewhite"",""country"":""Mayotte""}"
@@ -303,9 +291,7 @@ trdsql -ijson "SELECT * FROM sample2.json"
 Please use SQL function.
 
 ```console
-trdsql -ijson "SELECT id, name, JSON_EXTRACT(attribute,'$country'), JSON_EXTRACT(attribute,'$color') FROM sample2.json"
-```
-```csv
+$ trdsql -ijson "SELECT id, name, JSON_EXTRACT(attribute,'$country'), JSON_EXTRACT(attribute,'$color') FROM sample2.json"
 1,Drolet,Maldives,burlywood
 2,Shelly,Yemen,plum
 3,Tuck,Mayotte,antiquewhite
@@ -338,7 +324,6 @@ sample2.json
 ```console
 $ trdsql -ojson "SELECT * FROM test.csv"
 ```
-
 ```json
 [
   {
@@ -371,9 +356,6 @@ sample.tbln
 
 ```console
 $ trdsql -itbln "SELECT * FROM sample.tbln"
-```
-
-```csv
 1,Bob
 2,Alice
 ```
@@ -384,9 +366,6 @@ TBLN file reflects extras name and type.
 
 ```console
 $ trdsql -otbln "SELECT c1::int as id, c2::text as name FROM test.csv"
-```
-
-```TBLN
 ; created_at: 2019-03-22T13:20:31+09:00
 ; name: | id | name |
 ; type: | int | text |
@@ -406,9 +385,6 @@ It is used when "escape processing is unnecessary" in CSV output.
 
 ```console
 $ trdsql -oraw "SELECT row_to_json(t,TRUE) FROM test.csv AS t"
-```
-
-```
 {"c1":"1",
  "c2":"Orange"}
 {"c1":"2",
@@ -419,10 +395,9 @@ $ trdsql -oraw "SELECT row_to_json(t,TRUE) FROM test.csv AS t"
 
 Multiple delimiter characters can be used for raw.
 
+```console
+$ trdsql -oraw -od "\t|\t" -db pdb "SELECT * FROM test.csv"
 ```
-trdsql -oraw -od "\t|\t" -db pdb "SELECT * FROM test.csv"
-```
-
 ```
 1	|	Orange
 2	|	Melon
@@ -438,9 +413,6 @@ It uses [tablewriter](https://github.com/olekukonko/tablewriter).
 
 ```console
 $ trdsql -oat "SELECT * FROM test.csv"
-```
-
-```
 +----+--------+
 | C1 |   C2   |
 +----+--------+
@@ -454,9 +426,6 @@ $ trdsql -oat "SELECT * FROM test.csv"
 
 ```console
 $ trdsql -omd "SELECT * FROM test.csv"
-```
-
-```
 | C1 |   C2   |
 |----|--------|
 |  1 | Orange |
@@ -470,9 +439,6 @@ $ trdsql -omd "SELECT * FROM test.csv"
 
 ```console
 $ trdsql -ovf "SELECT * FROM test.csv"
-```
-
-```
 ---[ 1]--------------------------------------------------------
   c1 | 1
   c2 | Orange
@@ -488,8 +454,6 @@ $ trdsql -ovf "SELECT * FROM test.csv"
 
 ```console
 $ trdsql "SELECT count(*) FROM test.csv"
-```
-```
 3
 ```
 
@@ -497,9 +461,6 @@ The default column names are c1, c2,...
 
 ```console
 $ trdsql "SELECT c2,c1 FROM test.csv"
-```
-
-```csv
 Orange,1
 Melon,2
 Apple,3
@@ -508,7 +469,6 @@ Apple,3
 
 ```console
 $ ps |trdsql -ih -oh -id " " "SELECT \"TIME\",\"TTY\",\"PID\",\"CMD\" FROM -"
-
 TIME,TTY,PID,CMD
 00:00:00,pts/20,3452,ps
 00:00:00,pts/20,3453,trdsql
@@ -611,17 +571,11 @@ When using MySQL, specify mysql for driver and connection information for dsn.
 
 ```console
 $ trdsql -driver mysql -dsn "user:password@/test" "SELECT GROUP_CONCAT(c2 ORDER BY c2 DESC) FROM testdata/test.csv"
-```
-
-```csv
 "g,d,a"
 ```
 
 ```console
 $ trdsql -driver mysql -dsn "user:password@/test" "SELECT c1, SHA2(c2,224) FROM test.csv"
-```
-
-```csv
 1,a063876767f00792bac16d0dac57457fc88863709361a1bb33f13dfb
 2,2e7906d37e9523efeefb6fd2bc3be6b3f2991678427bedc296f9ddb6
 3,d0b8d1d417a45c7c58202f55cbb617865f1ef72c606f9bce54322802
