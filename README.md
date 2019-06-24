@@ -105,7 +105,7 @@ $ trdsql [options] SQL
 
 test.csv file.
 
-```CSV
+```csv
 1,Orange
 2,Melon
 3,Apple
@@ -113,24 +113,24 @@ test.csv file.
 
 Please write a file name like a table name.
 
-```sh
+```console
 $ trdsql "SELECT * FROM test.csv"
 ```
 
 -q filename can execute SQL from file
 
-```sh
+```console
 $ trdsql -q test.sql
 ```
 
 ### STDIN input
 
 "-" or "stdin" is received from standard input instead of file name.
-```sh
+```console
 $ ps | trdsql -id " " "SELECT * FROM -"
 ```
 or
-```sh
+```console
 $ ps | trdsql -id " " "SELECT * FROM stdin"
 ```
 
@@ -138,7 +138,7 @@ $ ps | trdsql -id " " "SELECT * FROM stdin"
 
 Multiple matched files can be executed as one table.
 
-```sh
+```console
 $ trdsql -ih "SELECT * FROM tt*.csv"
 1,test1
 2,test2
@@ -151,13 +151,13 @@ $ trdsql -ih "SELECT * FROM tt*.csv"
 
 Files with the file name suffix of ".gz" are automatically expanded.
 
-```sh
+```console
 $ trdsql "SELECT * FROM testdata/test.csv.gz"
 ```
 
 It is possible to mix uncompressed and compressed files using wildcards.
 
-```sh
+```console
 $ trdsql "SELECT * FROM testdata/test.csv*"
 ```
 
@@ -165,7 +165,7 @@ $ trdsql "SELECT * FROM testdata/test.csv*"
 
 If the number of columns is not a constant, read and decide multiple rows.
 
-```sh
+```console
 $ trdsql -ir 3 -iltsv "SELECT * FROM test_indefinite.ltsv"
 1,Orange,50,,
 2,Melon,500,ibaraki,
@@ -182,13 +182,13 @@ $ trdsql -ir 3 -iltsv "SELECT * FROM test_indefinite.ltsv"
 3	Apple
 ```
 
-```sh
+```console
 $ trdsql -id "\t" "SELECT * FROM test-tab.csv"
 ```
 
 -od "\\t" is TSV (Tab Separated Value) output.
 
-```sh
+```console
 $ trdsql -od "\t" "SELECT * FROM test.csv"
 ```
 ```
@@ -202,17 +202,17 @@ $ trdsql -od "\t" "SELECT * FROM test.csv"
 -iltsv is input from LTSV(Labeled Tab-separated Values).
 
 sample.ltsv
-```
+```ltsv
 id:1	name:Orange	price:50
 id:2	name:Melon	price:500
 id:3	name:Apple	price:100
 ```
 
-```sh
+```console
 $ trdsql -iltsv "SELECT * FROM sample.ltsv"
 ```
 
-```CSV
+```csv
 1,Orange,50
 2,Melon,500
 3,Apple,100
@@ -222,11 +222,11 @@ $ trdsql -iltsv "SELECT * FROM sample.ltsv"
 
 -oltsv is LTSV(Labeled Tab-separated Values) output.
 
-```sh
+```console
 $ trdsql -iltsv -oltsv "SELECT * FROM sample.ltsv"
 ```
 
-```
+```ltsv
 id:1	name:Orange	price:50
 id:2	name:Melon	price:500
 id:3	name:Apple	price:100
@@ -237,7 +237,7 @@ id:3	name:Apple	price:100
 -ijson is input from JSON.
 
 sample.json
-```JSON
+```json
 [
   {
     "id": "1",
@@ -257,11 +257,11 @@ sample.json
 ]
 ```
 
-```sh
+```console
 $ trdsql -ijson "SELECT * FROM sample.json"
 ```
 
-```CSV
+```csv
 1,Orange,50
 2,Melon,500
 3,Apple,100
@@ -270,7 +270,7 @@ $ trdsql -ijson "SELECT * FROM sample.json"
 JSON can contain structured types, but trdsql is stored as it is as JSON string.
 
 sample2.json
-```JSON
+```json
 [
     {
       "id": 1,
@@ -290,11 +290,11 @@ sample2.json
 ]
 ```
 
-```sh
+```console
 trdsql -ijson "SELECT * FROM sample2.json"
 ```
 
-```CSV
+```csv
 1,Drolet,"{""color"":""burlywood"",""country"":""Maldives""}"
 2,Shelly,"{""color"":""plum"",""country"":""Yemen""}"
 3,Tuck,"{""color"":""antiquewhite"",""country"":""Mayotte""}"
@@ -302,10 +302,10 @@ trdsql -ijson "SELECT * FROM sample2.json"
 
 Please use SQL function.
 
-```sh
+```console
 trdsql -ijson "SELECT id, name, JSON_EXTRACT(attribute,'$country'), JSON_EXTRACT(attribute,'$color') FROM sample2.json"
 ```
-```CSV
+```csv
 1,Drolet,Maldives,burlywood
 2,Shelly,Yemen,plum
 3,Tuck,Mayotte,antiquewhite
@@ -314,7 +314,7 @@ trdsql -ijson "SELECT id, name, JSON_EXTRACT(attribute,'$country'), JSON_EXTRACT
 Another json format. One record is JSON.
 
 sample2.json
-```JSON
+```json
 {
   "id": "1",
   "name": "Orange",
@@ -335,11 +335,11 @@ sample2.json
 
 -ojson is JSON Output.
 
-```sh
+```console
 $ trdsql -ojson "SELECT * FROM test.csv"
 ```
 
-```JSON
+```json
 [
   {
     "c1": "1",
@@ -369,11 +369,11 @@ sample.tbln
 | 2 | Alice |
 ```
 
-```sh
-trdsql -itbln "SELECT * FROM sample.tbln"
+```console
+$ trdsql -itbln "SELECT * FROM sample.tbln"
 ```
 
-```CSV
+```csv
 1,Bob
 2,Alice
 ```
@@ -382,7 +382,7 @@ TBLN file reflects extras name and type.
 
 -otbln is TBLN Output.
 
-```sh
+```console
 $ trdsql -otbln "SELECT c1::int as id, c2::text as name FROM test.csv"
 ```
 
@@ -404,7 +404,7 @@ Please refer to https://tbln.dev/ for details of TBLN.
 It is used when "escape processing is unnecessary" in CSV output.
 (For example, when outputting JSON in the database).
 
-```sh
+```console
 $ trdsql -oraw "SELECT row_to_json(t,TRUE) FROM test.csv AS t"
 ```
 
@@ -436,7 +436,7 @@ trdsql -oraw -od "\t|\t" -db pdb "SELECT * FROM test.csv"
 It uses [tablewriter](https://github.com/olekukonko/tablewriter).
 
 
-```sh
+```console
 $ trdsql -oat "SELECT * FROM test.csv"
 ```
 
@@ -452,7 +452,7 @@ $ trdsql -oat "SELECT * FROM test.csv"
 
 -omd is Markdown output.
 
-```sh
+```console
 $ trdsql -omd "SELECT * FROM test.csv"
 ```
 
@@ -468,7 +468,7 @@ $ trdsql -omd "SELECT * FROM test.csv"
 
 -ovf is Vertical format output("column name | value" vertically).
 
-```sh
+```console
 $ trdsql -ovf "SELECT * FROM test.csv"
 ```
 
@@ -486,7 +486,7 @@ $ trdsql -ovf "SELECT * FROM test.csv"
 
 ### SQL function
 
-```sh
+```console
 $ trdsql "SELECT count(*) FROM test.csv"
 ```
 ```
@@ -495,22 +495,20 @@ $ trdsql "SELECT count(*) FROM test.csv"
 
 The default column names are c1, c2,...
 
-```sh
+```console
 $ trdsql "SELECT c2,c1 FROM test.csv"
 ```
 
-```CSV
+```csv
 Orange,1
 Melon,2
 Apple,3
 ```
 "- ih" sets the first line to column name
 
-```sh
-ps |trdsql -ih -oh -id " " "SELECT \"TIME\",\"TTY\",\"PID\",\"CMD\" FROM -"
-```
+```console
+$ ps |trdsql -ih -oh -id " " "SELECT \"TIME\",\"TTY\",\"PID\",\"CMD\" FROM -"
 
-```
 TIME,TTY,PID,CMD
 00:00:00,pts/20,3452,ps
 00:00:00,pts/20,3453,trdsql
@@ -522,22 +520,20 @@ TIME,TTY,PID,CMD
 The SQL JOIN can be used.
 
 user.csv
-```CSV
+```csv
 1,userA
 2,userB
 ```
 
 hist.csv
-```CSV
+```csv
 1,2017-7-10
 2,2017-7-10
 2,2017-7-11
 ```
 
-```sh
+```console
 $ trdsql "SELECT u.c1,u.c2,h.c2 FROM user.csv as u LEFT JOIN hist.csv as h ON(u.c1=h.c1)"
-```
-```
 1,userA,2017-7-10
 2,userB,2017-7-10
 2,userB,2017-7-11
@@ -547,7 +543,7 @@ $ trdsql "SELECT u.c1,u.c2,h.c2 FROM user.csv as u LEFT JOIN hist.csv as h ON(u.
 
 When using PostgreSQL, specify postgres for driver and connection information for dsn.
 
-```sh
+```console
 $ trdsql -driver postgres -dsn "dbname=test" "SELECT count(*) FROM test.csv "
 ```
 
@@ -555,10 +551,8 @@ $ trdsql -driver postgres -dsn "dbname=test" "SELECT count(*) FROM test.csv "
 
 The PostgreSQL driver can use the window function.
 
-```sh
+```console
 $ trdsql -driver postgres -dsn "dbname=test" "SELECT row_number() OVER (ORDER BY c2),c1,c2 FROM test.csv"
-```
-```CSV
 1,3,Apple
 2,2,Melon
 3,1,Orange
@@ -566,10 +560,8 @@ $ trdsql -driver postgres -dsn "dbname=test" "SELECT row_number() OVER (ORDER BY
 
 For example, the generate_series function can be used.
 
-```sh
+```console
 $ trdsql -driver postgres -dsn "dbname=test" "SELECT generate_series(1,3);"
-```
-```
 1
 2
 3
@@ -578,10 +570,8 @@ $ trdsql -driver postgres -dsn "dbname=test" "SELECT generate_series(1,3);"
 #### Join table and CSV file is possible.
 
 Test database has a colors table.
-```
+```console
 $ psql test -c "SELECT * FROM colors"
-```
-```
  id |  name  
 ----+--------
   1 | orange
@@ -592,11 +582,8 @@ $ psql test -c "SELECT * FROM colors"
 
 Join table and CSV file.
 
-```sh
+```console
 $ trdsql -driver postgres -dsn "dbname=test" "SELECT t.c1,t.c2,c.name FROM test.csv AS t LEFT JOIN colors AS c ON (t.c1::int = c.id)"
-```
-
-```
 1,Orange,orange
 2,Melon,green
 3,Apple,red
@@ -604,11 +591,11 @@ $ trdsql -driver postgres -dsn "dbname=test" "SELECT t.c1,t.c2,c.name FROM test.
 
 To create a table from a file, use "CREATE TABLE ... AS SELECT...".
 
-```sh
+```console
 $ trdsql -driver postgres -dns "dbname=test" "CREATE TABLE fruits (id, name) AS SELECT c1::int, c2 FROM fruits.csv "
 ```
 
-```sh
+```console
 $ psql -c "SELECT * FROM fruits;"
  id |  name  
 ----+--------
@@ -622,19 +609,19 @@ $ psql -c "SELECT * FROM fruits;"
 
 When using MySQL, specify mysql for driver and connection information for dsn.
 
-```sh
+```console
 $ trdsql -driver mysql -dsn "user:password@/test" "SELECT GROUP_CONCAT(c2 ORDER BY c2 DESC) FROM testdata/test.csv"
 ```
 
-```
+```csv
 "g,d,a"
 ```
 
-```sh
+```console
 $ trdsql -driver mysql -dsn "user:password@/test" "SELECT c1, SHA2(c2,224) FROM test.csv"
 ```
 
-```CSV
+```csv
 1,a063876767f00792bac16d0dac57457fc88863709361a1bb33f13dfb
 2,2e7906d37e9523efeefb6fd2bc3be6b3f2991678427bedc296f9ddb6
 3,d0b8d1d417a45c7c58202f55cbb617865f1ef72c606f9bce54322802
@@ -657,7 +644,7 @@ C:\Users\{"User"}\AppData\Roaming\trdsql\config.json
 ```
 Or use the -config file option.
 
-```sh
+```console
 $ trdsql -config config.json "SELECT * FROM test.csv"
 ```
 
@@ -687,10 +674,8 @@ The default database is an entry of "db".
 
 If you put the setting in you can specify the name with -db.
 
-```sh
+```console
 $ trdsql -debug -db pdb "SELECT * FROM test.csv"
-```
-```
 2017/07/18 02:27:47 driver: postgres, dsn: user=test dbname=test
 2017/07/18 02:27:47 CREATE TEMPORARY TABLE "test.csv" ( c1 text,c2 text );
 2017/07/18 02:27:47 INSERT INTO "test.csv" (c1,c2) VALUES ($1,$2);
@@ -704,7 +689,7 @@ $ trdsql -debug -db pdb "SELECT * FROM test.csv"
 
 Example of use as a library.
 
-```
+```go
 package main
 
 import (
