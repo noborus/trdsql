@@ -29,6 +29,19 @@ func TestNewSliceReader(t *testing.T) {
 			},
 		},
 		{
+			name: "int",
+			args: args{
+				tableName: "one",
+				args:      1,
+			},
+			want: &SliceReader{
+				tableName: "one",
+				names:     []string{"c1"},
+				types:     []string{"int"},
+				data:      [][]interface{}{{1}},
+			},
+		},
+		{
 			name: "single",
 			args: args{
 				tableName: "single",
@@ -39,6 +52,19 @@ func TestNewSliceReader(t *testing.T) {
 				names:     []string{"c1"},
 				types:     []string{"text"},
 				data:      [][]interface{}{{"a"}, {"b"}},
+			},
+		},
+		{
+			name: "singleInt",
+			args: args{
+				tableName: "singleInt",
+				args:      []interface{}{1, 2, 3},
+			},
+			want: &SliceReader{
+				tableName: "singleInt",
+				names:     []string{"c1"},
+				types:     []string{"int"},
+				data:      [][]interface{}{{1}, {2}, {3}},
 			},
 		},
 		{
@@ -54,7 +80,7 @@ func TestNewSliceReader(t *testing.T) {
 			want: &SliceReader{
 				tableName: "slice",
 				names:     []string{"c1", "c2"},
-				types:     []string{"text", "text"},
+				types:     []string{"int", "text"},
 				data: [][]interface{}{
 					{1, "one"},
 					{2, "two"},
