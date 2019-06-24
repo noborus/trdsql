@@ -61,10 +61,11 @@ func NewSliceReader(tableName string, args interface{}) *SliceReader {
 }
 
 func mapSliceReader(tableName string, val reflect.Value) *SliceReader {
-	// length := val.Len()
 	val = reflect.Indirect(val)
 	names := []string{"c1", "c2"}
-	types := []string{"text", "text"}
+	keyType := val.MapKeys()[0].Kind()
+	valType := val.MapIndex(val.MapKeys()[0]).Kind()
+	types := []string{typeToDBType(keyType), typeToDBType(valType)}
 	data := make([][]interface{}, 0)
 	for _, e := range val.MapKeys() {
 		data = append(data, []interface{}{e.Interface(), val.MapIndex(e).Interface()})
@@ -80,7 +81,8 @@ func mapSliceReader(tableName string, val reflect.Value) *SliceReader {
 func interfaceSliceReader(tableName string, val reflect.Value) *SliceReader {
 	single := val.Interface().([]interface{})
 	names := []string{"c1"}
-	types := []string{"text"}
+	t := reflect.ValueOf(single[0])
+	types := []string{typeToDBType(t.Kind())}
 	data := make([][]interface{}, 0)
 	for i := 0; i < len(single); i++ {
 		data = append(data, []interface{}{single[i]})
@@ -123,12 +125,14 @@ func structSliceReader(tableName string, val reflect.Value) *SliceReader {
 
 func sliceSliceReader(tableName string, val reflect.Value) *SliceReader {
 	length := val.Len()
-	columnNum := val.Index(0).Len()
+	col := val.Index(0)
+	columnNum := col.Len()
 	names := make([]string, columnNum)
 	types := make([]string, columnNum)
 	for i := 0; i < columnNum; i++ {
 		names[i] = fmt.Sprintf("c%d", i+1)
-		types[i] = DefaultDBType
+		colType := reflect.ValueOf(col.Index(i).Interface()).Kind()
+		types[i] = typeToDBType(colType)
 	}
 
 	data := make([][]interface{}, 0)
@@ -143,6 +147,7 @@ func sliceSliceReader(tableName string, val reflect.Value) *SliceReader {
 	}
 }
 
+// In sliceReader, only int type is passed to the database as int type.
 func typeToDBType(t reflect.Kind) string {
 	switch t {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
