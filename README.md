@@ -15,7 +15,7 @@ Please refer to [godoc](https://godoc.org/github.com/noborus/trdsql) and _exampl
 
 ## INSTALL
 
-```console
+```sh
 go get -d github.com/noborus/trdsql
 cd $GOPATH/src/github.com/noborus/trdsql
 make
