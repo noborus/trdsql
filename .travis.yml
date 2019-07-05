@@ -3,6 +3,7 @@ os:
   - linux
   - osx
 go:
+  - 1.12.x
   - master
 env:
   - GO111MODULE=on
