@@ -24,13 +24,18 @@ type SliceReader struct {
 // and an array of structures.
 func NewSliceReader(tableName string, args interface{}) *SliceReader {
 	val := reflect.ValueOf(args)
+	if val.Kind() == reflect.Ptr {
+		val = reflect.Indirect(val)
+	}
 
+	// One-dimensional
 	switch val.Kind() {
 	case reflect.Map:
-		// {"1":"test"}
-		return mapSliceReader(tableName, val)
+		return mapReader(tableName, val)
+	case reflect.Struct:
+		return structReader(tableName, val)
 	case reflect.Slice:
-		// slice continue
+		return sliceReader(tableName, val)
 	default:
 		single := val.Interface()
 		data := [][]interface{}{
@@ -45,22 +50,9 @@ func NewSliceReader(tableName string, args interface{}) *SliceReader {
 			data:      data,
 		}
 	}
-
-	//
-	switch val.Index(0).Kind() {
-	case reflect.Struct:
-		// {{ id: 1, name: "test"}}
-		return structSliceReader(tableName, val)
-	case reflect.Slice:
-		// {{1, "test"}}
-		return sliceSliceReader(tableName, val)
-	default:
-		// {{"a", "b", "c"}}
-		return interfaceSliceReader(tableName, val)
-	}
 }
 
-func mapSliceReader(tableName string, val reflect.Value) *SliceReader {
+func mapReader(tableName string, val reflect.Value) *SliceReader {
 	val = reflect.Indirect(val)
 	names := []string{"c1", "c2"}
 	keyType := val.MapKeys()[0].Kind()
@@ -78,20 +70,45 @@ func mapSliceReader(tableName string, val reflect.Value) *SliceReader {
 	}
 }
 
-func interfaceSliceReader(tableName string, val reflect.Value) *SliceReader {
-	single := val.Interface().([]interface{})
-	names := []string{"c1"}
-	t := reflect.ValueOf(single[0])
-	types := []string{typeToDBType(t.Kind())}
-	data := make([][]interface{}, 0)
-	for i := 0; i < len(single); i++ {
-		data = append(data, []interface{}{single[i]})
+func structReader(tableName string, val reflect.Value) *SliceReader {
+	t := val.Type()
+	columnNum := t.NumField()
+	names := make([]string, columnNum)
+	types := make([]string, columnNum)
+	for i := 0; i < columnNum; i++ {
+		f := t.Field(i)
+		names[i] = f.Name
+		types[i] = typeToDBType(f.Type.Kind())
 	}
+	single := make([]interface{}, t.NumField())
+	for j := 0; j < t.NumField(); j++ {
+		v := val.Field(j)
+		single[j] = fmt.Sprintf("%v", v.Interface())
+	}
+	data := [][]interface{}{
+		single,
+	}
+
 	return &SliceReader{
 		tableName: tableName,
 		names:     names,
 		types:     types,
 		data:      data,
+	}
+}
+
+// Two-dimensional
+func sliceReader(tableName string, val reflect.Value) *SliceReader {
+	switch val.Index(0).Kind() {
+	case reflect.Struct:
+		// {{ id: 1, name: "test"},{ id: 2, name: "test2"}}
+		return structSliceReader(tableName, val)
+	case reflect.Slice:
+		// {{1, "test"},{2, "test2"}}
+		return sliceSliceReader(tableName, val)
+	default:
+		// {{"a", "b", "c"}}
+		return interfaceSliceReader(tableName, val)
 	}
 }
 
@@ -138,6 +155,24 @@ func sliceSliceReader(tableName string, val reflect.Value) *SliceReader {
 	data := make([][]interface{}, 0)
 	for i := 0; i < length; i++ {
 		data = append(data, val.Index(i).Interface().([]interface{}))
+	}
+	return &SliceReader{
+		tableName: tableName,
+		names:     names,
+		types:     types,
+		data:      data,
+	}
+}
+
+func interfaceSliceReader(tableName string, val reflect.Value) *SliceReader {
+	v := val.Index(0).Interface()
+	length := val.Len()
+	t := reflect.ValueOf(v)
+	names := []string{"c1"}
+	types := []string{typeToDBType(t.Kind())}
+	data := make([][]interface{}, length)
+	for i := 0; i < length; i++ {
+		data[i] = []interface{}{val.Index(i).Interface()}
 	}
 	return &SliceReader{
 		tableName: tableName,
