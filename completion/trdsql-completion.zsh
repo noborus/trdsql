@@ -13,11 +13,13 @@ function _trdsql {
     '-dsn[database connection option.]' \
     '-id[Field delimiter for input. (default ",")]::' \
     '-ih[The first line is interpreted as column names.]' \
-    '(-icsv -iltsv -ijson)-ig[Guess format from extension.]' \
-    '(-ig -iltsv -ijson)-icsv[CSV format for input.]' \
-    '(-ig -icsv -ijson)-iltsv[LTSV format for input.]' \
-    '(-ig -icsv -iltsv)-ijson[JSON format for input.]' \
+    '(-icsv -iltsv -ijson -itbln)-ig[Guess format from extension.]' \
+    '(-ig -iltsv -ijson -itbln)-icsv[CSV format for input.]' \
+    '(-ig -icsv -ijson -itbln)-iltsv[LTSV format for input.]' \
+    '(-ig -icsv -iltsv -itbln)-ijson[JSON format for input.]' \
+    '(-ig -icsv -iltsv -ijson)-itbln[TBLN format for input.]' \
     '-is[Skip header row.]::' \
+    '-ir[umber of row preread for column determination.(default 1)]::' \
     '-od[Field delimiter for output. (default ",")]' \
     '-oh[Output column name as header.]' \
     '-oat[ASCII Table format for output.]' \
@@ -28,7 +30,7 @@ function _trdsql {
     '-ovf[Vertical format for output.]' \
     '-q[Read query from the provided filename.]:file:_files -g "*.(SQL|sql)"' \
     '1: :__trdsql_sql' \
-    '*:file:_files -g "*.(csv|CSV|ltsv|LTSV|json|JSON)"'
+    '*:file:_files -g "*.(csv|CSV|ltsv|LTSV|json|JSON|tbln|TBLN)"'
 }
 
 __trdsql_sql() {
