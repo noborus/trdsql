@@ -77,6 +77,16 @@ func TestSliceImporter_Import(t *testing.T) {
 			want:    "",
 			wantErr: false,
 		},
+		{
+			name: "testNil",
+			fields: fields{
+				tableName: "testNil",
+				data:      []int{},
+			},
+			query:   "",
+			want:    "",
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

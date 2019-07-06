@@ -99,6 +99,14 @@ func structReader(tableName string, val reflect.Value) *SliceReader {
 
 // Two-dimensional
 func sliceReader(tableName string, val reflect.Value) *SliceReader {
+	if val.Len() == 0 {
+		return &SliceReader{
+			tableName: tableName,
+			names:     []string{"c1"},
+			types:     []string{"text"},
+			data:      nil,
+		}
+	}
 	switch val.Index(0).Kind() {
 	case reflect.Struct:
 		// {{ id: 1, name: "test"},{ id: 2, name: "test2"}}
