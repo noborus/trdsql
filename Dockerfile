@@ -1,4 +1,4 @@
-FROM alpine:3.7
+FROM alpine:latest
 
 # Configure Go
 ENV GOROOT /usr/lib/go
