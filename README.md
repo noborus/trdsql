@@ -15,14 +15,34 @@ Please refer to [godoc](https://godoc.org/github.com/noborus/trdsql) and _exampl
 
 ## INSTALL
 
-```sh
+```console
 go get -d github.com/noborus/trdsql
 cd $GOPATH/src/github.com/noborus/trdsql
 make
 make install
 ```
 
-Or download binaries from the [releases](https://github.com/noborus/trdsql/releases) page(Linux/Windows/macOS).
+### Requirements
+
+go 1.11 or higher.
+
+### Download
+
+Download binary from the [releases](https://github.com/noborus/trdsql/releases) page(Linux/Windows/macOS).
+
+## Docker
+
+image build.
+
+```console
+docker build -t trdsql .
+````
+
+docker run.
+
+```console
+docker run --rm -it -v $(pwd)/tmp trdsql [options and commands]
+```
 
 ## Usage
 
