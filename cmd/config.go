@@ -32,7 +32,9 @@ func configOpen(config string) io.Reader {
 	}
 	cfg, err := os.Open(fileName)
 	if err != nil {
-		log.Printf("configOpen: %s", err.Error())
+		if Debug {
+			log.Printf("configOpen: %s", err.Error())
+		}
 		return nil
 	}
 	if Debug {
