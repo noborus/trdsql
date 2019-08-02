@@ -234,6 +234,10 @@ func bulkPush(table *Table, input Reader, bulk []interface{}) ([]interface{}, er
 		if err != nil {
 			return bulk, err
 		}
+		// Skip when empty read.
+		if len(table.row) == 0 {
+			continue
+		}
 		bulk = append(bulk, table.row...)
 		table.count++
 	}
