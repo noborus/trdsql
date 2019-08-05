@@ -14,6 +14,58 @@ const (
 	dataDir = "testdata/"
 )
 
+func TestWildCard_Exec(t *testing.T) {
+	tests := []struct {
+		name    string
+		sql     string
+		want    string
+		wantErr bool
+	}{
+		{
+			name:    "testWildCardCSV",
+			sql:     "SELECT * FROM " + dataDir + "tt*.csv",
+			want:    "1,test1\n2,test2\n3,test3\n",
+			wantErr: false,
+		},
+		{
+			name:    "testWildCardLTSV",
+			sql:     "SELECT id,name FROM " + dataDir + "tt*.ltsv",
+			want:    "1,test1\n2,test2\n3,test3\n",
+			wantErr: false,
+		},
+		{
+			name:    "testWildCardJSON",
+			sql:     "SELECT id,name FROM " + dataDir + "tt*.json",
+			want:    "1,test1\n2,test2\n3,test3\n",
+			wantErr: false,
+		},
+		{
+			name:    "testWildCardTBLN",
+			sql:     "SELECT id,name FROM " + dataDir + "tt*.tbln",
+			want:    "1,test1\n2,test2\n3,test3\n",
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		available := availableDB()
+		for _, d := range available {
+			t.Run(tt.name, func(t *testing.T) {
+				outStream := new(bytes.Buffer)
+				trd := setDefaultTRDSQL(outStream)
+				trd.Driver = d[0]
+				trd.Dsn = d[1]
+				if err := trd.Exec(tt.sql); (err != nil) != tt.wantErr {
+					t.Errorf("TRDSQL.Exec() error = %v, wantErr %v", err, tt.wantErr)
+				}
+				got := outStream.String()
+				if got != tt.want {
+					t.Errorf("TRDSQL.Exec() result = %v, want %v", got, tt.want)
+				}
+			})
+		}
+	}
+}
+
 func TestTRDSQL_Exec(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -262,6 +314,7 @@ func checkDBTest(driver string, dsn string) bool {
 	err = db.Close()
 	return (err == nil)
 }
+
 func availableDB() [][]string {
 	database := [][]string{
 		{"sqlite3", ""},

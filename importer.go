@@ -294,6 +294,7 @@ func globFileOpen(globName string) (*io.PipeReader, error) {
 			if err != nil {
 				log.Printf("ERROR: %s:%s", fileName, err)
 			}
+			debug.Printf("Close: [%s]", fileName)
 		}
 	}()
 	return pipeReader, nil
