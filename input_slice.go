@@ -200,6 +200,11 @@ func typeToDBType(t reflect.Kind) string {
 	}
 }
 
+// TableName returns Table name.
+func (r *SliceReader) TableName() (string, error) {
+	return r.tableName, nil
+}
+
 // Names returns column names.
 func (r *SliceReader) Names() ([]string, error) {
 	return r.names, nil
