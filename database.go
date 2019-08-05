@@ -159,13 +159,16 @@ func (db *DB) copyImport(table *Table, reader Reader) error {
 			return err
 		}
 	}
-
 	for {
 		table.row, err = reader.ReadRow(table.row)
 		if err == io.EOF {
 			break
 		} else if err != nil {
 			return fmt.Errorf("read: %s", err)
+		}
+		// Skip when empty read.
+		if len(table.row) == 0 {
+			continue
 		}
 		_, err = stmt.Exec(table.row...)
 		if err != nil {

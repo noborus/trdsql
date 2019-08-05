@@ -8,5 +8,5 @@ require (
 	github.com/noborus/tbln v0.0.1
 	github.com/olekukonko/tablewriter v0.0.1
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
-	golang.org/x/sys v0.0.0-20190726091711-fc99dfbffb4e // indirect
+	golang.org/x/sys v0.0.0-20190804053845-51ab0e2deafa // indirect
 )
