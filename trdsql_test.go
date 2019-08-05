@@ -29,19 +29,19 @@ func TestWildCard_Exec(t *testing.T) {
 		},
 		{
 			name:    "testWildCardLTSV",
-			sql:     "SELECT * FROM " + dataDir + "tt*.ltsv",
+			sql:     "SELECT id,name FROM " + dataDir + "tt*.ltsv",
 			want:    "1,test1\n2,test2\n3,test3\n",
 			wantErr: false,
 		},
 		{
 			name:    "testWildCardJSON",
-			sql:     "SELECT * FROM " + dataDir + "tt*.json",
+			sql:     "SELECT id,name FROM " + dataDir + "tt*.json",
 			want:    "1,test1\n2,test2\n3,test3\n",
 			wantErr: false,
 		},
 		{
 			name:    "testWildCardTBLN",
-			sql:     "SELECT * FROM " + dataDir + "tt*.tbln",
+			sql:     "SELECT id,name FROM " + dataDir + "tt*.tbln",
 			want:    "1,test1\n2,test2\n3,test3\n",
 			wantErr: false,
 		},
