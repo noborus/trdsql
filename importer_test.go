@@ -111,8 +111,8 @@ func Test_listTable(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := listTable(tt.query); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("listTable() = %v, want %v", got, tt.want)
+			if got := TableNames(tt.query); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("TableNames() = %v, want %v", got, tt.want)
 			}
 		})
 	}
