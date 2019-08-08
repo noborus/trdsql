@@ -48,7 +48,7 @@ const DefaultDBType = "text"
 // Return the rewritten SQL and error.
 // No error is returned if there is no table to import.
 func (i *ReadFormat) Import(db *DB, query string) (string, error) {
-	tables := listTable(query)
+	tables := TableNames(query)
 	if len(tables) == 0 {
 		// without FROM clause. ex. SELECT 1+1;
 		debug.Printf("table not found\n")
@@ -74,7 +74,10 @@ func (i *ReadFormat) Import(db *DB, query string) (string, error) {
 	return query, nil
 }
 
-func listTable(query string) []string {
+// TableNames returns slices of table names
+// that may be tables by a simple SQL parser
+// from the query string of the argument.
+func TableNames(query string) []string {
 	var tables []string
 	var tableFlag, frontFlag bool
 	word := sqlFields(query)
