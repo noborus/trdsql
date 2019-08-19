@@ -1,4 +1,4 @@
 package trdsql
 
-// VERSION is trdsql version
-const VERSION = `0.6.3`
+// Version is trdsql version
+var Version = `0.6.3`

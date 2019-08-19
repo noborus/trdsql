@@ -145,7 +145,7 @@ func Run(args []string) int {
 	}
 
 	if version {
-		fmt.Println(trdsql.VERSION)
+		fmt.Println(trdsql.Version)
 		return 0
 	}
 
