@@ -246,7 +246,7 @@ id:2	name:Melon	price:500
 id:3	name:Apple	price:100
 ```
 
-### JSON
+### [JSON](https://godoc.org/encoding/json)
 
 -ijson is input from JSON.
 
@@ -361,7 +361,8 @@ $ trdsql -ojson "SELECT * FROM test.csv"
 ]
 ```
 
-### TBLN
+### [TBLN](https://github.com/noborus/tbln)
+
 
 -itbln is input from TBLN.
 
@@ -425,11 +426,9 @@ $ trdsql -oraw -od "\t|\t" -db pdb "SELECT * FROM test.csv"
 ```
 
 
-### ASCII Table & MarkDown output
+### [ASCII Table & MarkDown output](https://github.com/olekukonko/tablewriter)
 
 -oat is ASCII table output.
-It uses [tablewriter](https://github.com/olekukonko/tablewriter).
-
 
 ```console
 $ trdsql -oat "SELECT * FROM test.csv"
@@ -685,6 +684,8 @@ func main() {
 ```
 
 Please refer to [godoc](https://godoc.org/github.com/noborus/trdsql) and _example for usage as a library.
+
+See also [psutilsql](https://github.com/noborus/psutilsql), which uses trdsql as a library.
 
 ## License
 
