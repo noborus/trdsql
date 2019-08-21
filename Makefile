@@ -11,7 +11,7 @@ GOINSTALL=$(GOCMD) install $(BUILDFLAG)
 
 GOXCMD=gox -cgo $(BUILDFLAG)
 
-TARGET="dist/trdsql-$(VERSION)-{{.OS}}_{{.Arch}}/{{.Dir}}"
+TARGET="dist/trdsql_$(VERSION)_{{.OS}}_{{.Arch}}/{{.Dir}}"
 
 BINARY_NAME := trdsql
 SRCS := $(shell git ls-files '*.go')
