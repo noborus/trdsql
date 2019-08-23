@@ -13,7 +13,7 @@ type Reader interface {
 	ReadRow([]interface{}) ([]interface{}, error)
 }
 
-// ReadOpts option to determine reader.
+// ReadOpts represents options that determine the behavior of the reader.
 type ReadOpts struct {
 	// InFormat is read format.
 	// The supported format is CSV/LTSV/JSON/TBLN.

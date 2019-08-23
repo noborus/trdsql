@@ -13,13 +13,22 @@ type Writer interface {
 	PostWrite() error
 }
 
-// WriteOpts is the option to determine the writer process.
+// WriteOpts represents options that determine the behavior of the writer.
 type WriteOpts struct {
-	OutFormat    Format
+	// OutFormat is the writing format.
+	OutFormat Format
+
+	// OutDelimiter is the output delimiter (Use only CSV and Raw).
 	OutDelimiter string
-	OutHeader    bool
-	OutStream    io.Writer
-	ErrStream    io.Writer
+
+	// OutHeader is true if it outputs a header(Use only CSV and Raw).
+	OutHeader bool
+
+	// OutStream is the output destination.
+	OutStream io.Writer
+
+	// ErrStream is the error output destination.
+	ErrStream io.Writer
 }
 
 // WriteOpt is a function to set WriteOpts.

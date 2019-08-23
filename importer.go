@@ -18,8 +18,7 @@ type Importer interface {
 	Import(db *DB, query string) (string, error)
 }
 
-// ReadFormat is a structure that includes ReadOpts,
-// and is an implementation of the Importer interface.
+// ReadFormat represents a structure that satisfies the Importer.
 type ReadFormat struct {
 	*ReadOpts
 }
