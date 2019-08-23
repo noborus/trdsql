@@ -16,7 +16,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-// DB is *sql.DB wrapper.
+// DB represents database information.
 type DB struct {
 	driver    string
 	dsn       string
@@ -27,7 +27,7 @@ type DB struct {
 	Tx *sql.Tx
 }
 
-// Connect is connects to the database
+// Connect is connects to the database.
 func Connect(driver, dsn string) (*DB, error) {
 	var db DB
 	var err error
@@ -51,13 +51,12 @@ func Connect(driver, dsn string) (*DB, error) {
 	return &db, nil
 }
 
-// Disconnect is disconnect the database
+// Disconnect is disconnect the database.
 func (db *DB) Disconnect() error {
-	err := db.Close()
-	return err
+	return db.Close()
 }
 
-// CreateTable is create a temporary table
+// CreateTable is create a (temporary) table.
 func (db *DB) CreateTable(tableName string, names []string, types []string, isTemporary bool) error {
 	if len(names) == 0 {
 		return errors.New("missing names")
@@ -84,7 +83,7 @@ func (db *DB) CreateTable(tableName string, names []string, types []string, isTe
 	return err
 }
 
-// Select is executes SQL select statements
+// Select is executes SQL select statements.
 func (db *DB) Select(query string) (*sql.Rows, error) {
 	if db.Tx == nil {
 		return nil, errors.New("transaction has not been started")
@@ -101,7 +100,7 @@ func (db *DB) Select(query string) (*sql.Rows, error) {
 	return rows, nil
 }
 
-// Table is import Table data
+// Table represents the table data to be imported.
 type Table struct {
 	tableName string
 	columns   []string
@@ -113,7 +112,7 @@ type Table struct {
 	count     int
 }
 
-// Import is import to the table.
+// Import is imports data into a table.
 func (db *DB) Import(tableName string, columnNames []string, reader Reader) error {
 	if db.Tx == nil {
 		return errors.New("transaction has not been started")

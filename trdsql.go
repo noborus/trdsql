@@ -9,7 +9,7 @@ import (
 	"log"
 )
 
-// TRDSQL structure is a structure that defines the whole operation.
+// TRDSQL represents DB definition and Importer/Exporter interface.
 type TRDSQL struct {
 	// Driver is database driver name(sqlite3/mysql/postgres).
 	Driver string

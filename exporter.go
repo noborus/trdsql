@@ -10,12 +10,12 @@ import (
 )
 
 // Exporter is the interface for processing query results.
+// Exporter executes SQL and outputs to Writer.
 type Exporter interface {
 	Export(db *DB, query string) error
 }
 
-// WriteFormat is a structure that includes Writer and WriteOpts,
-// and is an implementation of the Exporter interface.
+// WriteFormat represents a structure that satisfies Exporter.
 type WriteFormat struct {
 	Writer
 }
