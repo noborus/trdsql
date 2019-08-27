@@ -149,7 +149,7 @@ func sqlFields(query string) []string {
 func isSQLKeyWords(str string) bool {
 	switch strings.ToUpper(str) {
 	case "WHERE", "GROUP", "HAVING", "WINDOW", "UNION", "ORDER", "LIMIT", "OFFSET", "FETCH",
-		"FOR", "LEFT", "RIGHT", "CROSS", "INNER", "FULL", "LETERAL", "(SELECT":
+		"FOR", "LEFT", "RIGHT", "CROSS", "INNER", "FULL", "LATERAL", "(SELECT":
 		return true
 	}
 	return false
