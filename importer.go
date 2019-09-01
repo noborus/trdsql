@@ -47,43 +47,48 @@ const DefaultDBType = "text"
 // Return the rewritten SQL and error.
 // No error is returned if there is no table to import.
 func (i *ReadFormat) Import(db *DB, query string) (string, error) {
-	tables := TableNames(query)
+	parsedQuery := sqlFields(query)
+	tables, tableIdx := TableNames(parsedQuery)
 	if len(tables) == 0 {
 		// without FROM clause. ex. SELECT 1+1;
 		debug.Printf("table not found\n")
 		return query, nil
 	}
-	created := make(map[string]bool)
-	for _, fileName := range tables {
-		if created[fileName] {
-			debug.Printf("already created \"%s\"\n", fileName)
-			continue
-		}
+	for fileName := range tables {
 		tableName, err := ImportFile(db, fileName, i.ReadOpts)
 		if err != nil {
 			return query, err
 		}
-		if tableName != "" {
-			query = db.RewriteSQL(query, fileName, tableName)
-			debug.Printf("escaped [%s] -> [%s]\n", fileName, tableName)
+		if len(tableName) > 0 {
+			tables[fileName] = tableName
 		}
-		created[fileName] = true
 	}
 
+	// replace table names in query with their quoted values
+	for _, idx := range tableIdx {
+		parsedQuery[idx] = tables[parsedQuery[idx]]
+	}
+
+	// reconstruct the query with quoted table names
+	query = strings.Join(parsedQuery, "")
 	return query, nil
 }
 
-// TableNames returns slices of table names
+// TableNames returns a map of table names
 // that may be tables by a simple SQL parser
-// from the query string of the argument.
-func TableNames(query string) []string {
-	var tables []string
-	var tableFlag, frontFlag bool
-	word := sqlFields(query)
-	debug.Printf("[%s]", strings.Join(word, "]["))
-	for i, w := range word {
-		frontFlag = false
+// from the query string of the argument,
+// along with the locations within the parsed
+// query where those table names were found.
+func TableNames(parsedQuery []string) (map[string]string, []int) {
+	tables := make(map[string]string)
+	tableIdx := []int{}
+	tableFlag := false
+	frontFlag := false
+	debug.Printf("[%s]", strings.Join(parsedQuery, "]["))
+	for i, w := range parsedQuery {
 		switch {
+		case strings.Contains(" \t\r\n;=", w):
+			continue
 		case strings.ToUpper(w) == "FROM" || strings.ToUpper(w) == "JOIN":
 			tableFlag = true
 			frontFlag = true
@@ -92,20 +97,19 @@ func TableNames(query string) []string {
 		case w == ",":
 			frontFlag = true
 		default:
-			frontFlag = false
-		}
-		if n := i + 1; n < len(word) && tableFlag && frontFlag {
-			if t := word[n]; len(t) > 0 {
-				if t[len(t)-1] == ')' {
-					t = t[:len(t)-1]
+			if tableFlag && frontFlag {
+				if w[len(w)-1] == ')' {
+					w = w[:len(w)-1]
 				}
-				if !isSQLKeyWords(t) {
-					tables = append(tables, t)
+				if !isSQLKeyWords(w) {
+					tables[w] = w
+					tableIdx = append(tableIdx,i)
 				}
 			}
+			frontFlag = false
 		}
 	}
-	return tables
+	return tables, tableIdx
 }
 
 func sqlFields(query string) []string {
@@ -120,9 +124,7 @@ func sqlFields(query string) []string {
 					parsed = append(parsed, buf)
 					buf = ""
 				}
-				if r == ',' {
-					parsed = append(parsed, ",")
-				}
+				parsed = append(parsed, string(r))
 			} else {
 				buf += string(r)
 			}
@@ -142,7 +144,9 @@ func sqlFields(query string) []string {
 		}
 		buf += string(r)
 	}
-	parsed = append(parsed, buf)
+	if len(buf) > 0 {
+		parsed = append(parsed, buf)
+	}
 	return parsed
 }
 

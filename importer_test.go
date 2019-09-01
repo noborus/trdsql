@@ -91,28 +91,36 @@ func Test_listTable(t *testing.T) {
 	tests := []struct {
 		name  string
 		query string
-		want  []string
+		wantTbl  map[string]string
+		wantIdx  []int
 	}{
 		{
-			name:  "noTable",
-			query: "SELECT 1;",
-			want:  nil,
+			name:    "noTable",
+			query:   "SELECT 1;",
+			wantTbl: map[string]string{},
+			wantIdx: []int{},
 		},
 		{
-			name:  "testTable",
-			query: "SELECT * FROM test;",
-			want:  []string{"test"},
+			name:    "testTable",
+			query:   "SELECT * FROM test;",
+			wantTbl: map[string]string{"test" : "test"},
+			wantIdx: []int{6},
 		},
 		{
-			name:  "testJoin",
-			query: "SELECT test.a FROM test LEFT JOIN test2 ON (test.b = test2.b);",
-			want:  []string{"test", "test2"},
+			name:    "testJoin",
+			query:   "SELECT test.a FROM test LEFT JOIN test2 ON (test.b = test2.b);",
+			wantTbl: map[string]string{"test" : "test", "test2" : "test2"},
+			wantIdx: []int{6, 12},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := TableNames(tt.query); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("TableNames() = %v, want %v", got, tt.want)
+			gotTbl, gotIdx := TableNames(sqlFields(tt.query))
+			if !reflect.DeepEqual(gotTbl, tt.wantTbl) {
+				t.Errorf("TableNames() Table Map = %v, want %v", gotTbl, tt.wantTbl)
+			}
+			if !reflect.DeepEqual(gotIdx, tt.wantIdx) {
+				t.Errorf("TableNames() Table Index = %v, want %v", gotIdx, tt.wantIdx)
 			}
 		})
 	}
@@ -130,27 +138,27 @@ func Test_sqlFields(t *testing.T) {
 		{
 			name: "testNo",
 			args: args{query: ""},
-			want: []string{""},
+			want: []string{},
 		},
 		{
 			name: "testDoubleQuote",
 			args: args{query: `SELECT * FROM "C:\file with a space.csv"`},
-			want: []string{`SELECT`, `*`, `FROM`, `"C:\file with a space.csv"`},
+			want: []string{`SELECT`, ` `, `*`, ` `, `FROM`, ` `, `"C:\file with a space.csv"`},
 		},
 		{
 			name: "testSingleQuote",
 			args: args{query: `SELECT * FROM 'C:\file with a space.csv'`},
-			want: []string{`SELECT`, `*`, `FROM`, `'C:\file with a space.csv'`},
+			want: []string{`SELECT`, ` `, `*`, ` `, `FROM`, ` `, `'C:\file with a space.csv'`},
 		},
 		{
 			name: "testSingleQuote2",
 			args: args{query: "SELECT * FROM jame's.csv"},
-			want: []string{"SELECT", "*", "FROM", "jame's.csv"},
+			want: []string{"SELECT", " ", "*", " ", "FROM", " ", "jame's.csv"},
 		},
 		{
 			name: "testBackQuote",
-			args: args{query: "SELECT * FROM `C:\file with a space.csv`"},
-			want: []string{`SELECT`, `*`, `FROM`, "`C:\file with a space.csv`"},
+			args: args{query: "SELECT * FROM `C:\file with a space.csv`;"},
+			want: []string{`SELECT`, ` `, `*`, ` `, `FROM`, ` `, "`C:\file with a space.csv`", `;`},
 		},
 	}
 	for _, tt := range tests {

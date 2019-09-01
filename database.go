@@ -295,16 +295,3 @@ func (db *DB) EscapeName(oldName string) string {
 	}
 	return newName
 }
-
-// RewriteSQL is rewrite SQL from file name to table name.
-func (db *DB) RewriteSQL(query string, oldName string, newName string) (rewrite string) {
-	for _, rewritten := range db.rewritten {
-		if rewritten == newName {
-			// Rewritten
-			return query
-		}
-	}
-	rewrite = strings.Replace(query, oldName, newName, -1)
-	db.rewritten = append(db.rewritten, newName)
-	return rewrite
-}
