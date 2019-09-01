@@ -96,6 +96,7 @@ Ken,Thompson,ken
 	//   }
 	//]
 }
+
 func ExampleSliceImporter() {
 	data := []struct {
 		id   int
@@ -114,9 +115,9 @@ func ExampleSliceImporter() {
 		log.Fatal(err)
 	}
 	// Output:
-	//Henry,3
-	//Alice,2
-	//Bod,1
+	// Henry,3
+	// Alice,2
+	// Bod,1
 }
 
 func ExampleSliceWriter() {
@@ -208,7 +209,7 @@ func ExampleBufferImporter() {
 		log.Fatal(err)
 	}
 	// Output:
-	//Sarah Carpenter	female	ACCUSAGE
-	//Perez Atkinson	male	JOVIOLD
-	//Valeria Potts	female	EXOZENT
+	// Sarah Carpenter	female	ACCUSAGE
+	// Perez Atkinson	male	JOVIOLD
+	// Valeria Potts	female	EXOZENT
 }

@@ -7,6 +7,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.11.0
 	github.com/noborus/tbln v0.0.1
 	github.com/olekukonko/tablewriter v0.0.1
-	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
-	golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a // indirect
+	golang.org/x/crypto v0.0.0-20190829043050-9756ffdc2472
+	golang.org/x/sys v0.0.0-20190830142957-1e83adbbebd0 // indirect
+	google.golang.org/appengine v1.6.2 // indirect
 )

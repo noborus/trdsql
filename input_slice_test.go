@@ -121,6 +121,7 @@ func TestNewSliceReader(t *testing.T) {
 		})
 	}
 }
+
 func TestNewMapSliceReader(t *testing.T) {
 	type args struct {
 		tableName string

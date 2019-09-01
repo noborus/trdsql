@@ -89,10 +89,10 @@ func TestImporter_Import(t *testing.T) {
 
 func Test_listTable(t *testing.T) {
 	tests := []struct {
-		name  string
-		query string
-		wantTbl  map[string]string
-		wantIdx  []int
+		name    string
+		query   string
+		wantTbl map[string]string
+		wantIdx []int
 	}{
 		{
 			name:    "noTable",
@@ -103,13 +103,13 @@ func Test_listTable(t *testing.T) {
 		{
 			name:    "testTable",
 			query:   "SELECT * FROM test;",
-			wantTbl: map[string]string{"test" : "test"},
+			wantTbl: map[string]string{"test": "test"},
 			wantIdx: []int{6},
 		},
 		{
 			name:    "testJoin",
 			query:   "SELECT test.a FROM test LEFT JOIN test2 ON (test.b = test2.b);",
-			wantTbl: map[string]string{"test" : "test", "test2" : "test2"},
+			wantTbl: map[string]string{"test": "test", "test2": "test2"},
 			wantIdx: []int{6, 12},
 		},
 	}
@@ -177,6 +177,7 @@ func newDBTestSqlite3() *DB {
 	}
 	return db
 }
+
 func newDBTestPostgres() *DB {
 	db, err := Connect("postgres", "dbname=trdsql_test")
 	if err != nil {
@@ -188,6 +189,7 @@ func newDBTestPostgres() *DB {
 	}
 	return db
 }
+
 func newDBTestMysql() *DB {
 	db, err := Connect("mysql", "root@/trdsql_test")
 	if err != nil {
@@ -199,11 +201,13 @@ func newDBTestMysql() *DB {
 	}
 	return db
 }
+
 func csvReadOpts() *ReadOpts {
 	opts := NewReadOpts()
 	opts.InFormat = CSV
 	return opts
 }
+
 func TestImportFile(t *testing.T) {
 	type args struct {
 		db       *DB
