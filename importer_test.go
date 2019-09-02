@@ -115,7 +115,7 @@ func Test_listTable(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotTbl, gotIdx := TableNames(sqlFields(tt.query))
+			gotTbl, gotIdx := TableNames(SQLFields(tt.query))
 			if !reflect.DeepEqual(gotTbl, tt.wantTbl) {
 				t.Errorf("TableNames() Table Map = %v, want %v", gotTbl, tt.wantTbl)
 			}
@@ -126,7 +126,7 @@ func Test_listTable(t *testing.T) {
 	}
 }
 
-func Test_sqlFields(t *testing.T) {
+func Test_SQLFields(t *testing.T) {
 	type args struct {
 		query string
 	}
@@ -163,8 +163,8 @@ func Test_sqlFields(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := sqlFields(tt.args.query); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("sqlFields() = %#v, want %#v", got, tt.want)
+			if got := SQLFields(tt.args.query); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("SQLFields() = %#v, want %#v", got, tt.want)
 			}
 		})
 	}
