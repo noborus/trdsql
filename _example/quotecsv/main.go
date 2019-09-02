@@ -32,6 +32,7 @@ func (w *QuoteWrite) WriteRow(values []interface{}, columns []string) error {
 	_, err := w.writer.Write([]byte(strings.Join(qColumns, ",") + "\n"))
 	return err
 }
+
 func (w *QuoteWrite) PostWrite() error {
 	return nil
 }

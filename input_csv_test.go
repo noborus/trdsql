@@ -161,7 +161,6 @@ func TestCsvIndefiniteInputFile(t *testing.T) {
 	if len(list) != 2 {
 		t.Error(`invalid column`)
 	}
-
 }
 
 func TestCsvIndefiniteInputFile2(t *testing.T) {
@@ -206,5 +205,4 @@ func TestCsvIndefiniteInputFile3(t *testing.T) {
 	if len(list) != 4 {
 		t.Errorf("invalid column got = %d", len(list))
 	}
-
 }

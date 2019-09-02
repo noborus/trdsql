@@ -170,7 +170,7 @@ func setDefaultTRDSQL(outStream io.Writer) *TRDSQL {
 }
 
 func TestCSVRun(t *testing.T) {
-	var testCSV = [][]string{
+	testCSV := [][]string{
 		{"test.csv", "1,Orange\n2,Melon\n3,Apple\n"},
 		{"testcsv", "aaaaaaaa\nbbbbbbbb\ncccccccc\n"},
 		{"abc.csv", "a1\na2\n"},
@@ -194,7 +194,7 @@ func TestCSVRun(t *testing.T) {
 }
 
 func TestLTSVRun(t *testing.T) {
-	var testLTSV = [][]string{
+	testLTSV := [][]string{
 		{"test.ltsv", "1,Orange,50\n2,Melon,500\n3,Apple,100\n"},
 		{"apache.ltsv", "[28/Feb/2013:12:00:00 +0900],192.168.0.1,GET /list HTTP/1.1,200,5316,-,Mozilla/5.0,9789,1,-,-,-\n[28/Feb/2013:12:00:00 +0900],172.16.0.12,GET /list HTTP/1.1,200,5316,-,Mozilla/5.0,9789,1,-,-,-\n"},
 	}
@@ -214,7 +214,7 @@ func TestLTSVRun(t *testing.T) {
 }
 
 func TestJSONRun(t *testing.T) {
-	var testJSON = [][]string{
+	testJSON := [][]string{
 		{"test.json", "1,Orange\n2,Melon\n3,Apple\n"},
 		{"test2.json", "1,Orange\n2,Melon\n3,Apple\n"},
 	}
@@ -235,7 +235,7 @@ func TestJSONRun(t *testing.T) {
 }
 
 func TestTBLNRun(t *testing.T) {
-	var testTBLN = [][]string{
+	testTBLN := [][]string{
 		{"test.tbln", "1,Bob\n2,Alice\n"},
 		{"test2.tbln", "1,Orange\n2,Melon\n3,Apple\n"},
 	}

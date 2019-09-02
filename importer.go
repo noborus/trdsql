@@ -103,7 +103,7 @@ func TableNames(parsedQuery []string) (map[string]string, []int) {
 				}
 				if !isSQLKeyWords(w) {
 					tables[w] = w
-					tableIdx = append(tableIdx,i)
+					tableIdx = append(tableIdx, i)
 				}
 			}
 			frontFlag = false
@@ -194,7 +194,6 @@ func ImportFile(db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 		debug.Printf("EOF reached before argument number of rows")
 	}
 	columnTypes, err := reader.Types()
-
 	if err != nil {
 		if err != io.EOF {
 			return tableName, err

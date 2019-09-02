@@ -23,7 +23,6 @@ func TestJSONIndefiniteInputFile(t *testing.T) {
 	if len(list) != 2 {
 		t.Error(`invalid column`)
 	}
-
 }
 
 func TestJSONIndefiniteInputFile2(t *testing.T) {
@@ -64,5 +63,4 @@ func TestJSONIndefiniteInputFile3(t *testing.T) {
 	if len(list) != 4 {
 		t.Error(`invalid column`)
 	}
-
 }
