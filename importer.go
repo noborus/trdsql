@@ -47,7 +47,7 @@ const DefaultDBType = "text"
 // Return the rewritten SQL and error.
 // No error is returned if there is no table to import.
 func (i *ReadFormat) Import(db *DB, query string) (string, error) {
-	parsedQuery := sqlFields(query)
+	parsedQuery := SQLFields(query)
 	tables, tableIdx := TableNames(parsedQuery)
 	if len(tables) == 0 {
 		// without FROM clause. ex. SELECT 1+1;
@@ -112,7 +112,9 @@ func TableNames(parsedQuery []string) (map[string]string, []int) {
 	return tables, tableIdx
 }
 
-func sqlFields(query string) []string {
+// SQLFields returns an array of string fields
+// (interpreting quotes) from the argument query.
+func SQLFields(query string) []string {
 	parsed := []string{}
 	buf := ""
 	var singleQuoted, doubleQuoted, backQuote bool
