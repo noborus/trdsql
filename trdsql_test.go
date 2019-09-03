@@ -86,6 +86,18 @@ func TestTRDSQL_Exec(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name:    "testEscapedCSV",
+			sql:     "SELECT * FROM \"" + dataDir + "test.csv\"",
+			want:    "1,Orange\n2,Melon\n3,Apple\n",
+			wantErr: false,
+		},
+		{
+			name:    "testEscapedLTSV",
+			sql:     "SELECT * FROM \"" + dataDir + "test.ltsv\"",
+			want:    "1,Orange,50\n2,Melon,500\n3,Apple,100\n",
+			wantErr: false,
+		},
+		{
 			name:    "testJoin",
 			sql:     "SELECT j.c1,j.c2,c.c1,c.c2 FROM " + dataDir + "test.json AS j LEFT JOIN " + dataDir + "test.csv AS c ON (j.c1 = c.c1)",
 			want:    "1,Orange,1,Orange\n2,Melon,2,Melon\n3,Apple,3,Apple\n",
