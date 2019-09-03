@@ -223,6 +223,7 @@ func guessExtension(tableName string) Format {
 		return CSV
 	}
 	ext := strings.ToUpper(tableName[pos+1:])
+	ext = strings.TrimRight(ext, "\"'`")
 	switch ext {
 	case "CSV":
 		debug.Printf("Guess file type as CSV: [%s]", tableName)
