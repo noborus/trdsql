@@ -270,7 +270,7 @@ func globFileOpen(globName string) (*io.PipeReader, error) {
 		return nil, err
 	}
 	if len(fileNames) == 0 {
-		return nil, fmt.Errorf("no matches found: %s", fileNames)
+		return nil, fmt.Errorf("no matches found: %w", fileNames)
 	}
 	pipeReader, pipeWriter := io.Pipe()
 	go func() {
@@ -284,23 +284,23 @@ func globFileOpen(globName string) (*io.PipeReader, error) {
 			f, err := os.Open(fileName)
 			debug.Printf("Open: [%s]", fileName)
 			if err != nil {
-				log.Printf("ERROR: %s:%s", fileName, err)
+				log.Printf("ERROR: %s:%w", fileName, err)
 				continue
 			}
 			r := extFileReader(fileName, f)
 			_, err = io.Copy(pipeWriter, r)
 			if err != nil {
-				log.Printf("ERROR: %s:%s", fileName, err)
+				log.Printf("ERROR: %s:%w", fileName, err)
 				continue
 			}
 			_, err = pipeWriter.Write([]byte("\n"))
 			if err != nil {
-				log.Printf("ERROR: %s:%s", fileName, err)
+				log.Printf("ERROR: %s:%w", fileName, err)
 				continue
 			}
 			err = f.Close()
 			if err != nil {
-				log.Printf("ERROR: %s:%s", fileName, err)
+				log.Printf("ERROR: %s:%w", fileName, err)
 			}
 			debug.Printf("Close: [%s]", fileName)
 		}

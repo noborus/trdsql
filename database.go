@@ -95,7 +95,7 @@ func (db *DB) Select(query string) (*sql.Rows, error) {
 	debug.Printf(query)
 	rows, err := db.Tx.Query(query)
 	if err != nil {
-		return rows, fmt.Errorf("SQL:%s\n[%s]", err, query)
+		return rows, fmt.Errorf("SQL:%w\n[%s]", err, query)
 	}
 	return rows, nil
 }
@@ -146,7 +146,7 @@ func (db *DB) copyImport(table *Table, reader Reader) error {
 	debug.Printf(query)
 	stmt, err := db.Tx.Prepare(query)
 	if err != nil {
-		return fmt.Errorf("COPY Prepare: %s", err)
+		return fmt.Errorf("COPY Prepare: %w", err)
 	}
 	preReadRows := reader.PreReadRow()
 	for _, row := range preReadRows {
@@ -163,7 +163,7 @@ func (db *DB) copyImport(table *Table, reader Reader) error {
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return fmt.Errorf("read: %s", err)
+			return fmt.Errorf("read: %w", err)
 		}
 		// Skip when empty read.
 		if len(table.row) == 0 {
@@ -212,7 +212,7 @@ func (db *DB) insertImport(table *Table, reader Reader) error {
 				}
 				eof = true
 			} else if err != nil {
-				return fmt.Errorf("read: %s", err)
+				return fmt.Errorf("read: %w", err)
 			}
 		}
 		stmt, err = db.bulkStmtOpen(table, stmt)
@@ -269,7 +269,7 @@ func (db *DB) stmtClose(stmt *sql.Stmt) {
 	if stmt != nil {
 		err := stmt.Close()
 		if err != nil {
-			log.Printf("ERROR: stmtClose:%s", err)
+			log.Printf("ERROR: stmtClose:%w", err)
 		}
 	}
 }
@@ -280,7 +280,7 @@ func (db *DB) insertPrepare(table *Table) (*sql.Stmt, error) {
 	debug.Printf(query)
 	stmt, err := db.Tx.Prepare(query)
 	if err != nil {
-		return nil, fmt.Errorf("INSERT Prepare: %s:%s", query, err)
+		return nil, fmt.Errorf("INSERT Prepare: %s:%w", query, err)
 	}
 	return stmt, nil
 }

@@ -8,6 +8,8 @@ require (
 	github.com/noborus/tbln v0.0.1
 	github.com/olekukonko/tablewriter v0.0.1
 	golang.org/x/crypto v0.0.0-20190829043050-9756ffdc2472
-	golang.org/x/sys v0.0.0-20190830142957-1e83adbbebd0 // indirect
+	golang.org/x/sys v0.0.0-20190904005037-43c01164e931 // indirect
 	google.golang.org/appengine v1.6.2 // indirect
 )
+
+go 1.13
