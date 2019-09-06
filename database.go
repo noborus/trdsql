@@ -16,6 +16,13 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+var (
+	ErrNoTransaction = errors.New("transaction has not been started")
+	ErrNilReader     = errors.New("nil reader")
+	ErrNoNames       = errors.New("missing names")
+	ErrNoTypes       = errors.New("missing types")
+)
+
 // DB represents database information.
 type DB struct {
 	driver    string
@@ -59,13 +66,13 @@ func (db *DB) Disconnect() error {
 // CreateTable is create a (temporary) table.
 func (db *DB) CreateTable(tableName string, names []string, types []string, isTemporary bool) error {
 	if len(names) == 0 {
-		return errors.New("missing names")
+		return ErrNoNames
 	}
 	if len(names) != len(types) {
-		return errors.New("missing types")
+		return ErrNoTypes
 	}
 	if db.Tx == nil {
-		return errors.New("transaction has not been started")
+		return ErrNoTransaction
 	}
 	columns := make([]string, len(names))
 	for i := 0; i < len(names); i++ {
@@ -86,7 +93,7 @@ func (db *DB) CreateTable(tableName string, names []string, types []string, isTe
 // Select is executes SQL select statements.
 func (db *DB) Select(query string) (*sql.Rows, error) {
 	if db.Tx == nil {
-		return nil, errors.New("transaction has not been started")
+		return nil, ErrNoTransaction
 	}
 	query = strings.TrimSpace(query)
 	if query == "" {
@@ -115,10 +122,10 @@ type Table struct {
 // Import is imports data into a table.
 func (db *DB) Import(tableName string, columnNames []string, reader Reader) error {
 	if db.Tx == nil {
-		return errors.New("transaction has not been started")
+		return ErrNoTransaction
 	}
 	if reader == nil {
-		return errors.New("nil reader")
+		return ErrNilReader
 	}
 	var err error
 	columns := make([]string, len(columnNames))
@@ -146,7 +153,7 @@ func (db *DB) copyImport(table *Table, reader Reader) error {
 	debug.Printf(query)
 	stmt, err := db.Tx.Prepare(query)
 	if err != nil {
-		return fmt.Errorf("COPY Prepare: %s", err)
+		return fmt.Errorf("copy prepare: %s", err)
 	}
 	preReadRows := reader.PreReadRow()
 	for _, row := range preReadRows {
@@ -163,7 +170,7 @@ func (db *DB) copyImport(table *Table, reader Reader) error {
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return fmt.Errorf("read: %s", err)
+			return fmt.Errorf("copy read: %s", err)
 		}
 		// Skip when empty read.
 		if len(table.row) == 0 {
@@ -192,29 +199,35 @@ func (db *DB) insertImport(table *Table, reader Reader) error {
 	table.maxCap = (db.maxBulk / len(table.row)) * len(table.row)
 	bulk := make([]interface{}, 0, table.maxCap)
 
-	pRows := reader.PreReadRow()
+	preRows := reader.PreReadRow()
+	preRowNum := len(preRows)
+	preCount := 0
 	for eof := false; !eof; {
-		if len(pRows) > 0 {
-			for (table.count * len(table.row)) < table.maxCap {
-				if len(pRows) == 0 {
-					break
-				}
-				row := pRows[len(pRows)-1]
-				pRows = pRows[:len(pRows)-1]
+		if preCount < preRowNum {
+			// PreRead
+			for preCount < preRowNum  {
+				row := preRows[preCount]
 				bulk = append(bulk, row...)
 				table.count++
+				preCount++
+				if ((table.count * len(table.row)) > table.maxCap) {
+					break
+				}
 			}
 		} else {
+			// Read
 			bulk, err = bulkPush(table, reader, bulk)
-			if err == io.EOF {
+			if err != nil {
+				if err != io.EOF {
+					return fmt.Errorf("bulk read: %s", err)
+				}
+				eof = true
 				if len(bulk) == 0 {
 					return nil
 				}
-				eof = true
-			} else if err != nil {
-				return fmt.Errorf("read: %s", err)
 			}
 		}
+
 		stmt, err = db.bulkStmtOpen(table, stmt)
 		if err != nil {
 			return err

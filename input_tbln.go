@@ -1,7 +1,6 @@
 package trdsql
 
 import (
-	"errors"
 	"io"
 
 	"github.com/noborus/tbln"
@@ -15,9 +14,6 @@ type TBLNRead struct {
 
 // NewTBLNReader returns TBLNRead and error.
 func NewTBLNReader(reader io.Reader) (*TBLNRead, error) {
-	if reader == nil {
-		return nil, errors.New("nil reader")
-	}
 	r := &TBLNRead{}
 	r.reader = tbln.NewReader(reader)
 

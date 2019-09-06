@@ -80,6 +80,12 @@ func TestTRDSQL_Exec(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name:    "testNoFile",
+			sql:     "SELECT * testdata/notestfile.csv",
+			want:    "",
+			wantErr: true,
+		},
+		{
 			name:    "testTestCSV",
 			sql:     "SELECT * FROM " + dataDir + "test.csv",
 			want:    "1,Orange\n2,Melon\n3,Apple\n",
@@ -145,6 +151,13 @@ func TestTRDSQL_ExecOpts(t *testing.T) {
 			sql:     "SELECT * FROM " + dataDir + "test.ltsv",
 			opts:    InSkip(1),
 			want:    "2,Melon,500\n3,Apple,100\n",
+			wantErr: false,
+		},
+		{
+			name:    "testPreReadCSV",
+			sql:     "SELECT * FROM " + dataDir + "test.csv",
+			opts:    InPreRead(3),
+			want:    "1,Orange\n2,Melon\n3,Apple\n",
 			wantErr: false,
 		},
 		{

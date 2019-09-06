@@ -19,9 +19,6 @@ type LTSVReader struct {
 
 // NewLTSVReader returns LTSVReader and error.
 func NewLTSVReader(reader io.Reader, opts *ReadOpts) (*LTSVReader, error) {
-	if reader == nil {
-		return nil, errors.New("nil reader")
-	}
 	r := &LTSVReader{}
 	r.reader = bufio.NewReader(reader)
 	r.delimiter = "\t"
