@@ -129,18 +129,6 @@ func TestCsvColumnDifferenceNew(t *testing.T) {
 	}
 }
 
-func TestCsvNoInputNew(t *testing.T) {
-	file, err := singleFileOpen("nofile")
-	if err == nil {
-		t.Error(`Should error`)
-	}
-
-	_, err = NewCSVReader(file, NewReadOpts())
-	if err == nil {
-		t.Error(`Should error`)
-	}
-}
-
 func TestCsvIndefiniteInputFile(t *testing.T) {
 	ro := NewReadOpts()
 	ro.InHeader = false

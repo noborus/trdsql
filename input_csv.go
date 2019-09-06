@@ -2,7 +2,6 @@ package trdsql
 
 import (
 	"encoding/csv"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -21,9 +20,6 @@ type CSVReader struct {
 func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 	var err error
 	r := &CSVReader{}
-	if reader == nil {
-		return nil, errors.New("nil reader")
-	}
 	r.reader = csv.NewReader(reader)
 	r.reader.LazyQuotes = true
 	r.reader.FieldsPerRecord = -1 // no check count

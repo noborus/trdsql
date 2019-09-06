@@ -7,7 +7,6 @@ package trdsql
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -25,9 +24,6 @@ type JSONReader struct {
 
 // NewJSONReader returns JSONReader and error.
 func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
-	if reader == nil {
-		return nil, errors.New("nil reader")
-	}
 	r := &JSONReader{}
 	r.reader = json.NewDecoder(reader)
 	var top interface{}
