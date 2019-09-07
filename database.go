@@ -35,6 +35,8 @@ type DB struct {
 }
 
 // Connect is connects to the database.
+// Currently supported drivers are sqlite3, mysql, postgres.
+// Set escape character and maxBulk depending on the driver type.
 func Connect(driver, dsn string) (*DB, error) {
 	var db DB
 	var err error
@@ -63,20 +65,21 @@ func (db *DB) Disconnect() error {
 	return db.Close()
 }
 
-// CreateTable is create a (temporary) table.
-func (db *DB) CreateTable(tableName string, names []string, types []string, isTemporary bool) error {
-	if len(names) == 0 {
+// CreateTable is create a (temporary) table in the database.
+// The arguments are the table name, column name, column type, and temporary flag.
+func (db *DB) CreateTable(tableName string, columnNames []string, columnTypes []string, isTemporary bool) error {
+	if len(columnNames) == 0 {
 		return ErrNoNames
 	}
-	if len(names) != len(types) {
+	if len(columnNames) != len(columnTypes) {
 		return ErrNoTypes
 	}
 	if db.Tx == nil {
 		return ErrNoTransaction
 	}
-	columns := make([]string, len(names))
-	for i := 0; i < len(names); i++ {
-		columns[i] = db.escape + names[i] + db.escape + " " + types[i]
+	columns := make([]string, len(columnNames))
+	for i := 0; i < len(columnNames); i++ {
+		columns[i] = db.escape + columnNames[i] + db.escape + " " + columnTypes[i]
 	}
 	query := "CREATE "
 	if isTemporary {
@@ -127,7 +130,6 @@ func (db *DB) Import(tableName string, columnNames []string, reader Reader) erro
 	if reader == nil {
 		return ErrNilReader
 	}
-	var err error
 	columns := make([]string, len(columnNames))
 	for i := range columnNames {
 		columns[i] = db.escape + columnNames[i] + db.escape
@@ -141,13 +143,12 @@ func (db *DB) Import(tableName string, columnNames []string, reader Reader) erro
 		count:     0,
 	}
 	if db.driver == "postgres" {
-		err = db.copyImport(table, reader)
-	} else {
-		err = db.insertImport(table, reader)
+		return db.copyImport(table, reader)
 	}
-	return err
+	return db.insertImport(table, reader)
 }
 
+// copyImport adds rows to a table with the COPY clause (PostgreSQL only).
 func (db *DB) copyImport(table *Table, reader Reader) error {
 	query := "COPY " + table.tableName + " (" + strings.Join(table.columns, ",") + ") FROM STDIN"
 	debug.Printf(query)
@@ -189,6 +190,8 @@ func (db *DB) copyImport(table *Table, reader Reader) error {
 	return err
 }
 
+// insertImport adds a row to a table with an INSERT clause.
+// Insert multiple rows by bulk insert.
 func (db *DB) insertImport(table *Table, reader Reader) error {
 	var err error
 	var stmt *sql.Stmt
@@ -205,12 +208,12 @@ func (db *DB) insertImport(table *Table, reader Reader) error {
 	for eof := false; !eof; {
 		if preCount < preRowNum {
 			// PreRead
-			for preCount < preRowNum  {
+			for preCount < preRowNum {
 				row := preRows[preCount]
 				bulk = append(bulk, row...)
 				table.count++
 				preCount++
-				if ((table.count * len(table.row)) > table.maxCap) {
+				if (table.count * len(table.row)) > table.maxCap {
 					break
 				}
 			}
@@ -298,7 +301,8 @@ func (db *DB) insertPrepare(table *Table) (*sql.Stmt, error) {
 	return stmt, nil
 }
 
-// EscapeName is escape table name.
+// EscapeName returns the table name escaped.
+// Returns as is, if already escaped.
 func (db *DB) EscapeName(oldName string) string {
 	var newName string
 	if oldName[0] != db.escape[0] {
