@@ -17,20 +17,32 @@ import (
 )
 
 var (
+	// Error not starting transaction.
+	// SQL must be executed within a transaction.
 	ErrNoTransaction = errors.New("transaction has not been started")
-	ErrNilReader     = errors.New("nil reader")
-	ErrNoNames       = errors.New("missing names")
-	ErrNoTypes       = errors.New("missing types")
+	// The reader of the specified file is nil error.
+	ErrNilReader = errors.New("nil reader")
+	// Invalid column names (number of columns is 0).
+	ErrInvalidNames = errors.New("invalid names")
+	// Invalid column types (does not match the number of column names).
+	ErrInvalidTypes = errors.New("invalid types")
 )
 
 // DB represents database information.
 type DB struct {
-	driver    string
-	dsn       string
-	escape    string
-	rewritten []string
-	maxBulk   int
+	// driver holds the sql driver as a string.
+	driver string
+	// dsn holds dsn of sql as a character string.
+	dsn string
+	// escape is an escape character that varies depending on the sql driver.
+	// PostgreSQL is ("), sqlite3 and mysql is (`).
+	escape string
+	// maxBulk is the maximum number of bundles for bulk insert.
+	// The number of columns x rows is less than maxBulk.
+	maxBulk int
+	// *sql.DB represents the database connection.
 	*sql.DB
+	// Tx represents a database transaction.
 	Tx *sql.Tx
 }
 
@@ -69,10 +81,10 @@ func (db *DB) Disconnect() error {
 // The arguments are the table name, column name, column type, and temporary flag.
 func (db *DB) CreateTable(tableName string, columnNames []string, columnTypes []string, isTemporary bool) error {
 	if len(columnNames) == 0 {
-		return ErrNoNames
+		return ErrInvalidNames
 	}
 	if len(columnNames) != len(columnTypes) {
-		return ErrNoTypes
+		return ErrInvalidTypes
 	}
 	if db.Tx == nil {
 		return ErrNoTransaction
