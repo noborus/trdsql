@@ -90,8 +90,8 @@ func (r *LTSVReader) ReadRow(row []interface{}) ([]interface{}, error) {
 	if err != nil {
 		return row, err
 	}
-	for i := range r.names {
-		row[i] = record[r.names[i]]
+	for i, name := range r.names {
+		row[i] = record[name]
 	}
 	return row, nil
 }
