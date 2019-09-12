@@ -34,9 +34,9 @@ type DB struct {
 	driver string
 	// dsn holds dsn of sql as a character string.
 	dsn string
-	// escape is an escape character that varies depending on the sql driver.
+	// quote is the quote character(s) that varies depending on the sql driver.
 	// PostgreSQL is ("), sqlite3 and mysql is (`).
-	escape string
+	quote string
 	// maxBulk is the maximum number of bundles for bulk insert.
 	// The number of columns x rows is less than maxBulk.
 	maxBulk int
@@ -48,7 +48,7 @@ type DB struct {
 
 // Connect is connects to the database.
 // Currently supported drivers are sqlite3, mysql, postgres.
-// Set escape character and maxBulk depending on the driver type.
+// Set quote character and maxBulk depending on the driver type.
 func Connect(driver, dsn string) (*DB, error) {
 	var db DB
 	var err error
@@ -60,13 +60,13 @@ func Connect(driver, dsn string) (*DB, error) {
 	db.dsn = dsn
 	switch driver {
 	case "sqlite3":
-		db.escape = "`"
+		db.quote = "`"
 		db.maxBulk = 500
 	case "mysql":
-		db.escape = "`"
+		db.quote = "`"
 		db.maxBulk = 1000
 	case "postgres":
-		db.escape = "\""
+		db.quote = "\""
 	}
 	debug.Printf("driver: %s, dsn: %s", driver, dsn)
 	return &db, nil
@@ -91,7 +91,7 @@ func (db *DB) CreateTable(tableName string, columnNames []string, columnTypes []
 	}
 	columns := make([]string, len(columnNames))
 	for i := 0; i < len(columnNames); i++ {
-		columns[i] = db.escape + columnNames[i] + db.escape + " " + columnTypes[i]
+		columns[i] = db.QuotedName(columnNames[i]) + " " + columnTypes[i]
 	}
 	query := "CREATE "
 	if isTemporary {
@@ -144,7 +144,7 @@ func (db *DB) Import(tableName string, columnNames []string, reader Reader) erro
 	}
 	columns := make([]string, len(columnNames))
 	for i := range columnNames {
-		columns[i] = db.escape + columnNames[i] + db.escape
+		columns[i] = db.QuotedName(columnNames[i])
 	}
 	row := make([]interface{}, len(columnNames))
 	table := &Table{
@@ -313,14 +313,11 @@ func (db *DB) insertPrepare(table *Table) (*sql.Stmt, error) {
 	return stmt, nil
 }
 
-// EscapeName returns the table name escaped.
-// Returns as is, if already escaped.
-func (db *DB) EscapeName(oldName string) string {
-	var newName string
-	if oldName[0] != db.escape[0] {
-		newName = db.escape + oldName + db.escape
-	} else {
-		newName = oldName
+// QuotedName returns the table name quoted.
+// Returns as is, if already quoted.
+func (db *DB) QuotedName(oldName string) string {
+	if oldName[0] != db.quote[0] {
+		return db.quote + oldName + db.quote
 	}
-	return newName
+	return oldName
 }
