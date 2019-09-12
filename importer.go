@@ -162,7 +162,7 @@ func isSQLKeyWords(str string) bool {
 }
 
 // ImportFile is imports a file.
-// Return the escaped table name and error.
+// Return the quoted table name and error.
 // Do not import if file not found (no error).
 // Wildcards can be passed as fileName.
 func ImportFile(db *DB, fileName string, readOpts *ReadOpts) (string, error) {
@@ -187,7 +187,7 @@ func ImportFile(db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 		return "", err
 	}
 
-	tableName := db.EscapeName(fileName)
+	tableName := db.QuotedName(fileName)
 	columnNames, err := reader.Names()
 	if err != nil {
 		if err != io.EOF {

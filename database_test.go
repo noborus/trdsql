@@ -283,9 +283,9 @@ func TestDB_Import(t *testing.T) {
 	}
 }
 
-func TestDB_EscapeName(t *testing.T) {
+func TestDB_QuotedName(t *testing.T) {
 	type fields struct {
-		escape string
+		quote string
 	}
 	type args struct {
 		oldName string
@@ -298,19 +298,19 @@ func TestDB_EscapeName(t *testing.T) {
 	}{
 		{
 			name:   "test1",
-			fields: fields{escape: "`"},
+			fields: fields{quote: "`"},
 			args:   args{oldName: "test"},
 			want:   "`test`",
 		},
 		{
 			name:   "test2",
-			fields: fields{escape: "\""},
+			fields: fields{quote: "\""},
 			args:   args{oldName: "test"},
 			want:   "\"test\"",
 		},
 		{
 			name:   "test3",
-			fields: fields{escape: "`"},
+			fields: fields{quote: "`"},
 			args:   args{oldName: "`test`"},
 			want:   "`test`",
 		},
@@ -318,10 +318,10 @@ func TestDB_EscapeName(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			db := &DB{
-				escape: tt.fields.escape,
+				quote: tt.fields.quote,
 			}
-			if got := db.EscapeName(tt.args.oldName); got != tt.want {
-				t.Errorf("DB.EscapeName() = %v, want %v", got, tt.want)
+			if got := db.QuotedName(tt.args.oldName); got != tt.want {
+				t.Errorf("DB.QuotedName() = %v, want %v", got, tt.want)
 			}
 		})
 	}
