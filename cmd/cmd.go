@@ -246,18 +246,18 @@ func getDB(cfg *config, cDB string, cDriver string, cDSN string) (string, string
 			}
 		}
 	}
+	if cDriver != "" {
+		return cDriver, cDSN
+	}
+	if cDSN != "" {
+		return "", cDSN
+	}
 	if cDB != "" {
 		if cfg.Database[cDB].Driver == "" {
 			log.Printf("ERROR: db[%s] does not found", cDB)
 		} else {
 			return cfg.Database[cDB].Driver, cfg.Database[cDB].Dsn
 		}
-	}
-	if cDriver != "" {
-		return cDriver, cDSN
-	}
-	if cDSN != "" {
-		return "", cDSN
 	}
 	return "", ""
 }
