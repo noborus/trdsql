@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 	"unicode/utf8"
 )
@@ -94,7 +93,6 @@ func ValString(v interface{}) string {
 		}
 	default:
 		str = fmt.Sprint(v)
-		str = strings.ReplaceAll(str, "\n", "\\n")
 	}
 	return str
 }
