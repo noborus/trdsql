@@ -73,7 +73,8 @@ func outputFormat(o outputFlag) trdsql.Format {
 // Debug flag for a detailed output
 var Debug bool
 
-// Run is main routine.
+// Run executes the main routine.
+// The return value is the exit code.
 func Run(args []string) int {
 	var (
 		usage     bool
@@ -85,6 +86,7 @@ func Run(args []string) int {
 		cDSN      string
 		guess     bool
 		queryFile string
+		analyze   string
 
 		inFlag      inputFlag
 		inDelimiter string
@@ -112,6 +114,7 @@ func Run(args []string) int {
 	flags.StringVar(&cDSN, "dsn", "", "database connection option.")
 	flags.BoolVar(&guess, "ig", true, "Guess format from extension.")
 	flags.StringVar(&queryFile, "q", "", "Read query from the provided filename.")
+	flags.StringVar(&analyze, "a", "", "Analyze file and suggest SQL.")
 	flags.BoolVar(&usage, "help", false, "display usage information.")
 	flags.BoolVar(&version, "version", false, "display version information.")
 	flags.BoolVar(&Debug, "debug", false, "debug print.")
@@ -167,6 +170,31 @@ func Run(args []string) int {
 		}
 		return 0
 	}
+	driver, dsn := getDB(cfg, cDB, cDriver, cDSN)
+
+	fileName := flags.Arg(0)
+	_, nonEx := os.Stat(fileName)
+	if nonEx == nil {
+		analyze = fileName
+	}
+
+	if analyze != "" {
+		if inPreRead == 1 {
+			inPreRead = 2
+		}
+		opts := trdsql.NewReadOpts(
+			trdsql.InFormat(inputFormat(inFlag)),
+			trdsql.InDelimiter(inDelimiter),
+			trdsql.InHeader(inHeader),
+			trdsql.InSkip(inSkip),
+			trdsql.InPreRead(inPreRead))
+		err := trdsql.Analyze(driver, analyze, opts)
+		if err != nil {
+			log.Println("ERROR:", err)
+			return 1
+		}
+		return 0
+	}
 
 	query, err := getQuery(flags.Args(), queryFile)
 	if err != nil {
@@ -201,7 +229,6 @@ Options:
 
 	trd := trdsql.NewTRDSQL(importer, exporter)
 
-	driver, dsn := getDB(cfg, cDB, cDriver, cDSN)
 	if driver != "" {
 		trd.Driver = driver
 	}
