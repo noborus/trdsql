@@ -45,6 +45,7 @@ func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 	}
 
 	// Header
+	preReadN := opts.InPreRead
 	if opts.InHeader {
 		row, err := r.reader.Read()
 		if err != nil && err != io.EOF {
@@ -58,10 +59,10 @@ func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 				r.names[i] = col
 			}
 		}
-		opts.InPreRead--
+		preReadN--
 	}
 
-	for n := 0; n < opts.InPreRead; n++ {
+	for n := 0; n < preReadN; n++ {
 		row, err := r.reader.Read()
 		if err != nil {
 			if err != io.EOF {
