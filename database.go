@@ -17,14 +17,14 @@ import (
 )
 
 var (
-	// Error not starting transaction.
+	// ErrNoTransaction is returned if SQL is executed when a transaction has not started.
 	// SQL must be executed within a transaction.
 	ErrNoTransaction = errors.New("transaction has not been started")
-	// The reader of the specified file is nil error.
+	// ErrNilReader is returned by Set reader of the specified file is nil error.
 	ErrNilReader = errors.New("nil reader")
-	// Invalid column names (number of columns is 0).
+	// ErrInvalidNames is returned by Set if invalid names(number of columns is 0).
 	ErrInvalidNames = errors.New("invalid names")
-	// Invalid column types (does not match the number of column names).
+	// ErrInvalidTypes is returned by Set if invalid column types (does not match the number of column names).
 	ErrInvalidTypes = errors.New("invalid types")
 )
 
