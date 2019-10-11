@@ -1,9 +1,11 @@
 package trdsql
 
 import (
+	"bufio"
 	"compress/gzip"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -253,7 +255,8 @@ func importFileOpen(tableName string) (io.ReadCloser, error) {
 
 func singleFileOpen(fileName string) (io.ReadCloser, error) {
 	if len(fileName) == 0 || fileName == "-" || strings.ToLower(fileName) == "stdin" {
-		return os.Stdin, nil
+		reader := bufio.NewReader(os.Stdin)
+		return ioutil.NopCloser(reader), nil
 	}
 	fileName = trimQuote(fileName)
 	file, err := os.Open(fileName)
