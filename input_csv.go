@@ -23,8 +23,14 @@ func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 	r.reader = csv.NewReader(reader)
 	r.reader.LazyQuotes = true
 	r.reader.FieldsPerRecord = -1 // no check count
-	r.reader.TrimLeadingSpace = true
+
 	r.reader.Comma, err = delimiter(opts.InDelimiter)
+	if err != nil {
+		return nil, err
+	}
+	if opts.InDelimiter == " " {
+		r.reader.TrimLeadingSpace = true
+	}
 
 	if opts.InSkip > 0 {
 		skip := make([]interface{}, 1)
