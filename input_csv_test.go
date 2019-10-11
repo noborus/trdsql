@@ -87,17 +87,20 @@ func TestCsvEmptyColumnRowNew(t *testing.T) {
 	ro.InHeader = true
 	ro.InDelimiter = ","
 	csvStream := `h1,h2
-	,v2`
+,v2`
 	s := strings.NewReader(csvStream)
-	r, _ := NewCSVReader(s, ro)
-	_, err := r.Names()
+	r, err := NewCSVReader(s, ro)
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = r.Names()
 	if err != nil {
 		t.Error(err)
 	}
 	record := make([]interface{}, 2)
 	record, _ = r.ReadRow(record)
 	if record[0] != "" || record[1] != "v2" {
-		t.Error("invalid value")
+		t.Errorf("invalid value [%s,%s]", record[0], record[1])
 	}
 }
 
