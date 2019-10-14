@@ -5,15 +5,30 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/logrusorgru/aurora"
 	"github.com/olekukonko/tablewriter"
 )
 
+var au aurora.Aurora
+
+// Color is enables or disables color output.
+func Color(color bool) {
+	au = aurora.NewAurora(color)
+}
+
 // Analyze analyzes the file and outputs the table information.
 // In addition, SQL execution examples are output.
 func Analyze(fileName string, command string, driver string, readOpts *ReadOpts) error {
+
+	color := os.Getenv("NO_COLOR")
+	if color == "" && runtime.GOOS != "windows" {
+		Color(true)
+	} else {
+		Color(false)
+	}
 	file, err := importFileOpen(fileName)
 	if err != nil {
 		return err
@@ -37,18 +52,18 @@ func Analyze(fileName string, command string, driver string, readOpts *ReadOpts)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("The table name is %s.\n", aurora.Yellow(fileName))
-	fmt.Printf("The file type is %s.\n", aurora.Red(readOpts.realFormat))
+	fmt.Printf("The table name is %s.\n", au.Yellow(fileName))
+	fmt.Printf("The file type is %s.\n", au.Red(readOpts.realFormat))
 	names := make([]string, len(columnNames))
 	for i := range columnNames {
 		names[i] = quoted(driver, columnNames[i])
 	}
-	if (readOpts.realFormat == CSV || readOpts.realFormat == RAW) && len(names) <= 1 {
-		fmt.Println(aurora.Magenta("Is the delimiter different?"))
-		fmt.Println(aurora.Magenta("Please try again with -id \"\\t\" or -id \" \"."))
+	if len(names) <= 1 && readOpts.realFormat == CSV {
+		fmt.Println(au.Magenta("Is the delimiter different?"))
+		fmt.Println(au.Magenta("Please try again with -id \"\\t\" or -id \" \"."))
 	}
 
-	fmt.Println(aurora.Cyan("\nData types:"))
+	fmt.Println(au.Cyan("\nData types:"))
 	typeTable := tablewriter.NewWriter(os.Stdout)
 	typeTable.SetAutoFormatHeaders(false)
 	typeTable.SetHeader([]string{"column name", "type"})
@@ -57,7 +72,7 @@ func Analyze(fileName string, command string, driver string, readOpts *ReadOpts)
 	}
 	typeTable.Render()
 
-	fmt.Println(aurora.Cyan("\nData samples:"))
+	fmt.Println(au.Cyan("\nData samples:"))
 	sampleTable := tablewriter.NewWriter(os.Stdout)
 	sampleTable.SetAutoFormatHeaders(false)
 	sampleTable.SetHeader(names)
@@ -70,7 +85,7 @@ func Analyze(fileName string, command string, driver string, readOpts *ReadOpts)
 	}
 	sampleTable.Render()
 
-	fmt.Println(aurora.Cyan("\nExamples:"))
+	fmt.Println(au.Cyan("\nExamples:"))
 	queries := examples(fileName, names, results)
 	for _, query := range queries {
 		fmt.Println(command, `"`+query+`"`)
