@@ -13,7 +13,7 @@ import (
 
 // Analyze analyzes the file and outputs the table information.
 // In addition, SQL execution examples are output.
-func Analyze(driver string, fileName string, readOpts *ReadOpts) error {
+func Analyze(fileName string, command string, driver string, readOpts *ReadOpts) error {
 	file, err := importFileOpen(fileName)
 	if err != nil {
 		return err
@@ -43,7 +43,7 @@ func Analyze(driver string, fileName string, readOpts *ReadOpts) error {
 	for i := range columnNames {
 		names[i] = quoted(driver, columnNames[i])
 	}
-	if len(names) <= 1 {
+	if (readOpts.realFormat == CSV || readOpts.realFormat == RAW) && len(names) <= 1 {
 		fmt.Println(aurora.Magenta("Is the delimiter different?"))
 		fmt.Println(aurora.Magenta("Please try again with -id \"\\t\" or -id \" \"."))
 	}
@@ -71,34 +71,21 @@ func Analyze(driver string, fileName string, readOpts *ReadOpts) error {
 	sampleTable.Render()
 
 	fmt.Println(aurora.Cyan("\nExamples:"))
-	command := AppName
-	switch readOpts.InFormat {
-	case CSV:
-		command += " -icsv"
-	case LTSV:
-		command += " -iltsv"
-	case JSON:
-		command += " -ijson"
-	case TBLN:
-		command += " -itbln"
+	queries := examples(fileName, names, results)
+	for _, query := range queries {
+		fmt.Println(command, `"`+query+`"`)
 	}
-	if readOpts.realFormat == CSV || readOpts.realFormat == RAW {
-		command += ` -id "` + readOpts.InDelimiter + `"`
-		if readOpts.InHeader {
-			command += " -ih"
-		}
-	}
-	if readOpts.InSkip > 0 {
-		command += fmt.Sprintf(" -is %d", readOpts.InSkip)
-	}
-	if readOpts.InPreRead > 1 {
-		command += fmt.Sprintf(" -ir %d", readOpts.InPreRead)
-	}
-	fmt.Printf("%s \"SELECT %s FROM %s\"\n", command, strings.Join(names, ", "), fileName)
-	fmt.Printf("%s \"SELECT %s FROM %s WHERE %s = '%s'\"\n", command, strings.Join(names, ", "), fileName, names[0], results[0])
-	fmt.Printf("%s \"SELECT %s,count(%s) FROM %s GROUP BY %s\"\n", command, names[0], names[0], fileName, names[0])
-	fmt.Printf("%s \"SELECT %s FROM %s ORDER BY %s LIMIT 10\"\n", command, strings.Join(names, ", "), fileName, names[0])
 	return nil
+}
+
+func examples(tableName string, names []string, results []string) []string {
+	queries := []string{
+		fmt.Sprintf("SELECT %s FROM %s", strings.Join(names, ", "), tableName),
+		fmt.Sprintf("SELECT %s FROM %s WHERE %s = '%s'", strings.Join(names, ", "), tableName, names[0], results[0]),
+		fmt.Sprintf("SELECT %s, count(%s) FROM %s GROUP BY %s", names[0], names[0], tableName, names[0]),
+		fmt.Sprintf("SELECT %s FROM %s ORDER BY %s LIMIT 10", strings.Join(names, ", "), tableName, names[0]),
+	}
+	return queries
 }
 
 func quoted(driver string, name string) string {

@@ -180,7 +180,8 @@ func Run(args []string) int {
 		analyze = fileName
 	}
 	if analyze != "" {
-		if inPreRead == 1 {
+		command := getCommand(os.Args)
+		if inHeader && inPreRead == 1 {
 			inPreRead = 2
 		}
 		opts := trdsql.NewReadOpts(
@@ -189,7 +190,7 @@ func Run(args []string) int {
 			trdsql.InHeader(inHeader),
 			trdsql.InSkip(inSkip),
 			trdsql.InPreRead(inPreRead))
-		err := trdsql.Analyze(driver, analyze, opts)
+		err := trdsql.Analyze(analyze, command, driver, opts)
 		if err != nil {
 			log.Println("ERROR:", err)
 			return 1
@@ -288,4 +289,24 @@ func getDB(cfg *config, cDB string, cDriver string, cDSN string) (string, string
 		}
 	}
 	return "", ""
+}
+
+func getCommand(args []string) string {
+	command := trdsql.AppName
+	aFlag := false
+	for i, arg := range args {
+		if i == 0 {
+			continue
+		}
+		if aFlag {
+			aFlag = false
+			continue
+		}
+		if arg == "-a" {
+			aFlag = true
+			continue
+		}
+		command += " " + arg
+	}
+	return command
 }
