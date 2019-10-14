@@ -71,7 +71,7 @@ func Analyze(driver string, fileName string, readOpts *ReadOpts) error {
 	sampleTable.Render()
 
 	fmt.Println(aurora.Cyan("\nExamples:"))
-	command := "trdsql"
+	command := AppName
 	switch readOpts.InFormat {
 	case CSV:
 		command += " -icsv"

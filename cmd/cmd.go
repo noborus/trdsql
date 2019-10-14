@@ -99,7 +99,7 @@ func Run(args []string) int {
 		outHeader    bool
 	)
 
-	flags := flag.NewFlagSet("trdsql", flag.ExitOnError)
+	flags := flag.NewFlagSet(trdsql.AppName, flag.ExitOnError)
 
 	flags.Usage = func() {
 		fmt.Fprintf(os.Stderr, `Usage: %s [OPTIONS] [SQL(SELECT...)]
