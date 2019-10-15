@@ -179,11 +179,7 @@ func ImportFile(db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 			log.Printf("file close:%s", err)
 		}
 	}()
-	if readOpts.InFormat == GUESS {
-		readOpts.realFormat = guessExtension(fileName)
-	} else {
-		readOpts.realFormat = readOpts.InFormat
-	}
+	readOpts = realFormat(fileName, readOpts)
 	reader, err := NewReader(file, readOpts)
 	if err != nil {
 		return "", err
@@ -213,6 +209,15 @@ func ImportFile(db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 	}
 	err = db.Import(tableName, columnNames, reader)
 	return tableName, err
+}
+
+func realFormat(fileName string, readOpts *ReadOpts) *ReadOpts {
+	if readOpts.InFormat == GUESS {
+		readOpts.realFormat = guessExtension(fileName)
+	} else {
+		readOpts.realFormat = readOpts.InFormat
+	}
+	return readOpts
 }
 
 func guessExtension(tableName string) Format {

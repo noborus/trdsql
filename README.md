@@ -52,6 +52,8 @@ $ trdsql [options] SQL
 
 ### global option
 
+* `-a` **filename**
+        Analyze file and suggest SQL.
 * `-config` **filename**
         Configuration file location.
 * `-db` **db name**
@@ -601,6 +603,48 @@ $ trdsql -driver mysql -dsn "user:password@/test" "SELECT c1, SHA2(c2,224) FROM 
 ```
 
 MySQL can join tables and CSV files as well as PostgreSQL.
+
+### Analyze
+
+The ***-a filename*** option parses the file and outputs table information and SQL examples.
+
+```console
+$ trdsql -a testdata/test.ltsv
+```
+
+```console
+The table name is testdata/test.ltsv.
+The file type is LTSV.
+
+Data types:
++-------------+------+
+| column name | type |
++-------------+------+
+| id          | text |
+| name        | text |
+| price       | text |
++-------------+------+
+
+Data samples:
++----+--------+-------+
+| id |  name  | price |
++----+--------+-------+
+|  1 | Orange |    50 |
+|  2 | Melon  |   500 |
++----+--------+-------+
+
+Examples:
+trdsql -ir 2 "SELECT id, name, price FROM testdata/test.ltsv"
+trdsql -ir 2 "SELECT id, name, price FROM testdata/test.ltsv WHERE id = '2'"
+trdsql -ir 2 "SELECT id,count(id) FROM testdata/test.ltsv GROUP BY id"
+trdsql -ir 2 "SELECT id, name, price FROM testdata/test.ltsv ORDER BY id LIMIT 10"
+```
+
+Other options(-id,-ih,-ir,-is,icsv,iltsv,-ijson,-itbln...) are available.
+
+```console
+$ trdsql -ih -a testdata/header.csv
+```
 
 ### configuration
 

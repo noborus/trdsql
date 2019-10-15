@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/noborus/trdsql"
 )
 
 type database struct {
@@ -26,9 +28,9 @@ func configOpen(config string) io.Reader {
 	case config != "":
 		fileName = config
 	case runtime.GOOS == "windows":
-		fileName = filepath.Join(os.Getenv("APPDATA"), "trdsql", "config.json")
+		fileName = filepath.Join(os.Getenv("APPDATA"), trdsql.AppName, "config.json")
 	default:
-		fileName = filepath.Join(os.Getenv("HOME"), ".config", "trdsql", "config.json")
+		fileName = filepath.Join(os.Getenv("HOME"), ".config", trdsql.AppName, "config.json")
 	}
 	cfg, err := os.Open(fileName)
 	if err != nil {

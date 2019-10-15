@@ -9,6 +9,9 @@ import (
 	"log"
 )
 
+// AppName is used for command names.
+var AppName = "trdsql"
+
 // TRDSQL represents DB definition and Importer/Exporter interface.
 type TRDSQL struct {
 	// Driver is database driver name(sqlite3/mysql/postgres).
