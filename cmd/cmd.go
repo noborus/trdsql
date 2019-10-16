@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/noborus/trdsql"
@@ -292,21 +293,30 @@ func getDB(cfg *config, cDB string, cDriver string, cDSN string) (string, string
 }
 
 func getCommand(args []string) string {
-	command := trdsql.AppName
-	aFlag := false
-	for i, arg := range args {
-		if i == 0 {
-			continue
-		}
-		if aFlag {
-			aFlag = false
+	command := args[0]
+	omitFlag := false
+	for _, arg := range args[1:] {
+		if omitFlag {
+			omitFlag = false
 			continue
 		}
 		if arg == "-a" {
-			aFlag = true
+			omitFlag = true
 			continue
+		}
+		if arg[0] != '-' || len(arg) == 1 {
+			arg = quotedArg(arg)
 		}
 		command += " " + arg
 	}
 	return command
+}
+
+var argQuote = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
+
+func quotedArg(arg string) string {
+	if argQuote.MatchString(arg) {
+		return arg
+	}
+	return `"` + arg + `"`
 }
