@@ -173,13 +173,6 @@ func Run(args []string) int {
 	}
 	driver, dsn := getDB(cfg, cDB, cDriver, cDSN)
 
-	// If flags.Args [0] is a file name,
-	// it is regarded as an analysis file name.
-	fileName := flags.Arg(0)
-	_, nonEx := os.Stat(fileName)
-	if nonEx == nil {
-		analyze = fileName
-	}
 	if analyze != "" {
 		command := getCommand(os.Args)
 		if inHeader && inPreRead == 1 {
