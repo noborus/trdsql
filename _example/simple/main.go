@@ -1,3 +1,4 @@
+// simple is an example of using trdsql as a library.
 package main
 
 import (

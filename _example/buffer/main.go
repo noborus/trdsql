@@ -1,3 +1,5 @@
+// buffer is an example using NewBufferImporter.
+// Import JSON string in memory instead of file.
 package main
 
 import (
@@ -65,7 +67,7 @@ func main() {
 	}
 	writer := trdsql.NewWriter(trdsql.OutFormat(trdsql.VF))
 	trd := trdsql.NewTRDSQL(importer, trdsql.NewExporter(writer))
-	trd.Driver = "postgres"
+	trd.Driver = "sqlite3"
 	err = trd.Exec("SELECT name,gender,company,tags,greeting FROM test")
 	if err != nil {
 		log.Fatal(err)

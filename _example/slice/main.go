@@ -1,3 +1,4 @@
+// slice is to import data using NewSliceImporter.
 package main
 
 import (
