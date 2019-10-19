@@ -2,33 +2,42 @@ package trdsql
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"regexp"
-	"runtime"
 	"strings"
 
 	"github.com/logrusorgru/aurora"
 	"github.com/olekukonko/tablewriter"
 )
 
-var au aurora.Aurora
+// AnalyzeOpts represents the options for the operation of Analyze.
+type AnalyzeOpts struct {
+	// Command is string of the execution command.
+	Command string
+	// Quote is the quote character(s) that varies depending on the sql driver.
+	Quote string
+	// Color is a bool value for enabling color.
+	Color bool
+	// OutStream is the output destination.
+	OutStream io.Writer
+}
 
-// Color is enables or disables color output.
-func Color(color bool) {
-	au = aurora.NewAurora(color)
+// NewAnalyzeOpts returns AnalyzeOpts.
+func NewAnalyzeOpts() *AnalyzeOpts {
+	return &AnalyzeOpts{
+		Command:   AppName,
+		Quote:     "\\`",
+		Color:     true,
+		OutStream: os.Stdout,
+	}
 }
 
 // Analyze analyzes the file and outputs the table information.
 // In addition, SQL execution examples are output.
-func Analyze(fileName string, command string, driver string, readOpts *ReadOpts) error {
-
-	color := os.Getenv("NO_COLOR")
-	if color == "" && runtime.GOOS != "windows" {
-		Color(true)
-	} else {
-		Color(false)
-	}
+func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
+	au := aurora.NewAurora(opts.Color)
 	file, err := importFileOpen(fileName)
 	if err != nil {
 		return err
@@ -39,6 +48,7 @@ func Analyze(fileName string, command string, driver string, readOpts *ReadOpts)
 			log.Printf("file close:%s", err)
 		}
 	}()
+
 	readOpts = realFormat(fileName, readOpts)
 	reader, err := NewReader(file, readOpts)
 	if err != nil {
@@ -52,19 +62,21 @@ func Analyze(fileName string, command string, driver string, readOpts *ReadOpts)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("The table name is %s.\n", au.Yellow(fileName))
-	fmt.Printf("The file type is %s.\n", au.Red(readOpts.realFormat))
+
+	fmt.Fprintf(opts.OutStream, "The table name is %s.\n", au.Yellow(fileName))
+	fmt.Fprintf(opts.OutStream, "The file type is %s.\n", au.Red(readOpts.realFormat))
+
 	names := make([]string, len(columnNames))
 	for i := range columnNames {
-		names[i] = quoted(driver, columnNames[i])
+		names[i] = quoted(columnNames[i], opts.Quote)
 	}
 	if len(names) <= 1 && readOpts.realFormat == CSV {
-		fmt.Println(au.Magenta("Is the delimiter different?"))
-		fmt.Println(au.Magenta("Please try again with -id \"\\t\" or -id \" \"."))
+		fmt.Fprintln(opts.OutStream, au.Magenta("Is the delimiter different?"))
+		fmt.Fprintln(opts.OutStream, au.Magenta(`Please try again with -id "\t" or -id " ".`))
 	}
 
-	fmt.Println(au.Cyan("\nData types:"))
-	typeTable := tablewriter.NewWriter(os.Stdout)
+	fmt.Fprintln(opts.OutStream, au.Cyan("\nData types:"))
+	typeTable := tablewriter.NewWriter(opts.OutStream)
 	typeTable.SetAutoFormatHeaders(false)
 	typeTable.SetHeader([]string{"column name", "type"})
 	for i := range columnNames {
@@ -72,8 +84,8 @@ func Analyze(fileName string, command string, driver string, readOpts *ReadOpts)
 	}
 	typeTable.Render()
 
-	fmt.Println(au.Cyan("\nData samples:"))
-	sampleTable := tablewriter.NewWriter(os.Stdout)
+	fmt.Fprintln(opts.OutStream, au.Cyan("\nData samples:"))
+	sampleTable := tablewriter.NewWriter(opts.OutStream)
 	sampleTable.SetAutoFormatHeaders(false)
 	sampleTable.SetHeader(names)
 	results := make([]string, len(names))
@@ -85,10 +97,10 @@ func Analyze(fileName string, command string, driver string, readOpts *ReadOpts)
 	}
 	sampleTable.Render()
 
-	fmt.Println(au.Cyan("\nExamples:"))
+	fmt.Fprintln(opts.OutStream, au.Cyan("\nExamples:"))
 	queries := examples(fileName, names, results)
 	for _, query := range queries {
-		fmt.Println(command, `"`+query+`"`)
+		fmt.Fprintf(opts.OutStream, "%s %s\n", opts.Command, `"`+query+`"`)
 	}
 	return nil
 }
@@ -103,14 +115,11 @@ func examples(tableName string, names []string, results []string) []string {
 	return queries
 }
 
-func quoted(driver string, name string) string {
-	r := regexp.MustCompile(`^[a-z0-9_]+$`)
-	if r.MatchString(name) {
+var noQuoteRegexp = regexp.MustCompile(`^[a-z0-9_]+$`)
+
+func quoted(name string, quote string) string {
+	if noQuoteRegexp.MatchString(name) {
 		return name
-	}
-	quote := "\\`"
-	if driver == "postgres" {
-		quote = `\"`
 	}
 	return quote + name + quote
 }

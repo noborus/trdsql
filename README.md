@@ -634,10 +634,10 @@ Data samples:
 +----+--------+-------+
 
 Examples:
-trdsql -ir 2 "SELECT id, name, price FROM testdata/test.ltsv"
-trdsql -ir 2 "SELECT id, name, price FROM testdata/test.ltsv WHERE id = '2'"
-trdsql -ir 2 "SELECT id,count(id) FROM testdata/test.ltsv GROUP BY id"
-trdsql -ir 2 "SELECT id, name, price FROM testdata/test.ltsv ORDER BY id LIMIT 10"
+trdsql "SELECT id, name, price FROM testdata/test.ltsv"
+trdsql "SELECT id, name, price FROM testdata/test.ltsv WHERE id = '2'"
+trdsql "SELECT id,count(id) FROM testdata/test.ltsv GROUP BY id"
+trdsql "SELECT id, name, price FROM testdata/test.ltsv ORDER BY id LIMIT 10"
 ```
 
 Other options(-id,-ih,-ir,-is,icsv,iltsv,-ijson,-itbln...) are available.

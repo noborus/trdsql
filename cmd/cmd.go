@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/noborus/trdsql"
@@ -144,12 +145,12 @@ func Run(args []string) int {
 
 	err := flags.Parse(args[1:])
 	if err != nil {
-		log.Println("ERROR:", err)
+		log.Printf("ERROR: %s", err)
 		return 1
 	}
 
 	if version {
-		fmt.Println(trdsql.Version)
+		fmt.Printf("%s version %s\n", trdsql.AppName, trdsql.Version)
 		return 0
 	}
 
@@ -174,19 +175,27 @@ func Run(args []string) int {
 	driver, dsn := getDB(cfg, cDB, cDriver, cDSN)
 
 	if analyze != "" {
-		command := getCommand(os.Args)
+		opts := trdsql.NewAnalyzeOpts()
+		color := os.Getenv("NO_COLOR")
+		if color != "" || runtime.GOOS == "windows" {
+			opts.Color = false
+		}
+		if driver == "postgres" {
+			opts.Quote = `\"`
+		}
+		opts.Command = getCommand(os.Args)
 		if inHeader && inPreRead == 1 {
 			inPreRead = 2
 		}
-		opts := trdsql.NewReadOpts(
+		readOpts := trdsql.NewReadOpts(
 			trdsql.InFormat(inputFormat(inFlag)),
 			trdsql.InDelimiter(inDelimiter),
 			trdsql.InHeader(inHeader),
 			trdsql.InSkip(inSkip),
 			trdsql.InPreRead(inPreRead))
-		err := trdsql.Analyze(analyze, command, driver, opts)
+		err := trdsql.Analyze(analyze, opts, readOpts)
 		if err != nil {
-			log.Println("ERROR:", err)
+			log.Printf("ERROR: %s", err)
 			return 1
 		}
 		return 0
