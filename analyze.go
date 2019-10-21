@@ -123,7 +123,10 @@ var noQuoteRegexp = regexp.MustCompile(`^[a-z0-9_]+$`)
 
 func quoted(name string, quote string) string {
 	if noQuoteRegexp.MatchString(name) {
-		return name
+		_, exist := keywords[name]
+		if !exist {
+			return name
+		}
 	}
 	return quote + name + quote
 }
