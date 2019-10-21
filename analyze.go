@@ -5,7 +5,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"regexp"
 	"strings"
 
 	"github.com/logrusorgru/aurora"
@@ -119,14 +118,10 @@ func examples(tableName string, names []string, results []string) []string {
 	return queries
 }
 
-var noQuoteRegexp = regexp.MustCompile(`^[a-z0-9_]+$`)
-
 func quoted(name string, quote string) string {
-	if noQuoteRegexp.MatchString(name) {
-		_, exist := keywords[name]
-		if !exist {
-			return name
-		}
+	_, exist := keywords[name]
+	if exist {
+		return quote + name + quote
 	}
-	return quote + name + quote
+	return name
 }
