@@ -54,6 +54,8 @@ $ trdsql [options] SQL
 
 * `-a` **filename**
         Analyze file and suggest SQL.
+* `-A` **filename**
+        Analyze but only suggest SQL.
 * `-config` **filename**
         Configuration file location.
 * `-db` **db name**
@@ -613,37 +615,48 @@ $ trdsql -a testdata/test.ltsv
 ```
 
 ```console
-The table name is testdata/test.ltsv.
-The file type is LTSV.
+The table name is testdata/header.csv.
+The file type is CSV.
 
 Data types:
 +-------------+------+
 | column name | type |
 +-------------+------+
 | id          | text |
-| name        | text |
-| price       | text |
+| \`name\`    | text |
 +-------------+------+
 
 Data samples:
-+----+--------+-------+
-| id |  name  | price |
-+----+--------+-------+
-|  1 | Orange |    50 |
-|  2 | Melon  |   500 |
-+----+--------+-------+
++----+----------+
+| id | \`name\` |
++----+----------+
+|  1 | Orange   |
++----+----------+
 
 Examples:
-trdsql "SELECT id, name, price FROM testdata/test.ltsv"
-trdsql "SELECT id, name, price FROM testdata/test.ltsv WHERE id = '2'"
-trdsql "SELECT id,count(id) FROM testdata/test.ltsv GROUP BY id"
-trdsql "SELECT id, name, price FROM testdata/test.ltsv ORDER BY id LIMIT 10"
+trdsql -db sdb -ih "SELECT id, \`name\` FROM testdata/header.csv"
+trdsql -db sdb -ih "SELECT id, \`name\` FROM testdata/header.csv WHERE id = '1'"
+trdsql -db sdb -ih "SELECT id, count(id) FROM testdata/header.csv GROUP BY id"
+trdsql -db sdb -ih "SELECT id, \`name\` FROM testdata/header.csv ORDER BY id LIMIT 10"
 ```
 
 Other options(-id,-ih,-ir,-is,icsv,iltsv,-ijson,-itbln...) are available.
 
 ```console
 $ trdsql -ih -a testdata/header.csv
+```
+
+Similarly, with  ***-A filename*** option, only Examples (SQL) is output.
+
+```console
+$ trdsql -ih -A testdata/header.csv
+```
+
+```console
+trdsql -ih "SELECT id, \`name\` FROM testdata/header.csv"
+trdsql -ih "SELECT id, \`name\` FROM testdata/header.csv WHERE id = '1'"
+trdsql -ih "SELECT id, count(id) FROM testdata/header.csv GROUP BY id"
+trdsql -ih "SELECT id, \`name\` FROM testdata/header.csv ORDER BY id LIMIT 10"
 ```
 
 ### configuration
