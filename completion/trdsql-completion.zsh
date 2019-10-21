@@ -28,6 +28,8 @@ function _trdsql {
     '-omd[Mark Down format for output.]' \
     '-oraw[Raw format for output.]' \
     '-ovf[Vertical format for output.]' \
+    '-a[Analyze file and suggest SQL.]:file:_files -g "*.(csv|CSV|ltsv|LTSV|json|JSON|tbln|TBLN)"' \
+    '-A[Analyze but only suggest SQL.]:file:_files -g "*.(csv|CSV|ltsv|LTSV|json|JSON|tbln|TBLN)"' \
     '-q[Read query from the provided filename.]:file:_files -g "*.(SQL|sql)"' \
     '1: :__trdsql_sql' \
     '*:file:_files -g "*.(csv|CSV|ltsv|LTSV|json|JSON|tbln|TBLN)"'
