@@ -89,6 +89,7 @@ func Run(args []string) int {
 		guess     bool
 		queryFile string
 		analyze   string
+		onlySQL   string
 
 		inFlag      inputFlag
 		inDelimiter string
@@ -117,6 +118,7 @@ func Run(args []string) int {
 	flags.BoolVar(&guess, "ig", true, "Guess format from extension.")
 	flags.StringVar(&queryFile, "q", "", "Read query from the provided filename.")
 	flags.StringVar(&analyze, "a", "", "Analyze file and suggest SQL.")
+	flags.StringVar(&onlySQL, "A", "", "Analyze but only suggest SQL.")
 	flags.BoolVar(&usage, "help", false, "display usage information.")
 	flags.BoolVar(&version, "version", false, "display version information.")
 	flags.BoolVar(&Debug, "debug", false, "debug print.")
@@ -174,7 +176,7 @@ func Run(args []string) int {
 	}
 	driver, dsn := getDB(cfg, cDB, cDriver, cDSN)
 
-	if analyze != "" {
+	if analyze != "" || onlySQL != "" {
 		opts := trdsql.NewAnalyzeOpts()
 		color := os.Getenv("NO_COLOR")
 		if color != "" || runtime.GOOS == "windows" {
@@ -182,6 +184,10 @@ func Run(args []string) int {
 		}
 		if driver == "postgres" {
 			opts.Quote = `\"`
+		}
+		if onlySQL != "" {
+			analyze = onlySQL
+			opts.Detail = false
 		}
 		opts.Command = getCommand(os.Args)
 		if inHeader && inPreRead == 1 {
@@ -302,11 +308,11 @@ func getCommand(args []string) string {
 			omitFlag = false
 			continue
 		}
-		if arg == "-a" {
+		if arg == "-a" || arg == "-A" {
 			omitFlag = true
 			continue
 		}
-		if arg[0] != '-' || len(arg) == 1 {
+		if len(arg) <= 1 || arg[0] != '-' {
 			arg = quotedArg(arg)
 		}
 		command += " " + arg

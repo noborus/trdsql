@@ -18,6 +18,8 @@ type AnalyzeOpts struct {
 	Command string
 	// Quote is the quote character(s) that varies depending on the sql driver.
 	Quote string
+	// Detail is outputs detailed information.
+	Detail bool
 	// Color is a bool value for enabling color.
 	Color bool
 	// OutStream is the output destination.
@@ -30,6 +32,7 @@ func NewAnalyzeOpts() *AnalyzeOpts {
 		Command:   AppName,
 		Quote:     "\\`",
 		Color:     true,
+		Detail:    true,
 		OutStream: os.Stdout,
 	}
 }
@@ -62,43 +65,44 @@ func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
 	if err != nil {
 		return err
 	}
-
-	fmt.Fprintf(opts.OutStream, "The table name is %s.\n", au.Yellow(fileName))
-	fmt.Fprintf(opts.OutStream, "The file type is %s.\n", au.Red(readOpts.realFormat))
-
 	names := make([]string, len(columnNames))
 	for i := range columnNames {
 		names[i] = quoted(columnNames[i], opts.Quote)
 	}
-	if len(names) <= 1 && readOpts.realFormat == CSV {
-		fmt.Fprintln(opts.OutStream, au.Magenta("Is the delimiter different?"))
-		fmt.Fprintln(opts.OutStream, au.Magenta(`Please try again with -id "\t" or -id " ".`))
+	results := make([][]string, 0)
+	for _, row := range reader.PreReadRow() {
+		resultRow := make([]string, len(names))
+		for j, col := range row {
+			resultRow[j] = ValString(col)
+		}
+		results = append(results, resultRow)
 	}
-
-	fmt.Fprintln(opts.OutStream, au.Cyan("\nData types:"))
 	typeTable := tablewriter.NewWriter(opts.OutStream)
 	typeTable.SetAutoFormatHeaders(false)
 	typeTable.SetHeader([]string{"column name", "type"})
 	for i := range columnNames {
 		typeTable.Append([]string{names[i], columnTypes[i]})
 	}
-	typeTable.Render()
-
-	fmt.Fprintln(opts.OutStream, au.Cyan("\nData samples:"))
 	sampleTable := tablewriter.NewWriter(opts.OutStream)
 	sampleTable.SetAutoFormatHeaders(false)
 	sampleTable.SetHeader(names)
-	results := make([]string, len(names))
-	for _, row := range reader.PreReadRow() {
-		for i, col := range row {
-			results[i] = ValString(col)
-		}
-		sampleTable.Append(results)
+	for _, row := range results {
+		sampleTable.Append(row)
 	}
-	sampleTable.Render()
-
-	fmt.Fprintln(opts.OutStream, au.Cyan("\nExamples:"))
-	queries := examples(fileName, names, results)
+	if opts.Detail {
+		fmt.Fprintf(opts.OutStream, "The table name is %s.\n", au.Yellow(fileName))
+		fmt.Fprintf(opts.OutStream, "The file type is %s.\n", au.Red(readOpts.realFormat))
+		if len(names) <= 1 && readOpts.realFormat == CSV {
+			fmt.Fprintln(opts.OutStream, au.Magenta("Is the delimiter different?"))
+			fmt.Fprintln(opts.OutStream, au.Magenta(`Please try again with -id "\t" or -id " ".`))
+		}
+		fmt.Fprintln(opts.OutStream, au.Cyan("\nData types:"))
+		typeTable.Render()
+		fmt.Fprintln(opts.OutStream, au.Cyan("\nData samples:"))
+		sampleTable.Render()
+		fmt.Fprintln(opts.OutStream, au.Cyan("\nExamples:"))
+	}
+	queries := examples(fileName, names, results[0])
 	for _, query := range queries {
 		fmt.Fprintf(opts.OutStream, "%s %s\n", opts.Command, `"`+query+`"`)
 	}
