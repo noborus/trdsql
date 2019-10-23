@@ -1,10 +1,15 @@
-VERSION=$(shell git describe --tags)
+VERSION=$(shell git describe --tags 2>/dev/null)
 
 GOCMD=go
 TAGS="json1"
 GOGET=$(GOCMD) get
 GOCLEAN=$(GOCMD) clean
-BUILDFLAG=-tags $(TAGS) -ldflags="-X github.com/noborus/trdsql.Version=$(VERSION)"
+ifeq ($(strip $(VERSION)),)
+  LDFLAGS=""
+else
+  LDFLAGS="-X github.com/noborus/trdsql.Version=$(VERSION)"
+endif
+BUILDFLAG=-tags $(TAGS) -ldflags=$(LDFLAGS)
 GOBUILD=$(GOCMD) build $(BUILDFLAG)
 GOTEST=$(GOCMD) test -tags $(TAGS)
 GOINSTALL=$(GOCMD) install $(BUILDFLAG)
