@@ -11,7 +11,7 @@ else
 endif
 BUILDFLAG=-tags $(TAGS) -ldflags=$(LDFLAGS)
 GOBUILD=$(GOCMD) build $(BUILDFLAG)
-GOTEST=$(GOCMD) test -tags $(TAGS)
+GOTEST=$(GOCMD) test -tags $(TAGS) -v
 GOINSTALL=$(GOCMD) install $(BUILDFLAG)
 
 GOXCMD=gox -cgo $(BUILDFLAG)
