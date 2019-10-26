@@ -317,12 +317,14 @@ func TestOutFormatRun(t *testing.T) {
 		if err != nil {
 			t.Errorf("trdsql error. %s", err)
 		}
-		g, err := ioutil.ReadFile(filepath.Join("testdata", c.result+".golden"))
+		got := outStream.String()
+		golden, err := ioutil.ReadFile(filepath.Join("testdata", c.result+".golden"))
 		if err != nil {
 			t.Fatalf("failed reading .golden: %s", err)
 		}
-		if !bytes.Equal(outStream.Bytes(), g) {
-			t.Fatalf("trdsql error\n%x\n%s\n%x\n", g, c.format, outStream)
+		want := string(golden)
+		if got != want {
+			t.Errorf("format: %s, got: %s, want: %s", c.format, got, want)
 		}
 		outStream.Reset()
 	}
