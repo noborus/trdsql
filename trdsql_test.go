@@ -322,7 +322,7 @@ func TestOutFormatRun(t *testing.T) {
 			t.Fatalf("failed reading .golden: %s", err)
 		}
 		if !bytes.Equal(outStream.Bytes(), g) {
-			t.Fatalf("trdsql error %s:%s:%s", g, c.format, outStream)
+			t.Fatalf("trdsql error\n%x\n%s\n%x\n", g, c.format, outStream)
 		}
 		outStream.Reset()
 	}
