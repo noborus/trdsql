@@ -15,7 +15,7 @@ func Example() {
 Ken,Thompson,ken
 "Robert","Griesemer","gri"
 `)
-	tmpfile, err := ioutil.TempFile("/tmp", "xxx")
+	tmpfile, err := ioutil.TempFile(os.TempDir(), "xxx")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -47,7 +47,7 @@ func Example_options() {
 Ken,Thompson,ken
 "Robert","Griesemer","gri"
 `)
-	tmpfile, err := ioutil.TempFile("/tmp", "xxx")
+	tmpfile, err := ioutil.TempFile(os.TempDir(), "xxx")
 	if err != nil {
 		log.Fatal(err)
 	}
