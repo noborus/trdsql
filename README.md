@@ -15,7 +15,7 @@ The difference from these tools is that the syntax of
 Please refer to [godoc](https://godoc.org/github.com/noborus/trdsql)
  and _example for usage as a library.
 
-![trdsql.gif](doc/trdsql.gif)
+![trdsql.gif](https://raw.githubusercontent.com/noborus/trdsql/master/doc/trdsql.gif)
 
 <!-- vscode-markdown-toc -->
 * 1. [INSTALL](#INSTALL)
@@ -543,7 +543,7 @@ Apple,3
 "- ih" sets the first line to column name
 
 ```console
-$ ps |trdsql -ih -oh -id " " "SELECT \"TIME\",\"TTY\",\"PID\",\"CMD\" FROM -"
+$ ps |trdsql -ih -oh -id " " "SELECT \`PID\`, \`TTY\`, \`TIME\`, \`CMD\` FROM -"
 TIME,TTY,PID,CMD
 00:00:00,pts/20,3452,ps
 00:00:00,pts/20,3453,trdsql
