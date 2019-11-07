@@ -22,6 +22,9 @@ Please refer to [godoc](https://godoc.org/github.com/noborus/trdsql)
 	* 1.1. [Requirements](#Requirements)
 	* 1.2. [Download](#Download)
 * 2. [Docker](#Docker)
+	* 2.1. [Docker pull](#Dockerpull)
+	* 2.2. [image build](#imagebuild)
+	* 2.3. [Docker Run](#DockerRun)
 * 3. [Usage](#Usage)
 	* 3.1. [global option](#globaloption)
 	* 3.2. [Input format](#Inputformat)
@@ -76,13 +79,25 @@ Download binary from the [releases](https://github.com/noborus/trdsql/releases) 
 
 ##  2. <a name='Docker'></a>Docker
 
-image build.
+###  2.1. <a name='Dockerpull'></a>Docker pull
+
+Pull the latest image from the Docker hub.
+
+```console
+docker pull noborus/trdsql
+```
+
+###  2.2. <a name='imagebuild'></a>image build
+
+Or build it yourself.
 
 ```console
 docker build -t trdsql .
 ````
 
-docker run.
+###  2.3. <a name='DockerRun'></a>Docker Run
+
+Docker run.
 
 ```console
 docker run --rm -it -v $(pwd)/tmp trdsql [options and commands]
