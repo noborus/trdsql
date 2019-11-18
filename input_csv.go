@@ -4,7 +4,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
-	"log"
 	"strconv"
 )
 
@@ -33,18 +32,10 @@ func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 	}
 
 	if opts.InSkip > 0 {
-		skip := make([]interface{}, 1)
-		for i := 0; i < opts.InSkip; i++ {
-			row, err := r.ReadRow(skip)
-			if err != nil {
-				log.Printf("ERROR: skip error %s", err)
-				break
-			}
-			debug.Printf("Skip row:%s\n", row)
-		}
+		skipRead(r, opts.InSkip)
 	}
 
-	// Header
+	// Read the header.
 	preReadN := opts.InPreRead
 	if opts.InHeader {
 		row, err := r.reader.Read()
@@ -62,6 +53,7 @@ func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 		preReadN--
 	}
 
+	// Pre-read and stored in slices.
 	for n := 0; n < preReadN; n++ {
 		row, err := r.reader.Read()
 		if err != nil {
@@ -73,6 +65,7 @@ func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 		rows := make([]string, len(row))
 		for i, col := range row {
 			rows[i] = col
+			// If there are more columns than header, add column names.
 			if len(r.names) < i+1 {
 				r.names = append(r.names, "c"+strconv.Itoa(i+1))
 			}

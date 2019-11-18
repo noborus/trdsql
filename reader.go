@@ -3,6 +3,7 @@ package trdsql
 import (
 	"errors"
 	"io"
+	"log"
 )
 
 // Reader is wrap the reader.
@@ -122,5 +123,17 @@ func NewReader(reader io.Reader, readOpts *ReadOpts) (Reader, error) {
 		return NewTBLNReader(reader)
 	default:
 		return nil, errors.New("unknown format")
+	}
+}
+
+func skipRead(r Reader, skipNum int) {
+	skip := make([]interface{}, 1)
+	for i := 0; i < skipNum; i++ {
+		row, err := r.ReadRow(skip)
+		if err != nil {
+			log.Printf("ERROR: skip error %s", err)
+			break
+		}
+		debug.Printf("Skip row:%s\n", row)
 	}
 }

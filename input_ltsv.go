@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"io"
-	"log"
 	"strings"
 )
 
@@ -24,16 +23,9 @@ func NewLTSVReader(reader io.Reader, opts *ReadOpts) (*LTSVReader, error) {
 	r.delimiter = "\t"
 
 	if opts.InSkip > 0 {
-		skip := make([]interface{}, 1)
-		for i := 0; i < opts.InSkip; i++ {
-			row, err := r.ReadRow(skip)
-			if err != nil {
-				log.Printf("ERROR: skip error %s", err)
-				break
-			}
-			debug.Printf("Skip row:%s\n", row)
-		}
+		skipRead(r, opts.InSkip)
 	}
+
 	names := map[string]bool{}
 	for i := 0; i < opts.InPreRead; i++ {
 		row, keys, err := r.read()
@@ -43,6 +35,7 @@ func NewLTSVReader(reader io.Reader, opts *ReadOpts) (*LTSVReader, error) {
 			}
 			return r, nil
 		}
+
 		// Add only unique column names.
 		for k := 0; k < len(keys); k++ {
 			if !names[keys[k]] {
