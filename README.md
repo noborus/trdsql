@@ -39,18 +39,19 @@ Please refer to [godoc](https://godoc.org/github.com/noborus/trdsql)
 	* 4.5. [TSV (Tab Separated Value)](#TSVTabSeparatedValue)
 	* 4.6. [LTSV (Labeled Tab-separated Values)](#LTSVLabeledTab-separatedValues)
 	* 4.7. [JSON](#JSON)
-	* 4.8. [TBLN](#TBLN)
-	* 4.9. [Raw output](#Rawoutput)
-	* 4.10. [ASCII Table & MarkDown output](#ASCIITableMarkDownoutput)
-	* 4.11. [Vertical format output](#Verticalformatoutput)
-	* 4.12. [SQL function](#SQLfunction)
-	* 4.13. [JOIN](#JOIN)
-	* 4.14. [PostgreSQL](#PostgreSQL)
-		* 4.14.1. [Function](#Function)
-		* 4.14.2. [Join table and CSV file is possible](#JointableandCSVfileispossible)
-	* 4.15. [MySQL](#MySQL)
-	* 4.16. [Analyze](#Analyze)
-	* 4.17. [configuration](#configuration)
+	* 4.8. [JSONL](#JSONL)
+	* 4.9. [TBLN](#TBLN)
+	* 4.10. [Raw output](#Rawoutput)
+	* 4.11. [ASCII Table & MarkDown output](#ASCIITableMarkDownoutput)
+	* 4.12. [Vertical format output](#Verticalformatoutput)
+	* 4.13. [SQL function](#SQLfunction)
+	* 4.14. [JOIN](#JOIN)
+	* 4.15. [PostgreSQL](#PostgreSQL)
+		* 4.15.1. [Function](#Function)
+		* 4.15.2. [Join table and CSV file is possible](#JointableandCSVfileispossible)
+	* 4.16. [MySQL](#MySQL)
+	* 4.17. [Analyze](#Analyze)
+	* 4.18. [configuration](#configuration)
 * 5. [Library](#Library)
 * 6. [License](#License)
 
@@ -164,6 +165,8 @@ trdsql [options] SQL
         CSV format for output. (default)
 * `-ojson`
         JSON format for output.
+* `-ojsonl`
+        JSONL(JSON Lines) format for output.
 * `-oltsv`
         LTSV format for output.
 * `-oat`
@@ -387,26 +390,14 @@ $ trdsql -ijson "SELECT id, name, JSON_EXTRACT(attribute,'$country'), JSON_EXTRA
 3,Tuck,Mayotte,antiquewhite
 ```
 
-Another json format. One record is JSON.
+Another json format. JSONL(JSON Lines).
 
 sample2.json
 
 ```json
-{
-  "id": "1",
-  "name": "Orange",
-  "price": "50"
-}
-{
-  "id": "2",
-  "name": "Melon",
-  "price": "500"
-}
-{
-  "id": "3",
-  "name": "Apple",
-  "price": "100"
-}
+{"id": "1","name": "Orange","price": "50"}
+{"id": "2","name": "Melon","price": "500"}
+{"id": "3","name": "Apple","price": "100"}
 ```
 
 -ojson is JSON Output.
@@ -432,7 +423,21 @@ trdsql -ojson "SELECT * FROM test.csv"
 ]
 ```
 
-###  4.8. <a name='TBLN'></a>TBLN
+###  4.8. <a name='JSONL'></a>JSONL
+
+To output in JSONL, specify -ojsonl.
+
+```console
+trdsql -ojsonl "SELECT * FROM test.csv"
+```
+
+```json
+{"c1":"1","c2":"Orange"}
+{"c1":"2","c2":"Melon"}
+{"c1":"3","c2":"Apple"}
+```
+
+###  4.9. <a name='TBLN'></a>TBLN
 
 -itbln is input from TBLN.
 
@@ -468,7 +473,7 @@ $ trdsql -otbln "SELECT c1::int as id, c2::text as name FROM test.csv"
 TBLN can contain column names and type definitions.
 Please refer to <https://tbln.dev/> for details of TBLN.
 
-###  4.9. <a name='Rawoutput'></a>Raw output
+###  4.10. <a name='Rawoutput'></a>Raw output
 
 -oraw is Raw Output.
 It is used when "escape processing is unnecessary" in CSV output.
@@ -496,7 +501,7 @@ trdsql -oraw -od "\t|\t" -db pdb "SELECT * FROM test.csv"
 3	|	Apple
 ```
 
-###  4.10. <a name='ASCIITableMarkDownoutput'></a>ASCII Table & MarkDown output
+###  4.11. <a name='ASCIITableMarkDownoutput'></a>ASCII Table & MarkDown output
 
 -oat is ASCII table output.
 
@@ -522,7 +527,7 @@ $ trdsql -omd "SELECT * FROM test.csv"
 |  3 | Apple  |
 ```
 
-###  4.11. <a name='Verticalformatoutput'></a>Vertical format output
+###  4.12. <a name='Verticalformatoutput'></a>Vertical format output
 
 -ovf is Vertical format output("column name | value" vertically).
 
@@ -539,7 +544,7 @@ $ trdsql -ovf "SELECT * FROM test.csv"
   c2 | Apple
 ```
 
-###  4.12. <a name='SQLfunction'></a>SQL function
+###  4.13. <a name='SQLfunction'></a>SQL function
 
 ```console
 $ trdsql "SELECT count(*) FROM test.csv"
@@ -565,7 +570,7 @@ TIME,TTY,PID,CMD
 00:00:05,pts/20,15576,zsh
 ```
 
-###  4.13. <a name='JOIN'></a>JOIN
+###  4.14. <a name='JOIN'></a>JOIN
 
 The SQL JOIN can be used.
 
@@ -591,7 +596,7 @@ $ trdsql "SELECT u.c1,u.c2,h.c2 FROM user.csv as u LEFT JOIN hist.csv as h ON(u.
 2,userB,2017-7-11
 ```
 
-###  4.14. <a name='PostgreSQL'></a>PostgreSQL
+###  4.15. <a name='PostgreSQL'></a>PostgreSQL
 
 When using PostgreSQL, specify postgres for driver
  and connection information for dsn.
@@ -600,7 +605,7 @@ When using PostgreSQL, specify postgres for driver
 trdsql -driver postgres -dsn "dbname=test" "SELECT count(*) FROM test.csv "
 ```
 
-####  4.14.1. <a name='Function'></a>Function
+####  4.15.1. <a name='Function'></a>Function
 
 The PostgreSQL driver can use the window function.
 
@@ -620,7 +625,7 @@ $ trdsql -driver postgres -dsn "dbname=test" "SELECT generate_series(1,3);"
 3
 ```
 
-####  4.14.2. <a name='JointableandCSVfileispossible'></a>Join table and CSV file is possible
+####  4.15.2. <a name='JointableandCSVfileispossible'></a>Join table and CSV file is possible
 
 Test database has a colors table.
 
@@ -659,7 +664,7 @@ $ psql -c "SELECT * FROM fruits;"
 (3 rows)
 ```
 
-###  4.15. <a name='MySQL'></a>MySQL
+###  4.16. <a name='MySQL'></a>MySQL
 
 When using MySQL, specify mysql for driver and connection information for dsn.
 
@@ -677,7 +682,7 @@ $ trdsql -driver mysql -dsn "user:password@/test" "SELECT c1, SHA2(c2,224) FROM 
 
 MySQL can join tables and CSV files as well as PostgreSQL.
 
-###  4.16. <a name='Analyze'></a>Analyze
+###  4.17. <a name='Analyze'></a>Analyze
 
 The ***-a filename*** option parses the file and outputs table information and SQL examples.
 
@@ -730,7 +735,7 @@ trdsql -ih "SELECT id, count(id) FROM testdata/header.csv GROUP BY id"
 trdsql -ih "SELECT id, \`name\` FROM testdata/header.csv ORDER BY id LIMIT 10"
 ```
 
-###  4.17. <a name='configuration'></a>configuration
+###  4.18. <a name='configuration'></a>configuration
 
 You can specify driver and dsn in the configuration file.
 

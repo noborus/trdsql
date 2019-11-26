@@ -24,14 +24,15 @@ type inputFlag struct {
 
 // Output format flag
 type outputFlag struct {
-	CSV  bool
-	LTSV bool
-	AT   bool
-	MD   bool
-	VF   bool
-	RAW  bool
-	JSON bool
-	TBLN bool
+	CSV   bool
+	LTSV  bool
+	AT    bool
+	MD    bool
+	VF    bool
+	RAW   bool
+	JSON  bool
+	TBLN  bool
+	JSONL bool
 }
 
 func inputFormat(i inputFlag) trdsql.Format {
@@ -65,6 +66,8 @@ func outputFormat(o outputFlag) trdsql.Format {
 		return trdsql.VF
 	case o.TBLN:
 		return trdsql.TBLN
+	case o.JSONL:
+		return trdsql.JSONL
 	case o.CSV:
 		return trdsql.CSV
 	default:
@@ -144,6 +147,7 @@ func Run(args []string) int {
 	flags.BoolVar(&outFlag.RAW, "oraw", false, "Raw format for output.")
 	flags.BoolVar(&outFlag.JSON, "ojson", false, "JSON format for output.")
 	flags.BoolVar(&outFlag.TBLN, "otbln", false, "TBLN format for output.")
+	flags.BoolVar(&outFlag.JSONL, "ojsonl", false, "JSON Lines format for output.")
 
 	err := flags.Parse(args[1:])
 	if err != nil {

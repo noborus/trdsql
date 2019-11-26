@@ -307,6 +307,7 @@ func TestOutFormatRun(t *testing.T) {
 		{format: MD, result: "md"},
 		{format: AT, result: "at"},
 		{format: TBLN, result: "tbln"},
+		{format: JSONL, result: "jsonl"},
 	}
 	sql := "SELECT * FROM " + dataDir + "test.csv"
 	for _, c := range testFormat {
