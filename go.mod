@@ -5,11 +5,11 @@ require (
 	github.com/lib/pq v1.2.0
 	github.com/logrusorgru/aurora v0.0.0-20191116043053-66b7ad493a23
 	github.com/mattn/go-runewidth v0.0.6
-	github.com/mattn/go-sqlite3 v1.12.0
+	github.com/mattn/go-sqlite3 v1.13.0
 	github.com/noborus/tbln v0.0.1
-	github.com/olekukonko/tablewriter v0.0.2
-	golang.org/x/crypto v0.0.0-20191112222119-e1110fd1c708
-	golang.org/x/sys v0.0.0-20191115151921-52ab43148777 // indirect
+	github.com/olekukonko/tablewriter v0.0.3
+	golang.org/x/crypto v0.0.0-20191122220453-ac88ee75c92c
+	golang.org/x/sys v0.0.0-20191127021746-63cb32ae39b2 // indirect
 	google.golang.org/appengine v1.6.5 // indirect
 )
 
