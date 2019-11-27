@@ -79,7 +79,7 @@ const (
 	VF
 
 	// export
-	// JSON Lines format.
+	// JSON Lines format(http://jsonlines.org/).
 	JSONL
 )
 

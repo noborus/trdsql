@@ -9,7 +9,7 @@ type JSONLWriter struct {
 	writer *json.Encoder
 }
 
-// NewJSONLWriter returns JSONWriter.
+// NewJSONLWriter returns JSONLWriter.
 func NewJSONLWriter(writeOpts *WriteOpts) *JSONLWriter {
 	w := &JSONLWriter{}
 	w.writer = json.NewEncoder(writeOpts.OutStream)
