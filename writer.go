@@ -104,6 +104,8 @@ func NewWriter(options ...WriteOpt) Writer {
 		return NewVFWriter(writeOpts)
 	case TBLN:
 		return NewTBLNWriter(writeOpts)
+	case JSONL:
+		return NewJSONLWriter(writeOpts)
 	case CSV:
 		return NewCSVWriter(writeOpts)
 	default:

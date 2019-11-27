@@ -77,6 +77,10 @@ const (
 	// export
 	// Vertical format.
 	VF
+
+	// export
+	// JSON Lines format(http://jsonlines.org/).
+	JSONL
 )
 
 func (f Format) String() string {
@@ -99,6 +103,8 @@ func (f Format) String() string {
 		return "AT"
 	case VF:
 		return "VF"
+	case JSONL:
+		return "JSONL"
 	default:
 		return "Unknown"
 	}
