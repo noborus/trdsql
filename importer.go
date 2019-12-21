@@ -56,6 +56,7 @@ func (i *ReadFormat) Import(db *DB, query string) (string, error) {
 		debug.Printf("table not found\n")
 		return query, nil
 	}
+
 	for fileName := range tables {
 		tableName, err := ImportFile(db, fileName, i.ReadOpts)
 		if err != nil {
@@ -68,7 +69,9 @@ func (i *ReadFormat) Import(db *DB, query string) (string, error) {
 
 	// replace table names in query with their quoted values
 	for _, idx := range tableIdx {
-		parsedQuery[idx] = tables[parsedQuery[idx]]
+		if table, ok := tables[parsedQuery[idx]]; ok {
+			parsedQuery[idx] = table
+		}
 	}
 
 	// reconstruct the query with quoted table names

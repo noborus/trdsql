@@ -55,6 +55,20 @@ func TestImporter_Import(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name:    "testGenerate_series",
+			fields:  fields{ReadOpts: NewReadOpts()},
+			query:   "SELECT * FROM generate_series(1,10)",
+			want:    "SELECT * FROM generate_series(1,10)",
+			wantErr: false,
+		},
+		{
+			name:    "testGenerate_series2",
+			fields:  fields{ReadOpts: NewReadOpts()},
+			query:   "SELECT * FROM generate_series(1,10,2)",
+			want:    "SELECT * FROM generate_series(1,10,2)",
+			wantErr: false,
+		},
+		{
 			name:    "test3",
 			fields:  fields{ReadOpts: NewReadOpts(InDelimiter("ddd"))},
 			query:   "SELECT * FROM testdata/test.csv",
