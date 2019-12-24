@@ -2,28 +2,11 @@ package trdsql
 
 import (
 	"io"
+	"reflect"
 	"strings"
 	"testing"
+	"testing/iotest"
 )
-
-func IsDelimiter(s string) bool {
-	r, _ := delimiter(s)
-	return (r > 0)
-}
-
-func IsNotDelimiter() bool {
-	r, _ := delimiter("false")
-	return (r == ',')
-}
-
-func TestGetDelimiter(t *testing.T) {
-	if !IsDelimiter(",") {
-		t.Error(`IsDelimiter(",") = false`)
-	}
-	if !IsNotDelimiter() {
-		t.Error(`IsNotDelimiter() = false`)
-	}
-}
 
 func TestCsvInputNew(t *testing.T) {
 	file, err := singleFileOpen("testdata/test.csv")
@@ -36,49 +19,150 @@ func TestCsvInputNew(t *testing.T) {
 	}
 }
 
-func TestCsvEmptyNew(t *testing.T) {
-	const csvStream = ``
-	s := strings.NewReader(csvStream)
-	r, err := NewCSVReader(s, NewReadOpts())
-	if err != nil {
-		t.Error(err)
+func TestNewCSVReader(t *testing.T) {
+	type args struct {
+		reader io.Reader
+		opts   *ReadOpts
 	}
-	_, err = r.Names()
-	if err == nil {
-		t.Error(`csvEmpty is should error`)
+	tests := []struct {
+		name    string
+		args    args
+		want    *CSVReader
+		wantErr bool
+	}{
+		{
+			name: "empty",
+			args: args{
+				reader: strings.NewReader(""),
+				opts:   NewReadOpts(),
+			},
+			want: &CSVReader{
+				names:   nil,
+				types:   nil,
+				preRead: nil,
+			},
+			wantErr: false,
+		},
+		{
+			name: "header",
+			args: args{
+				reader: strings.NewReader("he1,he2\nv1,v2"),
+				opts: NewReadOpts(
+					InHeader(true),
+					InDelimiter(","),
+					InPreRead(1),
+				),
+			},
+			want: &CSVReader{
+				names:   []string{"he1", "he2"},
+				types:   []string{"text", "text"},
+				preRead: nil,
+			},
+			wantErr: false,
+		},
+		{
+			name: "notEnouphHeader",
+			args: args{
+				reader: strings.NewReader("h1,\nv1,v2"),
+				opts: NewReadOpts(
+					InHeader(true),
+					InDelimiter(","),
+					InPreRead(2),
+				),
+			},
+			want: &CSVReader{
+				names:   []string{"h1", "c2"},
+				types:   []string{"text", "text"},
+				preRead: [][]string{{"v1", "v2"}},
+			},
+			wantErr: false,
+		},
+		{
+			name: "headerOnly",
+			args: args{
+				reader: strings.NewReader("h1,h2\n"),
+				opts: NewReadOpts(
+					InHeader(true),
+					InDelimiter(","),
+					InPreRead(2),
+				),
+			},
+			want: &CSVReader{
+				names:   []string{"h1", "h2"},
+				types:   []string{"text", "text"},
+				preRead: nil,
+			},
+			wantErr: false,
+		},
+		{
+			name: "spaceDelimiter",
+			args: args{
+				reader: iotest.DataErrReader(strings.NewReader("h1 h2\nv1 v2\n")),
+				opts: NewReadOpts(
+					InHeader(true),
+					InDelimiter(" "),
+					InPreRead(2),
+				),
+			},
+			want: &CSVReader{
+				names:   []string{"h1", "h2"},
+				types:   []string{"text", "text"},
+				preRead: [][]string{{"v1", "v2"}},
+			},
+			wantErr: false,
+		},
+		{
+			name: "spaceTrim",
+			args: args{
+				reader: iotest.DataErrReader(strings.NewReader("h1      h2\nv1 v2\n")),
+				opts: NewReadOpts(
+					InHeader(true),
+					InDelimiter(" "),
+					InPreRead(2),
+				),
+			},
+			want: &CSVReader{
+				names:   []string{"h1", "h2"},
+				types:   []string{"text", "text"},
+				preRead: [][]string{{"v1", "v2"}},
+			},
+			wantErr: false,
+		},
+		{
+			name: "tabDelimiter",
+			args: args{
+				reader: iotest.DataErrReader(strings.NewReader("h1\th2\nv1\tv2\n")),
+				opts: NewReadOpts(
+					InHeader(true),
+					InDelimiter("\t"),
+					InPreRead(2),
+				),
+			},
+			want: &CSVReader{
+				names:   []string{"h1", "h2"},
+				types:   []string{"text", "text"},
+				preRead: [][]string{{"v1", "v2"}},
+			},
+			wantErr: false,
+		},
 	}
-}
-
-func TestCsvHeaderNew(t *testing.T) {
-	ro := NewReadOpts()
-	ro.InHeader = true
-	ro.InDelimiter = ","
-	ro.InPreRead = 1
-	csvStream := `he1,he2
-v1,v2
-`
-	s := strings.NewReader(csvStream)
-	r, _ := NewCSVReader(s, ro)
-	header, err := r.Names()
-	if err != nil {
-		t.Error(err)
-	}
-	if header[0] != "he1" || header[1] != "he2" {
-		t.Error("invalid header")
-	}
-}
-
-func TestCsvEmptyColumnHeaderNew(t *testing.T) {
-	ro := NewReadOpts()
-	ro.InHeader = true
-	ro.InDelimiter = ","
-	csvStream := `h1,
-	v1,v2`
-	s := strings.NewReader(csvStream)
-	r, _ := NewCSVReader(s, ro)
-	header, _ := r.Names()
-	if header[0] != "h1" || header[1] != "c2" {
-		t.Error("invalid header")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := NewCSVReader(tt.args.reader, tt.args.opts)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NewCSVReader() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got.names, tt.want.names) {
+				t.Errorf("NewCSVReader().names = %v, want %v", got.names, tt.want.names)
+			}
+			if !reflect.DeepEqual(got.types, tt.want.types) {
+				t.Errorf("NewCSVReader().types = %v, want %v", got.types, tt.want.types)
+			}
+			if !reflect.DeepEqual(got.preRead, tt.want.preRead) {
+				t.Errorf("NewCSVReader().preRead = %v, want %v", got.preRead, tt.want.preRead)
+			}
+		})
 	}
 }
 
@@ -195,5 +279,45 @@ func TestCsvIndefiniteInputFile3(t *testing.T) {
 	}
 	if len(list) != 4 {
 		t.Errorf("invalid column got = %d", len(list))
+	}
+}
+
+func Test_delimiter(t *testing.T) {
+	tests := []struct {
+		name    string
+		args    string
+		want    rune
+		wantErr bool
+	}{
+		{
+			name:    "comma",
+			args:    ",",
+			want:    rune(','),
+			wantErr: false,
+		},
+		{
+			name:    "multi",
+			args:    "--",
+			want:    rune(','),
+			wantErr: true,
+		},
+		{
+			name:    "zero",
+			args:    "",
+			want:    rune(0),
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := delimiter(tt.args)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("delimiter() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("delimiter() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

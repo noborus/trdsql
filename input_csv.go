@@ -60,6 +60,7 @@ func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 			if err != io.EOF {
 				return r, err
 			}
+			r.setColumnType()
 			return r, nil
 		}
 		rows := make([]string, len(row))
@@ -72,8 +73,18 @@ func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 		}
 		r.preRead = append(r.preRead, rows)
 	}
-
+	r.setColumnType()
 	return r, err
+}
+
+func (r *CSVReader) setColumnType() {
+	if r.names == nil {
+		return
+	}
+	r.types = make([]string, len(r.names))
+	for i := 0; i < len(r.names); i++ {
+		r.types[i] = DefaultDBType
+	}
 }
 
 func delimiter(sepString string) (rune, error) {
@@ -99,9 +110,8 @@ func (r *CSVReader) Names() ([]string, error) {
 // Types returns column types.
 // All CSV types return the DefaultDBType.
 func (r *CSVReader) Types() ([]string, error) {
-	r.types = make([]string, len(r.names))
-	for i := 0; i < len(r.names); i++ {
-		r.types[i] = DefaultDBType
+	if len(r.types) == 0 {
+		return r.types, fmt.Errorf("no rows")
 	}
 	return r.types, nil
 }
