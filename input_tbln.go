@@ -1,7 +1,9 @@
 package trdsql
 
 import (
+	"fmt"
 	"io"
+	"strconv"
 
 	"github.com/noborus/tbln"
 )
@@ -19,37 +21,66 @@ func NewTBLNReader(reader io.Reader) (*TBLNRead, error) {
 
 	rec, err := r.reader.ReadRow()
 	if err != nil {
-		return nil, err
+		if err != io.EOF {
+			return r, err
+		}
+		return r, nil
 	}
 	r.preRead = make([][]interface{}, 1)
 	row := make([]interface{}, len(rec))
-
 	for i, c := range rec {
 		row[i] = c
 	}
 	r.preRead[0] = row
+
+	// SetNames if there is no names header.
+	d := r.reader.GetDefinition()
+	names := d.Names()
+	if len(names) == 0 {
+		names = make([]string, len(rec))
+		for i := range rec {
+			names[i] = "c" + strconv.Itoa(i+1)
+		}
+		err = d.SetNames(names)
+		if err != nil {
+			return r, err
+		}
+	}
+
+	// SetTypes if there is no types header.
+	types := d.Types()
+	if len(types) == 0 {
+		types = make([]string, len(rec))
+		for i := range rec {
+			types[i] = DefaultDBType
+		}
+		err = d.SetTypes(types)
+		if err != nil {
+			return r, err
+		}
+	}
 
 	return r, nil
 }
 
 // Names returns column names.
 func (r *TBLNRead) Names() ([]string, error) {
-	d := r.reader.GetDefinition()
+	reader := r.reader
+	if reader == nil {
+		return nil, fmt.Errorf("No Definition")
+	}
+	d := reader.GetDefinition()
 	return d.Names(), nil
 }
 
 // Types returns column types.
 func (r *TBLNRead) Types() ([]string, error) {
-	d := r.reader.GetDefinition()
-	names := d.Names()
-	types := d.Types()
-	if len(types) == 0 {
-		types = make([]string, len(names))
-		for i := 0; i < len(names); i++ {
-			types[i] = DefaultDBType
-		}
+	reader := r.reader
+	if reader == nil {
+		return nil, fmt.Errorf("No Definition")
 	}
-	return types, nil
+	d := reader.GetDefinition()
+	return d.Types(), nil
 }
 
 // PreReadRow is returns only columns that store preread rows.

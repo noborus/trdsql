@@ -1,25 +1,128 @@
 package trdsql
 
 import (
+	"io"
 	"reflect"
 	"strings"
 	"testing"
 )
 
-func TestTBLNInputNew(t *testing.T) {
-	const tblnStream = `; name: | id | name |
-| 1 | test |`
-	s := strings.NewReader(tblnStream)
-	tr, err := NewTBLNReader(s)
-	if err != nil {
-		t.Errorf(`tblnInputNew error: %s`, err)
+func TestNewTBLNReader(t *testing.T) {
+	type args struct {
+		reader io.Reader
 	}
-	list, err := tr.Names()
-	if err != nil {
-		t.Errorf(`Names error: %s`, err)
+	tests := []struct {
+		name      string
+		args      args
+		want      *TBLNRead
+		wantNames []string
+		wantTypes []string
+		wantErr   bool
+	}{
+		{
+			name: "empty",
+			args: args{
+				reader: strings.NewReader(""),
+			},
+			want: &TBLNRead{
+				preRead: nil,
+			},
+			wantNames: nil,
+			wantTypes: nil,
+			wantErr:   false,
+		},
+		{
+			name: "noHeader",
+			args: args{
+				reader: strings.NewReader("| 1 | test |"),
+			},
+			want: &TBLNRead{
+				preRead: [][]interface{}{{"1", "test"}},
+			},
+			wantNames: []string{"c1", "c2"},
+			wantTypes: []string{"text", "text"},
+			wantErr:   false,
+		},
+		{
+			name: "noNameHeader",
+			args: args{
+				reader: strings.NewReader("; type: | int | text |\n| 1 | test |"),
+			},
+			want: &TBLNRead{
+				preRead: [][]interface{}{{"1", "test"}},
+			},
+			wantNames: []string{"c1", "c2"},
+			wantTypes: []string{"int", "text"},
+			wantErr:   false,
+		},
+		{
+			name: "noTypeHeader",
+			args: args{
+				reader: strings.NewReader("; name: | id | name |\n| 1 | test |"),
+			},
+			want: &TBLNRead{
+				preRead: [][]interface{}{{"1", "test"}},
+			},
+			wantNames: []string{"id", "name"},
+			wantTypes: []string{"text", "text"},
+			wantErr:   false,
+		},
+		{
+			name: "diffNameType",
+			args: args{
+				reader: strings.NewReader("; name: | id | name |\ntype: | int |\n| 1 | test |"),
+			},
+			want: &TBLNRead{
+				preRead: nil,
+			},
+			wantNames: []string{"id", "name"},
+			wantTypes: nil,
+			wantErr:   true,
+		},
+		{
+			name: "oneRow",
+			args: args{
+				reader: strings.NewReader("; name: | id | name |\n; type: | int | text |\n| 1 | test |"),
+			},
+			want: &TBLNRead{
+				preRead: [][]interface{}{{"1", "test"}},
+			},
+			wantNames: []string{"id", "name"},
+			wantTypes: []string{"int", "text"},
+			wantErr:   false,
+		},
+		{
+			name: "errRow",
+			args: args{
+				reader: strings.NewReader("; name: | id | name |\n; type: | int | text |\n******"),
+			},
+			want: &TBLNRead{
+				preRead: nil,
+			},
+			wantNames: []string{"id", "name"},
+			wantTypes: []string{"int", "text"},
+			wantErr:   true,
+		},
 	}
-	if len(list) == 0 {
-		t.Error(`0 column`)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := NewTBLNReader(tt.args.reader)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NewTBLNReader() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			gotNames, _ := got.Names()
+			if !reflect.DeepEqual(gotNames, tt.wantNames) {
+				t.Errorf("NewTBLNReader().Names() = %v, want %v", gotNames, tt.wantNames)
+			}
+			gotTypes, _ := got.Types()
+			if !reflect.DeepEqual(gotTypes, tt.wantTypes) {
+				t.Errorf("NewTBLNReader().Types() = %v, want %v", gotTypes, tt.wantTypes)
+			}
+			if !reflect.DeepEqual(got.preRead, tt.want.preRead) {
+				t.Errorf("NewTBLNReader().preRead = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
 

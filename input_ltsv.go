@@ -33,6 +33,7 @@ func NewLTSVReader(reader io.Reader, opts *ReadOpts) (*LTSVReader, error) {
 			if err != io.EOF {
 				return r, err
 			}
+			r.setColumnType()
 			return r, nil
 		}
 
@@ -45,8 +46,18 @@ func NewLTSVReader(reader io.Reader, opts *ReadOpts) (*LTSVReader, error) {
 		}
 		r.preRead = append(r.preRead, row)
 	}
-
+	r.setColumnType()
 	return r, nil
+}
+
+func (r *LTSVReader) setColumnType() {
+	if r.names == nil {
+		return
+	}
+	r.types = make([]string, len(r.names))
+	for i := 0; i < len(r.names); i++ {
+		r.types[i] = DefaultDBType
+	}
 }
 
 // Names returns column names.
@@ -57,10 +68,6 @@ func (r *LTSVReader) Names() ([]string, error) {
 // Types returns column types.
 // All LTSV types return the DefaultDBType.
 func (r *LTSVReader) Types() ([]string, error) {
-	r.types = make([]string, len(r.names))
-	for i := 0; i < len(r.names); i++ {
-		r.types[i] = DefaultDBType
-	}
 	return r.types, nil
 }
 

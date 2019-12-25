@@ -2,37 +2,108 @@ package trdsql
 
 import (
 	"io"
+	"reflect"
 	"strings"
 	"testing"
 )
 
-func TestLtsvInputNew(t *testing.T) {
-	const ltsvStream = `ID:1	name:test`
-	s := strings.NewReader(ltsvStream)
-	lr, err := NewLTSVReader(s, NewReadOpts())
-	if err != nil {
-		t.Error(`NewLTSVReader error`)
+func TestNewLTSVReader(t *testing.T) {
+	type args struct {
+		reader io.Reader
+		opts   *ReadOpts
 	}
-	list, err := lr.Names()
-	if err != nil {
-		t.Error(`Names error`)
+	tests := []struct {
+		name    string
+		args    args
+		want    *LTSVReader
+		wantErr bool
+	}{
+		{
+			name: "empty",
+			args: args{
+				reader: strings.NewReader(""),
+				opts:   NewReadOpts(),
+			},
+			want: &LTSVReader{
+				names:   nil,
+				types:   nil,
+				preRead: nil,
+			},
+			wantErr: false,
+		},
+		{
+			name: "oneLine",
+			args: args{
+				reader: strings.NewReader("ID:1\tname:test"),
+				opts:   NewReadOpts(),
+			},
+			want: &LTSVReader{
+				names:   []string{"ID", "name"},
+				types:   []string{"text", "text"},
+				preRead: []map[string]string{{"ID": "1", "name": "test"}},
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalidLTSV",
+			args: args{
+				reader: strings.NewReader("ID;1\tname:test"),
+				opts:   NewReadOpts(),
+			},
+			want: &LTSVReader{
+				names:   nil,
+				types:   nil,
+				preRead: nil,
+			},
+			wantErr: true,
+		},
+		{
+			name: "diffColumn",
+			args: args{
+				reader: strings.NewReader("ID:1\tname:test\nID:2\tvalue:test"),
+				opts:   NewReadOpts(InPreRead(2)),
+			},
+			want: &LTSVReader{
+				names: []string{"ID", "name", "value"},
+				types: []string{"text", "text", "text"},
+				preRead: []map[string]string{
+					{"ID": "1", "name": "test"},
+					{"ID": "2", "value": "test"},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "ignoreColumn",
+			args: args{
+				reader: strings.NewReader("ID:1\tname:test\nID:2\tvalue:test"),
+				opts:   NewReadOpts(InPreRead(1)),
+			},
+			want: &LTSVReader{
+				names:   []string{"ID", "name"},
+				types:   []string{"text", "text"},
+				preRead: []map[string]string{{"ID": "1", "name": "test"}},
+			},
+			wantErr: false,
+		},
 	}
-	if len(list) == 0 {
-		t.Error(`0 column`)
-	}
-}
-
-func TestLtsvInvalidInputNew(t *testing.T) {
-	const ltsvStream = `ID;1	name:test`
-	s := strings.NewReader(ltsvStream)
-	ro := NewReadOpts()
-	ro.InPreRead = 1
-	lr, _ := NewLTSVReader(s, ro)
-	_, err := lr.Names()
-	if err != nil {
-		if err.Error() != "invalid column" {
-			t.Error(err)
-		}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := NewLTSVReader(tt.args.reader, tt.args.opts)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NewLTSVReader() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got.names, tt.want.names) {
+				t.Errorf("NewLTSVReader().names = %v, want %v", got.names, tt.want.names)
+			}
+			if !reflect.DeepEqual(got.types, tt.want.types) {
+				t.Errorf("NewLTSVReader().types = %v, want %v", got.types, tt.want.types)
+			}
+			if !reflect.DeepEqual(got.preRead, tt.want.preRead) {
+				t.Errorf("NewLTSVReader().preRead = %v, want %v", got.preRead, tt.want.preRead)
+			}
+		})
 	}
 }
 
