@@ -41,8 +41,7 @@ func (w *CSVWriter) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
 		w.results[i] = ValString(col)
 	}
-	err := w.writer.Write(w.results)
-	return err
+	return w.writer.Write(w.results)
 }
 
 // PostWrite is flush.

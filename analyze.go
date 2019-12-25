@@ -111,9 +111,13 @@ func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
 
 func examples(tableName string, names []string, results []string) []string {
 	queries := []string{
+		// #nosec G201
 		fmt.Sprintf("SELECT %s FROM %s", strings.Join(names, ", "), tableName),
+		// #nosec G201
 		fmt.Sprintf("SELECT %s FROM %s WHERE %s = '%s'", strings.Join(names, ", "), tableName, names[0], results[0]),
+		// #nosec G201
 		fmt.Sprintf("SELECT %s, count(%s) FROM %s GROUP BY %s", names[0], names[0], tableName, names[0]),
+		// #nosec G201
 		fmt.Sprintf("SELECT %s FROM %s ORDER BY %s LIMIT 10", strings.Join(names, ", "), tableName, names[0]),
 	}
 	return queries

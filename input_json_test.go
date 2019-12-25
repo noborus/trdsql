@@ -14,16 +14,16 @@ func arraySortEqual(t *testing.T, a []string, b []string) bool {
 		return false
 	}
 
-	a_copy := make([]string, len(a))
-	b_copy := make([]string, len(b))
+	copyA := make([]string, len(a))
+	copyB := make([]string, len(b))
 
-	copy(a_copy, a)
-	copy(b_copy, b)
+	copy(copyA, a)
+	copy(copyB, b)
 
-	sort.Strings(a_copy)
-	sort.Strings(b_copy)
+	sort.Strings(copyA)
+	sort.Strings(copyB)
 
-	return reflect.DeepEqual(a_copy, b_copy)
+	return reflect.DeepEqual(copyA, copyB)
 }
 
 func TestNewJSONReader(t *testing.T) {

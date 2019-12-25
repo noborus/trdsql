@@ -67,7 +67,7 @@ func NewTBLNReader(reader io.Reader) (*TBLNRead, error) {
 func (r *TBLNRead) Names() ([]string, error) {
 	reader := r.reader
 	if reader == nil {
-		return nil, fmt.Errorf("No Definition")
+		return nil, fmt.Errorf("no Definition")
 	}
 	d := reader.GetDefinition()
 	return d.Names(), nil
@@ -77,7 +77,7 @@ func (r *TBLNRead) Names() ([]string, error) {
 func (r *TBLNRead) Types() ([]string, error) {
 	reader := r.reader
 	if reader == nil {
-		return nil, fmt.Errorf("No Definition")
+		return nil, fmt.Errorf("no Definition")
 	}
 	d := reader.GetDefinition()
 	return d.Types(), nil

@@ -269,6 +269,7 @@ func getQuery(args []string, fileName string) (string, error) {
 	} else {
 		query = strings.Join(args, " ")
 	}
+
 	if strings.HasSuffix(query, ";") {
 		query = query[:len(query)-1]
 	}
