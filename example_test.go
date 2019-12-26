@@ -30,6 +30,7 @@ Ken,Thompson,ken
 		trdsql.NewImporter(),
 		trdsql.NewExporter(trdsql.NewWriter()),
 	)
+	// #nosec G201
 	query := fmt.Sprintf("SELECT c1 FROM %s ORDER BY c1", tmpfile.Name())
 	err = trd.Exec(query)
 	if err != nil {
@@ -72,6 +73,7 @@ Ken,Thompson,ken
 	exporter := trdsql.NewExporter(writer)
 
 	trd := trdsql.NewTRDSQL(importer, exporter)
+	// #nosec G201
 	query := fmt.Sprintf("SELECT * FROM %s ORDER BY username", tmpfile.Name())
 	err = trd.Exec(query)
 	if err != nil {

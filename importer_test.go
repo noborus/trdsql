@@ -1,6 +1,9 @@
 package trdsql
 
 import (
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 )
@@ -387,6 +390,41 @@ func Test_trimQuote(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := trimQuote(tt.args.fileName); got != tt.want {
 				t.Errorf("trimQuote() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_extFileReader(t *testing.T) {
+	tests := []struct {
+		name     string
+		fileName string
+		want     string
+	}{
+		{
+			name:     "testGzFile",
+			fileName: filepath.Join("testdata", "test.csv.gz"),
+			want:     "1,Orange\n2,Melon\n3,Apple\n",
+		},
+		{
+			name:     "testNoGzFile",
+			fileName: filepath.Join("testdata", "testNoGzFile.gz"),
+			want:     "1,Orange\n2,Melon\n3,Apple",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			file, err := os.Open(tt.fileName)
+			if err != nil {
+				t.Fatalf("extFileReader() file open error %s:%s", tt.fileName, err)
+			}
+			got := extFileReader(tt.fileName, file)
+			r, err := ioutil.ReadAll(got)
+			if err != nil {
+				t.Fatalf("extFileReader() read error %s:%s", tt.fileName, err)
+			}
+			if !reflect.DeepEqual(string(r)[0:7], tt.want[0:7]) {
+				t.Errorf("extFileReader() = %v, want %v", string(r)[0:7], tt.want[0:7])
 			}
 		})
 	}

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -75,12 +76,21 @@ func outputFormat(o outputFlag) trdsql.Format {
 	}
 }
 
+// Cli wraps stdout and error output specification.
+type Cli struct {
+	// OutStream is the output destination.
+	OutStream io.Writer
+
+	// ErrStream is the error output destination.
+	ErrStream io.Writer
+}
+
 // Debug flag for a detailed output
 var Debug bool
 
 // Run executes the main routine.
 // The return value is the exit code.
-func Run(args []string) int {
+func (cli Cli) Run(args []string) int {
 	var (
 		usage     bool
 		version   bool
@@ -107,12 +117,6 @@ func Run(args []string) int {
 
 	flags := flag.NewFlagSet(trdsql.AppName, flag.ExitOnError)
 
-	flags.Usage = func() {
-		fmt.Fprintf(os.Stderr, `Usage: %s [OPTIONS] [SQL(SELECT...)]
-`, os.Args[0])
-		fmt.Fprintf(os.Stderr, `'See %s -help'
-`, os.Args[0])
-	}
 	flags.StringVar(&config, "config", config, "Configuration file location.")
 	flags.StringVar(&cDB, "db", "", "Specify db name of the setting.")
 	flags.BoolVar(&dbList, "dblist", false, "display db information.")
@@ -173,27 +177,20 @@ func Run(args []string) int {
 		}
 	}
 	if dbList {
-		for od, odb := range cfg.Database {
-			fmt.Printf("%s:%s\n", od, odb.Driver)
-		}
+		printDBList(cfg)
 		return 0
 	}
 	driver, dsn := getDB(cfg, cDB, cDriver, cDSN)
 
 	if analyze != "" || onlySQL != "" {
 		opts := trdsql.NewAnalyzeOpts()
-		color := os.Getenv("NO_COLOR")
-		if color != "" || runtime.GOOS == "windows" {
-			opts.Color = false
-		}
-		if driver == "postgres" {
-			opts.Quote = `\"`
-		}
+		opts = colorOpts(opts)
+		opts = quoteOpts(opts, driver)
 		if onlySQL != "" {
 			analyze = onlySQL
 			opts.Detail = false
 		}
-		opts.Command = getCommand(os.Args)
+		opts = optsCommand(opts, os.Args)
 		if inHeader && inPreRead == 1 {
 			inPreRead = 2
 		}
@@ -218,7 +215,7 @@ func Run(args []string) int {
 	}
 
 	if usage || (len(query) == 0) {
-		fmt.Fprintf(os.Stderr, `
+		fmt.Fprintf(cli.ErrStream, `
 Usage: %s [OPTIONS] [SQL(SELECT...)]
 
 Options:
@@ -239,6 +236,8 @@ Options:
 		trdsql.OutFormat(outputFormat(outFlag)),
 		trdsql.OutDelimiter(outDelimiter),
 		trdsql.OutHeader(outHeader),
+		trdsql.OutStream(cli.OutStream),
+		trdsql.ErrStream(cli.ErrStream),
 	)
 	exporter := trdsql.NewExporter(w)
 
@@ -253,9 +252,52 @@ Options:
 
 	err = trd.Exec(query)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("%s", err)
+		return 1
 	}
 	return 0
+}
+
+func printDBList(cfg *config) {
+	for od, odb := range cfg.Database {
+		fmt.Printf("%s:%s\n", od, odb.Driver)
+	}
+}
+
+func colorOpts(opts *trdsql.AnalyzeOpts) *trdsql.AnalyzeOpts {
+	color := os.Getenv("NO_COLOR")
+	if color != "" || runtime.GOOS == "windows" {
+		opts.Color = false
+	}
+	return opts
+}
+
+func quoteOpts(opts *trdsql.AnalyzeOpts, driver string) *trdsql.AnalyzeOpts {
+	if driver == "postgres" {
+		opts.Quote = `\"`
+	}
+	return opts
+}
+
+func optsCommand(opts *trdsql.AnalyzeOpts, args []string) *trdsql.AnalyzeOpts {
+	command := args[0]
+	omitFlag := false
+	for _, arg := range args[1:] {
+		if omitFlag {
+			omitFlag = false
+			continue
+		}
+		if arg == "-a" || arg == "-A" {
+			omitFlag = true
+			continue
+		}
+		if len(arg) <= 1 || arg[0] != '-' {
+			arg = quotedArg(arg)
+		}
+		command += " " + arg
+	}
+	opts.Command = command
+	return opts
 }
 
 func getQuery(args []string, fileName string) (string, error) {
@@ -269,6 +311,7 @@ func getQuery(args []string, fileName string) (string, error) {
 	} else {
 		query = strings.Join(args, " ")
 	}
+
 	if strings.HasSuffix(query, ";") {
 		query = query[:len(query)-1]
 	}
@@ -302,26 +345,6 @@ func getDB(cfg *config, cDB string, cDriver string, cDSN string) (string, string
 		}
 	}
 	return "", ""
-}
-
-func getCommand(args []string) string {
-	command := args[0]
-	omitFlag := false
-	for _, arg := range args[1:] {
-		if omitFlag {
-			omitFlag = false
-			continue
-		}
-		if arg == "-a" || arg == "-A" {
-			omitFlag = true
-			continue
-		}
-		if len(arg) <= 1 || arg[0] != '-' {
-			arg = quotedArg(arg)
-		}
-		command += " " + arg
-	}
-	return command
 }
 
 var argQuote = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
