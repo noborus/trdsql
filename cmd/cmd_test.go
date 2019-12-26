@@ -367,7 +367,7 @@ func Test_printDBList(t *testing.T) {
 			cfg: &config{
 				Db: "",
 				Database: map[string]database{
-					"pdb": database{Driver: "postgres", Dsn: "dbname=test"},
+					"pdb": {Driver: "postgres", Dsn: "dbname=test"},
 				},
 			},
 		},
