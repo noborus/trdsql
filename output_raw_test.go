@@ -97,6 +97,19 @@ func TestRAWWriter_PreWrite(t *testing.T) {
 			want:    make([]string, 2),
 			wantErr: false,
 		},
+		{
+			name: "multiDelimiter",
+			writeOpts: WriteOpts{
+				OutDelimiter: "||",
+				OutHeader:    false,
+			},
+			args: args{
+				columns: []string{"v1", "v2"},
+				types:   []string{"text", "text"},
+			},
+			want:    make([]string, 2),
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -117,12 +117,6 @@ func (cli Cli) Run(args []string) int {
 
 	flags := flag.NewFlagSet(trdsql.AppName, flag.ExitOnError)
 
-	flags.Usage = func() {
-		fmt.Fprintf(cli.ErrStream, `Usage: %s [OPTIONS] [SQL(SELECT...)]
-`, os.Args[0])
-		fmt.Fprintf(cli.ErrStream, `'See %s -help'
-`, os.Args[0])
-	}
 	flags.StringVar(&config, "config", config, "Configuration file location.")
 	flags.StringVar(&cDB, "db", "", "Specify db name of the setting.")
 	flags.BoolVar(&dbList, "dblist", false, "display db information.")
@@ -183,27 +177,20 @@ func (cli Cli) Run(args []string) int {
 		}
 	}
 	if dbList {
-		for od, odb := range cfg.Database {
-			fmt.Printf("%s:%s\n", od, odb.Driver)
-		}
+		printDBList(cfg)
 		return 0
 	}
 	driver, dsn := getDB(cfg, cDB, cDriver, cDSN)
 
 	if analyze != "" || onlySQL != "" {
 		opts := trdsql.NewAnalyzeOpts()
-		color := os.Getenv("NO_COLOR")
-		if color != "" || runtime.GOOS == "windows" {
-			opts.Color = false
-		}
-		if driver == "postgres" {
-			opts.Quote = `\"`
-		}
+		opts = colorOpts(opts)
+		opts = quoteOpts(opts, driver)
 		if onlySQL != "" {
 			analyze = onlySQL
 			opts.Detail = false
 		}
-		opts.Command = getCommand(os.Args)
+		opts = optsCommand(opts, os.Args)
 		if inHeader && inPreRead == 1 {
 			inPreRead = 2
 		}
@@ -271,6 +258,48 @@ Options:
 	return 0
 }
 
+func printDBList(cfg *config) {
+	for od, odb := range cfg.Database {
+		fmt.Printf("%s:%s\n", od, odb.Driver)
+	}
+}
+
+func colorOpts(opts *trdsql.AnalyzeOpts) *trdsql.AnalyzeOpts {
+	color := os.Getenv("NO_COLOR")
+	if color != "" || runtime.GOOS == "windows" {
+		opts.Color = false
+	}
+	return opts
+}
+
+func quoteOpts(opts *trdsql.AnalyzeOpts, driver string) *trdsql.AnalyzeOpts {
+	if driver == "postgres" {
+		opts.Quote = `\"`
+	}
+	return opts
+}
+
+func optsCommand(opts *trdsql.AnalyzeOpts, args []string) *trdsql.AnalyzeOpts {
+	command := args[0]
+	omitFlag := false
+	for _, arg := range args[1:] {
+		if omitFlag {
+			omitFlag = false
+			continue
+		}
+		if arg == "-a" || arg == "-A" {
+			omitFlag = true
+			continue
+		}
+		if len(arg) <= 1 || arg[0] != '-' {
+			arg = quotedArg(arg)
+		}
+		command += " " + arg
+	}
+	opts.Command = command
+	return opts
+}
+
 func getQuery(args []string, fileName string) (string, error) {
 	query := ""
 	if fileName != "" {
@@ -316,26 +345,6 @@ func getDB(cfg *config, cDB string, cDriver string, cDSN string) (string, string
 		}
 	}
 	return "", ""
-}
-
-func getCommand(args []string) string {
-	command := args[0]
-	omitFlag := false
-	for _, arg := range args[1:] {
-		if omitFlag {
-			omitFlag = false
-			continue
-		}
-		if arg == "-a" || arg == "-A" {
-			omitFlag = true
-			continue
-		}
-		if len(arg) <= 1 || arg[0] != '-' {
-			arg = quotedArg(arg)
-		}
-		command += " " + arg
-	}
-	return command
 }
 
 var argQuote = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)

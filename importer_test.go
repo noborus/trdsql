@@ -424,7 +424,7 @@ func Test_extFileReader(t *testing.T) {
 				t.Fatalf("extFileReader() read error %s:%s", tt.fileName, err)
 			}
 			if !reflect.DeepEqual(string(r)[0:7], tt.want[0:7]) {
-				t.Errorf("extFileReader() = %v, want %v", string(r)[0:7], string(tt.want[0:7]))
+				t.Errorf("extFileReader() = %v, want %v", string(r)[0:7], tt.want[0:7])
 			}
 		})
 	}

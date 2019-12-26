@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"log"
+	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -244,7 +245,7 @@ func Test_getDB(t *testing.T) {
 	}
 }
 
-func Test_getCommand(t *testing.T) {
+func Test_optsCommand(t *testing.T) {
 	tests := []struct {
 		name string
 		args []string
@@ -283,8 +284,10 @@ func Test_getCommand(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getCommand(tt.args); got != tt.want {
-				t.Errorf("getCommand() = %v, want %v", got, tt.want)
+			opts := trdsql.NewAnalyzeOpts()
+			got := optsCommand(opts, tt.args)
+			if !reflect.DeepEqual(got.Command, tt.want) {
+				t.Errorf("optsCommand() = %v, want %v", got.Command, tt.want)
 			}
 		})
 	}
@@ -321,6 +324,21 @@ func TestRun(t *testing.T) {
 			args: []string{"trdsql", "-A", filepath.Join("..", "testdata", "test.csv")},
 			want: 0,
 		},
+		{
+			name: "testDBList",
+			args: []string{"trdsql", "-dblist"},
+			want: 0,
+		},
+		{
+			name: "testHelp",
+			args: []string{"trdsql", "-help"},
+			want: 2,
+		},
+		{
+			name: "testVersion",
+			args: []string{"trdsql", "-version"},
+			want: 0,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -333,6 +351,91 @@ func TestRun(t *testing.T) {
 			log.SetOutput(&buf)
 			if got := cli.Run(tt.args); got != tt.want {
 				t.Errorf("Run() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_printDBList(t *testing.T) {
+	tests := []struct {
+		name string
+		cfg  *config
+	}{
+		{
+			name: "test",
+			cfg: &config{
+				Db: "",
+				Database: map[string]database{
+					"pdb": database{Driver: "postgres", Dsn: "dbname=test"},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			printDBList(tt.cfg)
+		})
+	}
+}
+
+func Test_colorOpts(t *testing.T) {
+	tests := []struct {
+		name   string
+		setEnv bool
+		want   bool
+	}{
+		{
+			name:   "test",
+			setEnv: false,
+			want:   true,
+		},
+		{
+			name:   "test",
+			setEnv: true,
+			want:   false,
+		},
+	}
+	for _, tt := range tests {
+		opts := trdsql.NewAnalyzeOpts()
+		if tt.setEnv {
+			os.Setenv("NO_COLOR", "1")
+		}
+		t.Run(tt.name, func(t *testing.T) {
+			if got := colorOpts(opts); !reflect.DeepEqual(got.Color, tt.want) {
+				t.Errorf("colorOpts() = %v, want %v", got.Color, tt.want)
+			}
+		})
+	}
+}
+
+func Test_quoteOpts(t *testing.T) {
+	tests := []struct {
+		name   string
+		driver string
+		want   string
+	}{
+		{
+			name:   "testSQLIte3",
+			driver: "sqlite3",
+			want:   "\\`",
+		},
+		{
+			name:   "testMySQL",
+			driver: "mysql",
+			want:   "\\`",
+		},
+		{
+			name:   "testPostgreSQL",
+			driver: "postgres",
+			want:   `\"`,
+		},
+	}
+	for _, tt := range tests {
+		opts := trdsql.NewAnalyzeOpts()
+		t.Run(tt.name, func(t *testing.T) {
+			got := quoteOpts(opts, tt.driver)
+			if !reflect.DeepEqual(got.Quote, tt.want) {
+				t.Errorf("quoteOpts() = %v, want %v", got.Quote, tt.want)
 			}
 		})
 	}

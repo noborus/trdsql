@@ -26,13 +26,10 @@ func NewCSVWriter(writeOpts *WriteOpts) *CSVWriter {
 
 // PreWrite is output of header and preparation.
 func (w *CSVWriter) PreWrite(columns []string, types []string) error {
-	if w.outHeader {
-		err := w.writer.Write(columns)
-		if err != nil {
-			return err
-		}
-	}
 	w.results = make([]string, len(columns))
+	if w.outHeader {
+		return w.writer.Write(columns)
+	}
 	return nil
 }
 
