@@ -7,5 +7,9 @@ import (
 )
 
 func main() {
-	os.Exit(cmd.Run(os.Args))
+	cli := cmd.Cli{
+		OutStream: os.Stdout,
+		ErrStream: os.Stderr,
+	}
+	os.Exit(cli.Run(os.Args))
 }

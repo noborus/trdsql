@@ -77,11 +77,11 @@ func TestNewJSONReader(t *testing.T) {
 			name: "test1",
 			args: args{
 				reader: strings.NewReader(`[{"c1":"1","c2":"Orange"},{"c1":"2","c2":"Melon"},{"c1":"3","c2":"Apple"}]`),
-				opts:   NewReadOpts(),
+				opts:   NewReadOpts(InPreRead(3)),
 			},
 			want: &JSONReader{
 				names:   []string{"c1", "c2"},
-				preRead: []map[string]string{{"c1": "1", "c2": "Orange"}},
+				preRead: []map[string]string{{"c1": "1", "c2": "Orange"}, {"c1": "2", "c2": "Melon"}, {"c1": "3", "c2": "Apple"}},
 			},
 			wantErr: false,
 		},
@@ -113,18 +113,6 @@ func TestNewJSONReader(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "testObject",
-			args: args{
-				reader: strings.NewReader(`{"a":"b"}`),
-				opts:   NewReadOpts(),
-			},
-			want: &JSONReader{
-				names:   []string{"a"},
-				preRead: []map[string]string{{"a": "b"}},
-			},
-			wantErr: false,
-		},
-		{
 			name: "testArray2",
 			args: args{
 				reader: strings.NewReader(`[["a","b"],["c","d"]]`),
@@ -133,6 +121,30 @@ func TestNewJSONReader(t *testing.T) {
 			want: &JSONReader{
 				names:   []string{"c1"},
 				preRead: []map[string]string{{"c1": "[\"a\",\"b\"]"}},
+			},
+			wantErr: false,
+		},
+		{
+			name: "testArray3",
+			args: args{
+				reader: strings.NewReader(`["a","b"]`),
+				opts:   NewReadOpts(),
+			},
+			want: &JSONReader{
+				names:   []string{"c1"},
+				preRead: []map[string]string{{"c1": "[\"a\",\"b\"]"}},
+			},
+			wantErr: false,
+		},
+		{
+			name: "testObject",
+			args: args{
+				reader: strings.NewReader(`{"a":"b"}`),
+				opts:   NewReadOpts(),
+			},
+			want: &JSONReader{
+				names:   []string{"a"},
+				preRead: []map[string]string{{"a": "b"}},
 			},
 			wantErr: false,
 		},

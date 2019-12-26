@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestNewCSVWriter(t *testing.T) {
+func TestNewRAWWriter(t *testing.T) {
 	outStream := new(bytes.Buffer)
 	type args struct {
 		writeOpts *WriteOpts
@@ -14,7 +14,7 @@ func TestNewCSVWriter(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want rune
+		want string
 	}{
 		{
 			name: "testDefault",
@@ -24,30 +24,30 @@ func TestNewCSVWriter(t *testing.T) {
 					OutStream:    outStream,
 				},
 			},
-			want: ',',
+			want: ",",
 		},
 		{
-			name: "invalidDelimiter",
+			name: "testMultiDelimiter",
 			args: args{
 				writeOpts: &WriteOpts{
-					OutDelimiter: "--",
+					OutDelimiter: "|||",
 					OutStream:    outStream,
 				},
 			},
-			want: ',',
+			want: "|||",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewCSVWriter(tt.args.writeOpts)
-			if !reflect.DeepEqual(got.writer.Comma, tt.want) {
-				t.Errorf("NewCSVWriter() = %v, want %v", got.writer.Comma, tt.want)
+			got := NewRAWWriter(tt.args.writeOpts)
+			if !reflect.DeepEqual(got.sep, tt.want) {
+				t.Errorf("NewCSVWriter() = %v, want %v", got.sep, tt.want)
 			}
 		})
 	}
 }
 
-func TestCSVWriter_PreWrite(t *testing.T) {
+func TestRAWWriter_PreWrite(t *testing.T) {
 	type args struct {
 		columns []string
 		types   []string
@@ -100,9 +100,9 @@ func TestCSVWriter_PreWrite(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			w := NewCSVWriter(&tt.writeOpts)
+			w := NewRAWWriter(&tt.writeOpts)
 			if err := w.PreWrite(tt.args.columns, tt.args.types); (err != nil) != tt.wantErr {
-				t.Errorf("CSVWriter.PreWrite() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("RAWWriter.PreWrite() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if !reflect.DeepEqual(w.results, tt.want) {
 				t.Errorf("CSVWriter.PreWrite() error = %v, want %v", w.results, tt.want)

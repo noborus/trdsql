@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -75,12 +76,21 @@ func outputFormat(o outputFlag) trdsql.Format {
 	}
 }
 
+// Cli wraps stdout and error output specification.
+type Cli struct {
+	// OutStream is the output destination.
+	OutStream io.Writer
+
+	// ErrStream is the error output destination.
+	ErrStream io.Writer
+}
+
 // Debug flag for a detailed output
 var Debug bool
 
 // Run executes the main routine.
 // The return value is the exit code.
-func Run(args []string) int {
+func (cli Cli) Run(args []string) int {
 	var (
 		usage     bool
 		version   bool
@@ -108,9 +118,9 @@ func Run(args []string) int {
 	flags := flag.NewFlagSet(trdsql.AppName, flag.ExitOnError)
 
 	flags.Usage = func() {
-		fmt.Fprintf(os.Stderr, `Usage: %s [OPTIONS] [SQL(SELECT...)]
+		fmt.Fprintf(cli.ErrStream, `Usage: %s [OPTIONS] [SQL(SELECT...)]
 `, os.Args[0])
-		fmt.Fprintf(os.Stderr, `'See %s -help'
+		fmt.Fprintf(cli.ErrStream, `'See %s -help'
 `, os.Args[0])
 	}
 	flags.StringVar(&config, "config", config, "Configuration file location.")
@@ -218,7 +228,7 @@ func Run(args []string) int {
 	}
 
 	if usage || (len(query) == 0) {
-		fmt.Fprintf(os.Stderr, `
+		fmt.Fprintf(cli.ErrStream, `
 Usage: %s [OPTIONS] [SQL(SELECT...)]
 
 Options:
@@ -239,6 +249,8 @@ Options:
 		trdsql.OutFormat(outputFormat(outFlag)),
 		trdsql.OutDelimiter(outDelimiter),
 		trdsql.OutHeader(outHeader),
+		trdsql.OutStream(cli.OutStream),
+		trdsql.ErrStream(cli.ErrStream),
 	)
 	exporter := trdsql.NewExporter(w)
 
@@ -253,7 +265,8 @@ Options:
 
 	err = trd.Exec(query)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("%s", err)
+		return 1
 	}
 	return 0
 }

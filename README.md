@@ -3,7 +3,7 @@
 [![GoDoc](https://godoc.org/github.com/noborus/trdsql?status.svg)](https://godoc.org/github.com/noborus/trdsql)
 [![Build Status](https://travis-ci.org/noborus/trdsql.svg?branch=master)](https://travis-ci.org/noborus/trdsql)
 
-A tool that can execute SQL queries on [CSV](https://tools.ietf.org/html/rfc4180),
+CLI tool that can execute SQL queries on [CSV](https://tools.ietf.org/html/rfc4180),
  [LTSV](http://ltsv.org/), [JSON](https://tools.ietf.org/html/rfc7159) and [TBLN](https://tbln.dev/).
 
 It is a tool like [q](https://github.com/harelba/q),

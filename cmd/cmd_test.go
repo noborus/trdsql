@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"bytes"
+	"log"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -143,7 +145,7 @@ func Test_getQuery(t *testing.T) {
 }
 
 func Test_getDB(t *testing.T) {
-	type args struct {
+	type argss struct {
 		cfg     *config
 		cDB     string
 		cDriver string
@@ -151,15 +153,87 @@ func Test_getDB(t *testing.T) {
 	}
 	tests := []struct {
 		name  string
-		args  args
+		argss argss
 		want  string
 		want1 string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "testNoConfig",
+			argss: argss{
+				cfg:     &config{},
+				cDB:     "",
+				cDriver: "postgres",
+				cDSN:    "dbname=test",
+			},
+			want:  "postgres",
+			want1: "dbname=test",
+		},
+		{
+			name: "testNoConfigDB",
+			argss: argss{
+				cfg:     &config{},
+				cDB:     "test",
+				cDriver: "postgres",
+				cDSN:    "dbname=\"test\"",
+			},
+			want:  "postgres",
+			want1: "dbname=\"test\"",
+		},
+		{
+			name: "testDSN",
+			argss: argss{
+				cfg:     &config{},
+				cDB:     "",
+				cDriver: "",
+				cDSN:    "dbname=\"test\"",
+			},
+			want:  "",
+			want1: "dbname=\"test\"",
+		},
+		{
+			name: "testConfig",
+			argss: argss{
+				cfg: &config{
+					Db: "",
+					Database: map[string]database{
+						"pdb": {
+							Driver: "postgres",
+							Dsn:    "dbname=\"test\"",
+						},
+					},
+				},
+				cDB:     "pdb",
+				cDriver: "",
+				cDSN:    "",
+			},
+			want:  "postgres",
+			want1: "dbname=\"test\"",
+		},
+		{
+			name: "testConfigErr",
+			argss: argss{
+				cfg: &config{
+					Db: "",
+					Database: map[string]database{
+						"pdb": {
+							Driver: "postgres",
+							Dsn:    "dbname=\"test\"",
+						},
+					},
+				},
+				cDB:     "sdb",
+				cDriver: "",
+				cDSN:    "",
+			},
+			want:  "",
+			want1: "",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := getDB(tt.args.cfg, tt.args.cDB, tt.args.cDriver, tt.args.cDSN)
+			var buf bytes.Buffer
+			log.SetOutput(&buf)
+			got, got1 := getDB(tt.argss.cfg, tt.argss.cDB, tt.argss.cDriver, tt.argss.cDSN)
 			if got != tt.want {
 				t.Errorf("getDB() got = %v, want %v", got, tt.want)
 			}
@@ -171,40 +245,94 @@ func Test_getDB(t *testing.T) {
 }
 
 func Test_getCommand(t *testing.T) {
-	type args struct {
-		args []string
-	}
 	tests := []struct {
 		name string
-		args args
+		args []string
 		want string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "testEmpty",
+			args: []string{"trdsql", "-a"},
+			want: "trdsql",
+		},
+		{
+			name: "testFile",
+			args: []string{"trdsql", "-ih", "-a", "test.csv"},
+			want: "trdsql -ih",
+		},
+		{
+			name: "testStdin",
+			args: []string{"trdsql", "-ih", "-a", "-"},
+			want: "trdsql -ih",
+		},
+		{
+			name: "testFile",
+			args: []string{"trdsql", "-dsn=\"dbname=test\"", "-a", "test.csv"},
+			want: "trdsql -dsn=\"dbname=test\"",
+		},
+		{
+			name: "testDelimiterSpace",
+			args: []string{"trdsql", "-id", " ", "-a", "test.csv"},
+			want: "trdsql -id \" \"",
+		},
+		{
+			name: "testDelimiterUnder",
+			args: []string{"trdsql", "-id", "_", "-a", "test.csv"},
+			want: "trdsql -id _",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getCommand(tt.args.args); got != tt.want {
+			if got := getCommand(tt.args); got != tt.want {
 				t.Errorf("getCommand() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_quotedArg(t *testing.T) {
-	type args struct {
-		arg string
-	}
+func TestRun(t *testing.T) {
 	tests := []struct {
 		name string
-		args args
-		want string
+		args []string
+		want int
 	}{
-		// TODO: Add test cases.
+		{
+			name: "testEmpty",
+			args: []string{"trdsql"},
+			want: 2,
+		},
+		{
+			name: "testOne",
+			args: []string{"trdsql", "SELECT 1"},
+			want: 0,
+		},
+		{
+			name: "testErr",
+			args: []string{"trdsql", "Err"},
+			want: 1,
+		},
+		{
+			name: "testAnalyze",
+			args: []string{"trdsql", "-a", filepath.Join("..", "testdata", "test.csv")},
+			want: 0,
+		},
+		{
+			name: "testSQLOnly",
+			args: []string{"trdsql", "-A", filepath.Join("..", "testdata", "test.csv")},
+			want: 0,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := quotedArg(tt.args.arg); got != tt.want {
-				t.Errorf("quotedArg() = %v, want %v", got, tt.want)
+			outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
+			cli := Cli{
+				OutStream: outStream,
+				ErrStream: errStream,
+			}
+			var buf bytes.Buffer
+			log.SetOutput(&buf)
+			if got := cli.Run(tt.args); got != tt.want {
+				t.Errorf("Run() = %v, want %v", got, tt.want)
 			}
 		})
 	}
