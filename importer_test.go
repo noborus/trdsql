@@ -409,7 +409,7 @@ func Test_extFileReader(t *testing.T) {
 		{
 			name:     "testNoGzFile",
 			fileName: filepath.Join("testdata", "testNoGzFile.gz"),
-			want:     []byte("1,Orange\n2,Melon\n3,Apple\n"),
+			want:     []byte("1,Orange\n2,Melon\n3,Apple"),
 		},
 	}
 	for _, tt := range tests {
