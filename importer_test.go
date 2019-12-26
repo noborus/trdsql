@@ -399,17 +399,17 @@ func Test_extFileReader(t *testing.T) {
 	tests := []struct {
 		name     string
 		fileName string
-		want     []byte
+		want     string
 	}{
 		{
 			name:     "testGzFile",
 			fileName: filepath.Join("testdata", "test.csv.gz"),
-			want:     []byte("1,Orange\n2,Melon\n3,Apple\n"),
+			want:     "1,Orange\n2,Melon\n3,Apple\n",
 		},
 		{
 			name:     "testNoGzFile",
 			fileName: filepath.Join("testdata", "testNoGzFile.gz"),
-			want:     []byte("1,Orange\n2,Melon\n3,Apple"),
+			want:     "1,Orange\n2,Melon\n3,Apple",
 		},
 	}
 	for _, tt := range tests {
@@ -423,8 +423,8 @@ func Test_extFileReader(t *testing.T) {
 			if err != nil {
 				t.Fatalf("extFileReader() read error %s:%s", tt.fileName, err)
 			}
-			if !reflect.DeepEqual(r, tt.want) {
-				t.Errorf("extFileReader() = %v, want %v", string(r), string(tt.want))
+			if !reflect.DeepEqual(string(r)[0:7], tt.want[0:7]) {
+				t.Errorf("extFileReader() = %v, want %v", string(r)[0:7], string(tt.want[0:7]))
 			}
 		})
 	}
