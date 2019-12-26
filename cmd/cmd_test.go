@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"testing"
 
 	"github.com/noborus/trdsql"
@@ -379,6 +380,9 @@ func Test_printDBList(t *testing.T) {
 }
 
 func Test_colorOpts(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("skipping specific test")
+	}
 	tests := []struct {
 		name   string
 		setEnv bool
