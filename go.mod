@@ -9,7 +9,7 @@ require (
 	github.com/noborus/tbln v0.0.1
 	github.com/olekukonko/tablewriter v0.0.4
 	golang.org/x/crypto v0.0.0-20191219195013-becbf705a915
-	golang.org/x/sys v0.0.0-20191220220014-0732a990476f // indirect
+	golang.org/x/sys v0.0.0-20191224085550-c709ea063b76 // indirect
 	google.golang.org/appengine v1.6.5 // indirect
 )
 
