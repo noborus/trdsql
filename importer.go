@@ -125,7 +125,7 @@ func SQLFields(query string) []string {
 	var singleQuoted, doubleQuoted, backQuote bool
 	for _, r := range query {
 		switch r {
-		case ' ', '\t', '\r', '\n', ',', ';', '=':
+		case ' ', '\t', '\r', '\n', ',', ';', '=', '(', ')':
 			if !singleQuoted && !doubleQuoted && !backQuote {
 				if buf != "" {
 					parsed = append(parsed, buf)
