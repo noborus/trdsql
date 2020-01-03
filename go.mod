@@ -3,13 +3,13 @@ module github.com/noborus/trdsql
 require (
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/lib/pq v1.3.0
-	github.com/logrusorgru/aurora v0.0.0-20191116043053-66b7ad493a23
+	github.com/logrusorgru/aurora v0.0.0-20200102142835-e9ef32dff381
 	github.com/mattn/go-runewidth v0.0.7
 	github.com/mattn/go-sqlite3 v2.0.2+incompatible
 	github.com/noborus/tbln v0.0.1
 	github.com/olekukonko/tablewriter v0.0.4
-	golang.org/x/crypto v0.0.0-20191219195013-becbf705a915
-	golang.org/x/sys v0.0.0-20191224085550-c709ea063b76 // indirect
+	golang.org/x/crypto v0.0.0-20191227163750-53104e6ec876
+	golang.org/x/sys v0.0.0-20200102141924-c96a22e43c9c // indirect
 	google.golang.org/appengine v1.6.5 // indirect
 )
 

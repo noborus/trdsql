@@ -24,6 +24,7 @@ function _trdsql {
     '-oh[Output column name as header.]' \
     '-oat[ASCII Table format for output.]' \
     '-ojson[JSON format for output.]' \
+    '-ojsonl[JSONL format for output.]' \
     '-oltsv[LTSV format for output.]' \
     '-omd[Mark Down format for output.]' \
     '-oraw[Raw format for output.]' \
