@@ -31,6 +31,26 @@ func Test_inputFormat(t *testing.T) {
 			want: trdsql.CSV,
 		},
 		{
+			name: "testLTSV",
+			args: args{
+				i: inputFlag{
+					LTSV: true,
+					JSON: true,
+				},
+			},
+			want: trdsql.LTSV,
+		},
+		{
+			name: "testJSON",
+			args: args{
+				i: inputFlag{
+					JSON: true,
+					TBLN: true,
+				},
+			},
+			want: trdsql.JSON,
+		},
+		{
 			name: "testTBLN",
 			args: args{
 				i: inputFlag{
@@ -75,6 +95,82 @@ func Test_outputFormat(t *testing.T) {
 			want: trdsql.CSV,
 		},
 		{
+			name: "testLTSV",
+			args: args{
+				o: outputFlag{
+					CSV:  false,
+					LTSV: true,
+				},
+			},
+			want: trdsql.LTSV,
+		},
+		{
+			name: "testAT",
+			args: args{
+				o: outputFlag{
+					CSV:  false,
+					LTSV: false,
+					AT:   true,
+				},
+			},
+			want: trdsql.AT,
+		},
+		{
+			name: "testMD",
+			args: args{
+				o: outputFlag{
+					CSV:  false,
+					LTSV: false,
+					MD:   true,
+				},
+			},
+			want: trdsql.MD,
+		},
+		{
+			name: "testVF",
+			args: args{
+				o: outputFlag{
+					CSV:  false,
+					LTSV: false,
+					VF:   true,
+				},
+			},
+			want: trdsql.VF,
+		},
+		{
+			name: "testRAW",
+			args: args{
+				o: outputFlag{
+					CSV:  false,
+					LTSV: false,
+					RAW:  true,
+				},
+			},
+			want: trdsql.RAW,
+		},
+		{
+			name: "testJSON",
+			args: args{
+				o: outputFlag{
+					CSV:  false,
+					LTSV: false,
+					JSON: true,
+				},
+			},
+			want: trdsql.JSON,
+		},
+		{
+			name: "testJSONL",
+			args: args{
+				o: outputFlag{
+					CSV:   false,
+					LTSV:  false,
+					JSONL: true,
+				},
+			},
+			want: trdsql.JSONL,
+		},
+		{
 			name: "testTBLN",
 			args: args{
 				o: outputFlag{
@@ -82,6 +178,13 @@ func Test_outputFormat(t *testing.T) {
 				},
 			},
 			want: trdsql.TBLN,
+		},
+		{
+			name: "testDEFAULT",
+			args: args{
+				o: outputFlag{},
+			},
+			want: trdsql.CSV,
 		},
 	}
 	for _, tt := range tests {
@@ -263,6 +366,11 @@ func Test_optsCommand(t *testing.T) {
 			want: "trdsql -ih",
 		},
 		{
+			name: "testFile2",
+			args: []string{"trdsql", "-ih", "-ir", "2", "-a", "test.csv"},
+			want: "trdsql -ih -ir 2",
+		},
+		{
 			name: "testStdin",
 			args: []string{"trdsql", "-ih", "-a", "-"},
 			want: "trdsql -ih",
@@ -293,8 +401,7 @@ func Test_optsCommand(t *testing.T) {
 		})
 	}
 }
-
-func TestRun(t *testing.T) {
+func TestCli_Run(t *testing.T) {
 	tests := []struct {
 		name string
 		args []string
@@ -321,8 +428,18 @@ func TestRun(t *testing.T) {
 			want: 0,
 		},
 		{
+			name: "testAnalyze2",
+			args: []string{"trdsql", "-ir", "1", "-a", filepath.Join("..", "testdata", "test.csv")},
+			want: 0,
+		},
+		{
 			name: "testSQLOnly",
 			args: []string{"trdsql", "-A", filepath.Join("..", "testdata", "test.csv")},
+			want: 0,
+		},
+		{
+			name: "testDebug",
+			args: []string{"trdsql", "-debug", "SELECT 1"},
 			want: 0,
 		},
 		{

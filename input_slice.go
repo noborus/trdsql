@@ -82,8 +82,7 @@ func structReader(tableName string, val reflect.Value) *SliceReader {
 	}
 	single := make([]interface{}, t.NumField())
 	for j := 0; j < t.NumField(); j++ {
-		v := val.Field(j)
-		single[j] = fmt.Sprintf("%v", v.Interface())
+		single[j] = fmt.Sprintf("%v", val.Field(j))
 	}
 	data := [][]interface{}{
 		single,

@@ -45,6 +45,36 @@ func TestAnalyze(t *testing.T) {
 		wantErr bool
 	}{
 		{
+			name: "empty",
+			args: args{
+				fileName: filepath.Join("testdata", ""),
+				opts: &AnalyzeOpts{
+					Command:   AppName,
+					Quote:     "\\`",
+					Color:     true,
+					Detail:    true,
+					OutStream: new(bytes.Buffer),
+				},
+				readOpts: NewReadOpts(),
+			},
+			wantErr: true,
+		},
+		{
+			name: "testNoFile",
+			args: args{
+				fileName: filepath.Join("testdata", "nofile"),
+				opts: &AnalyzeOpts{
+					Command:   AppName,
+					Quote:     "\\`",
+					Color:     true,
+					Detail:    true,
+					OutStream: new(bytes.Buffer),
+				},
+				readOpts: NewReadOpts(),
+			},
+			wantErr: true,
+		},
+		{
 			name: "test",
 			args: args{
 				fileName: filepath.Join("testdata", "test.csv"),
