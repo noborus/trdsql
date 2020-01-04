@@ -89,6 +89,26 @@ func TestNewSliceReader(t *testing.T) {
 			},
 		},
 		{
+			name: "singleStruct",
+			args: args{
+				tableName: "struct",
+				args: struct {
+					id   int
+					name string
+				}{
+					id: 1, name: "one",
+				},
+			},
+			want: &SliceReader{
+				tableName: "struct",
+				names:     []string{"id", "name"},
+				types:     []string{"int", "text"},
+				data: [][]interface{}{
+					{"1", "one"},
+				},
+			},
+		},
+		{
 			name: "struct",
 			args: args{
 				tableName: "struct",

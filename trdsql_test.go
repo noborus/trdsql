@@ -409,3 +409,74 @@ func TestTRDSQL_FileExec(t *testing.T) {
 		})
 	}
 }
+
+func TestFormat_String(t *testing.T) {
+	tests := []struct {
+		name string
+		f    Format
+		want string
+	}{
+		{
+			name: "CSV",
+			f:    CSV,
+			want: "CSV",
+		},
+		{
+			name: "LTSV",
+			f:    LTSV,
+			want: "LTSV",
+		},
+		{
+			name: "JSON",
+			f:    JSON,
+			want: "JSON",
+		},
+		{
+			name: "JSON",
+			f:    JSON,
+			want: "JSON",
+		},
+		{
+			name: "TBLN",
+			f:    TBLN,
+			want: "TBLN",
+		},
+		{
+			name: "RAW",
+			f:    RAW,
+			want: "RAW",
+		},
+		{
+			name: "MD",
+			f:    MD,
+			want: "MD",
+		},
+		{
+			name: "AT",
+			f:    AT,
+			want: "AT",
+		},
+		{
+			name: "VF",
+			f:    VF,
+			want: "VF",
+		},
+		{
+			name: "JSONL",
+			f:    JSONL,
+			want: "JSONL",
+		},
+		{
+			name: "Unknown",
+			f:    99,
+			want: "Unknown",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.f.String(); got != tt.want {
+				t.Errorf("Format.String() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
