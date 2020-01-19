@@ -170,11 +170,9 @@ func (cli Cli) Run(args []string) int {
 
 	cfgFile := configOpen(config)
 	cfg, err := loadConfig(cfgFile)
-	if err != nil {
-		if config != "" {
-			log.Printf("ERROR: [%s]%s", config, err)
-			return 1
-		}
+	if err != nil && config != "" {
+		log.Printf("ERROR: [%s]%s", config, err)
+		return 1
 	}
 	if dbList {
 		printDBList(cfg)
@@ -300,22 +298,20 @@ func optsCommand(opts *trdsql.AnalyzeOpts, args []string) *trdsql.AnalyzeOpts {
 	return opts
 }
 
+func trimQuery(query string) string {
+	return strings.TrimRight(strings.TrimSpace(query), ";")
+}
+
 func getQuery(args []string, fileName string) (string, error) {
-	query := ""
-	if fileName != "" {
-		sqlByte, err := ioutil.ReadFile(fileName)
-		if err != nil {
-			return "", err
-		}
-		query = string(sqlByte)
-	} else {
-		query = strings.Join(args, " ")
+	if fileName == "" {
+		return trimQuery(strings.Join(args, " ")), nil
 	}
 
-	if strings.HasSuffix(query, ";") {
-		query = query[:len(query)-1]
+	sqlByte, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		return "", err
 	}
-	return query, nil
+	return trimQuery(string(sqlByte)), nil
 }
 
 func getDB(cfg *config, cDB string, cDriver string, cDSN string) (string, string) {
