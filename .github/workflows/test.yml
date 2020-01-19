@@ -41,5 +41,7 @@ jobs:
         go-version: 1.13.x
     - name: Check out code into the Go module directory
       uses: actions/checkout@v1
+    - name: Setup DB
+      run:  psql -c 'CREATE DATABASE trdsql_test ENCODING 'utf8' TEMPLATE template0;'
     - name: Run tests
       run: make test
