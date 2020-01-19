@@ -31,6 +31,8 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: trdsql_test
+          POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
@@ -41,7 +43,5 @@ jobs:
         go-version: 1.13.x
     - name: Check out code into the Go module directory
       uses: actions/checkout@v1
-    - name: Setup DB
-      run:  psql -c 'CREATE DATABASE trdsql_test ENCODING 'utf8' TEMPLATE template0;'
     - name: Run tests
       run: make test
