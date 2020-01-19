@@ -226,12 +226,30 @@ func Test_getQuery(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "testTrim",
+			argss: argss{
+				[]string{"SELECT * FROM test;   "},
+				"",
+			},
+			want:    "SELECT * FROM test",
+			wantErr: false,
+		},
+		{
+			name: "testFileErr",
+			argss: argss{
+				[]string{},
+				filepath.Join("..", "testdata", "noFile.sql"),
+			},
+			want:    "",
+			wantErr: true,
+		},
+		{
 			name: "testFile",
 			argss: argss{
 				[]string{},
 				filepath.Join("..", "testdata", "test.sql"),
 			},
-			want:    "SELECT * FROM testdata/test.csv\n",
+			want:    "SELECT * FROM testdata/test.csv",
 			wantErr: false,
 		},
 	}
