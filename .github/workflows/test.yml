@@ -20,7 +20,7 @@ jobs:
     - name: Run tests
       run: make test
 
-  test:
+  dbtest:
     runs-on: ubuntu-latest
 
     services:
@@ -34,6 +34,16 @@ jobs:
           POSTGRES_DB: trdsql_test
           POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    services:
+      mysql:
+        image: mysql:8.0
+        ports:
+          - "3306:3306"
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+          MYSQL_ROOT_PASSWORD: ''
+          MYSQL_DATABASE: trdsql_test
 
     steps:
     - name: Install Go
