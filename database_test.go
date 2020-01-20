@@ -55,13 +55,6 @@ func TestConnect(t *testing.T) {
 				t.Errorf("Connect() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if d != nil {
-				err = d.Ping()
-				if (err != nil) != tt.wantErr {
-					t.Errorf("Connect() error = %v, wantErr %v", err, tt.wantErr)
-					return
-				}
-			}
 		})
 	}
 }
