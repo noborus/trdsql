@@ -35,7 +35,6 @@ jobs:
           POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
-    services:
       mysql:
         image: mysql:8.0
         ports:
