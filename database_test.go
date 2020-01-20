@@ -50,7 +50,7 @@ func TestConnect(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d, err := Connect(tt.args.driver, tt.args.dsn)
+			_, err := Connect(tt.args.driver, tt.args.dsn)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Connect() error = %v, wantErr %v", err, tt.wantErr)
 				return

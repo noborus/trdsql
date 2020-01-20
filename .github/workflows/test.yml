@@ -54,5 +54,5 @@ jobs:
     - name: Run tests
       run: make test
       env:
-        SESSION_PG_TEST_DSN: "host=localhost user=postgres password=postgres dbname=trdsql_test"
-        SESSION_MY_TEST_DSN: "root:@tcp(localhost:3307)/trdsql_test"
+        SESSION_PG_TEST_DSN: "host=localhost user=postgres password=postgres dbname=trdsql_test sslmode=disable"
+        SESSION_MY_TEST_DSN: "root:root@tcp(localhost:3307)/trdsql_test"
