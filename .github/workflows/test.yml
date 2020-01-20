@@ -25,7 +25,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:11
+        image: postgres:12
         ports:
           - 5432:5432
         env:
@@ -39,6 +39,7 @@ jobs:
         image: mysql:8.0
         ports:
           - "3307:3306"
+        command: "mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_bin"
         env:
           MYSQL_ROOT_PASSWORD: 'root'
           MYSQL_DATABASE: trdsql_test
