@@ -1,6 +1,7 @@
 package trdsql
 
 import (
+	"os"
 	"testing"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -9,6 +10,14 @@ import (
 )
 
 func TestConnect(t *testing.T) {
+	pgDsn := os.Getenv("SESSION_PG_TEST_DSN")
+	if pgDsn == "" {
+		pgDsn = "dbname=trdsql_test"
+	}
+	myDsn := os.Getenv("SESSION_MY_TEST_DSN")
+	if myDsn == "" {
+		myDsn = "root@/trdsql_test"
+	}
 	type args struct {
 		driver string
 		dsn    string
@@ -30,21 +39,28 @@ func TestConnect(t *testing.T) {
 		},
 		{
 			name:    "testPostgres",
-			args:    args{driver: "postgres", dsn: "dbname=trdsql_test"},
+			args:    args{driver: "postgres", dsn: pgDsn},
 			wantErr: false,
 		},
 		{
 			name:    "testMysql",
-			args:    args{driver: "mysql", dsn: "root@/trdsql_test"},
+			args:    args{driver: "mysql", dsn: myDsn},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := Connect(tt.args.driver, tt.args.dsn)
+			d, err := Connect(tt.args.driver, tt.args.dsn)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Connect() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			}
+			if d != nil {
+				err = d.Ping()
+				if (err != nil) != tt.wantErr {
+					t.Errorf("Connect() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
 			}
 		})
 	}

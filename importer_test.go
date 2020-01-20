@@ -196,7 +196,11 @@ func newDBTestSqlite3() *DB {
 }
 
 func newDBTestPostgres() *DB {
-	db, err := Connect("postgres", "dbname=trdsql_test")
+	pgDsn := os.Getenv("SESSION_PG_TEST_DSN")
+	if pgDsn == "" {
+		pgDsn = "dbname=trdsql_test"
+	}
+	db, err := Connect("postgres", pgDsn)
 	if err != nil {
 		return nil
 	}
@@ -208,7 +212,11 @@ func newDBTestPostgres() *DB {
 }
 
 func newDBTestMysql() *DB {
-	db, err := Connect("mysql", "root@/trdsql_test")
+	myDsn := os.Getenv("SESSION_MY_TEST_DSN")
+	if myDsn == "" {
+		myDsn = "root@/trdsql_test"
+	}
+	db, err := Connect("mysql", myDsn)
 	if err != nil {
 		return nil
 	}

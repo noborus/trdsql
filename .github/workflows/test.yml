@@ -22,6 +22,9 @@ jobs:
 
   dbtest:
     runs-on: ubuntu-latest
+    env:
+      SESSION_PG_TEST_DSN: "host=localhost user=postgres password=postgres dbname=trdsql_test"
+      SESSION_MY_TEST_DSN: "root:@tcp(localhost:3306)/trdsql_test"
 
     services:
       postgres:
@@ -40,8 +43,7 @@ jobs:
         ports:
           - "3306:3306"
         env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: "true"
-          MYSQL_ROOT_PASSWORD: ''
+          MYSQL_ROOT_PASSWORD: 'root'
           MYSQL_DATABASE: trdsql_test
 
     steps:
