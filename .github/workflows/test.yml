@@ -22,9 +22,6 @@ jobs:
 
   dbtest:
     runs-on: ubuntu-latest
-    env:
-      SESSION_PG_TEST_DSN: "host=localhost user=postgres password=postgres dbname=trdsql_test"
-      SESSION_MY_TEST_DSN: "root:@tcp(localhost:3306)/trdsql_test"
 
     services:
       postgres:
@@ -41,7 +38,7 @@ jobs:
       mysql:
         image: mysql:8.0
         ports:
-          - "3306:3306"
+          - "3307:3306"
         env:
           MYSQL_ROOT_PASSWORD: 'root'
           MYSQL_DATABASE: trdsql_test
@@ -56,3 +53,6 @@ jobs:
       uses: actions/checkout@v1
     - name: Run tests
       run: make test
+      env:
+        SESSION_PG_TEST_DSN: "host=localhost user=postgres password=postgres dbname=trdsql_test"
+        SESSION_MY_TEST_DSN: "root:@tcp(localhost:3307)/trdsql_test"
