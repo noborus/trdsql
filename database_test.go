@@ -1,7 +1,6 @@
 package trdsql
 
 import (
-	"os"
 	"testing"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -10,14 +9,6 @@ import (
 )
 
 func TestConnect(t *testing.T) {
-	pgDsn := os.Getenv("SESSION_PG_TEST_DSN")
-	if pgDsn == "" {
-		pgDsn = "dbname=trdsql_test"
-	}
-	myDsn := os.Getenv("SESSION_MY_TEST_DSN")
-	if myDsn == "" {
-		myDsn = "root@/trdsql_test"
-	}
 	type args struct {
 		driver string
 		dsn    string
@@ -39,12 +30,12 @@ func TestConnect(t *testing.T) {
 		},
 		{
 			name:    "testPostgres",
-			args:    args{driver: "postgres", dsn: pgDsn},
+			args:    args{driver: "postgres", dsn: pgDsn()},
 			wantErr: false,
 		},
 		{
 			name:    "testMysql",
-			args:    args{driver: "mysql", dsn: myDsn},
+			args:    args{driver: "mysql", dsn: myDsn()},
 			wantErr: false,
 		},
 	}

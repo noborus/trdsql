@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -331,6 +332,22 @@ func TestOutFormatRun(t *testing.T) {
 	}
 }
 
+func pgDsn() string {
+	pgDsn := os.Getenv("SESSION_PG_TEST_DSN")
+	if pgDsn == "" {
+		pgDsn = "dbname=trdsql_test"
+	}
+	return pgDsn
+}
+
+func myDsn() string {
+	myDsn := os.Getenv("SESSION_MY_TEST_DSN")
+	if myDsn == "" {
+		myDsn = "root@/trdsql_test"
+	}
+	return myDsn
+}
+
 func checkDBTest(driver string, dsn string) bool {
 	db, err := Connect(driver, dsn)
 	if err != nil {
@@ -347,8 +364,8 @@ func checkDBTest(driver string, dsn string) bool {
 func availableDB() [][]string {
 	database := [][]string{
 		{"sqlite3", ""},
-		{"postgres", "dbname=trdsql_test"},
-		{"mysql", "root@/trdsql_test"},
+		{"postgres", pgDsn()},
+		{"mysql", myDsn()},
 	}
 	available := make([][]string, 0)
 	for _, d := range database {
