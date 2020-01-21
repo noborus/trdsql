@@ -196,7 +196,7 @@ func newDBTestSqlite3() *DB {
 }
 
 func newDBTestPostgres() *DB {
-	db, err := Connect("postgres", "dbname=trdsql_test")
+	db, err := Connect("postgres", pgDsn())
 	if err != nil {
 		return nil
 	}
@@ -208,7 +208,7 @@ func newDBTestPostgres() *DB {
 }
 
 func newDBTestMysql() *DB {
-	db, err := Connect("mysql", "root@/trdsql_test")
+	db, err := Connect("mysql", myDsn())
 	if err != nil {
 		return nil
 	}

@@ -30,12 +30,12 @@ func TestConnect(t *testing.T) {
 		},
 		{
 			name:    "testPostgres",
-			args:    args{driver: "postgres", dsn: "dbname=trdsql_test"},
+			args:    args{driver: "postgres", dsn: pgDsn()},
 			wantErr: false,
 		},
 		{
 			name:    "testMysql",
-			args:    args{driver: "mysql", dsn: "root@/trdsql_test"},
+			args:    args{driver: "mysql", dsn: myDsn()},
 			wantErr: false,
 		},
 	}
