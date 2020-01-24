@@ -2,20 +2,19 @@ package trdsql
 
 import (
 	"bufio"
-	"strings"
 )
 
 // LTSVWriter provides methods of the Writer interface.
 type LTSVWriter struct {
 	writer    *bufio.Writer
-	delimiter string
+	delimiter rune
 	results   []string
 }
 
 // NewLTSVWriter returns LTSVWriter.
 func NewLTSVWriter(writeOpts *WriteOpts) *LTSVWriter {
 	w := &LTSVWriter{}
-	w.delimiter = "\t"
+	w.delimiter = '\t'
 	w.writer = bufio.NewWriter(writeOpts.OutStream)
 	return w
 }
@@ -27,13 +26,28 @@ func (w *LTSVWriter) PreWrite(columns []string, types []string) error {
 }
 
 // WriteRow is row write.
-func (w *LTSVWriter) WriteRow(values []interface{}, columns []string) error {
-	for i, col := range values {
-		w.results[i] = columns[i] + ":" + ValString(col)
+func (w *LTSVWriter) WriteRow(values []interface{}, labels []string) error {
+	for n, col := range values {
+		if n > 0 {
+			_, err := w.writer.WriteRune(w.delimiter)
+			if err != nil {
+				return err
+			}
+		}
+		_, err := w.writer.WriteString(labels[n])
+		if err != nil {
+			return err
+		}
+		err = w.writer.WriteByte(':')
+		if err != nil {
+			return err
+		}
+		_, err = w.writer.WriteString(ValString(col))
+		if err != nil {
+			return err
+		}
 	}
-	str := strings.Join(w.results, w.delimiter) + "\n"
-	_, err := w.writer.Write([]byte(str))
-	return err
+	return w.writer.WriteByte('\n')
 }
 
 // PostWrite is flush.

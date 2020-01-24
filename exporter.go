@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 	"unicode/utf8"
 )
@@ -79,20 +80,26 @@ func (e *WriteFormat) Export(db *DB, query string) error {
 
 // ValString converts database value to string.
 func ValString(v interface{}) string {
-	var str string
 	switch t := v.(type) {
 	case nil:
-		str = ""
-	case time.Time:
-		str = t.Format(time.RFC3339)
+		return ""
+	case string:
+		return t
 	case []byte:
 		if ok := utf8.Valid(t); ok {
-			str = string(t)
+			return string(t)
 		} else {
-			str = `\x` + hex.EncodeToString(t)
+			return `\x` + hex.EncodeToString(t)
 		}
+	case int:
+		return strconv.Itoa(t)
+	case int32:
+		return strconv.FormatInt(int64(t), 10)
+	case int64:
+		return strconv.FormatInt(t, 10)
+	case time.Time:
+		return t.Format(time.RFC3339)
 	default:
-		str = fmt.Sprint(v)
+		return fmt.Sprint(v)
 	}
-	return str
 }
