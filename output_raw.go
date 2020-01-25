@@ -8,7 +8,7 @@ import (
 // RAWWriter provides methods of the Writer interface.
 type RAWWriter struct {
 	writer    *bufio.Writer
-	sep       string
+	delimiter string
 	outHeader bool
 }
 
@@ -17,7 +17,7 @@ func NewRAWWriter(writeOpts *WriteOpts) *RAWWriter {
 	var err error
 	w := &RAWWriter{}
 	w.writer = bufio.NewWriter(writeOpts.OutStream)
-	w.sep, err = strconv.Unquote(`"` + writeOpts.OutDelimiter + `"`)
+	w.delimiter, err = strconv.Unquote(`"` + writeOpts.OutDelimiter + `"`)
 	if err != nil {
 		debug.Printf("%s\n", err)
 	}
@@ -32,12 +32,11 @@ func (w *RAWWriter) PreWrite(columns []string, types []string) error {
 	}
 	for n, col := range columns {
 		if n > 0 {
-			if _, err := w.writer.WriteString(w.sep); err != nil {
+			if _, err := w.writer.WriteString(w.delimiter); err != nil {
 				return err
 			}
 		}
-		_, err := w.writer.WriteString(col)
-		if err != nil {
+		if _, err := w.writer.WriteString(col); err != nil {
 			return err
 		}
 	}
@@ -48,12 +47,11 @@ func (w *RAWWriter) PreWrite(columns []string, types []string) error {
 func (w *RAWWriter) WriteRow(values []interface{}, columns []string) error {
 	for n, col := range values {
 		if n > 0 {
-			if _, err := w.writer.WriteString(w.sep); err != nil {
+			if _, err := w.writer.WriteString(w.delimiter); err != nil {
 				return err
 			}
 		}
-		_, err := w.writer.WriteString(ValString(col))
-		if err != nil {
+		if _, err := w.writer.WriteString(ValString(col)); err != nil {
 			return err
 		}
 	}

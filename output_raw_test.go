@@ -40,8 +40,8 @@ func TestNewRAWWriter(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewRAWWriter(tt.args.writeOpts)
-			if !reflect.DeepEqual(got.sep, tt.want) {
-				t.Errorf("NewCSVWriter() = %v, want %v", got.sep, tt.want)
+			if !reflect.DeepEqual(got.delimiter, tt.want) {
+				t.Errorf("NewCSVWriter() = %v, want %v", got.delimiter, tt.want)
 			}
 		})
 	}
