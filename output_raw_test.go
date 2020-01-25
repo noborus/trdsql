@@ -117,9 +117,6 @@ func TestRAWWriter_PreWrite(t *testing.T) {
 			if err := w.PreWrite(tt.args.columns, tt.args.types); (err != nil) != tt.wantErr {
 				t.Errorf("RAWWriter.PreWrite() error = %v, wantErr %v", err, tt.wantErr)
 			}
-			if !reflect.DeepEqual(w.results, tt.want) {
-				t.Errorf("CSVWriter.PreWrite() error = %v, want %v", w.results, tt.want)
-			}
 		})
 	}
 }
