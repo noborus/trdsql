@@ -40,8 +40,8 @@ func TestNewRAWWriter(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewRAWWriter(tt.args.writeOpts)
-			if !reflect.DeepEqual(got.sep, tt.want) {
-				t.Errorf("NewCSVWriter() = %v, want %v", got.sep, tt.want)
+			if !reflect.DeepEqual(got.delimiter, tt.want) {
+				t.Errorf("NewCSVWriter() = %v, want %v", got.delimiter, tt.want)
 			}
 		})
 	}
@@ -116,9 +116,6 @@ func TestRAWWriter_PreWrite(t *testing.T) {
 			w := NewRAWWriter(&tt.writeOpts)
 			if err := w.PreWrite(tt.args.columns, tt.args.types); (err != nil) != tt.wantErr {
 				t.Errorf("RAWWriter.PreWrite() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if !reflect.DeepEqual(w.results, tt.want) {
-				t.Errorf("CSVWriter.PreWrite() error = %v, want %v", w.results, tt.want)
 			}
 		})
 	}

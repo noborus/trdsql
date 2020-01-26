@@ -2,16 +2,13 @@ package trdsql
 
 import (
 	"bufio"
-	"fmt"
 	"strconv"
-	"strings"
 )
 
 // RAWWriter provides methods of the Writer interface.
 type RAWWriter struct {
 	writer    *bufio.Writer
-	results   []string
-	sep       string
+	delimiter string
 	outHeader bool
 }
 
@@ -20,7 +17,7 @@ func NewRAWWriter(writeOpts *WriteOpts) *RAWWriter {
 	var err error
 	w := &RAWWriter{}
 	w.writer = bufio.NewWriter(writeOpts.OutStream)
-	w.sep, err = strconv.Unquote(`"` + writeOpts.OutDelimiter + `"`)
+	w.delimiter, err = strconv.Unquote(`"` + writeOpts.OutDelimiter + `"`)
 	if err != nil {
 		debug.Printf("%s\n", err)
 	}
@@ -30,26 +27,35 @@ func NewRAWWriter(writeOpts *WriteOpts) *RAWWriter {
 
 // PreWrite is output of header and preparation.
 func (w *RAWWriter) PreWrite(columns []string, types []string) error {
-	if w.outHeader {
-		_, err := fmt.Fprint(w.writer, strings.Join(columns, w.sep), "\n")
-		if err != nil {
-			debug.Printf("%s\n", err)
+	if !w.outHeader {
+		return nil
+	}
+	for n, col := range columns {
+		if n > 0 {
+			if _, err := w.writer.WriteString(w.delimiter); err != nil {
+				return err
+			}
+		}
+		if _, err := w.writer.WriteString(col); err != nil {
+			return err
 		}
 	}
-	w.results = make([]string, len(columns))
-	return nil
+	return w.writer.WriteByte('\n')
 }
 
 // WriteRow is row write.
 func (w *RAWWriter) WriteRow(values []interface{}, columns []string) error {
-	for i, col := range values {
-		w.results[i] = ValString(col)
+	for n, col := range values {
+		if n > 0 {
+			if _, err := w.writer.WriteString(w.delimiter); err != nil {
+				return err
+			}
+		}
+		if _, err := w.writer.WriteString(ValString(col)); err != nil {
+			return err
+		}
 	}
-	_, err := fmt.Fprint(w.writer, strings.Join(w.results, w.sep), "\n")
-	if err != nil {
-		debug.Printf("%s\n", err)
-	}
-	return nil
+	return w.writer.WriteByte('\n')
 }
 
 // PostWrite is flush.
