@@ -1,10 +1,11 @@
 package cmd
 
 import (
-	"github.com/noborus/trdsql"
 	"io"
 	"strings"
 	"testing"
+
+	"github.com/noborus/trdsql"
 )
 
 func Test_configOpen(t *testing.T) {

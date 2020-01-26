@@ -419,6 +419,7 @@ func Test_optsCommand(t *testing.T) {
 		})
 	}
 }
+
 func TestCli_Run(t *testing.T) {
 	tests := []struct {
 		name string
