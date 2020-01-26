@@ -497,3 +497,38 @@ func TestFormat_String(t *testing.T) {
 		})
 	}
 }
+
+func benchmarkFormat(b *testing.B, format Format) {
+	sql := "SELECT * FROM " + dataDir + "KEN_ALL.CSV"
+	outStream := new(bytes.Buffer)
+	importer := NewImporter(InFormat(GUESS))
+	exporter := NewExporter(
+		NewWriter(
+			OutFormat(format),
+			OutStream(outStream),
+		),
+	)
+	trd := NewTRDSQL(importer, exporter)
+	trd.Driver = "sqlite3"
+	trd.Dsn = ""
+	err := trd.Exec(sql)
+	if err != nil {
+		b.Fatal(err)
+	}
+}
+
+func BenchmarkOutput_CSV(b *testing.B) {
+	benchmarkFormat(b, CSV)
+}
+func BenchmarkOutput_LTSV(b *testing.B) {
+	benchmarkFormat(b, LTSV)
+}
+func BenchmarkOutput_RAW(b *testing.B) {
+	benchmarkFormat(b, RAW)
+}
+func BenchmarkOutput_TBLN(b *testing.B) {
+	benchmarkFormat(b, TBLN)
+}
+func BenchmarkOutput_JSON(b *testing.B) {
+	benchmarkFormat(b, JSON)
+}
