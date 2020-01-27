@@ -112,6 +112,9 @@ func (cli Cli) Run(args []string) int {
 
 		outFlag      outputFlag
 		outDelimiter string
+		outQuote     string
+		outAllQuotes bool
+		outUseCRLF   bool
 		outHeader    bool
 	)
 
@@ -141,6 +144,9 @@ func (cli Cli) Run(args []string) int {
 	flags.BoolVar(&inFlag.TBLN, "itbln", false, "TBLN format for input.")
 
 	flags.StringVar(&outDelimiter, "od", ",", "Field delimiter for output.")
+	flags.StringVar(&outQuote, "oq", "\"", "Quote character for output.")
+	flags.BoolVar(&outAllQuotes, "oaq", false, "Enclose all fields in quotes for for output.")
+	flags.BoolVar(&outUseCRLF, "ocrlf", false, "Use CRLF for output.")
 	flags.BoolVar(&outHeader, "oh", false, "Output column name as header.")
 
 	flags.BoolVar(&outFlag.CSV, "ocsv", true, "CSV format for output.")
@@ -233,6 +239,9 @@ Options:
 	w := trdsql.NewWriter(
 		trdsql.OutFormat(outputFormat(outFlag)),
 		trdsql.OutDelimiter(outDelimiter),
+		trdsql.OutQuote(outQuote),
+		trdsql.OutAllQuotes(outAllQuotes),
+		trdsql.OutUseCRLF(outUseCRLF),
 		trdsql.OutHeader(outHeader),
 		trdsql.OutStream(cli.OutStream),
 		trdsql.ErrStream(cli.ErrStream),

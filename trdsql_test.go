@@ -93,6 +93,12 @@ func TestTRDSQL_Exec(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name:    "testQuoteCSV",
+			sql:     "SELECT * FROM " + dataDir + "test_quote.csv",
+			want:    "1,\"O\"\"range\"\n2,M'elon\n3,A pple\n",
+			wantErr: false,
+		},
+		{
 			name:    "testEscapedCSV",
 			sql:     "SELECT * FROM \"" + dataDir + "test.csv\"",
 			want:    "1,Orange\n2,Melon\n3,Apple\n",
@@ -132,7 +138,7 @@ func TestTRDSQL_Exec(t *testing.T) {
 	}
 }
 
-func TestTRDSQL_ExecOpts(t *testing.T) {
+func TestTRDSQL_ReadOpts(t *testing.T) {
 	tests := []struct {
 		name    string
 		sql     string
@@ -174,6 +180,60 @@ func TestTRDSQL_ExecOpts(t *testing.T) {
 			outStream := new(bytes.Buffer)
 			exporter := NewExporter(NewWriter(OutStream(outStream)))
 			importer := NewImporter(tt.opts)
+			trd := NewTRDSQL(importer, exporter)
+			if err := trd.Exec(tt.sql); (err != nil) != tt.wantErr {
+				t.Errorf("TRDSQL.Exec() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			got := outStream.String()
+			if got != tt.want {
+				t.Errorf("TRDSQL.Exec() result = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestTRDSQL_WriteOpts(t *testing.T) {
+	tests := []struct {
+		name    string
+		sql     string
+		opts    WriteOpt
+		want    string
+		wantErr bool
+	}{
+		{
+			name:    "testOutHeader",
+			sql:     "SELECT * FROM " + dataDir + "test.csv",
+			opts:    OutHeader(true),
+			want:    "c1,c2\n1,Orange\n2,Melon\n3,Apple\n",
+			wantErr: false,
+		},
+		{
+			name:    "testOutAllQuotes",
+			sql:     "SELECT * FROM " + dataDir + "test.csv",
+			opts:    OutAllQuotes(true),
+			want:    "\"1\",\"Orange\"\n\"2\",\"Melon\"\n\"3\",\"Apple\"\n",
+			wantErr: false,
+		},
+		{
+			name:    "testOutQuote",
+			sql:     "SELECT * FROM " + dataDir + "test_quote.csv",
+			opts:    OutQuote(`'`),
+			want:    "1,O\"range\n2,'M''elon'\n3,A pple\n",
+			wantErr: false,
+		},
+		{
+			name:    "testOutCRLF",
+			sql:     "SELECT * FROM " + dataDir + "test.csv",
+			opts:    OutUseCRLF(true),
+			want:    "1,Orange\r\n2,Melon\r\n3,Apple\r\n",
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			outStream := new(bytes.Buffer)
+			exporter := NewExporter(NewWriter(OutStream(outStream), tt.opts))
+			importer := NewImporter()
 			trd := NewTRDSQL(importer, exporter)
 			if err := trd.Exec(tt.sql); (err != nil) != tt.wantErr {
 				t.Errorf("TRDSQL.Exec() error = %v, wantErr %v", err, tt.wantErr)

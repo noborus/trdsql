@@ -21,6 +21,15 @@ type WriteOpts struct {
 	// OutDelimiter is the output delimiter (Use only CSV and Raw).
 	OutDelimiter string
 
+	// OutQuote is the output quote character (Use only CSV).
+	OutQuote string
+
+	// OutAllQuotes is true if Enclose all fields (Use only CSV).
+	OutAllQuotes bool
+
+	// True to use \r\n as the line terminator (Use only CSV).
+	OutUseCRLF bool
+
 	// OutHeader is true if it outputs a header(Use only CSV and Raw).
 	OutHeader bool
 
@@ -45,6 +54,27 @@ func OutFormat(f Format) WriteOpt {
 func OutDelimiter(d string) WriteOpt {
 	return func(args *WriteOpts) {
 		args.OutDelimiter = d
+	}
+}
+
+// OutQuote sets quote.
+func OutQuote(q string) WriteOpt {
+	return func(args *WriteOpts) {
+		args.OutQuote = q
+	}
+}
+
+// OutUseCRLF sets use CRLF.
+func OutUseCRLF(c bool) WriteOpt {
+	return func(args *WriteOpts) {
+		args.OutUseCRLF = c
+	}
+}
+
+// OutAllQuotes sets all quotes.
+func OutAllQuotes(a bool) WriteOpt {
+	return func(args *WriteOpts) {
+		args.OutAllQuotes = a
 	}
 }
 
@@ -82,6 +112,9 @@ func NewWriter(options ...WriteOpt) Writer {
 	writeOpts := &WriteOpts{
 		OutFormat:    CSV,
 		OutDelimiter: ",",
+		OutQuote:     "\"",
+		OutAllQuotes: false,
+		OutUseCRLF:   false,
 		OutHeader:    false,
 		OutStream:    os.Stdout,
 		ErrStream:    os.Stderr,
