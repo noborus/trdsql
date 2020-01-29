@@ -145,7 +145,7 @@ func (cli Cli) Run(args []string) int {
 
 	flags.StringVar(&outDelimiter, "od", ",", "Field delimiter for output.")
 	flags.StringVar(&outQuote, "oq", "\"", "Quote character for output.")
-	flags.BoolVar(&outAllQuotes, "oaq", false, "Enclose all fields in quotes for for output.")
+	flags.BoolVar(&outAllQuotes, "oaq", false, "Enclose all fields in quotes for output.")
 	flags.BoolVar(&outUseCRLF, "ocrlf", false, "Use CRLF for output.")
 	flags.BoolVar(&outHeader, "oh", false, "Output column name as header.")
 

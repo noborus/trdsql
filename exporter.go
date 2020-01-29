@@ -88,9 +88,8 @@ func ValString(v interface{}) string {
 	case []byte:
 		if ok := utf8.Valid(t); ok {
 			return string(t)
-		} else {
-			return `\x` + hex.EncodeToString(t)
 		}
+		return `\x` + hex.EncodeToString(t)
 	case int:
 		return strconv.Itoa(t)
 	case int32:

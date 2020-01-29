@@ -50,14 +50,17 @@ type DB struct {
 // Currently supported drivers are sqlite3, mysql, postgres.
 // Set quote character and maxBulk depending on the driver type.
 func Connect(driver, dsn string) (*DB, error) {
-	var db DB
 	var err error
+
+	db := &DB{}
 	db.DB, err = sql.Open(driver, dsn)
 	if err != nil {
 		return nil, err
 	}
 	db.driver = driver
 	db.dsn = dsn
+	debug.Printf("driver: %s, dsn: %s", driver, dsn)
+
 	switch driver {
 	case "sqlite3":
 		db.quote = "`"
@@ -68,8 +71,8 @@ func Connect(driver, dsn string) (*DB, error) {
 	case "postgres":
 		db.quote = "\""
 	}
-	debug.Printf("driver: %s, dsn: %s", driver, dsn)
-	return &db, nil
+
+	return db, nil
 }
 
 // Disconnect is disconnect the database.
@@ -196,6 +199,7 @@ func (db *DB) copyImport(table *Table, reader Reader) error {
 func (db *DB) insertImport(table *Table, reader Reader) error {
 	var err error
 	var stmt *sql.Stmt
+
 	defer db.stmtClose(stmt)
 
 	// #nosec G202

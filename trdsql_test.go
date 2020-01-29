@@ -236,7 +236,6 @@ func TestTRDSQL_ErrDBExec(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestTRDSQL_ErrWrite(t *testing.T) {
