@@ -21,6 +21,9 @@ function _trdsql {
     '-is[Skip header row.]::' \
     '-ir[umber of row preread for column determination.(default 1)]::' \
     '-od[Field delimiter for output. (default ",")]' \
+    '-oq[Quote character for output. (default "\"")]' \
+    '-oaq[Enclose all fields in quotes for for output.]' \
+    '-ocrlf[Use CRLF for output.]' \
     '-oh[Output column name as header.]' \
     '-oat[ASCII Table format for output.]' \
     '-ojson[JSON format for output.]' \
