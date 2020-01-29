@@ -153,6 +153,7 @@ func (db *DB) copyImport(table *Table, reader Reader) error {
 	if err != nil {
 		return fmt.Errorf("copy prepare: %s", err)
 	}
+	defer db.stmtClose(stmt)
 
 	preReadRows := reader.PreReadRow()
 	for _, row := range preReadRows {
@@ -187,7 +188,7 @@ func (db *DB) copyImport(table *Table, reader Reader) error {
 		return err
 	}
 
-	return stmt.Close()
+	return nil
 }
 
 // insertImport adds a row to a table with an INSERT clause.
@@ -247,11 +248,11 @@ func (db *DB) insertImport(table *Table, reader Reader) error {
 }
 
 func (db *DB) stmtClose(stmt *sql.Stmt) {
-	if stmt != nil {
-		err := stmt.Close()
-		if err != nil {
-			log.Printf("ERROR: stmtClose:%s", err)
-		}
+	if stmt == nil {
+		return
+	}
+	if err := stmt.Close(); err != nil {
+		log.Printf("ERROR: stmtClose:%s", err)
 	}
 }
 

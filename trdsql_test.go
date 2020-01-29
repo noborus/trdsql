@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	dataDir = "testdata/"
+	dataDir = "testdata"
 )
 
 func TestWildCard_Exec(t *testing.T) {
@@ -24,25 +24,31 @@ func TestWildCard_Exec(t *testing.T) {
 	}{
 		{
 			name:    "testWildCardCSV",
-			sql:     "SELECT * FROM " + dataDir + "tt*.csv",
+			sql:     "SELECT * FROM " + filepath.Join(dataDir, "tt*.csv"),
 			want:    "1,test1\n2,test2\n3,test3\n",
 			wantErr: false,
 		},
 		{
+			name:    "testWildCardCS*",
+			sql:     "SELECT * FROM " + filepath.Join(dataDir, "test3.cs*"),
+			want:    "1,Orange\n2,Melon\n3,Apple\n",
+			wantErr: false,
+		},
+		{
 			name:    "testWildCardLTSV",
-			sql:     "SELECT id,name FROM " + dataDir + "tt*.ltsv",
+			sql:     "SELECT id,name FROM " + filepath.Join(dataDir, "tt*.ltsv"),
 			want:    "1,test1\n2,test2\n3,test3\n",
 			wantErr: false,
 		},
 		{
 			name:    "testWildCardJSON",
-			sql:     "SELECT id,name FROM " + dataDir + "tt*.json",
+			sql:     "SELECT id,name FROM " + filepath.Join(dataDir, "tt*.json"),
 			want:    "1,test1\n2,test2\n3,test3\n",
 			wantErr: false,
 		},
 		{
 			name:    "testWildCardTBLN",
-			sql:     "SELECT id,name FROM " + dataDir + "tt*.tbln",
+			sql:     "SELECT id,name FROM " + filepath.Join(dataDir, "tt*.tbln"),
 			want:    "1,test1\n2,test2\n3,test3\n",
 			wantErr: false,
 		},
@@ -88,37 +94,43 @@ func TestTRDSQL_Exec(t *testing.T) {
 		},
 		{
 			name:    "testTestCSV",
-			sql:     "SELECT * FROM " + dataDir + "test.csv",
+			sql:     "SELECT * FROM " + filepath.Join(dataDir, "test.csv"),
 			want:    "1,Orange\n2,Melon\n3,Apple\n",
 			wantErr: false,
 		},
 		{
+			name:    "testTestCSV2",
+			sql:     "SELECT * FROM " + filepath.Join(dataDir, "testcsv"),
+			want:    "aaaaaaaa\nbbbbbbbb\ncccccccc\n",
+			wantErr: false,
+		},
+		{
 			name:    "testQuoteCSV",
-			sql:     "SELECT * FROM " + dataDir + "test_quote.csv",
+			sql:     "SELECT * FROM " + filepath.Join(dataDir, "test_quote.csv"),
 			want:    "1,\"O\"\"range\"\n2,M'elon\n3,A pple\n",
 			wantErr: false,
 		},
 		{
 			name:    "testEscapedCSV",
-			sql:     "SELECT * FROM \"" + dataDir + "test.csv\"",
+			sql:     "SELECT * FROM \"" + filepath.Join(dataDir, "test.csv\""),
 			want:    "1,Orange\n2,Melon\n3,Apple\n",
 			wantErr: false,
 		},
 		{
 			name:    "testEscapedLTSV",
-			sql:     "SELECT * FROM \"" + dataDir + "test.ltsv\"",
+			sql:     "SELECT * FROM \"" + filepath.Join(dataDir, "test.ltsv\""),
 			want:    "1,Orange,50\n2,Melon,500\n3,Apple,100\n",
 			wantErr: false,
 		},
 		{
 			name:    "testJoin",
-			sql:     "SELECT j.c1,j.c2,c.c1,c.c2 FROM " + dataDir + "test.json AS j LEFT JOIN " + dataDir + "test.csv AS c ON (j.c1 = c.c1)",
+			sql:     "SELECT j.c1,j.c2,c.c1,c.c2 FROM " + filepath.Join(dataDir, "test.json") + " AS j LEFT JOIN " + filepath.Join(dataDir, "test.csv") + " AS c ON (j.c1 = c.c1)",
 			want:    "1,Orange,1,Orange\n2,Melon,2,Melon\n3,Apple,3,Apple\n",
 			wantErr: false,
 		},
 		{
 			name:    "testSelfJoin",
-			sql:     "SELECT * FROM " + dataDir + "test.csv AS t1 LEFT JOIN " + dataDir + "test.csv AS t2 ON (t1.c1 = t2.c1)",
+			sql:     "SELECT * FROM " + filepath.Join(dataDir, "test.csv") + " AS t1 LEFT JOIN " + filepath.Join(dataDir, "test.csv") + " AS t2 ON (t1.c1 = t2.c1)",
 			want:    "1,Orange,1,Orange\n2,Melon,2,Melon\n3,Apple,3,Apple\n",
 			wantErr: false,
 		},
@@ -138,6 +150,123 @@ func TestTRDSQL_Exec(t *testing.T) {
 	}
 }
 
+func TestTRDSQL_ErrExec(t *testing.T) {
+	tests := []struct {
+		name    string
+		sql     string
+		want    string
+		wantErr bool
+	}{
+		{
+			name:    "testNoFile",
+			sql:     "SELECT * FROM " + filepath.Join(dataDir, "notestfile.csv"),
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name:    "testNoColumn",
+			sql:     "SELECT test FROM " + filepath.Join(dataDir, "test.csv"),
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name:    "testTypoSQL",
+			sql:     "ELECT * FROM " + filepath.Join(dataDir, "test.csv"),
+			want:    "",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			outStream := new(bytes.Buffer)
+			errStream := new(bytes.Buffer)
+			importer := NewImporter(InFormat(GUESS))
+			exporter := NewExporter(NewWriter(
+				OutStream(outStream),
+				ErrStream(errStream),
+			),
+			)
+			trd := NewTRDSQL(importer, exporter)
+			trd.Driver = "sqlite3"
+			trd.Dsn = ""
+			if err := trd.Exec(tt.sql); (err != nil) != tt.wantErr {
+				t.Errorf("TRDSQL.Exec() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			got := outStream.String()
+			if got != tt.want {
+				t.Errorf("TRDSQL.Exec() result = %v, want %v", got, tt.want)
+			}
+			errStr := errStream.String()
+			if tt.wantErr && len(errStr) != 0 {
+				t.Errorf("TRDSQL.Exec() returns with error but no message")
+			}
+		})
+	}
+}
+
+func TestTRDSQL_ErrDBExec(t *testing.T) {
+	tests := []struct {
+		name    string
+		driver  string
+		dsn     string
+		wantErr bool
+	}{
+		{
+			name:    "testDB",
+			driver:  "postgres",
+			dsn:     "dbname=err",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			outStream := new(bytes.Buffer)
+			errStream := new(bytes.Buffer)
+			importer := NewImporter(InFormat(GUESS))
+			exporter := NewExporter(NewWriter(
+				OutStream(outStream),
+				ErrStream(errStream),
+			),
+			)
+			trd := NewTRDSQL(importer, exporter)
+			trd.Driver = tt.driver
+			trd.Dsn = tt.dsn
+			if err := trd.Exec("SELECT * FROM " + filepath.Join(dataDir, "test.csv")); (err != nil) != tt.wantErr {
+				t.Errorf("TRDSQL.Exec() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+
+}
+
+func TestTRDSQL_ErrWrite(t *testing.T) {
+	tests := []struct {
+		name    string
+		sql     string
+		want    string
+		wantErr bool
+	}{
+		{
+			name:    "testErrWrite",
+			sql:     "SELECT * FROM " + filepath.Join(dataDir, "test.csv"),
+			want:    "",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			importer := NewImporter(InFormat(GUESS))
+			exporter := NewExporter(errorWriter{})
+			trd := NewTRDSQL(importer, exporter)
+			trd.Driver = "sqlite3"
+			trd.Dsn = ""
+			if err := trd.Exec(tt.sql); (err != nil) != tt.wantErr {
+				t.Errorf("TRDSQL.Exec() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestTRDSQL_ReadOpts(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -148,28 +277,35 @@ func TestTRDSQL_ReadOpts(t *testing.T) {
 	}{
 		{
 			name:    "testSkipCSV",
-			sql:     "SELECT * FROM " + dataDir + "test.csv",
+			sql:     "SELECT * FROM " + filepath.Join(dataDir, "test.csv"),
 			opts:    InSkip(1),
 			want:    "2,Melon\n3,Apple\n",
 			wantErr: false,
 		},
 		{
 			name:    "testSkipLTSV",
-			sql:     "SELECT * FROM " + dataDir + "test.ltsv",
+			sql:     "SELECT * FROM " + filepath.Join(dataDir, "test.ltsv"),
 			opts:    InSkip(1),
 			want:    "2,Melon,500\n3,Apple,100\n",
 			wantErr: false,
 		},
 		{
 			name:    "testPreReadCSV",
-			sql:     "SELECT * FROM " + dataDir + "test.csv",
+			sql:     "SELECT * FROM " + filepath.Join(dataDir, "test.csv"),
 			opts:    InPreRead(3),
 			want:    "1,Orange\n2,Melon\n3,Apple\n",
 			wantErr: false,
 		},
 		{
+			name:    "testPreReadCSV2",
+			sql:     "SELECT * FROM " + filepath.Join(dataDir, "test.csv"),
+			opts:    InPreRead(100),
+			want:    "1,Orange\n2,Melon\n3,Apple\n",
+			wantErr: false,
+		},
+		{
 			name:    "testHeaderCSV",
-			sql:     "SELECT id,name FROM " + dataDir + "header.csv",
+			sql:     "SELECT id,name FROM " + filepath.Join(dataDir, "header.csv"),
 			opts:    InHeader(true),
 			want:    "1,Orange\n2,Melon\n3,Apple\n",
 			wantErr: false,
@@ -202,28 +338,42 @@ func TestTRDSQL_WriteOpts(t *testing.T) {
 	}{
 		{
 			name:    "testOutHeader",
-			sql:     "SELECT * FROM " + dataDir + "test.csv",
+			sql:     "SELECT * FROM " + filepath.Join(dataDir, "test.csv"),
 			opts:    OutHeader(true),
 			want:    "c1,c2\n1,Orange\n2,Melon\n3,Apple\n",
 			wantErr: false,
 		},
 		{
 			name:    "testOutAllQuotes",
-			sql:     "SELECT * FROM " + dataDir + "test.csv",
+			sql:     "SELECT * FROM " + filepath.Join(dataDir, "test.csv"),
 			opts:    OutAllQuotes(true),
 			want:    "\"1\",\"Orange\"\n\"2\",\"Melon\"\n\"3\",\"Apple\"\n",
 			wantErr: false,
 		},
 		{
-			name:    "testOutQuote",
-			sql:     "SELECT * FROM " + dataDir + "test_quote.csv",
+			name:    "testOutQuote1",
+			sql:     "SELECT * FROM " + filepath.Join(dataDir, "test_quote.csv"),
+			opts:    OutQuote(`"`),
+			want:    "1,\"O\"\"range\"\n2,M'elon\n3,A pple\n",
+			wantErr: false,
+		},
+		{
+			name:    "testOutQuoteSingle",
+			sql:     "SELECT * FROM " + filepath.Join(dataDir, "test_quote.csv"),
 			opts:    OutQuote(`'`),
 			want:    "1,O\"range\n2,'M''elon'\n3,A pple\n",
 			wantErr: false,
 		},
 		{
+			name:    "testOutQuote2",
+			sql:     "SELECT * FROM " + filepath.Join(dataDir, "test_quote2.csv"),
+			opts:    OutUseCRLF(true),
+			want:    "1,\"O\"\"range\"\r\n2,M'elon\r\n3,\"A pple\"\r\n4,\"ba\r\nnana\"\r\n",
+			wantErr: false,
+		},
+		{
 			name:    "testOutCRLF",
-			sql:     "SELECT * FROM " + dataDir + "test.csv",
+			sql:     "SELECT * FROM " + filepath.Join(dataDir, "test.csv"),
 			opts:    OutUseCRLF(true),
 			want:    "1,Orange\r\n2,Melon\r\n3,Apple\r\n",
 			wantErr: false,
@@ -267,7 +417,7 @@ func TestCSVRun(t *testing.T) {
 	outStream := new(bytes.Buffer)
 	trd := setDefaultTRDSQL(outStream)
 	for _, c := range testCSV {
-		sql := "SELECT * FROM " + dataDir + c[0]
+		sql := "SELECT * FROM " + filepath.Join(dataDir, c[0])
 		err := trd.Exec(sql)
 		if err != nil {
 			t.Errorf("trdsql error. %s", err)
@@ -287,7 +437,7 @@ func TestLTSVRun(t *testing.T) {
 	outStream := new(bytes.Buffer)
 	trd := setDefaultTRDSQL(outStream)
 	for _, c := range testLTSV {
-		sql := "SELECT * FROM " + dataDir + c[0]
+		sql := "SELECT * FROM " + filepath.Join(dataDir, c[0])
 		err := trd.Exec(sql)
 		if err != nil {
 			t.Errorf("trdsql error. %s", err)
@@ -308,7 +458,7 @@ func TestJSONRun(t *testing.T) {
 	trd := setDefaultTRDSQL(outStream)
 	for _, c := range testJSON {
 		// The order of JSON import is undefined
-		sql := "SELECT c1,c2 FROM " + dataDir + c[0]
+		sql := "SELECT c1,c2 FROM " + filepath.Join(dataDir, c[0])
 		err := trd.Exec(sql)
 		if err != nil {
 			t.Errorf("trdsql error. %s", err)
@@ -328,7 +478,7 @@ func TestTBLNRun(t *testing.T) {
 	outStream := new(bytes.Buffer)
 	trd := setDefaultTRDSQL(outStream)
 	for _, c := range testTBLN {
-		sql := "SELECT * FROM " + dataDir + c[0]
+		sql := "SELECT * FROM " + filepath.Join(dataDir, c[0])
 		err := trd.Exec(sql)
 		if err != nil {
 			t.Errorf("trdsql error. %s", err)
@@ -370,7 +520,7 @@ func TestOutFormatRun(t *testing.T) {
 		{format: TBLN, result: "tbln"},
 		{format: JSONL, result: "jsonl"},
 	}
-	sql := "SELECT * FROM " + dataDir + "test.csv"
+	sql := "SELECT * FROM " + filepath.Join(dataDir, "test.csv")
 	for _, c := range testFormat {
 		outFormat := c.format
 		outStream := new(bytes.Buffer)
@@ -465,7 +615,7 @@ func TestTRDSQL_FileExec(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.fileName, func(t *testing.T) {
 			available := availableDB()
-			sql := "SELECT count(*) FROM " + dataDir + tt.fileName
+			sql := "SELECT count(*) FROM " + filepath.Join(dataDir, tt.fileName)
 			for _, d := range available {
 				outStream := new(bytes.Buffer)
 				trd := setDefaultTRDSQL(outStream)
@@ -559,7 +709,7 @@ func TestFormat_String(t *testing.T) {
 }
 
 func benchmarkFormat(b *testing.B, format Format) {
-	sql := "SELECT * FROM " + dataDir + "KEN_ALL.CSV"
+	sql := "SELECT * FROM " + filepath.Join(dataDir, "KEN_ALL.CSV")
 	outStream := new(bytes.Buffer)
 	importer := NewImporter(InFormat(GUESS))
 	exporter := NewExporter(
