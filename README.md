@@ -188,6 +188,13 @@ trdsql [options] SQL
         Output column name as header.
 * `-od` **delimiter character**
         Field delimiter for output. (default ",")
+* `-oq`
+        Quote character for output. (default "\"")
+* `-oaq`
+        Enclose all fields in quotes for output.
+* `-ocrlf`
+        Use CRLF for output.
+
 
 ##  4. <a name='Example'></a>Example
 
