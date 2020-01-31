@@ -50,7 +50,7 @@ build-all:
 	-mkdir dist
 	-mkdir dist/tmp
 	-mkdir dist/bin
-	$(XGOCMD) -dest dist/tmp -pkg ./cmd/trdsql .
+	$(XGOCMD) -dest dist/tmp github.com/noborus/trdsql/cmd/trdsql
 	find dist/tmp -type f -exec cp {} $(DIST_BIN) \;
 
 DIST_DIRS := find trdsql* -type d -exec
