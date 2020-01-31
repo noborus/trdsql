@@ -9,12 +9,14 @@ ifeq ($(strip $(VERSION)),)
 else
   LDFLAGS="-X github.com/noborus/trdsql.Version=$(VERSION)"
 endif
-BUILDFLAG=-tags $(TAGS) -ldflags=$(LDFLAGS)
+GOVERSION="1.13.x"
+BUILDFLAG=-go $(GOVERSION) -tags $(TAGS) -ldflags=$(LDFLAGS)
 GOBUILD=$(GOCMD) build $(BUILDFLAG)
 GOTEST=$(GOCMD) test -tags $(TAGS) -v ./...
 GOINSTALL=$(GOCMD) install $(BUILDFLAG)
 
-XGOCMD=xgo -go 1.13.x $(BUILDFLAG)
+XGOCMD=xgo $(BUILDFLAG)
+
 DIST_BIN=dist/bin
 
 BINARY_NAME := trdsql
@@ -49,7 +51,7 @@ build-all:
 	-mkdir dist
 	-mkdir dist/tmp
 	-mkdir dist/bin
-	$(XGOCMD) --dest dist/tmp ./cmd/trdsql
+	$(XGOCMD) -dest dist/tmp github.com/noborus/trdsql/cmd/trdsql
 	find dist/tmp -type f -exec cp {} $(DIST_BIN) \;
 
 DIST_DIRS := find trdsql* -type d -exec
