@@ -10,12 +10,12 @@ else
   LDFLAGS="-X github.com/noborus/trdsql.Version=$(VERSION)"
 endif
 GOVERSION="1.13.x"
-BUILDFLAG=-go $(GOVERSION) -tags $(TAGS) -ldflags=$(LDFLAGS)
+BUILDFLAG=-tags $(TAGS) -ldflags=$(LDFLAGS)
 GOBUILD=$(GOCMD) build $(BUILDFLAG)
 GOTEST=$(GOCMD) test -tags $(TAGS) -v ./...
 GOINSTALL=$(GOCMD) install $(BUILDFLAG)
 
-XGOCMD=xgo $(BUILDFLAG)
+XGOCMD=xgo -go $(GOVERSION) $(BUILDFLAG)
 
 DIST_BIN=dist/bin
 
