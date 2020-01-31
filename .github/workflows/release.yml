@@ -1,0 +1,35 @@
+name: Release upload
+on:
+  release:
+    types:
+      - published
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install Go
+      if: success()
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.13.x
+
+    - name: Set environment variables
+      shell: bash
+      run: |
+        echo '::set-env name=GOPATH::${{ runner.workspace }}'
+        echo '::add-path::${{ runner.workspace }}/bin'
+    - name: Setup XGO
+      run: go get github.com/crazy-max/xgo
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v1
+    - name: Run dist
+      run: make dist
+
+    - name: Upload Asset to Release with a wildcard
+      uses: AButler/upload-release-assets@v2.0
+      with:
+        files: "dist/*.zip"
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
