@@ -48,6 +48,7 @@ dist-clean:
 build-all:
 	-mkdir dist
 	-mkdir dist/tmp
+	-mkdir dist/bin
 	$(XGOCMD) --dest dist/tmp ./cmd/trdsql
 	find dist/tmp -type f -exec cp {} $(DIST_BIN) \;
 
