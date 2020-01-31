@@ -14,9 +14,8 @@ GOBUILD=$(GOCMD) build $(BUILDFLAG)
 GOTEST=$(GOCMD) test -tags $(TAGS) -v ./...
 GOINSTALL=$(GOCMD) install $(BUILDFLAG)
 
-GOXCMD=gox -cgo $(BUILDFLAG)
-
-TARGET="dist/trdsql_$(VERSION)_{{.OS}}_{{.Arch}}/{{.Dir}}"
+XGOCMD=xgo $(BUILDFLAG)
+DIST_BIN=dist/bin
 
 BINARY_NAME := trdsql
 SRCS := $(shell git ls-files '*.go')
@@ -33,21 +32,6 @@ build: trdsql
 $(BINARY_NAME): $(SRCS)
 	$(GOBUILD) -o $(BINARY_NAME) ./cmd/trdsql
 
-.PHONY: pkg
-pkg: linux_pkg windows_pkg
-
-.PHONY: linux_pkg
-linux_pkg:
-	$(GOXCMD) -os "linux" -arch "amd64" -output $(TARGET) ./cmd/trdsql
-
-.PHONY: windows_pkg
-windows_pkg:
-	CC=x86_64-w64-mingw32-gcc $(GOXCMD) -os "windows" -arch "amd64" -output $(TARGET) ./cmd/trdsql
-
-.PHONY: macOS_pkg
-macOS_pkg:
-	$(GOXCMD) -os "darwin" -arch "amd64" -output ${TARGET} ./cmd/trdsql
-
 .PHONY: install
 install:
 	$(GOINSTALL) ./cmd/trdsql
@@ -57,3 +41,74 @@ clean:
 	$(GOCLEAN)
 	rm -f $(BINARY_NAME)
 	rm -rf dist
+
+dist-clean:
+	rm -Rf dist/trdsql_*
+
+build-all:
+	-mkdir dist
+	-mkdir dist/tmp
+	$(XGOCMD) --dest dist/tmp ./cmd/trdsql
+	find dist/tmp -type f -exec cp {} $(DIST_BIN) \;
+
+DIST_DIRS := find trdsql* -type d -exec
+
+dist: dist-clean build-all linux-amd64 linux-386 linux-arm-5 linux-arm-6 linux-arm-7 linux-arm64 linux-mips linux-mips64 linux-mipsle windows-386 windows-amd64 darwin-386 darwin-amd64
+	cd dist && \
+	$(DIST_DIRS) cp ../README.md {} \; && \
+	$(DIST_DIRS) cp ../LICENSE {} \; && \
+	$(DIST_DIRS) cp ../config.json.sample {} \; && \
+	$(DIST_DIRS) zip -r {}.zip {} \; && \
+	cd ..
+
+linux-amd64:
+	mkdir dist/trdsql_$(VERSION)_linux_amd64
+	cp $(DIST_BIN)/$(BINARY_NAME)-linux-amd64 dist/trdsql_$(VERSION)_linux_amd64/$(BINARY_NAME)
+
+linux-386:
+	mkdir dist/trdsql_$(VERSION)_linux_386
+	cp $(DIST_BIN)/$(BINARY_NAME)-linux-386 dist/trdsql_$(VERSION)_linux_386/$(BINARY_NAME)
+
+linux-arm-5:
+	mkdir dist/trdsql_$(VERSION)_linux_arm5
+	cp $(DIST_BIN)/$(BINARY_NAME)-linux-arm-5 dist/trdsql_$(VERSION)_linux_arm5/$(BINARY_NAME)
+
+linux-arm-6:
+	mkdir dist/trdsql_$(VERSION)_linux_arm6
+	cp $(DIST_BIN)/$(BINARY_NAME)-linux-arm-6 dist/trdsql_$(VERSION)_linux_arm6/$(BINARY_NAME)
+
+linux-arm-7:
+	mkdir dist/trdsql_$(VERSION)_linux_arm7
+	cp $(DIST_BIN)/$(BINARY_NAME)-linux-arm-7 dist/trdsql_$(VERSION)_linux_arm7/$(BINARY_NAME)
+
+linux-arm64:
+	mkdir dist/trdsql_$(VERSION)_linux_arm64
+	cp $(DIST_BIN)/$(BINARY_NAME)-linux-arm64 dist/trdsql_$(VERSION)_linux_arm64/$(BINARY_NAME)
+
+linux-mips:
+	mkdir dist/trdsql_$(VERSION)_linux_mips
+	cp $(DIST_BIN)/$(BINARY_NAME)-linux-mips dist/trdsql_$(VERSION)_linux_mips/$(BINARY_NAME)
+
+linux-mips64:
+	mkdir dist/trdsql_$(VERSION)_linux_mips64
+	cp $(DIST_BIN)/$(BINARY_NAME)-linux-mips64 dist/trdsql_$(VERSION)_linux_mips64/$(BINARY_NAME)
+
+linux-mipsle:
+	mkdir dist/trdsql_$(VERSION)_linux_mipsle
+	cp $(DIST_BIN)/$(BINARY_NAME)-linux-mipsle dist/trdsql_$(VERSION)_linux_mipsle/$(BINARY_NAME)
+
+windows-386:
+	mkdir dist/trdsql_$(VERSION)_windows_386
+	cp $(DIST_BIN)/$(BINARY_NAME)-windows-4.0-386.exe dist/trdsql_$(VERSION)_windows_386/$(BINARY_NAME).exe
+
+windows-amd64:
+	mkdir dist/trdsql_$(VERSION)_windows_amd64
+	cp $(DIST_BIN)/$(BINARY_NAME)-windows-4.0-amd64.exe dist/trdsql_$(VERSION)_windows_amd64/$(BINARY_NAME).exe
+
+darwin-386:
+	mkdir dist/trdsql_$(VERSION)_darwin_386
+	cp $(DIST_BIN)/$(BINARY_NAME)-darwin-10.6-386 dist/trdsql_$(VERSION)_darwin_386/$(BINARY_NAME)
+
+darwin-amd64:
+	mkdir dist/trdsql_$(VERSION)_darwin_amd64
+	cp $(DIST_BIN)/$(BINARY_NAME)-darwin-10.6-amd64 dist/trdsql_$(VERSION)_darwin_amd64/$(BINARY_NAME)
