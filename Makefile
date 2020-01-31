@@ -16,6 +16,7 @@ GOTEST=$(GOCMD) test -tags $(TAGS) -v ./...
 GOINSTALL=$(GOCMD) install $(BUILDFLAG)
 
 XGOCMD=xgo $(BUILDFLAG)
+
 DIST_BIN=dist/bin
 
 BINARY_NAME := trdsql
