@@ -124,10 +124,10 @@ trdsql [options] SQL
         Specify db name of the setting.
 * `-dblist`
         Display db list of configure.
-* `-driver` **driver name**
-        database driver.  [ mysql | postgres | sqlite3 ]
-* `-dsn` **dsn string**
-        database connection option.
+* `-driver` **string**
+        database driver driver.  [ mysql | postgres | sqlite3 ]
+* `-dsn` **string**
+        data source name.
 * `-debug`
         debug print.
 * `-help`
@@ -154,8 +154,8 @@ trdsql [options] SQL
 
 * `-ih`
         The first line is interpreted as column names(CSV only).
-* `-id` **delimiter character**(CSV only)
-        Field delimiter for input. (default ",")
+* `-id` **character**
+        Field delimiter for input. (default ",")(CSV only)
 * `-is` **int**
         Skip header row.
 * `-ir` **int**
@@ -186,14 +186,14 @@ trdsql [options] SQL
 
 * `-oh`
         Output column name as header.
-* `-od` **delimiter character**
-        Field delimiter for output. (default ",")
-* `-oq`
-        Quote character for output. (default "\"")
+* `-od` **character**
+        Field delimiter for output. (default ",")(CSV and RAW only)
+* `-oq` **character**
+        quote character for output. (default "\"")(CSV only).
 * `-oaq`
-        Enclose all fields in quotes for output.
+        Enclose all fields in quotes for output(CSV only).
 * `-ocrlf`
-        Use CRLF for output.
+        Use CRLF for output(CSV only).
 
 
 ##  4. <a name='Example'></a>Example
