@@ -346,7 +346,10 @@ func Test_guessExtension(t *testing.T) {
 	}{
 		{name: "testCSV", tableName: "test.csv", want: CSV},
 		{name: "testLTSV", tableName: "test.ltsv", want: LTSV},
-		{name: "testLTSV2", tableName: "test.ltsv.gz", want: LTSV},
+		{name: "testgz", tableName: "test.ltsv.gz", want: LTSV},
+		{name: "testzstd", tableName: "test.ltsv.zst", want: LTSV},
+		{name: "testlz4", tableName: "test.ltsv.lz4", want: LTSV},
+		{name: "testbzip2", tableName: "test.ltsv.bz2", want: LTSV},
 		{name: "testJSON", tableName: "test.json", want: JSON},
 		{name: "testTBLN", tableName: "test.tbln", want: TBLN},
 		{name: "testunknown", tableName: "test.go", want: CSV},
@@ -395,7 +398,7 @@ func Test_trimQuote(t *testing.T) {
 	}
 }
 
-func Test_extFileReader(t *testing.T) {
+func Test_uncompressedReader(t *testing.T) {
 	tests := []struct {
 		name     string
 		fileName string
@@ -404,6 +407,26 @@ func Test_extFileReader(t *testing.T) {
 		{
 			name:     "testGzFile",
 			fileName: filepath.Join("testdata", "test.csv.gz"),
+			want:     "1,Orange\n2,Melon\n3,Apple\n",
+		},
+		{
+			name:     "testZSTDFile",
+			fileName: filepath.Join("testdata", "test.csv.zst"),
+			want:     "1,Orange\n2,Melon\n3,Apple\n",
+		},
+		{
+			name:     "testBzip2File",
+			fileName: filepath.Join("testdata", "test.csv.bz2"),
+			want:     "1,Orange\n2,Melon\n3,Apple\n",
+		},
+		{
+			name:     "testLZ4File",
+			fileName: filepath.Join("testdata", "test.csv.lz4"),
+			want:     "1,Orange\n2,Melon\n3,Apple\n",
+		},
+		{
+			name:     "testXZFile",
+			fileName: filepath.Join("testdata", "test.csv.xz"),
 			want:     "1,Orange\n2,Melon\n3,Apple\n",
 		},
 		{
@@ -418,7 +441,7 @@ func Test_extFileReader(t *testing.T) {
 			if err != nil {
 				t.Fatalf("extFileReader() file open error %s:%s", tt.fileName, err)
 			}
-			got := extFileReader(tt.fileName, file)
+			got := uncompressedReader(file)
 			r, err := ioutil.ReadAll(got)
 			if err != nil {
 				t.Fatalf("extFileReader() read error %s:%s", tt.fileName, err)
