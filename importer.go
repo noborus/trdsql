@@ -2,6 +2,8 @@ package trdsql
 
 import (
 	"bufio"
+	"bytes"
+	"compress/bzip2"
 	"compress/gzip"
 	"fmt"
 	"io"
@@ -11,6 +13,10 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/klauspost/compress/zstd"
+	"github.com/pierrec/lz4"
+	"github.com/ulikunitz/xz"
 )
 
 // Importer is the interface import data into the database.
@@ -94,7 +100,7 @@ func TableNames(parsedQuery []string) (map[string]string, []int) {
 		switch {
 		case strings.Contains(" \t\r\n;=", w):
 			continue
-		case strings.ToUpper(w) == "FROM" || strings.ToUpper(w) == "JOIN":
+		case strings.EqualFold(w, "FROM"), strings.EqualFold(w, "JOIN"):
 			tableFlag = true
 			frontFlag = true
 		case isSQLKeyWords(w):
@@ -224,32 +230,29 @@ func realFormat(fileName string, readOpts *ReadOpts) *ReadOpts {
 }
 
 func guessExtension(tableName string) Format {
-	if strings.HasSuffix(tableName, ".gz") {
-		tableName = tableName[0 : len(tableName)-3]
-	}
-	pos := strings.LastIndex(tableName, ".")
-	if pos <= 0 {
-		debug.Printf("Set in CSV because the extension is unknown: [%s]", tableName)
-		return CSV
-	}
-	ext := strings.ToUpper(tableName[pos+1:])
-	ext = strings.TrimRight(ext, "\"'`")
-	switch ext {
-	case "CSV":
-		debug.Printf("Guess file type as CSV: [%s]", tableName)
-		return CSV
-	case "LTSV":
-		debug.Printf("Guess file type as LTSV: [%s]", tableName)
-		return LTSV
-	case "JSON":
-		debug.Printf("Guess file type as JSON: [%s]", tableName)
-		return JSON
-	case "TBLN":
-		debug.Printf("Guess file type as TBLN: [%s]", tableName)
-		return TBLN
-	default:
-		debug.Printf("Set in CSV because the extension is unknown: [%s]", tableName)
-		return CSV
+	tableName = strings.TrimRight(tableName, "\"'`")
+	for {
+		dotExt := filepath.Ext(tableName)
+		if dotExt == "" {
+			debug.Printf("Set in CSV because the extension is unknown: [%s]", tableName)
+			return CSV
+		}
+		ext := strings.ToUpper(strings.TrimLeft(dotExt, "."))
+		switch ext {
+		case "CSV":
+			debug.Printf("Guess file type as CSV: [%s]", tableName)
+			return CSV
+		case "LTSV":
+			debug.Printf("Guess file type as LTSV: [%s]", tableName)
+			return LTSV
+		case "JSON", "JSONL":
+			debug.Printf("Guess file type as JSON: [%s]", tableName)
+			return JSON
+		case "TBLN":
+			debug.Printf("Guess file type as TBLN: [%s]", tableName)
+			return TBLN
+		}
+		tableName = tableName[0 : len(tableName)-len(dotExt)]
 	}
 }
 
@@ -261,17 +264,51 @@ func importFileOpen(tableName string) (io.ReadCloser, error) {
 	return singleFileOpen(tableName)
 }
 
+func uncompressedReader(reader io.Reader) io.ReadCloser {
+	var err error
+	buf := [7]byte{}
+	n, err := io.ReadAtLeast(reader, buf[:], len(buf))
+	if err != nil {
+		if err == io.EOF || err == io.ErrUnexpectedEOF {
+			return ioutil.NopCloser(bytes.NewReader(buf[:n]))
+		}
+		return ioutil.NopCloser(bytes.NewReader(nil))
+	}
+
+	rd := io.MultiReader(bytes.NewReader(buf[:n]), reader)
+	var r io.ReadCloser
+	switch {
+	case bytes.Equal(buf[:3], []byte{0x1f, 0x8b, 0x8}):
+		r, err = gzip.NewReader(rd)
+	case bytes.Equal(buf[:3], []byte{0x42, 0x5A, 0x68}):
+		r = ioutil.NopCloser(bzip2.NewReader(rd))
+	case bytes.Equal(buf[:4], []byte{0x28, 0xb5, 0x2f, 0xfd}):
+		var zr *zstd.Decoder
+		zr, err = zstd.NewReader(rd)
+		r = ioutil.NopCloser(zr)
+	case bytes.Equal(buf[:4], []byte{0x04, 0x22, 0x4d, 0x18}):
+		r = ioutil.NopCloser(lz4.NewReader(rd))
+	case bytes.Equal(buf[:7], []byte{0xfd, 0x37, 0x7a, 0x58, 0x5a, 0x0, 0x0}):
+		var zr *xz.Reader
+		zr, err = xz.NewReader(rd)
+		r = ioutil.NopCloser(zr)
+	}
+	if err != nil || r == nil {
+		r = ioutil.NopCloser(rd)
+	}
+	return r
+}
+
 func singleFileOpen(fileName string) (io.ReadCloser, error) {
 	if len(fileName) == 0 || fileName == "-" || strings.ToLower(fileName) == "stdin" {
-		reader := bufio.NewReader(os.Stdin)
-		return ioutil.NopCloser(reader), nil
+		return uncompressedReader(bufio.NewReader(os.Stdin)), nil
 	}
 	fileName = trimQuote(fileName)
 	file, err := os.Open(fileName)
 	if err != nil {
 		return nil, err
 	}
-	return extFileReader(fileName, file), nil
+	return uncompressedReader(file), nil
 }
 
 func globFileOpen(globName string) (*io.PipeReader, error) {
@@ -298,7 +335,7 @@ func globFileOpen(globName string) (*io.PipeReader, error) {
 				log.Printf("ERROR: %s:%s", fileName, err)
 				continue
 			}
-			r := extFileReader(fileName, f)
+			r := uncompressedReader(f)
 			_, err = io.Copy(pipeWriter, r)
 			if err != nil {
 				log.Printf("ERROR: %s:%s", fileName, err)
@@ -327,21 +364,4 @@ func trimQuote(fileName string) string {
 		fileName = strings.Replace(fileName, "\"", "", 2)
 	}
 	return fileName
-}
-
-func extFileReader(fileName string, reader *os.File) io.ReadCloser {
-	if strings.HasSuffix(fileName, ".gz") {
-		z, err := gzip.NewReader(reader)
-		if err != nil {
-			debug.Printf("No gzip file: [%s]", fileName)
-			_, err := reader.Seek(0, io.SeekStart)
-			if err != nil {
-				return nil
-			}
-			return reader
-		}
-		debug.Printf("decompress gzip file: [%s]", fileName)
-		return z
-	}
-	return reader
 }

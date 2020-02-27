@@ -3,7 +3,7 @@
 [![GoDoc](https://godoc.org/github.com/noborus/trdsql?status.svg)](https://godoc.org/github.com/noborus/trdsql)
 [![Go Report Card](https://goreportcard.com/badge/github.com/noborus/trdsql)](https://goreportcard.com/report/github.com/noborus/trdsql)
 [![GoCover.io](https://gocover.io/_badge/github.com/noborus/trdsql)](https://gocover.io/github.com/noborus/trdsql)
-[![Build Status](https://travis-ci.org/noborus/trdsql.svg?branch=master)](https://travis-ci.org/noborus/trdsql)
+![Go](https://github.com/noborus/trdsql/workflows/Go/badge.svg)
 
 CLI tool that can execute SQL queries on [CSV](https://tools.ietf.org/html/rfc4180),
  [LTSV](http://ltsv.org/), [JSON](https://tools.ietf.org/html/rfc7159) and [TBLN](https://tbln.dev/).
@@ -36,7 +36,7 @@ Please refer to [godoc](https://godoc.org/github.com/noborus/trdsql)
 * 4. [Example](#Example)
 	* 4.1. [STDIN input](#STDINinput)
 	* 4.2. [Multiple files](#Multiplefiles)
-	* 4.3. [Expand gzip](#Expandgzip)
+	* 4.3. [Compressed files](#CompressedFiles)
 	* 4.4. [Columns is not constant](#Columnsisnotconstant)
 	* 4.5. [TSV (Tab Separated Value)](#TSVTabSeparatedValue)
 	* 4.6. [LTSV (Labeled Tab-separated Values)](#LTSVLabeledTab-separatedValues)
@@ -245,12 +245,16 @@ $ trdsql -ih "SELECT * FROM tt*.csv"
 
 **Note:** It is not possible to mix different formats (ex: CSV and LTSV).
 
-###  4.3. <a name='Expandgzip'></a>Expand gzip
+###  4.3. <a name='CompressedFiles'></a>Compressed files
 
-Files with the file name suffix of ".gz" are automatically expanded.
+If the file is compressed with gzip, lz4, zstd, xz, it will be automatically uncompressed.
 
 ```console
 trdsql "SELECT * FROM testdata/test.csv.gz"
+```
+
+```console
+trdsql "SELECT * FROM testdata/test.csv.zst"
 ```
 
 It is possible to mix uncompressed and compressed files using wildcards.
