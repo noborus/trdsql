@@ -189,7 +189,7 @@ func Test_outputFormat(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := outputFormat(tt.args.o); !reflect.DeepEqual(got, tt.want) {
+			if got := outputFormat(tt.args.o, trdsql.CSV); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("outputFormat() = %v, want %v", got, tt.want)
 			}
 		})

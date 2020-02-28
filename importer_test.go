@@ -338,32 +338,6 @@ func TestImportFile(t *testing.T) {
 	}
 }
 
-func Test_guessExtension(t *testing.T) {
-	tests := []struct {
-		name      string
-		tableName string
-		want      Format
-	}{
-		{name: "testCSV", tableName: "test.csv", want: CSV},
-		{name: "testLTSV", tableName: "test.ltsv", want: LTSV},
-		{name: "testgz", tableName: "test.ltsv.gz", want: LTSV},
-		{name: "testzstd", tableName: "test.ltsv.zst", want: LTSV},
-		{name: "testlz4", tableName: "test.ltsv.lz4", want: LTSV},
-		{name: "testbzip2", tableName: "test.ltsv.bz2", want: LTSV},
-		{name: "testJSON", tableName: "test.json", want: JSON},
-		{name: "testTBLN", tableName: "test.tbln", want: TBLN},
-		{name: "testunknown", tableName: "test.go", want: CSV},
-		{name: "testunknown2", tableName: "testltsv", want: CSV},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := guessExtension(tt.tableName); got != tt.want {
-				t.Errorf("guessExtension() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func Test_trimQuote(t *testing.T) {
 	type args struct {
 		fileName string
@@ -439,15 +413,15 @@ func Test_uncompressedReader(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			file, err := os.Open(tt.fileName)
 			if err != nil {
-				t.Fatalf("extFileReader() file open error %s:%s", tt.fileName, err)
+				t.Fatalf("uncompressedReader() file open error %s:%s", tt.fileName, err)
 			}
 			got := uncompressedReader(file)
 			r, err := ioutil.ReadAll(got)
 			if err != nil {
-				t.Fatalf("extFileReader() read error %s:%s", tt.fileName, err)
+				t.Fatalf("uncompressedReader() read error %s:%s", tt.fileName, err)
 			}
 			if !reflect.DeepEqual(string(r)[0:7], tt.want[0:7]) {
-				t.Errorf("extFileReader() = %v, want %v", string(r)[0:7], tt.want[0:7])
+				t.Errorf("uncompressedReader() = %v, want %v", string(r)[0:7], tt.want[0:7])
 			}
 		})
 	}

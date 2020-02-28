@@ -222,38 +222,11 @@ func ImportFile(db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 
 func realFormat(fileName string, readOpts *ReadOpts) *ReadOpts {
 	if readOpts.InFormat == GUESS {
-		readOpts.realFormat = guessExtension(fileName)
+		readOpts.realFormat = GuessFormat(fileName)
 	} else {
 		readOpts.realFormat = readOpts.InFormat
 	}
 	return readOpts
-}
-
-func guessExtension(tableName string) Format {
-	tableName = strings.TrimRight(tableName, "\"'`")
-	for {
-		dotExt := filepath.Ext(tableName)
-		if dotExt == "" {
-			debug.Printf("Set in CSV because the extension is unknown: [%s]", tableName)
-			return CSV
-		}
-		ext := strings.ToUpper(strings.TrimLeft(dotExt, "."))
-		switch ext {
-		case "CSV":
-			debug.Printf("Guess file type as CSV: [%s]", tableName)
-			return CSV
-		case "LTSV":
-			debug.Printf("Guess file type as LTSV: [%s]", tableName)
-			return LTSV
-		case "JSON", "JSONL":
-			debug.Printf("Guess file type as JSON: [%s]", tableName)
-			return JSON
-		case "TBLN":
-			debug.Printf("Guess file type as TBLN: [%s]", tableName)
-			return TBLN
-		}
-		tableName = tableName[0 : len(tableName)-len(dotExt)]
-	}
 }
 
 func importFileOpen(tableName string) (io.ReadCloser, error) {

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"compress/gzip"
 	"database/sql"
 	"flag"
 	"fmt"
@@ -8,11 +9,15 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
 
+	"github.com/klauspost/compress/zstd"
 	"github.com/noborus/trdsql"
+	"github.com/pierrec/lz4"
+	"github.com/ulikunitz/xz"
 )
 
 // input format flag
@@ -51,7 +56,7 @@ func inputFormat(i inputFlag) trdsql.Format {
 	}
 }
 
-func outputFormat(o outputFlag) trdsql.Format {
+func outputFormat(o outputFlag, fileFormat trdsql.Format) trdsql.Format {
 	switch {
 	case o.LTSV:
 		return trdsql.LTSV
@@ -72,7 +77,7 @@ func outputFormat(o outputFlag) trdsql.Format {
 	case o.CSV:
 		return trdsql.CSV
 	default:
-		return trdsql.CSV
+		return fileFormat
 	}
 }
 
@@ -110,12 +115,14 @@ func (cli Cli) Run(args []string) int {
 		inSkip      int
 		inPreRead   int
 
-		outFlag      outputFlag
-		outDelimiter string
-		outQuote     string
-		outAllQuotes bool
-		outUseCRLF   bool
-		outHeader    bool
+		outFlag        outputFlag
+		outFile        string
+		outDelimiter   string
+		outQuote       string
+		outCompression string
+		outAllQuotes   bool
+		outUseCRLF     bool
+		outHeader      bool
 	)
 
 	flags := flag.NewFlagSet(trdsql.AppName, flag.ExitOnError)
@@ -143,13 +150,15 @@ func (cli Cli) Run(args []string) int {
 	flags.BoolVar(&inFlag.JSON, "ijson", false, "JSON format for input.")
 	flags.BoolVar(&inFlag.TBLN, "itbln", false, "TBLN format for input.")
 
+	flags.StringVar(&outFile, "out", "", "Output file name.")
 	flags.StringVar(&outDelimiter, "od", ",", "Field delimiter for output.")
 	flags.StringVar(&outQuote, "oq", "\"", "Quote character for output.")
 	flags.BoolVar(&outAllQuotes, "oaq", false, "Enclose all fields in quotes for output.")
 	flags.BoolVar(&outUseCRLF, "ocrlf", false, "Use CRLF for output.")
 	flags.BoolVar(&outHeader, "oh", false, "Output column name as header.")
+	flags.StringVar(&outCompression, "oz", "", "Compression[gzip,zstd,lz4,xz].")
 
-	flags.BoolVar(&outFlag.CSV, "ocsv", true, "CSV format for output.")
+	flags.BoolVar(&outFlag.CSV, "ocsv", false, "CSV format for output.")
 	flags.BoolVar(&outFlag.LTSV, "oltsv", false, "LTSV format for output.")
 	flags.BoolVar(&outFlag.AT, "oat", false, "ASCII Table format for output.")
 	flags.BoolVar(&outFlag.MD, "omd", false, "Mark Down format for output.")
@@ -236,14 +245,32 @@ Options:
 		trdsql.InPreRead(inPreRead),
 	)
 
+	writer := cli.OutStream
+	if outFile != "" {
+		writer, err = os.Create(outFile)
+		if err != nil {
+			log.Printf("%s", err)
+			return 1
+		}
+	}
+	outFormat := outputFormat(outFlag, trdsql.GuessFormat(outFile))
+	if outCompression == "" {
+		outCompression = guessCompression(outFile)
+	}
+	writer, err = compressionWriter(writer, outCompression)
+	if err != nil {
+		log.Printf("%s", err)
+		return 1
+	}
+
 	w := trdsql.NewWriter(
-		trdsql.OutFormat(outputFormat(outFlag)),
+		trdsql.OutFormat(outFormat),
 		trdsql.OutDelimiter(outDelimiter),
 		trdsql.OutQuote(outQuote),
 		trdsql.OutAllQuotes(outAllQuotes),
 		trdsql.OutUseCRLF(outUseCRLF),
 		trdsql.OutHeader(outHeader),
-		trdsql.OutStream(cli.OutStream),
+		trdsql.OutStream(writer),
 		trdsql.ErrStream(cli.ErrStream),
 	)
 	exporter := trdsql.NewExporter(w)
@@ -261,6 +288,14 @@ Options:
 	if err != nil {
 		log.Printf("%s", err)
 		return 1
+	}
+
+	if wc, ok := writer.(io.Closer); ok {
+		err = wc.Close()
+		if err != nil {
+			log.Printf("%s", err)
+			return 1
+		}
 	}
 	return 0
 }
@@ -359,4 +394,40 @@ func quotedArg(arg string) string {
 		return arg
 	}
 	return `"` + arg + `"`
+}
+
+func compressionWriter(w io.Writer, compression string) (io.Writer, error) {
+	switch strings.ToLower(compression) {
+	case "gz", "gzip":
+		return gzip.NewWriter(w), nil
+	case "zst", "zstd":
+		return zstd.NewWriter(w)
+	case "lz4":
+		return lz4.NewWriter(w), nil
+	case "xz":
+		return xz.NewWriter(w)
+	default:
+		return w, nil
+	}
+}
+
+func guessCompression(filename string) string {
+	for {
+		dotExt := filepath.Ext(filename)
+		if dotExt == "" {
+			return ""
+		}
+		ext := strings.ToUpper(strings.TrimLeft(dotExt, "."))
+		switch ext {
+		case "GZ":
+			return "gzip"
+		case "LZ4":
+			return "lz4"
+		case "ZST":
+			return "zstd"
+		case "XZ":
+			return "xz"
+		}
+		filename = filename[0 : len(filename)-len(dotExt)]
+	}
 }

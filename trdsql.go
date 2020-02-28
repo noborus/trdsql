@@ -7,6 +7,8 @@ package trdsql
 import (
 	"fmt"
 	"log"
+	"path/filepath"
+	"strings"
 )
 
 // AppName is used for command names.
@@ -107,6 +109,36 @@ func (f Format) String() string {
 		return "JSONL"
 	default:
 		return "Unknown"
+	}
+}
+
+// GuessFormat is guess format from the file name extension.
+// Format extensions are searched recursively to remove
+// compression extensions such as .gz.
+func GuessFormat(fileName string) Format {
+	fileName = strings.TrimRight(fileName, "\"'`")
+	for {
+		dotExt := filepath.Ext(fileName)
+		if dotExt == "" {
+			debug.Printf("Set in CSV because the extension is unknown: [%s]", fileName)
+			return CSV
+		}
+		ext := strings.ToUpper(strings.TrimLeft(dotExt, "."))
+		switch ext {
+		case "CSV":
+			debug.Printf("Guess file type as CSV: [%s]", fileName)
+			return CSV
+		case "LTSV":
+			debug.Printf("Guess file type as LTSV: [%s]", fileName)
+			return LTSV
+		case "JSON", "JSONL":
+			debug.Printf("Guess file type as JSON: [%s]", fileName)
+			return JSON
+		case "TBLN":
+			debug.Printf("Guess file type as TBLN: [%s]", fileName)
+			return TBLN
+		}
+		fileName = fileName[0 : len(fileName)-len(dotExt)]
 	}
 }
 
