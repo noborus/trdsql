@@ -531,7 +531,7 @@ func TestCli_Run_Out(t *testing.T) {
 		},
 		{
 			name: "out",
-			args: []string{"trdsql", "-out", "/tmp/test.csv.zst", "SELECT * FROM " + filepath.Join("..", "testdata", "test.csv")},
+			args: []string{"trdsql", "-out", filepath.Join(os.TempDir(), "test.csv.zst"), "SELECT * FROM " + filepath.Join("..", "testdata", "test.csv")},
 			want: 0,
 		},
 	}
