@@ -14,6 +14,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/dsnet/compress/bzip2"
 	"github.com/klauspost/compress/zstd"
 	"github.com/noborus/trdsql"
 	"github.com/pierrec/lz4"
@@ -56,7 +57,7 @@ func inputFormat(i inputFlag) trdsql.Format {
 	}
 }
 
-func outputFormat(o outputFlag, fileFormat trdsql.Format) trdsql.Format {
+func outputFormat(o outputFlag) trdsql.Format {
 	switch {
 	case o.LTSV:
 		return trdsql.LTSV
@@ -77,7 +78,7 @@ func outputFormat(o outputFlag, fileFormat trdsql.Format) trdsql.Format {
 	case o.CSV:
 		return trdsql.CSV
 	default:
-		return fileFormat
+		return trdsql.GUESS
 	}
 }
 
@@ -115,14 +116,15 @@ func (cli Cli) Run(args []string) int {
 		inSkip      int
 		inPreRead   int
 
-		outFlag        outputFlag
-		outFile        string
-		outDelimiter   string
-		outQuote       string
-		outCompression string
-		outAllQuotes   bool
-		outUseCRLF     bool
-		outHeader      bool
+		outFlag         outputFlag
+		outFile         string
+		outWithoutGuess bool
+		outDelimiter    string
+		outQuote        string
+		outCompression  string
+		outAllQuotes    bool
+		outUseCRLF      bool
+		outHeader       bool
 	)
 
 	flags := flag.NewFlagSet(trdsql.AppName, flag.ExitOnError)
@@ -151,6 +153,7 @@ func (cli Cli) Run(args []string) int {
 	flags.BoolVar(&inFlag.TBLN, "itbln", false, "TBLN format for input.")
 
 	flags.StringVar(&outFile, "out", "", "Output file name.")
+	flags.BoolVar(&outWithoutGuess, "out-without-guess", false, "Output without guessing from file name.")
 	flags.StringVar(&outDelimiter, "od", ",", "Field delimiter for output.")
 	flags.StringVar(&outQuote, "oq", "\"", "Quote character for output.")
 	flags.BoolVar(&outAllQuotes, "oaq", false, "Enclose all fields in quotes for output.")
@@ -253,8 +256,15 @@ Options:
 			return 1
 		}
 	}
-	outFormat := outputFormat(outFlag, trdsql.GuessFormat(outFile))
-	if outCompression == "" {
+	outFormat := outputFormat(outFlag)
+	if outFormat == trdsql.GUESS {
+		if outWithoutGuess {
+			outFormat = trdsql.CSV
+		} else {
+			outFormat = trdsql.GuessFormat(outFile)
+		}
+	}
+	if outCompression == "" && !outWithoutGuess {
 		outCompression = guessCompression(outFile)
 	}
 	writer, err = compressionWriter(writer, outCompression)
@@ -396,10 +406,31 @@ func quotedArg(arg string) string {
 	return `"` + arg + `"`
 }
 
+func guessCompression(fileName string) string {
+	dotExt := filepath.Ext(fileName)
+	ext := strings.ToLower(strings.TrimLeft(dotExt, "."))
+	switch ext {
+	case "gz":
+		return "gzip"
+	case "bz2":
+		return "bzip2"
+	case "lz4":
+		return "lz4"
+	case "zst":
+		return "zstd"
+	case "xz":
+		return "xz"
+	default:
+		return ""
+	}
+}
+
 func compressionWriter(w io.Writer, compression string) (io.Writer, error) {
 	switch strings.ToLower(compression) {
 	case "gz", "gzip":
 		return gzip.NewWriter(w), nil
+	case "bz2", "bzip2":
+		return bzip2.NewWriter(w, &bzip2.WriterConfig{})
 	case "zst", "zstd":
 		return zstd.NewWriter(w)
 	case "lz4":
@@ -408,26 +439,5 @@ func compressionWriter(w io.Writer, compression string) (io.Writer, error) {
 		return xz.NewWriter(w)
 	default:
 		return w, nil
-	}
-}
-
-func guessCompression(filename string) string {
-	for {
-		dotExt := filepath.Ext(filename)
-		if dotExt == "" {
-			return ""
-		}
-		ext := strings.ToUpper(strings.TrimLeft(dotExt, "."))
-		switch ext {
-		case "GZ":
-			return "gzip"
-		case "LZ4":
-			return "lz4"
-		case "ZST":
-			return "zstd"
-		case "XZ":
-			return "xz"
-		}
-		filename = filename[0 : len(filename)-len(dotExt)]
 	}
 }

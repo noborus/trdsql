@@ -184,12 +184,12 @@ func Test_outputFormat(t *testing.T) {
 			args: args{
 				o: outputFlag{},
 			},
-			want: trdsql.CSV,
+			want: trdsql.GUESS,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := outputFormat(tt.args.o, trdsql.CSV); !reflect.DeepEqual(got, tt.want) {
+			if got := outputFormat(tt.args.o); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("outputFormat() = %v, want %v", got, tt.want)
 			}
 		})
@@ -493,6 +493,64 @@ func TestCli_Run(t *testing.T) {
 	}
 }
 
+func TestCli_Run_Out(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+		want int
+	}{
+		{
+			name: "test",
+			args: []string{"trdsql", "SELECT * FROM " + filepath.Join("..", "testdata", "test.csv")},
+			want: 0,
+		},
+		{
+			name: "gzip",
+			args: []string{"trdsql", "-oz", "gzip", "SELECT * FROM " + filepath.Join("..", "testdata", "test.csv")},
+			want: 0,
+		},
+		{
+			name: "zstd",
+			args: []string{"trdsql", "-oz", "zstd", "SELECT * FROM " + filepath.Join("..", "testdata", "test.csv")},
+			want: 0,
+		},
+		{
+			name: "lz4",
+			args: []string{"trdsql", "-oz", "lz4", "SELECT * FROM " + filepath.Join("..", "testdata", "test.csv")},
+			want: 0,
+		},
+		{
+			name: "bzip2",
+			args: []string{"trdsql", "-oz", "bz2", "SELECT * FROM " + filepath.Join("..", "testdata", "test.csv")},
+			want: 0,
+		},
+		{
+			name: "xz",
+			args: []string{"trdsql", "-oz", "xz", "SELECT * FROM " + filepath.Join("..", "testdata", "test.csv")},
+			want: 0,
+		},
+		{
+			name: "out",
+			args: []string{"trdsql", "-out", "/tmp/test.csv.zst", "SELECT * FROM " + filepath.Join("..", "testdata", "test.csv")},
+			want: 0,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
+			cli := Cli{
+				OutStream: outStream,
+				ErrStream: errStream,
+			}
+			var buf bytes.Buffer
+			log.SetOutput(&buf)
+			if got := cli.Run(tt.args); got != tt.want {
+				t.Errorf("Run() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func Test_printDBList(t *testing.T) {
 	tests := []struct {
 		name string
@@ -576,6 +634,65 @@ func Test_quoteOpts(t *testing.T) {
 			got := quoteOpts(opts, tt.driver)
 			if !reflect.DeepEqual(got.Quote, tt.want) {
 				t.Errorf("quoteOpts() = %v, want %v", got.Quote, tt.want)
+			}
+		})
+	}
+}
+
+func Test_guessCompression(t *testing.T) {
+	type args struct {
+		fileName string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "test",
+			args: args{fileName: "test"},
+			want: "",
+		},
+		{
+			name: "test.csv.gz",
+			args: args{fileName: "test.csv.gz"},
+			want: "gzip",
+		},
+		{
+			name: "test.csv.bz2",
+			args: args{fileName: "test.csv.bz2"},
+			want: "bzip2",
+		},
+		{
+			name: "test.csv.zst",
+			args: args{fileName: "test.csv.zst"},
+			want: "zstd",
+		},
+		{
+			name: "test.csv.lz4",
+			args: args{fileName: "test.csv.lz4"},
+			want: "lz4",
+		},
+		{
+			name: "test.csv.xz",
+			args: args{fileName: "test.csv.xz"},
+			want: "xz",
+		},
+		{
+			name: "testgz.csv",
+			args: args{fileName: "testgz.csv"},
+			want: "",
+		},
+		{
+			name: "test.gz.lz4.xz.zst",
+			args: args{fileName: "test.gz.lz4.xz.zst"},
+			want: "zstd",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := guessCompression(tt.args.fileName); got != tt.want {
+				t.Errorf("guessCompression() = %v, want %v", got, tt.want)
 			}
 		})
 	}
