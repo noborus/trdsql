@@ -567,8 +567,9 @@ func Test_printDBList(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		outStream := new(bytes.Buffer)
 		t.Run(tt.name, func(t *testing.T) {
-			printDBList(tt.cfg)
+			printDBList(outStream, tt.cfg)
 		})
 	}
 }
@@ -639,6 +640,80 @@ func Test_quoteOpts(t *testing.T) {
 	}
 }
 
+func Test_outGuessFormat(t *testing.T) {
+	type args struct {
+		fileName string
+	}
+	tests := []struct {
+		name string
+		args args
+		want trdsql.Format
+	}{
+		{
+			name: "test",
+			args: args{fileName: "test"},
+			want: trdsql.CSV,
+		},
+		{
+			name: "test.csv",
+			args: args{fileName: "test.csv"},
+			want: trdsql.CSV,
+		},
+		{
+			name: "test.csv.gz",
+			args: args{fileName: "test.csv.gz"},
+			want: trdsql.CSV,
+		},
+		{
+			name: "test.ltsv",
+			args: args{fileName: "test.ltsv.gz"},
+			want: trdsql.LTSV,
+		},
+		{
+			name: "test.json",
+			args: args{fileName: "test.json.gz"},
+			want: trdsql.JSON,
+		},
+		{
+			name: "test.tbln",
+			args: args{fileName: "test.tbln.zst"},
+			want: trdsql.TBLN,
+		},
+		{
+			name: "test.raw",
+			args: args{fileName: "test.raw.xz"},
+			want: trdsql.RAW,
+		},
+		{
+			name: "test.md",
+			args: args{fileName: "test.md.bz2"},
+			want: trdsql.MD,
+		},
+		{
+			name: "test.at",
+			args: args{fileName: "test.at.bz2"},
+			want: trdsql.AT,
+		},
+		{
+			name: "test.vf",
+			args: args{fileName: "test.vf.bz2"},
+			want: trdsql.VF,
+		},
+		{
+			name: "test.jsonl",
+			args: args{fileName: "test.jsonl.lz4"},
+			want: trdsql.JSONL,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := outGuessFormat(tt.args.fileName); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("outGuessFormat() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func Test_guessCompression(t *testing.T) {
 	type args struct {
 		fileName string
@@ -691,7 +766,7 @@ func Test_guessCompression(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := guessCompression(tt.args.fileName); got != tt.want {
+			if got := outGuessCompression(tt.args.fileName); got != tt.want {
 				t.Errorf("guessCompression() = %v, want %v", got, tt.want)
 			}
 		})

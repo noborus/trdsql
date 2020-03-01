@@ -128,7 +128,7 @@ func (cli Cli) Run(args []string) int {
 	)
 
 	flags := flag.NewFlagSet(trdsql.AppName, flag.ExitOnError)
-
+	flags.SetOutput(cli.ErrStream)
 	flags.StringVar(&config, "config", config, "Configuration file location.")
 	flags.StringVar(&cDB, "db", "", "Specify db name of the setting.")
 	flags.BoolVar(&dbList, "dblist", false, "display db information.")
@@ -178,7 +178,7 @@ func (cli Cli) Run(args []string) int {
 	}
 
 	if version {
-		fmt.Printf("%s version %s\n", trdsql.AppName, trdsql.Version)
+		fmt.Fprintf(cli.OutStream, "%s version %s\n", trdsql.AppName, trdsql.Version)
 		return 0
 	}
 
@@ -193,13 +193,14 @@ func (cli Cli) Run(args []string) int {
 		return 1
 	}
 	if dbList {
-		printDBList(cfg)
+		printDBList(cli.OutStream, cfg)
 		return 0
 	}
 	driver, dsn := getDB(cfg, cDB, cDriver, cDSN)
 
 	if analyze != "" || onlySQL != "" {
 		opts := trdsql.NewAnalyzeOpts()
+		opts.OutStream = cli.OutStream
 		opts = colorOpts(opts)
 		opts = quoteOpts(opts, driver)
 		if onlySQL != "" {
@@ -261,11 +262,11 @@ Options:
 		if outWithoutGuess {
 			outFormat = trdsql.CSV
 		} else {
-			outFormat = trdsql.GuessFormat(outFile)
+			outFormat = outGuessFormat(outFile)
 		}
 	}
 	if outCompression == "" && !outWithoutGuess {
-		outCompression = guessCompression(outFile)
+		outCompression = outGuessCompression(outFile)
 	}
 	writer, err = compressionWriter(writer, outCompression)
 	if err != nil {
@@ -310,9 +311,9 @@ Options:
 	return 0
 }
 
-func printDBList(cfg *config) {
+func printDBList(w io.Writer, cfg *config) {
 	for od, odb := range cfg.Database {
-		fmt.Printf("%s:%s\n", od, odb.Driver)
+		fmt.Fprintf(w, "%s:%s\n", od, odb.Driver)
 	}
 }
 
@@ -406,7 +407,38 @@ func quotedArg(arg string) string {
 	return `"` + arg + `"`
 }
 
-func guessCompression(fileName string) string {
+func outGuessFormat(fileName string) trdsql.Format {
+	for {
+		dotExt := filepath.Ext(fileName)
+		if dotExt == "" {
+			return trdsql.CSV
+		}
+		ext := strings.ToUpper(strings.TrimLeft(dotExt, "."))
+		switch ext {
+		case "CSV":
+			return trdsql.CSV
+		case "LTSV":
+			return trdsql.LTSV
+		case "JSON":
+			return trdsql.JSON
+		case "TBLN":
+			return trdsql.TBLN
+		case "RAW":
+			return trdsql.RAW
+		case "MD":
+			return trdsql.MD
+		case "AT":
+			return trdsql.AT
+		case "VF":
+			return trdsql.VF
+		case "JSONL":
+			return trdsql.JSONL
+		}
+		fileName = fileName[0 : len(fileName)-len(dotExt)]
+	}
+}
+
+func outGuessCompression(fileName string) string {
 	dotExt := filepath.Ext(fileName)
 	ext := strings.ToLower(strings.TrimLeft(dotExt, "."))
 	switch ext {

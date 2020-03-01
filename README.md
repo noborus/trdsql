@@ -36,24 +36,27 @@ Please refer to [godoc](https://godoc.org/github.com/noborus/trdsql)
 * 4. [Example](#Example)
 	* 4.1. [STDIN input](#STDINinput)
 	* 4.2. [Multiple files](#Multiplefiles)
-	* 4.3. [Compressed files](#CompressedFiles)
-	* 4.4. [Columns is not constant](#Columnsisnotconstant)
-	* 4.5. [TSV (Tab Separated Value)](#TSVTabSeparatedValue)
-	* 4.6. [LTSV (Labeled Tab-separated Values)](#LTSVLabeledTab-separatedValues)
-	* 4.7. [JSON](#JSON)
-	* 4.8. [JSONL](#JSONL)
-	* 4.9. [TBLN](#TBLN)
-	* 4.10. [Raw output](#Rawoutput)
-	* 4.11. [ASCII Table & MarkDown output](#ASCIITableMarkDownoutput)
-	* 4.12. [Vertical format output](#Verticalformatoutput)
-	* 4.13. [SQL function](#SQLfunction)
-	* 4.14. [JOIN](#JOIN)
-	* 4.15. [PostgreSQL](#PostgreSQL)
-		* 4.15.1. [Function](#Function)
-		* 4.15.2. [Join table and CSV file is possible](#JointableandCSVfileispossible)
-	* 4.16. [MySQL](#MySQL)
-	* 4.17. [Analyze](#Analyze)
-	* 4.18. [configuration](#configuration)
+	* 4.3. [Compressed files](#Compressedfiles)
+	* 4.4. [Output file](#Outputfile)
+	* 4.5. [Output compression](#Outputcompression)
+	* 4.6. [Guess by output file name](#Guessbyoutputfilename)
+	* 4.7. [Columns is not constant](#Columnsisnotconstant)
+	* 4.8. [TSV (Tab Separated Value)](#TSVTabSeparatedValue)
+	* 4.9. [LTSV (Labeled Tab-separated Values)](#LTSVLabeledTab-separatedValues)
+	* 4.10. [JSON](#JSON)
+	* 4.11. [JSONL](#JSONL)
+	* 4.12. [TBLN](#TBLN)
+	* 4.13. [Raw output](#Rawoutput)
+	* 4.14. [ASCII Table & MarkDown output](#ASCIITableMarkDownoutput)
+	* 4.15. [Vertical format output](#Verticalformatoutput)
+	* 4.16. [SQL function](#SQLfunction)
+	* 4.17. [JOIN](#JOIN)
+	* 4.18. [PostgreSQL](#PostgreSQL)
+		* 4.18.1. [Function](#Function)
+		* 4.18.2. [Join table and CSV file is possible](#JointableandCSVfileispossible)
+	* 4.19. [MySQL](#MySQL)
+	* 4.20. [Analyze](#Analyze)
+	* 4.21. [configuration](#configuration)
 * 5. [Library](#Library)
 * 6. [License](#License)
 
@@ -184,6 +187,10 @@ trdsql [options] SQL
 
 ####  3.3.1. <a name='Outputoption'></a>Output option
 
+* `-out` **filename**
+        Output file name.
+* `-out-without-guess`
+        Output without guessing from file name.
 * `-oh`
         Output column name as header.
 * `-od` **character**
@@ -245,7 +252,7 @@ $ trdsql -ih "SELECT * FROM tt*.csv"
 
 **Note:** It is not possible to mix different formats (ex: CSV and LTSV).
 
-###  4.3. <a name='CompressedFiles'></a>Compressed files
+###  4.3. <a name='Compressedfiles'></a>Compressed files
 
 If the file is compressed with gzip, lz4, zstd, xz, it will be automatically uncompressed.
 
@@ -263,7 +270,35 @@ It is possible to mix uncompressed and compressed files using wildcards.
 trdsql "SELECT * FROM testdata/test.csv*"
 ```
 
-###  4.4. <a name='Columnsisnotconstant'></a>Columns is not constant
+###  4.4. <a name='Outputfile'></a>Output file
+
+`-out filename` option to output the file to a file.
+
+```console
+trdsql -out result.csv "SELECT * FROM testdata/test.csv ORDER BY c1"
+```
+
+###  4.5. <a name='Outputcompression'></a>Output compression
+
+`-oz compression type` to compress and output.
+
+```console
+trdsql -oz gz "SELECT * FROM testdata/test.csv ORDER BY c1" > result.csv.gz
+```
+
+###  4.6. <a name='Guessbyoutputfilename'></a>Guess by output file name
+
+The filename of `-out filename` option determines
+the output format(csv, ltsv, json, tbln, raw, md, at, vf, jsonl)
+ and compression format(gzip, zstd, bz2, lz4, xz) by guess.
+
+The following is an LTSV file compressed in zstd.
+
+```console
+trdsql -out result.ltsv.zst "SELECT * FROM testdata/test.csv"
+```
+
+###  4.7. <a name='Columnsisnotconstant'></a>Columns is not constant
 
 If the number of columns is not a constant, read and decide multiple rows.
 
@@ -274,9 +309,9 @@ $ trdsql -ir 3 -iltsv "SELECT * FROM test_indefinite.ltsv"
 3,Apple,100,aomori,red
 ```
 
-###  4.5. <a name='TSVTabSeparatedValue'></a>TSV (Tab Separated Value)
+###  4.8. <a name='TSVTabSeparatedValue'></a>TSV (Tab Separated Value)
 
--id "\\t" is input from TSV (Tab Separated Value)
+`-id "\\t"` is input from TSV (Tab Separated Value)
 
 ```tsv
 1	Orange
@@ -300,9 +335,9 @@ trdsql -od "\t" "SELECT * FROM test.csv"
 3	Apple
 ```
 
-###  4.6. <a name='LTSVLabeledTab-separatedValues'></a>LTSV (Labeled Tab-separated Values)
+###  4.9. <a name='LTSVLabeledTab-separatedValues'></a>LTSV (Labeled Tab-separated Values)
 
--iltsv is input from LTSV(Labeled Tab-separated Values).
+`-iltsv` is input from LTSV(Labeled Tab-separated Values).
 
 sample.ltsv
 
@@ -330,7 +365,7 @@ id:2	name:Melon	price:500
 id:3	name:Apple	price:100
 ```
 
-###  4.7. <a name='JSON'></a>JSON
+###  4.10. <a name='JSON'></a>JSON
 
 -ijson is input from JSON.
 
@@ -436,7 +471,7 @@ trdsql -ojson "SELECT * FROM test.csv"
 ]
 ```
 
-###  4.8. <a name='JSONL'></a>JSONL
+###  4.11. <a name='JSONL'></a>JSONL
 
 To output in JSONL, specify -ojsonl.
 
@@ -450,7 +485,7 @@ trdsql -ojsonl "SELECT * FROM test.csv"
 {"c1":"3","c2":"Apple"}
 ```
 
-###  4.9. <a name='TBLN'></a>TBLN
+###  4.12. <a name='TBLN'></a>TBLN
 
 -itbln is input from TBLN.
 
@@ -486,7 +521,7 @@ $ trdsql -otbln "SELECT c1::int as id, c2::text as name FROM test.csv"
 TBLN can contain column names and type definitions.
 Please refer to <https://tbln.dev/> for details of TBLN.
 
-###  4.10. <a name='Rawoutput'></a>Raw output
+###  4.13. <a name='Rawoutput'></a>Raw output
 
 -oraw is Raw Output.
 It is used when "escape processing is unnecessary" in CSV output.
@@ -514,7 +549,7 @@ trdsql -oraw -od "\t|\t" -db pdb "SELECT * FROM test.csv"
 3	|	Apple
 ```
 
-###  4.11. <a name='ASCIITableMarkDownoutput'></a>ASCII Table & MarkDown output
+###  4.14. <a name='ASCIITableMarkDownoutput'></a>ASCII Table & MarkDown output
 
 -oat is ASCII table output.
 
@@ -540,7 +575,7 @@ $ trdsql -omd "SELECT * FROM test.csv"
 |  3 | Apple  |
 ```
 
-###  4.12. <a name='Verticalformatoutput'></a>Vertical format output
+###  4.15. <a name='Verticalformatoutput'></a>Vertical format output
 
 -ovf is Vertical format output("column name | value" vertically).
 
@@ -557,7 +592,7 @@ $ trdsql -ovf "SELECT * FROM test.csv"
   c2 | Apple
 ```
 
-###  4.13. <a name='SQLfunction'></a>SQL function
+###  4.16. <a name='SQLfunction'></a>SQL function
 
 ```console
 $ trdsql "SELECT count(*) FROM test.csv"
@@ -583,7 +618,7 @@ TIME,TTY,PID,CMD
 00:00:05,pts/20,15576,zsh
 ```
 
-###  4.14. <a name='JOIN'></a>JOIN
+###  4.17. <a name='JOIN'></a>JOIN
 
 The SQL JOIN can be used.
 
@@ -609,7 +644,7 @@ $ trdsql "SELECT u.c1,u.c2,h.c2 FROM user.csv as u LEFT JOIN hist.csv as h ON(u.
 2,userB,2017-7-11
 ```
 
-###  4.15. <a name='PostgreSQL'></a>PostgreSQL
+###  4.18. <a name='PostgreSQL'></a>PostgreSQL
 
 When using PostgreSQL, specify postgres for driver
  and connection information for dsn.
@@ -618,7 +653,7 @@ When using PostgreSQL, specify postgres for driver
 trdsql -driver postgres -dsn "dbname=test" "SELECT count(*) FROM test.csv "
 ```
 
-####  4.15.1. <a name='Function'></a>Function
+####  4.18.1. <a name='Function'></a>Function
 
 The PostgreSQL driver can use the window function.
 
@@ -638,7 +673,7 @@ $ trdsql -driver postgres -dsn "dbname=test" "SELECT generate_series(1,3);"
 3
 ```
 
-####  4.15.2. <a name='JointableandCSVfileispossible'></a>Join table and CSV file is possible
+####  4.18.2. <a name='JointableandCSVfileispossible'></a>Join table and CSV file is possible
 
 Test database has a colors table.
 
@@ -677,7 +712,7 @@ $ psql -c "SELECT * FROM fruits;"
 (3 rows)
 ```
 
-###  4.16. <a name='MySQL'></a>MySQL
+###  4.19. <a name='MySQL'></a>MySQL
 
 When using MySQL, specify mysql for driver and connection information for dsn.
 
@@ -695,7 +730,7 @@ $ trdsql -driver mysql -dsn "user:password@/test" "SELECT c1, SHA2(c2,224) FROM 
 
 MySQL can join tables and CSV files as well as PostgreSQL.
 
-###  4.17. <a name='Analyze'></a>Analyze
+###  4.20. <a name='Analyze'></a>Analyze
 
 The ***-a filename*** option parses the file and outputs table information and SQL examples.
 
@@ -748,7 +783,7 @@ trdsql -ih "SELECT id, count(id) FROM testdata/header.csv GROUP BY id"
 trdsql -ih "SELECT id, \`name\` FROM testdata/header.csv ORDER BY id LIMIT 10"
 ```
 
-###  4.18. <a name='configuration'></a>configuration
+###  4.21. <a name='configuration'></a>configuration
 
 You can specify driver and dsn in the configuration file.
 

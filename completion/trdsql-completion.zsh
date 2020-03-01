@@ -20,6 +20,8 @@ function _trdsql {
     '(-ig -icsv -iltsv -ijson)-itbln[TBLN format for input.]' \
     '-is[Skip header row.]::' \
     '-ir[umber of row preread for column determination.(default 1)]::' \
+    '-out[Output file name.]' \
+    '-out-without-guess[Output without guessing from file name.]' \
     '-od[Field delimiter for output. (default ",")]' \
     '-oq[Quote character for output. (default "\"")]' \
     '-oaq[Enclose all fields in quotes for output.]' \
@@ -32,6 +34,7 @@ function _trdsql {
     '-omd[Mark Down format for output.]' \
     '-oraw[Raw format for output.]' \
     '-ovf[Vertical format for output.]' \
+    '-oz[Compression format.]:compression:_values "" "gz" "lz4" "bzip2" "zst" "xz"' \
     '-a[Analyze file and suggest SQL.]:file:_files -g "*.(csv|CSV|ltsv|LTSV|json|JSON|tbln|TBLN)"' \
     '-A[Analyze but only suggest SQL.]:file:_files -g "*.(csv|CSV|ltsv|LTSV|json|JSON|tbln|TBLN)"' \
     '-q[Read query from the provided filename.]:file:_files -g "*.(SQL|sql)"' \
