@@ -357,8 +357,8 @@ func Test_guessExtension(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := guessExtension(tt.tableName); got != tt.want {
-				t.Errorf("guessExtension() = %v, want %v", got, tt.want)
+			if got := guessFormat(tt.tableName); got != tt.want {
+				t.Errorf("guessFormat() = %v, want %v", got, tt.want)
 			}
 		})
 	}

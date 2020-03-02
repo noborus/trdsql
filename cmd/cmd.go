@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"compress/gzip"
 	"database/sql"
 	"flag"
 	"fmt"
@@ -8,11 +9,16 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
 
+	"github.com/dsnet/compress/bzip2"
+	"github.com/klauspost/compress/zstd"
 	"github.com/noborus/trdsql"
+	"github.com/pierrec/lz4"
+	"github.com/ulikunitz/xz"
 )
 
 // input format flag
@@ -72,7 +78,7 @@ func outputFormat(o outputFlag) trdsql.Format {
 	case o.CSV:
 		return trdsql.CSV
 	default:
-		return trdsql.CSV
+		return trdsql.GUESS
 	}
 }
 
@@ -110,16 +116,19 @@ func (cli Cli) Run(args []string) int {
 		inSkip      int
 		inPreRead   int
 
-		outFlag      outputFlag
-		outDelimiter string
-		outQuote     string
-		outAllQuotes bool
-		outUseCRLF   bool
-		outHeader    bool
+		outFlag         outputFlag
+		outFile         string
+		outWithoutGuess bool
+		outDelimiter    string
+		outQuote        string
+		outCompression  string
+		outAllQuotes    bool
+		outUseCRLF      bool
+		outHeader       bool
 	)
 
 	flags := flag.NewFlagSet(trdsql.AppName, flag.ExitOnError)
-
+	flags.SetOutput(cli.ErrStream)
 	flags.StringVar(&config, "config", config, "Configuration file location.")
 	flags.StringVar(&cDB, "db", "", "Specify db name of the setting.")
 	flags.BoolVar(&dbList, "dblist", false, "display db information.")
@@ -143,13 +152,16 @@ func (cli Cli) Run(args []string) int {
 	flags.BoolVar(&inFlag.JSON, "ijson", false, "JSON format for input.")
 	flags.BoolVar(&inFlag.TBLN, "itbln", false, "TBLN format for input.")
 
+	flags.StringVar(&outFile, "out", "", "Output file name.")
+	flags.BoolVar(&outWithoutGuess, "out-without-guess", false, "Output without guessing from file name.")
 	flags.StringVar(&outDelimiter, "od", ",", "Field delimiter for output.")
 	flags.StringVar(&outQuote, "oq", "\"", "Quote character for output.")
 	flags.BoolVar(&outAllQuotes, "oaq", false, "Enclose all fields in quotes for output.")
 	flags.BoolVar(&outUseCRLF, "ocrlf", false, "Use CRLF for output.")
 	flags.BoolVar(&outHeader, "oh", false, "Output column name as header.")
+	flags.StringVar(&outCompression, "oz", "", "Compression[gzip,zstd,lz4,xz].")
 
-	flags.BoolVar(&outFlag.CSV, "ocsv", true, "CSV format for output.")
+	flags.BoolVar(&outFlag.CSV, "ocsv", false, "CSV format for output.")
 	flags.BoolVar(&outFlag.LTSV, "oltsv", false, "LTSV format for output.")
 	flags.BoolVar(&outFlag.AT, "oat", false, "ASCII Table format for output.")
 	flags.BoolVar(&outFlag.MD, "omd", false, "Mark Down format for output.")
@@ -166,7 +178,7 @@ func (cli Cli) Run(args []string) int {
 	}
 
 	if version {
-		fmt.Printf("%s version %s\n", trdsql.AppName, trdsql.Version)
+		fmt.Fprintf(cli.OutStream, "%s version %s\n", trdsql.AppName, trdsql.Version)
 		return 0
 	}
 
@@ -181,13 +193,14 @@ func (cli Cli) Run(args []string) int {
 		return 1
 	}
 	if dbList {
-		printDBList(cfg)
+		printDBList(cli.OutStream, cfg)
 		return 0
 	}
 	driver, dsn := getDB(cfg, cDB, cDriver, cDSN)
 
 	if analyze != "" || onlySQL != "" {
 		opts := trdsql.NewAnalyzeOpts()
+		opts.OutStream = cli.OutStream
 		opts = colorOpts(opts)
 		opts = quoteOpts(opts, driver)
 		if onlySQL != "" {
@@ -236,14 +249,39 @@ Options:
 		trdsql.InPreRead(inPreRead),
 	)
 
+	writer := cli.OutStream
+	if outFile != "" {
+		writer, err = os.Create(outFile)
+		if err != nil {
+			log.Printf("%s", err)
+			return 1
+		}
+	}
+	outFormat := outputFormat(outFlag)
+	if outFormat == trdsql.GUESS {
+		if outWithoutGuess {
+			outFormat = trdsql.CSV
+		} else {
+			outFormat = outGuessFormat(outFile)
+		}
+	}
+	if outCompression == "" && !outWithoutGuess {
+		outCompression = outGuessCompression(outFile)
+	}
+	writer, err = compressionWriter(writer, outCompression)
+	if err != nil {
+		log.Printf("%s", err)
+		return 1
+	}
+
 	w := trdsql.NewWriter(
-		trdsql.OutFormat(outputFormat(outFlag)),
+		trdsql.OutFormat(outFormat),
 		trdsql.OutDelimiter(outDelimiter),
 		trdsql.OutQuote(outQuote),
 		trdsql.OutAllQuotes(outAllQuotes),
 		trdsql.OutUseCRLF(outUseCRLF),
 		trdsql.OutHeader(outHeader),
-		trdsql.OutStream(cli.OutStream),
+		trdsql.OutStream(writer),
 		trdsql.ErrStream(cli.ErrStream),
 	)
 	exporter := trdsql.NewExporter(w)
@@ -262,12 +300,20 @@ Options:
 		log.Printf("%s", err)
 		return 1
 	}
+
+	if wc, ok := writer.(io.Closer); ok {
+		err = wc.Close()
+		if err != nil {
+			log.Printf("%s", err)
+			return 1
+		}
+	}
 	return 0
 }
 
-func printDBList(cfg *config) {
+func printDBList(w io.Writer, cfg *config) {
 	for od, odb := range cfg.Database {
-		fmt.Printf("%s:%s\n", od, odb.Driver)
+		fmt.Fprintf(w, "%s:%s\n", od, odb.Driver)
 	}
 }
 
@@ -359,4 +405,71 @@ func quotedArg(arg string) string {
 		return arg
 	}
 	return `"` + arg + `"`
+}
+
+func outGuessFormat(fileName string) trdsql.Format {
+	for {
+		dotExt := filepath.Ext(fileName)
+		if dotExt == "" {
+			return trdsql.CSV
+		}
+		ext := strings.ToUpper(strings.TrimLeft(dotExt, "."))
+		switch ext {
+		case "CSV":
+			return trdsql.CSV
+		case "LTSV":
+			return trdsql.LTSV
+		case "JSON":
+			return trdsql.JSON
+		case "TBLN":
+			return trdsql.TBLN
+		case "RAW":
+			return trdsql.RAW
+		case "MD":
+			return trdsql.MD
+		case "AT":
+			return trdsql.AT
+		case "VF":
+			return trdsql.VF
+		case "JSONL":
+			return trdsql.JSONL
+		}
+		fileName = fileName[0 : len(fileName)-len(dotExt)]
+	}
+}
+
+func outGuessCompression(fileName string) string {
+	dotExt := filepath.Ext(fileName)
+	ext := strings.ToLower(strings.TrimLeft(dotExt, "."))
+	switch ext {
+	case "gz":
+		return "gzip"
+	case "bz2":
+		return "bzip2"
+	case "lz4":
+		return "lz4"
+	case "zst":
+		return "zstd"
+	case "xz":
+		return "xz"
+	default:
+		return ""
+	}
+}
+
+func compressionWriter(w io.Writer, compression string) (io.Writer, error) {
+	switch strings.ToLower(compression) {
+	case "gz", "gzip":
+		return gzip.NewWriter(w), nil
+	case "bz2", "bzip2":
+		return bzip2.NewWriter(w, &bzip2.WriterConfig{})
+	case "zst", "zstd":
+		return zstd.NewWriter(w)
+	case "lz4":
+		return lz4.NewWriter(w), nil
+	case "xz":
+		return xz.NewWriter(w)
+	default:
+		return w, nil
+	}
 }

@@ -222,14 +222,17 @@ func ImportFile(db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 
 func realFormat(fileName string, readOpts *ReadOpts) *ReadOpts {
 	if readOpts.InFormat == GUESS {
-		readOpts.realFormat = guessExtension(fileName)
+		readOpts.realFormat = guessFormat(fileName)
 	} else {
 		readOpts.realFormat = readOpts.InFormat
 	}
 	return readOpts
 }
 
-func guessExtension(tableName string) Format {
+// guessFormat is guess format from the file name extension.
+// Format extensions are searched recursively to remove
+// compression extensions such as .gz.
+func guessFormat(tableName string) Format {
 	tableName = strings.TrimRight(tableName, "\"'`")
 	for {
 		dotExt := filepath.Ext(tableName)

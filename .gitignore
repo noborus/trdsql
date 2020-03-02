@@ -12,6 +12,9 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
+.markdownlint.json
+type.sh
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 vendor/
 dist/
+tmp/
