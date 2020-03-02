@@ -185,6 +185,8 @@ trdsql [options] SQL
 * `-otbln`
         TBLN format for output.
 
+Or, [guess the output format by file name](#Guessbyoutputfilename).
+
 ####  3.3.1. <a name='Outputoption'></a>Output option
 
 * `-out` **filename**
@@ -291,6 +293,9 @@ trdsql -oz gz "SELECT * FROM testdata/test.csv ORDER BY c1" > result.csv.gz
 The filename of `-out filename` option determines
 the output format(csv, ltsv, json, tbln, raw, md, at, vf, jsonl)
  and compression format(gzip, zstd, bz2, lz4, xz) by guess.
+
+Guess by extension output format + output compression
+(eg .csv.gz, .ltsv.lz4, .md.zst ...).
 
 The following is an LTSV file compressed in zstd.
 
