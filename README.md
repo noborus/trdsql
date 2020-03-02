@@ -256,7 +256,7 @@ $ trdsql -ih "SELECT * FROM tt*.csv"
 
 ###  4.3. <a name='Compressedfiles'></a>Compressed files
 
-If the file is compressed with gzip, lz4, zstd, xz, it will be automatically uncompressed.
+If the file is compressed with gzip, lz4, bz2, zstd, xz, it will be automatically uncompressed.
 
 ```console
 trdsql "SELECT * FROM testdata/test.csv.gz"
