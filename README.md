@@ -256,7 +256,7 @@ $ trdsql -ih "SELECT * FROM tt*.csv"
 
 ###  4.3. <a name='Compressedfiles'></a>Compressed files
 
-If the file is compressed with gzip, lz4, bz2, zstd, xz, it will be automatically uncompressed.
+If the file is compressed with gzip, bz2, zstd, lz4, xz, it will be automatically uncompressed.
 
 ```console
 trdsql "SELECT * FROM testdata/test.csv.gz"
@@ -292,7 +292,7 @@ trdsql -oz gz "SELECT * FROM testdata/test.csv ORDER BY c1" > result.csv.gz
 
 The filename of `-out filename` option determines
 the output format(csv, ltsv, json, tbln, raw, md, at, vf, jsonl)
- and compression format(gzip, zstd, bz2, lz4, xz) by guess.
+ and compression format(gzip, bz2, zstd,lz4, xz) by guess.
 
 Guess by extension output format + output compression
 (eg .csv.gz, .ltsv.lz4, .md.zst ...).

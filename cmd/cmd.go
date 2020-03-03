@@ -159,7 +159,7 @@ func (cli Cli) Run(args []string) int {
 	flags.BoolVar(&outAllQuotes, "oaq", false, "Enclose all fields in quotes for output.")
 	flags.BoolVar(&outUseCRLF, "ocrlf", false, "Use CRLF for output.")
 	flags.BoolVar(&outHeader, "oh", false, "Output column name as header.")
-	flags.StringVar(&outCompression, "oz", "", "Compression[gzip,zstd,lz4,xz].")
+	flags.StringVar(&outCompression, "oz", "", "Compression format. [gzip | bz2 | zstd | lz4 | xz].")
 
 	flags.BoolVar(&outFlag.CSV, "ocsv", false, "CSV format for output.")
 	flags.BoolVar(&outFlag.LTSV, "oltsv", false, "LTSV format for output.")
@@ -446,10 +446,10 @@ func outGuessCompression(fileName string) string {
 		return "gzip"
 	case "bz2":
 		return "bzip2"
-	case "lz4":
-		return "lz4"
 	case "zst":
 		return "zstd"
+	case "lz4":
+		return "lz4"
 	case "xz":
 		return "xz"
 	default:
