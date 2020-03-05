@@ -129,42 +129,43 @@ func (cli Cli) Run(args []string) int {
 
 	flags := flag.NewFlagSet(trdsql.AppName, flag.ExitOnError)
 	flags.SetOutput(cli.ErrStream)
-	flags.StringVar(&config, "config", config, "Configuration file location.")
-	flags.StringVar(&cDB, "db", "", "Specify db name of the setting.")
+	flags.Usage = func() { Usage(flags) }
+	flags.StringVar(&config, "config", config, "configuration file location.")
+	flags.StringVar(&cDB, "db", "", "specify db name of the setting.")
 	flags.BoolVar(&dbList, "dblist", false, "display db information.")
 	flags.StringVar(&cDriver, "driver", "", "database driver.  [ "+strings.Join(sql.Drivers(), " | ")+" ]")
-	flags.StringVar(&cDSN, "dsn", "", "database connection option.")
-	flags.BoolVar(&guess, "ig", true, "Guess format from extension.")
-	flags.StringVar(&queryFile, "q", "", "Read query from the provided filename.")
-	flags.StringVar(&analyze, "a", "", "Analyze file and suggest SQL.")
-	flags.StringVar(&onlySQL, "A", "", "Analyze but only suggest SQL.")
+	flags.StringVar(&cDSN, "dsn", "", "database driver specific data source name.")
+	flags.BoolVar(&guess, "ig", true, "guess format from extension.")
+	flags.StringVar(&queryFile, "q", "", "read query from the specified file.")
+	flags.StringVar(&analyze, "a", "", "analyze the file and suggest SQL.")
+	flags.StringVar(&onlySQL, "A", "", "analyze the file but only suggest SQL.")
 	flags.BoolVar(&usage, "help", false, "display usage information.")
 	flags.BoolVar(&version, "version", false, "display version information.")
 	flags.BoolVar(&Debug, "debug", false, "debug print.")
 
-	flags.StringVar(&inDelimiter, "id", ",", "Field delimiter for input.")
-	flags.BoolVar(&inHeader, "ih", false, "The first line is interpreted as column names(CSV only).")
-	flags.IntVar(&inSkip, "is", 0, "Skip header row.")
-	flags.IntVar(&inPreRead, "ir", 1, "Number of row preread for column determination.")
+	flags.StringVar(&inDelimiter, "id", ",", "field delimiter for input.")
+	flags.BoolVar(&inHeader, "ih", false, "the first line is interpreted as column names(CSV only).")
+	flags.IntVar(&inSkip, "is", 0, "skip header row.")
+	flags.IntVar(&inPreRead, "ir", 1, "number of row preread for column determination.")
 
 	flags.BoolVar(&inFlag.CSV, "icsv", false, "CSV format for input.")
 	flags.BoolVar(&inFlag.LTSV, "iltsv", false, "LTSV format for input.")
 	flags.BoolVar(&inFlag.JSON, "ijson", false, "JSON format for input.")
 	flags.BoolVar(&inFlag.TBLN, "itbln", false, "TBLN format for input.")
 
-	flags.StringVar(&outFile, "out", "", "Output file name.")
-	flags.BoolVar(&outWithoutGuess, "out-without-guess", false, "Output without guessing from file name.")
-	flags.StringVar(&outDelimiter, "od", ",", "Field delimiter for output.")
-	flags.StringVar(&outQuote, "oq", "\"", "Quote character for output.")
-	flags.BoolVar(&outAllQuotes, "oaq", false, "Enclose all fields in quotes for output.")
-	flags.BoolVar(&outUseCRLF, "ocrlf", false, "Use CRLF for output.")
-	flags.BoolVar(&outHeader, "oh", false, "Output column name as header.")
-	flags.StringVar(&outCompression, "oz", "", "Compression format. [gzip | bz2 | zstd | lz4 | xz].")
+	flags.StringVar(&outFile, "out", "", "output file name.")
+	flags.BoolVar(&outWithoutGuess, "out-without-guess", false, "output without guessing (when using -out).")
+	flags.StringVar(&outDelimiter, "od", ",", "field delimiter for output.")
+	flags.StringVar(&outQuote, "oq", "\"", "quote character for output.")
+	flags.BoolVar(&outAllQuotes, "oaq", false, "enclose all fields in quotes for output.")
+	flags.BoolVar(&outUseCRLF, "ocrlf", false, "use CRLF for output. End each output line with '\\r\\n' instead of '\\n'.")
+	flags.BoolVar(&outHeader, "oh", false, "output column name as header.")
+	flags.StringVar(&outCompression, "oz", "", "output compression format. [ gz | bz2 | zstd | lz4 | xz ]")
 
 	flags.BoolVar(&outFlag.CSV, "ocsv", false, "CSV format for output.")
 	flags.BoolVar(&outFlag.LTSV, "oltsv", false, "LTSV format for output.")
 	flags.BoolVar(&outFlag.AT, "oat", false, "ASCII Table format for output.")
-	flags.BoolVar(&outFlag.MD, "omd", false, "Mark Down format for output.")
+	flags.BoolVar(&outFlag.MD, "omd", false, "Markdown format for output.")
 	flags.BoolVar(&outFlag.VF, "ovf", false, "Vertical format for output.")
 	flags.BoolVar(&outFlag.RAW, "oraw", false, "Raw format for output.")
 	flags.BoolVar(&outFlag.JSON, "ojson", false, "JSON format for output.")
@@ -232,12 +233,7 @@ func (cli Cli) Run(args []string) int {
 	}
 
 	if usage || (len(query) == 0) {
-		fmt.Fprintf(cli.ErrStream, `
-Usage: %s [OPTIONS] [SQL(SELECT...)]
-
-Options:
-`, os.Args[0])
-		flags.PrintDefaults()
+		Usage(flags)
 		return 2
 	}
 
@@ -309,6 +305,56 @@ Options:
 		}
 	}
 	return 0
+}
+
+// Usage is outputs usage information.
+func Usage(flags *flag.FlagSet) {
+	fmt.Fprintf(flags.Output(), "%s - Execute SQL queries on CSV, LTSV, JSON and TBLN.\n\n", trdsql.AppName)
+
+	fmt.Fprintf(flags.Output(), "Usage:\n")
+	fmt.Fprintf(flags.Output(), "\t%s [OPTIONS] [SQL(SELECT...)]\n\n", trdsql.AppName)
+
+	global := []string{}
+	input := []string{}
+	output := []string{}
+	flags.VisitAll(func(flag *flag.Flag) {
+		switch flag.Name[0] {
+		case 'i':
+			input = append(input, usageFlag(flag))
+		case 'o':
+			output = append(output, usageFlag(flag))
+		default:
+			global = append(global, usageFlag(flag))
+		}
+	})
+	fmt.Fprint(flags.Output(), "Options:\n")
+	for _, u := range global {
+		fmt.Fprint(flags.Output(), u, "\n")
+	}
+	fmt.Fprint(flags.Output(), "Input options:\n")
+	for _, u := range input {
+		fmt.Fprint(flags.Output(), u, "\n")
+	}
+	fmt.Fprint(flags.Output(), "Output options:\n")
+	for _, u := range output {
+		fmt.Fprint(flags.Output(), u, "\n")
+	}
+
+}
+
+func usageFlag(f *flag.Flag) string {
+	vType, usage := flag.UnquoteUsage(f)
+	name := f.Name
+	if vType != "" {
+		name += " " + vType
+	}
+	s := fmt.Sprintf("  -%-18s %s", name, usage)
+	if f.DefValue == "0" || f.DefValue == "1" {
+		s += fmt.Sprintf(" (default %v)", f.DefValue)
+	} else if f.DefValue != "" && f.DefValue != "false" {
+		s += fmt.Sprintf(" (default %q)", f.DefValue)
+	}
+	return s
 }
 
 func printDBList(w io.Writer, cfg *config) {

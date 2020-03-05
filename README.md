@@ -117,93 +117,56 @@ trdsql [options] SQL
 
 ###  3.1. <a name='globaloption'></a>global option
 
-* `-a` **filename**
-        Analyze file and suggest SQL.
-* `-A` **filename**
-        Analyze but only suggest SQL.
-* `-config` **filename**
-        Configuration file location.
-* `-db` **db name**
-        Specify db name of the setting.
-* `-dblist`
-        Display db list of configure.
-* `-driver` **string**
-        database driver driver.  [ mysql | postgres | sqlite3 ]
-* `-dsn` **string**
-        data source name.
-* `-debug`
-        debug print.
-* `-help`
-        display usage information.
-* `-version`
-        display version information.
-* `-q` **filename**
-        Read query from the provided filename.
+* `-a` **filename** analyze the file and suggest SQL.
+* `-A` **filename** analyze the file but only suggest SQL.
+* `-config` **filename** configuration file location.
+* `-db` **db name** specify db name of the setting.
+* `-dblist` display db list of configure.
+* `-driver` **string** database driver.  [ mysql | postgres | sqlite3 ]
+* `-dsn` **string** database driver specific data source name.
+* `-debug` debug print.
+* `-help` display usage information.
+* `-version` display version information.
+* `-q` **filename** read query from the specified file.
 
 ###  3.2. <a name='Inputformat'></a>Input format
 
-* `-ig`
-        Guess format from extension(default).
-* `-icsv`
-        CSV format for input.
-* `-ijson`
-        JSON format for input.
-* `-iltsv`
-        LTSV format for input.
-* `-itbln`
-        TBLN format for input.
+* `-ig` guess format from extension. (default)
+* `-icsv` CSV format for input.
+* `-ijson` JSON format for input.
+* `-iltsv` LTSV format for input.
+* `-itbln` TBLN format for input.
 
 ####  3.2.1. <a name='Inputoption'></a>Input option
 
-* `-ih`
-        The first line is interpreted as column names(CSV only).
-* `-id` **character**
-        Field delimiter for input. (default ",")(CSV only)
-* `-is` **int**
-        Skip header row.
-* `-ir` **int**
-        Number of row pre-read for column determination. (default 1)
+* `-ih` the first line is interpreted as column names(CSV only).
+* `-id` **character** field delimiter for input. (default ",")(CSV only)
+* `-is` **int** skip header row.
+* `-ir` **int** number of row pre-read for column determination. (default 1)
 
 ###  3.3. <a name='Outputformat'></a>Output format
 
-* `-ocsv`
-        CSV format for output. (default)
-* `-ojson`
-        JSON format for output.
-* `-ojsonl`
-        JSONL(JSON Lines) format for output.
-* `-oltsv`
-        LTSV format for output.
-* `-oat`
-        ASCII Table format for output.
-* `-omd`
-        Mark Down format for output.
-* `-oraw`
-        Raw format for output.
-* `-ovf`
-        Vertical format for output.
-* `-otbln`
-        TBLN format for output.
+* `-ocsv` CSV format for output. (default)
+* `-ojson` JSON format for output.
+* `-ojsonl` JSONL(JSON Lines) format for output.
+* `-oltsv` LTSV format for output.
+* `-oat` ASCII Table format for output.
+* `-omd` Markdown format for output.
+* `-oraw` Raw format for output.
+* `-ovf` Vertical format for output.
+* `-otbln` TBLN format for output.
 
 Or, [guess the output format by file name](#Guessbyoutputfilename).
 
 ####  3.3.1. <a name='Outputoption'></a>Output option
 
-* `-out` **filename**
-        Output file name.
-* `-out-without-guess`
-        Output without guessing from file name.
-* `-oh`
-        Output column name as header.
-* `-od` **character**
-        Field delimiter for output. (default ",")(CSV and RAW only)
-* `-oq` **character**
-        quote character for output. (default "\"")(CSV only).
-* `-oaq`
-        Enclose all fields in quotes for output(CSV only).
-* `-ocrlf`
-        Use CRLF for output(CSV only).
-
+* `-out` **filename** output file name.
+* `-out-without-guess` output without guessing (when using -out).
+* `-oh` output column name as header.
+* `-od` **character** field delimiter for output. (default ",")(CSV and RAW only)
+* `-oq` **character** quote character for output. (default "\"")(CSV only).
+* `-oaq` enclose all fields in quotes for output(CSV only).
+* `-ocrlf` use CRLF for output. End each output line with '\\r\\n' instead of '\\n'.")(CSV only). 
 
 ##  4. <a name='Example'></a>Example
 
@@ -652,7 +615,7 @@ $ trdsql "SELECT u.c1,u.c2,h.c2 FROM user.csv as u LEFT JOIN hist.csv as h ON(u.
 ###  4.18. <a name='PostgreSQL'></a>PostgreSQL
 
 When using PostgreSQL, specify postgres for driver
- and connection information for dsn.
+ and driver-specific data source name for dsn.
 
 ```console
 trdsql -driver postgres -dsn "dbname=test" "SELECT count(*) FROM test.csv "
