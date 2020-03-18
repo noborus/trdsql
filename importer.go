@@ -100,7 +100,9 @@ func TableNames(parsedQuery []string) (map[string]string, []int) {
 		switch {
 		case strings.Contains(" \t\r\n;=", w):
 			continue
-		case strings.EqualFold(w, "FROM"), strings.EqualFold(w, "JOIN"):
+		case strings.EqualFold(w, "FROM"),
+			strings.EqualFold(w, "JOIN"),
+			strings.EqualFold(w, "TABLE"):
 			tableFlag = true
 			frontFlag = true
 		case isSQLKeyWords(w):
