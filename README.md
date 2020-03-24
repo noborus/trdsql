@@ -3,7 +3,7 @@
 [![GoDoc](https://godoc.org/github.com/noborus/trdsql?status.svg)](https://godoc.org/github.com/noborus/trdsql)
 [![Go Report Card](https://goreportcard.com/badge/github.com/noborus/trdsql)](https://goreportcard.com/report/github.com/noborus/trdsql)
 [![GoCover.io](https://gocover.io/_badge/github.com/noborus/trdsql)](https://gocover.io/github.com/noborus/trdsql)
-![Go](https://github.com/noborus/trdsql/workflows/Go/badge.svg)
+[![GitHub Actions](https://github.com/noborus/trdsql/workflows/Go/badge.svg)](https://github.com/noborus/trdsql/actions)
 
 CLI tool that can execute SQL queries on [CSV](https://tools.ietf.org/html/rfc4180),
  [LTSV](http://ltsv.org/), [JSON](https://tools.ietf.org/html/rfc7159) and [TBLN](https://tbln.dev/).
