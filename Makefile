@@ -9,7 +9,7 @@ ifeq ($(strip $(VERSION)),)
 else
   LDFLAGS="-X github.com/noborus/trdsql.Version=$(VERSION)"
 endif
-GOVERSION="1.13.x"
+GOVERSION="1.14.x"
 BUILDFLAG=-tags $(TAGS) -ldflags=$(LDFLAGS)
 GOBUILD=$(GOCMD) build $(BUILDFLAG)
 GOTEST=$(GOCMD) test -tags $(TAGS) -v ./...
