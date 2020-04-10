@@ -15,6 +15,7 @@ func NewTWWriter(writeOpts *WriteOpts, markdown bool) *TWWriter {
 	w := &TWWriter{}
 	w.writer = tablewriter.NewWriter(writeOpts.OutStream)
 	w.writer.SetAutoFormatHeaders(false)
+	w.writer.SetAutoWrapText(writeOpts.OutAutoWrap)
 	if markdown {
 		w.writer.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 		w.writer.SetCenterSeparator("|")
