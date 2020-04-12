@@ -33,8 +33,8 @@ type WriteOpts struct {
 	// OutHeader is true if it outputs a header(Use only CSV and Raw).
 	OutHeader bool
 
-	// OutAutoWrap is true if it outputs wrap long line(Use only AT and MD).
-	OutAutoWrap bool
+	// OutNoWrap is true, do not wrap long columns(Use only AT and MD).
+	OutNoWrap bool
 
 	// OutStream is the output destination.
 	OutStream io.Writer
@@ -88,10 +88,10 @@ func OutHeader(h bool) WriteOpt {
 	}
 }
 
-// OutAutoWrap sets flag to output wrap long line.
-func OutAutoWrap(w bool) WriteOpt {
+// OutNoWrap sets flag to output do not wrap long columns.
+func OutNoWrap(w bool) WriteOpt {
 	return func(args *WriteOpts) {
-		args.OutAutoWrap = w
+		args.OutNoWrap = w
 	}
 }
 
