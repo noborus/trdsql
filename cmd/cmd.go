@@ -125,6 +125,7 @@ func (cli Cli) Run(args []string) int {
 		outAllQuotes    bool
 		outUseCRLF      bool
 		outHeader       bool
+		outNoWrap       bool
 	)
 
 	flags := flag.NewFlagSet(trdsql.AppName, flag.ExitOnError)
@@ -159,6 +160,7 @@ func (cli Cli) Run(args []string) int {
 	flags.StringVar(&outQuote, "oq", "\"", "quote character for output.")
 	flags.BoolVar(&outAllQuotes, "oaq", false, "enclose all fields in quotes for output.")
 	flags.BoolVar(&outUseCRLF, "ocrlf", false, "use CRLF for output. End each output line with '\\r\\n' instead of '\\n'.")
+	flags.BoolVar(&outNoWrap, "onowrap", false, "do not wrap long lines(at/md only).")
 	flags.BoolVar(&outHeader, "oh", false, "output column name as header.")
 	flags.StringVar(&outCompression, "oz", "", "output compression format. [ gz | bz2 | zstd | lz4 | xz ]")
 
@@ -277,6 +279,7 @@ func (cli Cli) Run(args []string) int {
 		trdsql.OutAllQuotes(outAllQuotes),
 		trdsql.OutUseCRLF(outUseCRLF),
 		trdsql.OutHeader(outHeader),
+		trdsql.OutNoWrap(outNoWrap),
 		trdsql.OutStream(writer),
 		trdsql.ErrStream(cli.ErrStream),
 	)

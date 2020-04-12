@@ -163,10 +163,11 @@ Or, [guess the output format by file name](#Guessbyoutputfilename).
 * `-out` **filename** output file name.
 * `-out-without-guess` output without guessing (when using -out).
 * `-oh` output column name as header.
-* `-od` **character** field delimiter for output. (default ",")(CSV and RAW only)
+* `-od` **character** field delimiter for output. (default ",")(CSV and RAW only).
 * `-oq` **character** quote character for output. (default "\"")(CSV only).
 * `-oaq` enclose all fields in quotes for output(CSV only).
-* `-ocrlf` use CRLF for output. End each output line with '\\r\\n' instead of '\\n'.")(CSV only). 
+* `-ocrlf` use CRLF for output. End each output line with '\\r\\n' instead of '\\n'.")(CSV only).
+* `-onowrap` do not wrap long columns(AT and MD only).
 
 ##  4. <a name='Example'></a>Example
 
@@ -184,7 +185,7 @@ Please write a file name like a table name.
 trdsql "SELECT * FROM test.csv"
 ```
 
--q filename can execute SQL from file
+`-q filename` can execute SQL from file
 
 ```console
 trdsql -q test.sql
@@ -192,7 +193,7 @@ trdsql -q test.sql
 
 ###  4.1. <a name='STDINinput'></a>STDIN input
 
-"-" or "stdin" is received from standard input instead of file name.
+"`-`" or "`stdin`" is received from standard input instead of file name.
 
 ```console
 ps | trdsql -id " " "SELECT * FROM -"
@@ -291,7 +292,7 @@ $ trdsql -ir 3 -iltsv "SELECT * FROM test_indefinite.ltsv"
 trdsql -id "\t" "SELECT * FROM test-tab.csv"
 ```
 
--od "\\t" is TSV (Tab Separated Value) output.
+`-od "\\t"` is TSV (Tab Separated Value) output.
 
 ```console
 trdsql -od "\t" "SELECT * FROM test.csv"
@@ -324,7 +325,7 @@ $ trdsql -iltsv "SELECT * FROM sample.ltsv"
 
 **Note:** Only the columns in the first row are targeted.
 
--oltsv is LTSV(Labeled Tab-separated Values) output.
+`-oltsv` is LTSV(Labeled Tab-separated Values) output.
 
 ```console
 $ trdsql -iltsv -oltsv "SELECT * FROM sample.ltsv"
@@ -335,7 +336,7 @@ id:3	name:Apple	price:100
 
 ###  4.10. <a name='JSON'></a>JSON
 
--ijson is input from JSON.
+`-ijson` is input from JSON.
 
 sample.json
 
@@ -416,7 +417,7 @@ sample2.json
 {"id": "3","name": "Apple","price": "100"}
 ```
 
--ojson is JSON Output.
+`-ojson` is JSON Output.
 
 ```console
 trdsql -ojson "SELECT * FROM test.csv"
@@ -441,7 +442,7 @@ trdsql -ojson "SELECT * FROM test.csv"
 
 ###  4.11. <a name='JSONL'></a>JSONL
 
-To output in JSONL, specify -ojsonl.
+To output in JSONL, specify `-ojsonl`.
 
 ```console
 trdsql -ojsonl "SELECT * FROM test.csv"
@@ -455,7 +456,7 @@ trdsql -ojsonl "SELECT * FROM test.csv"
 
 ###  4.12. <a name='TBLN'></a>TBLN
 
--itbln is input from TBLN.
+`-itbln` is input from TBLN.
 
 sample.tbln
 
@@ -474,7 +475,7 @@ $ trdsql -itbln "SELECT * FROM sample.tbln"
 
 TBLN file reflects extras name and type.
 
--otbln is TBLN Output.
+`-otbln` is TBLN Output.
 
 ```console
 $ trdsql -otbln "SELECT c1::int as id, c2::text as name FROM test.csv"
@@ -491,7 +492,7 @@ Please refer to <https://tbln.dev/> for details of TBLN.
 
 ###  4.13. <a name='Rawoutput'></a>Raw output
 
--oraw is Raw Output.
+`-oraw` is Raw Output.
 It is used when "escape processing is unnecessary" in CSV output.
 (For example, when outputting JSON in the database).
 
@@ -519,7 +520,7 @@ trdsql -oraw -od "\t|\t" -db pdb "SELECT * FROM test.csv"
 
 ###  4.14. <a name='ASCIITableMarkDownoutput'></a>ASCII Table & MarkDown output
 
--oat is ASCII table output.
+`-oat` is ASCII table output.
 
 ```console
 $ trdsql -oat "SELECT * FROM test.csv"
@@ -532,7 +533,7 @@ $ trdsql -oat "SELECT * FROM test.csv"
 +----+--------+
 ```
 
--omd is Markdown output.
+`-omd` is Markdown output.
 
 ```console
 $ trdsql -omd "SELECT * FROM test.csv"
@@ -542,6 +543,8 @@ $ trdsql -omd "SELECT * FROM test.csv"
 |  2 | Melon  |
 |  3 | Apple  |
 ```
+
+The `-onowrap` option does not wrap long columns in `at` or `md` output.
 
 ###  4.15. <a name='Verticalformatoutput'></a>Vertical format output
 
