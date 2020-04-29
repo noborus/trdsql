@@ -23,6 +23,7 @@ Please refer to [godoc](https://godoc.org/github.com/noborus/trdsql)
 * 1. [INSTALL](#INSTALL)
 	* 1.1. [Requirements](#Requirements)
 	* 1.2. [Download](#Download)
+	* 1.3. [brew install](#brewinstall)
 * 2. [Docker](#Docker)
 	* 2.1. [Docker pull](#Dockerpull)
 	* 2.2. [image build](#imagebuild)
@@ -82,6 +83,12 @@ go 1.11 or higher.
 ###  1.2. <a name='Download'></a>Download
 
 Download binary from the [releases](https://github.com/noborus/trdsql/releases) page(Linux/Windows/macOS).
+
+###  1.3. <a name='brewinstall'></a>brew install
+
+```console
+brew install noborus/tap/trdsql
+```
 
 ##  2. <a name='Docker'></a>Docker
 
