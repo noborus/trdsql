@@ -12,10 +12,9 @@ require (
 	github.com/noborus/tbln v0.0.1
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/pierrec/lz4 v2.5.2+incompatible
-	github.com/prometheus/common v0.9.1
 	github.com/ulikunitz/xz v0.5.7
 	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79
-	golang.org/x/sys v0.0.0-20200508214444-3aab700007d7 // indirect
+	golang.org/x/sys v0.0.0-20200509044756-6aff5f38e54f // indirect
 )
 
 go 1.13
