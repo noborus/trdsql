@@ -116,12 +116,19 @@ func (r *LTSVReader) read() (map[string]string, []string, error) {
 }
 
 func (r *LTSVReader) readline() (string, error) {
+	var buffer []byte
 	for {
-		line, _, err := r.reader.ReadLine()
-		if err != nil {
-			return "", err
+		for {
+			line, isPrefix, err := r.reader.ReadLine()
+			if err != nil {
+				return "", err
+			}
+			buffer = append(buffer, line...)
+			if !isPrefix {
+				break
+			}
 		}
-		str := strings.TrimSpace(string(line))
+		str := strings.TrimSpace(string(buffer))
 		if len(str) != 0 {
 			return str, nil
 		}
