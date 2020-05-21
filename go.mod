@@ -13,8 +13,8 @@ require (
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/pierrec/lz4 v2.5.2+incompatible
 	github.com/ulikunitz/xz v0.5.7
-	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79
-	golang.org/x/sys v0.0.0-20200509044756-6aff5f38e54f // indirect
+	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
+	golang.org/x/sys v0.0.0-20200519105757-fe76b779f299 // indirect
 )
 
 go 1.13
