@@ -92,7 +92,7 @@ func (r *JSONReader) topLevel(top interface{}) (map[string]string, []string, err
 	return nil, nil, fmt.Errorf("JSON format could not be converted")
 }
 
-// Analyze second when top is array
+// Analyze second when top is array.
 func (r *JSONReader) secondLevel(top interface{}, second interface{}) (map[string]string, []string, error) {
 	switch obj := second.(type) {
 	case map[string]interface{}:
@@ -173,15 +173,16 @@ func (r *JSONReader) ReadRow(row []interface{}) ([]interface{}, error) {
 		if len(r.inArray) > 0 {
 			row = r.rowParse(row, r.inArray[r.count])
 		}
-	} else {
-		// {} object
-		var data interface{}
-		err := r.reader.Decode(&data)
-		if err != nil {
-			return nil, err
-		}
-		row = r.rowParse(row, data)
+		return row, nil
 	}
+
+	// {} object
+	var data interface{}
+	err := r.reader.Decode(&data)
+	if err != nil {
+		return nil, err
+	}
+	row = r.rowParse(row, data)
 	return row, nil
 }
 

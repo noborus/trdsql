@@ -37,10 +37,10 @@ func NewTRDSQL(im Importer, ex Exporter) *TRDSQL {
 	}
 }
 
-// Format represents the import/export format
+// Format represents the import/export format.
 type Format int
 
-// Represents Format
+// Represents Format.
 const (
 	// import (guesses for import format)
 	GUESS Format = iota

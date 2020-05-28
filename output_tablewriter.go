@@ -4,7 +4,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-// TWWriter is tablewriter struct
+// TWWriter provides methods of the Writer interface.
 type TWWriter struct {
 	writer  *tablewriter.Table
 	results []string

@@ -21,7 +21,7 @@ import (
 	"github.com/ulikunitz/xz"
 )
 
-// input format flag
+// inputFlag represents the format of the input.
 type inputFlag struct {
 	CSV  bool
 	LTSV bool
@@ -29,7 +29,7 @@ type inputFlag struct {
 	TBLN bool
 }
 
-// Output format flag
+// outputFlag represents the format of the output.
 type outputFlag struct {
 	CSV   bool
 	LTSV  bool
@@ -91,7 +91,7 @@ type Cli struct {
 	ErrStream io.Writer
 }
 
-// Debug flag for a detailed output
+// Debug represents a flag for detailed output.
 var Debug bool
 
 // Run executes the main routine.
@@ -195,10 +195,12 @@ func (cli Cli) Run(args []string) int {
 		log.Printf("ERROR: [%s]%s", config, err)
 		return 1
 	}
+
 	if dbList {
 		printDBList(cli.OutStream, cfg)
 		return 0
 	}
+
 	driver, dsn := getDB(cfg, cDB, cDriver, cDSN)
 
 	if analyze != "" || onlySQL != "" {
@@ -225,6 +227,7 @@ func (cli Cli) Run(args []string) int {
 			log.Printf("ERROR: %s", err)
 			return 1
 		}
+
 		return 0
 	}
 
@@ -255,6 +258,7 @@ func (cli Cli) Run(args []string) int {
 			return 1
 		}
 	}
+
 	outFormat := outputFormat(outFlag)
 	if outFormat == trdsql.GUESS {
 		if outWithoutGuess {
@@ -263,9 +267,11 @@ func (cli Cli) Run(args []string) int {
 			outFormat = outGuessFormat(outFile)
 		}
 	}
+
 	if outCompression == "" && !outWithoutGuess {
 		outCompression = outGuessCompression(outFile)
 	}
+
 	writer, err = compressionWriter(writer, outCompression)
 	if err != nil {
 		log.Printf("%s", err)
@@ -330,19 +336,21 @@ func Usage(flags *flag.FlagSet) {
 			global = append(global, usageFlag(flag))
 		}
 	})
+
 	fmt.Fprint(flags.Output(), "Options:\n")
 	for _, u := range global {
 		fmt.Fprint(flags.Output(), u, "\n")
 	}
+
 	fmt.Fprint(flags.Output(), "Input options:\n")
 	for _, u := range input {
 		fmt.Fprint(flags.Output(), u, "\n")
 	}
+
 	fmt.Fprint(flags.Output(), "Output options:\n")
 	for _, u := range output {
 		fmt.Fprint(flags.Output(), u, "\n")
 	}
-
 }
 
 func usageFlag(f *flag.Flag) string {

@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// LTSVReader provides methods of the Reader interface
+// LTSVReader provides methods of the Reader interface.
 type LTSVReader struct {
 	reader    *bufio.Reader
 	preRead   []map[string]string

@@ -48,7 +48,7 @@ func valInterface(v interface{}) interface{} {
 	}
 }
 
-// PostWrite is Actual output
+// PostWrite is Actual output.
 func (w *JSONWriter) PostWrite() error {
 	return w.writer.Encode(w.results)
 }

@@ -93,12 +93,11 @@ func (db *DB) CreateTable(tableName string, columnNames []string, columnTypes []
 		return ErrNoTransaction
 	}
 
-	query := "CREATE "
+	query := "CREATE TABLE "
 	if isTemporary {
-		query += "TEMPORARY TABLE "
-	} else {
-		query += "TABLE "
+		query = "CREATE TEMPORARY TABLE "
 	}
+
 	columns := make([]string, len(columnNames))
 	for i := 0; i < len(columnNames); i++ {
 		columns[i] = db.QuotedName(columnNames[i]) + " " + columnTypes[i]
@@ -171,9 +170,10 @@ func (db *DB) copyImport(table *Table, reader Reader) error {
 
 	for {
 		table.row, err = reader.ReadRow(table.row)
-		if err == io.EOF {
-			break
-		} else if err != nil {
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
 			return fmt.Errorf("copy read: %s", err)
 		}
 		// Skip when empty read.
@@ -271,6 +271,7 @@ func bulkPush(table *Table, input Reader, bulk []interface{}) ([]interface{}, er
 		if len(table.row) == 0 {
 			continue
 		}
+
 		bulk = append(bulk, table.row...)
 		table.count++
 	}

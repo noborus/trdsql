@@ -61,7 +61,6 @@ func NewReadOpts(options ...ReadOpt) *ReadOpts {
 
 // ReadOpt returns a *ReadOpts structure.
 // Used when calling NewImporter.
-// NewImporter(InFormat(CSV),InPreRead(2))
 type ReadOpt func(*ReadOpts)
 
 // InFormat is read format.

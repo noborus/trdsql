@@ -96,7 +96,6 @@ func structReader(tableName string, val reflect.Value) *SliceReader {
 	}
 }
 
-// Two-dimensional
 func sliceReader(tableName string, val reflect.Value) *SliceReader {
 	if val.Len() == 0 {
 		return &SliceReader{
