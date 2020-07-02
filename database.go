@@ -26,6 +26,8 @@ var (
 	ErrInvalidNames = errors.New("invalid names")
 	// ErrInvalidTypes is returned by Set if invalid column types (does not match the number of column names).
 	ErrInvalidTypes = errors.New("invalid types")
+	// ErrNoStatement is returned by no SQL statement.
+	ErrNoStatement = errors.New("no SQL statement")
 )
 
 // DB represents database information.
@@ -153,7 +155,7 @@ func (db *DB) copyImport(table *Table, reader Reader) error {
 
 	stmt, err := db.Tx.Prepare(query)
 	if err != nil {
-		return fmt.Errorf("copy prepare: %s", err)
+		return fmt.Errorf("copy prepare: %w", err)
 	}
 	defer db.stmtClose(stmt)
 
@@ -174,7 +176,7 @@ func (db *DB) copyImport(table *Table, reader Reader) error {
 			if err == io.EOF {
 				break
 			}
-			return fmt.Errorf("copy read: %s", err)
+			return fmt.Errorf("copy read: %w", err)
 		}
 		// Skip when empty read.
 		if len(table.row) == 0 {
@@ -228,7 +230,7 @@ func (db *DB) insertImport(table *Table, reader Reader) error {
 			bulk, err = bulkPush(table, reader, bulk)
 			if err != nil {
 				if err != io.EOF {
-					return fmt.Errorf("bulk read: %s", err)
+					return fmt.Errorf("bulk read: %w", err)
 				}
 				eof = true
 				if len(bulk) == 0 {
@@ -303,7 +305,7 @@ func (db *DB) insertPrepare(table *Table) (*sql.Stmt, error) {
 	debug.Printf(query)
 	stmt, err := db.Tx.Prepare(query)
 	if err != nil {
-		return nil, fmt.Errorf("INSERT Prepare: %s:%s", query, err)
+		return nil, fmt.Errorf("INSERT Prepare: %s:%w", query, err)
 	}
 	return stmt, nil
 }
@@ -325,13 +327,13 @@ func (db *DB) Select(query string) (*sql.Rows, error) {
 
 	query = strings.TrimSpace(query)
 	if query == "" {
-		return nil, errors.New("no SQL statement")
+		return nil, ErrNoStatement
 	}
 	debug.Printf(query)
 
 	rows, err := db.Tx.Query(query)
 	if err != nil {
-		return rows, fmt.Errorf("SQL:%s\n[%s]", err, query)
+		return rows, fmt.Errorf("%w [%s]", err, query)
 	}
 	return rows, nil
 }

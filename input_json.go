@@ -7,7 +7,6 @@ package trdsql
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 )
@@ -89,7 +88,7 @@ func (r *JSONReader) topLevel(top interface{}) (map[string]string, []string, err
 		r.inArray = nil
 		return r.objectFirstRow(obj)
 	}
-	return nil, nil, fmt.Errorf("JSON format could not be converted")
+	return nil, nil, ErrUnableConvert
 }
 
 // Analyze second when top is array.

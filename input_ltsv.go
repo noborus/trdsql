@@ -2,7 +2,6 @@ package trdsql
 
 import (
 	"bufio"
-	"errors"
 	"io"
 	"strings"
 )
@@ -107,7 +106,7 @@ func (r *LTSVReader) read() (map[string]string, []string, error) {
 	for _, column := range columns {
 		kv := strings.SplitN(column, ":", 2)
 		if len(kv) != 2 {
-			return nil, nil, errors.New("invalid column")
+			return nil, nil, ErrInvalidColumn
 		}
 		lvs[kv[0]] = kv[1]
 		keys = append(keys, kv[0])

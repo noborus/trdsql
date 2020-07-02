@@ -1,7 +1,6 @@
 package trdsql
 
 import (
-	"errors"
 	"io"
 	"log"
 )
@@ -109,7 +108,7 @@ func IsTemporary(t bool) ReadOpt {
 // depending on the file to be imported.
 func NewReader(reader io.Reader, readOpts *ReadOpts) (Reader, error) {
 	if reader == nil {
-		return nil, errors.New("nil reader")
+		return nil, ErrNoReader
 	}
 	switch readOpts.realFormat {
 	case CSV:
@@ -121,7 +120,7 @@ func NewReader(reader io.Reader, readOpts *ReadOpts) (Reader, error) {
 	case TBLN:
 		return NewTBLNReader(reader)
 	default:
-		return nil, errors.New("unknown format")
+		return nil, ErrUnknownFormat
 	}
 }
 

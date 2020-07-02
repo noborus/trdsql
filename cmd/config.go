@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -10,6 +11,11 @@ import (
 	"runtime"
 
 	"github.com/noborus/trdsql"
+)
+
+var (
+	// ErrNoFile is returned when there is no file.
+	ErrNoFile = errors.New("no file")
 )
 
 type database struct {
@@ -48,11 +54,11 @@ func configOpen(config string) io.Reader {
 func loadConfig(conf io.Reader) (*config, error) {
 	var cfg config
 	if conf == nil {
-		return &cfg, errors.New("no file")
+		return &cfg, ErrNoFile
 	}
 	err := json.NewDecoder(conf).Decode(&cfg)
 	if err != nil {
-		return &cfg, errors.New("config error")
+		return &cfg, fmt.Errorf("config error: %w", err)
 	}
 	return &cfg, nil
 }

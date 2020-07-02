@@ -78,7 +78,7 @@ make install
 
 ###  1.1. <a name='Requirements'></a>Requirements
 
-go 1.11 or higher.
+go 1.13 or higher.
 
 ###  1.2. <a name='Download'></a>Download
 

@@ -93,7 +93,7 @@ func delimiter(sepString string) (rune, error) {
 	}
 	sepRunes, err := strconv.Unquote(`'` + sepString + `'`)
 	if err != nil {
-		return ',', fmt.Errorf("can not get separator: %s:\"%s\"", err, sepString)
+		return ',', fmt.Errorf("can not get separator: %w:\"%s\"", err, sepString)
 	}
 	sepRune := ([]rune(sepRunes))[0]
 	return sepRune, err
@@ -102,7 +102,7 @@ func delimiter(sepString string) (rune, error) {
 // Names returns column names.
 func (r *CSVReader) Names() ([]string, error) {
 	if len(r.names) == 0 {
-		return r.names, fmt.Errorf("no rows")
+		return r.names, ErrNoRows
 	}
 	return r.names, nil
 }
@@ -111,7 +111,7 @@ func (r *CSVReader) Names() ([]string, error) {
 // All CSV types return the DefaultDBType.
 func (r *CSVReader) Types() ([]string, error) {
 	if len(r.types) == 0 {
-		return r.types, fmt.Errorf("no rows")
+		return r.types, ErrNoRows
 	}
 	return r.types, nil
 }
