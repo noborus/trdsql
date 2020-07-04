@@ -1,7 +1,7 @@
 package trdsql
 
 import (
-	"fmt"
+	"errors"
 	"io"
 	"strconv"
 
@@ -21,7 +21,7 @@ func NewTBLNReader(reader io.Reader) (*TBLNRead, error) {
 
 	rec, err := r.reader.ReadRow()
 	if err != nil {
-		if err != io.EOF {
+		if !errors.Is(err, io.EOF) {
 			return r, err
 		}
 		return r, nil
@@ -67,7 +67,7 @@ func NewTBLNReader(reader io.Reader) (*TBLNRead, error) {
 func (r *TBLNRead) Names() ([]string, error) {
 	reader := r.reader
 	if reader == nil {
-		return nil, fmt.Errorf("no Definition")
+		return nil, ErrNonDefinition
 	}
 	d := reader.GetDefinition()
 	return d.Names(), nil
@@ -77,7 +77,7 @@ func (r *TBLNRead) Names() ([]string, error) {
 func (r *TBLNRead) Types() ([]string, error) {
 	reader := r.reader
 	if reader == nil {
-		return nil, fmt.Errorf("no Definition")
+		return nil, ErrNonDefinition
 	}
 	d := reader.GetDefinition()
 	return d.Types(), nil

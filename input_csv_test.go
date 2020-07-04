@@ -1,6 +1,7 @@
 package trdsql
 
 import (
+	"errors"
 	"io"
 	"reflect"
 	"strings"
@@ -205,10 +206,11 @@ func TestCsvColumnDifferenceNew(t *testing.T) {
 	record := make([]interface{}, 3)
 	for {
 		record, err = r.ReadRow(record)
-		if err == io.EOF {
+		if err != nil {
+			if !errors.Is(err, io.EOF) {
+				t.Error(err)
+			}
 			break
-		} else if err != nil {
-			t.Error(err)
 		}
 		if len(record) != 3 {
 			t.Error("row difference")
@@ -274,8 +276,10 @@ func TestCsvIndefiniteInputFile3(t *testing.T) {
 		t.Error(`NewCSVReader error`)
 	}
 	list, err := cr.Names()
-	if err != nil && err != io.EOF {
-		t.Fatalf("Names error :%s", err)
+	if err != nil {
+		if !errors.Is(err, io.EOF) {
+			t.Fatalf("Names error :%s", err)
+		}
 	}
 	if len(list) != 4 {
 		t.Errorf("invalid column got = %d", len(list))

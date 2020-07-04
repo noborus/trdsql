@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"compress/bzip2"
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -17,6 +18,23 @@ import (
 	"github.com/klauspost/compress/zstd"
 	"github.com/pierrec/lz4"
 	"github.com/ulikunitz/xz"
+)
+
+var (
+	// ErrInvalidColumn is returned if invalid column.
+	ErrInvalidColumn = errors.New("invalid column")
+	// ErrNoReader is returned when there is no reader.
+	ErrNoReader = errors.New("no reader")
+	// ErrUnknownFormat is returned if the format is unknown.
+	ErrUnknownFormat = errors.New("unknown format")
+	// ErrNoRows returned when there are no rows.
+	ErrNoRows = errors.New("no rows")
+	// ErrUnableConvert is returned if it cannot be converted to a table.
+	ErrUnableConvert = errors.New("unable to convert")
+	// ErrNoMatchFound is returned if no match is found.
+	ErrNoMatchFound = errors.New("no match found")
+	// ErrNonDefinition is returned when there is no definition.
+	ErrNonDefinition = errors.New("no definition")
 )
 
 // Importer is the interface import data into the database.
@@ -199,14 +217,14 @@ func ImportFile(db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 	tableName := db.QuotedName(fileName)
 	columnNames, err := reader.Names()
 	if err != nil {
-		if err != io.EOF {
+		if !errors.Is(err, io.EOF) {
 			return tableName, err
 		}
 		debug.Printf("EOF reached before argument number of rows")
 	}
 	columnTypes, err := reader.Types()
 	if err != nil {
-		if err != io.EOF {
+		if !errors.Is(err, io.EOF) {
 			return tableName, err
 		}
 		debug.Printf("EOF reached before argument number of rows")
@@ -274,7 +292,7 @@ func uncompressedReader(reader io.Reader) io.ReadCloser {
 	buf := [7]byte{}
 	n, err := io.ReadAtLeast(reader, buf[:], len(buf))
 	if err != nil {
-		if err == io.EOF || err == io.ErrUnexpectedEOF {
+		if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
 			return ioutil.NopCloser(bytes.NewReader(buf[:n]))
 		}
 		return ioutil.NopCloser(bytes.NewReader(nil))
@@ -323,7 +341,7 @@ func globFileOpen(globName string) (*io.PipeReader, error) {
 		return nil, err
 	}
 	if len(fileNames) == 0 {
-		return nil, fmt.Errorf("no matches found: %s", fileNames)
+		return nil, fmt.Errorf("%w: %s", ErrNoMatchFound, fileNames)
 	}
 	pipeReader, pipeWriter := io.Pipe()
 	go func() {

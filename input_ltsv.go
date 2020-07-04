@@ -30,7 +30,7 @@ func NewLTSVReader(reader io.Reader, opts *ReadOpts) (*LTSVReader, error) {
 	for i := 0; i < opts.InPreRead; i++ {
 		row, keys, err := r.read()
 		if err != nil {
-			if err != io.EOF {
+			if !errors.Is(err, io.EOF) {
 				return r, err
 			}
 			r.setColumnType()
@@ -107,7 +107,7 @@ func (r *LTSVReader) read() (map[string]string, []string, error) {
 	for _, column := range columns {
 		kv := strings.SplitN(column, ":", 2)
 		if len(kv) != 2 {
-			return nil, nil, errors.New("invalid column")
+			return nil, nil, ErrInvalidColumn
 		}
 		lvs[kv[0]] = kv[1]
 		keys = append(keys, kv[0])
