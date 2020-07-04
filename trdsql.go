@@ -114,37 +114,37 @@ func (f Format) String() string {
 func (trd *TRDSQL) Exec(sql string) error {
 	db, err := Connect(trd.Driver, trd.Dsn)
 	if err != nil {
-		return fmt.Errorf("connect:%w", err)
+		return fmt.Errorf("connect: %w", err)
 	}
 	defer func() {
 		err = db.Disconnect()
 		if err != nil {
-			log.Printf("ERROR(DISCONNECT):%s", err)
+			log.Printf("disconnect: %s", err)
 		}
 	}()
 
 	db.Tx, err = db.Begin()
 	if err != nil {
-		return fmt.Errorf("begin:%w", err)
+		return fmt.Errorf("begin: %w", err)
 	}
 
 	if trd.Importer != nil {
 		sql, err = trd.Importer.Import(db, sql)
 		if err != nil {
-			return fmt.Errorf("import:%w", err)
+			return fmt.Errorf("import: %w", err)
 		}
 	}
 
 	if trd.Exporter != nil {
 		err = trd.Exporter.Export(db, sql)
 		if err != nil {
-			return fmt.Errorf("export:%w", err)
+			return fmt.Errorf("export: %w", err)
 		}
 	}
 
 	err = db.Tx.Commit()
 	if err != nil {
-		return fmt.Errorf("commit:%w", err)
+		return fmt.Errorf("commit: %w", err)
 	}
 
 	return nil

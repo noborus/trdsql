@@ -1,6 +1,7 @@
 package trdsql
 
 import (
+	"errors"
 	"io"
 	"strconv"
 
@@ -20,7 +21,7 @@ func NewTBLNReader(reader io.Reader) (*TBLNRead, error) {
 
 	rec, err := r.reader.ReadRow()
 	if err != nil {
-		if err != io.EOF {
+		if !errors.Is(err, io.EOF) {
 			return r, err
 		}
 		return r, nil

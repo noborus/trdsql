@@ -2,6 +2,7 @@ package trdsql
 
 import (
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -39,8 +40,10 @@ func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 	preReadN := opts.InPreRead
 	if opts.InHeader {
 		row, err := r.reader.Read()
-		if err != nil && err != io.EOF {
-			return nil, err
+		if err != nil {
+			if !errors.Is(err, io.EOF) {
+				return nil, err
+			}
 		}
 		r.names = make([]string, len(row))
 		for i, col := range row {
@@ -57,7 +60,7 @@ func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 	for n := 0; n < preReadN; n++ {
 		row, err := r.reader.Read()
 		if err != nil {
-			if err != io.EOF {
+			if !errors.Is(err, io.EOF) {
 				return r, err
 			}
 			r.setColumnType()

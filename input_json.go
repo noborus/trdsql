@@ -7,6 +7,7 @@ package trdsql
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 )
@@ -30,7 +31,7 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 	for i := 0; i < opts.InPreRead; i++ {
 		row, keys, err := r.readAhead(top, i)
 		if err != nil {
-			if err != io.EOF {
+			if !errors.Is(err, io.EOF) {
 				return r, err
 			}
 			return r, nil

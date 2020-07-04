@@ -3,6 +3,7 @@
 package trdsql
 
 import (
+	"errors"
 	"io"
 	"testing"
 )
@@ -57,8 +58,10 @@ func TestJSONIndefiniteInputFile3(t *testing.T) {
 		t.Errorf("NewJSONReader error: %s", err)
 	}
 	list, err := jr.Names()
-	if err != nil && err != io.EOF {
-		t.Fatalf("Names error :%s", err)
+	if err != nil {
+		if !errors.Is(err, io.EOF) {
+			t.Fatalf("Names error :%s", err)
+		}
 	}
 	if len(list) != 4 {
 		t.Error(`invalid column`)

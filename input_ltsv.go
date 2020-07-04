@@ -2,6 +2,7 @@ package trdsql
 
 import (
 	"bufio"
+	"errors"
 	"io"
 	"strings"
 )
@@ -29,7 +30,7 @@ func NewLTSVReader(reader io.Reader, opts *ReadOpts) (*LTSVReader, error) {
 	for i := 0; i < opts.InPreRead; i++ {
 		row, keys, err := r.read()
 		if err != nil {
-			if err != io.EOF {
+			if !errors.Is(err, io.EOF) {
 				return r, err
 			}
 			r.setColumnType()

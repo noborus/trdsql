@@ -155,7 +155,7 @@ func (db *DB) copyImport(table *Table, reader Reader) error {
 
 	stmt, err := db.Tx.Prepare(query)
 	if err != nil {
-		return fmt.Errorf("copy prepare: %w", err)
+		return fmt.Errorf("COPY prepare: %w", err)
 	}
 	defer db.stmtClose(stmt)
 
@@ -173,10 +173,10 @@ func (db *DB) copyImport(table *Table, reader Reader) error {
 	for {
 		table.row, err = reader.ReadRow(table.row)
 		if err != nil {
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				break
 			}
-			return fmt.Errorf("copy read: %w", err)
+			return fmt.Errorf("COPY read: %w", err)
 		}
 		// Skip when empty read.
 		if len(table.row) == 0 {
@@ -229,7 +229,7 @@ func (db *DB) insertImport(table *Table, reader Reader) error {
 			// Read
 			bulk, err = bulkPush(table, reader, bulk)
 			if err != nil {
-				if err != io.EOF {
+				if !errors.Is(err, io.EOF) {
 					return fmt.Errorf("bulk read: %w", err)
 				}
 				eof = true

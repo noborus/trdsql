@@ -1,6 +1,7 @@
 package trdsql
 
 import (
+	"errors"
 	"io"
 	"reflect"
 	"strings"
@@ -175,8 +176,10 @@ func TestIndefiniteLtsvFile3(t *testing.T) {
 		t.Error(`NewLTSVReader error`)
 	}
 	list, err := lr.Names()
-	if err != nil && err != io.EOF {
-		t.Error(err)
+	if err != nil {
+		if !errors.Is(err, io.EOF) {
+			t.Error(err)
+		}
 	}
 	if len(list) != 5 {
 		t.Error(`invalid column`)
