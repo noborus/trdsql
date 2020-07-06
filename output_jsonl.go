@@ -25,7 +25,7 @@ func (w *JSONLWriter) PreWrite(columns []string, types []string) error {
 func (w *JSONLWriter) WriteRow(values []interface{}, columns []string) error {
 	m := make(map[string]interface{}, len(columns))
 	for i, col := range values {
-		m[columns[i]] = valInterface(col)
+		m[columns[i]] = compatibleJSON(col)
 	}
 	return w.writer.Encode(m)
 }

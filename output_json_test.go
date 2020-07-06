@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func Test_valInterface(t *testing.T) {
+func Test_compatibleJSON(t *testing.T) {
 	type args struct {
 		v interface{}
 	}
@@ -32,7 +32,7 @@ func Test_valInterface(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := valInterface(tt.args.v); !reflect.DeepEqual(got, tt.want) {
+			if got := compatibleJSON(tt.args.v); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("valInterface() = %v, want %v", got, tt.want)
 			}
 		})
