@@ -40,18 +40,16 @@ func (w *JSONWriter) WriteRow(values []interface{}, columns []string) error {
 func compatibleJSON(v interface{}) interface{} {
 	switch t := v.(type) {
 	case []byte:
-		j, err := toJSON(t)
-		if err == nil {
-			return j
+		if isJSON(t) {
+			return json.RawMessage(t)
 		}
 		if ok := utf8.Valid(t); ok {
 			return string(t)
 		}
 		return `\x` + hex.EncodeToString(t)
 	case string:
-		j, err := toJSON([]byte(t))
-		if err == nil {
-			return j
+		if isJSON([]byte(t)) {
+			return json.RawMessage(t)
 		}
 		return v
 	default:
@@ -59,13 +57,20 @@ func compatibleJSON(v interface{}) interface{} {
 	}
 }
 
-func toJSON(s []byte) (json.RawMessage, error) {
-	var js map[string]interface{}
-	err := json.Unmarshal(s, &js)
-	if err != nil {
-		return s, err
+// isJSON returns true if the byte array is JSON.
+func isJSON(s []byte) bool {
+	if len(s) == 0 {
+		return false
 	}
-	return json.RawMessage(s), nil
+
+	// Except for JSONArray or JSONObject
+	if s[0] != '[' && s[0] != '{' {
+		return false
+	}
+
+	var js interface{}
+	err := json.Unmarshal(s, &js)
+	return err == nil
 }
 
 // PostWrite is Actual output.
