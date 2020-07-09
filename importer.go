@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"compress/bzip2"
 	"compress/gzip"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -47,6 +48,7 @@ type Importer interface {
 // ReadFormat represents a structure that satisfies the Importer.
 type ReadFormat struct {
 	*ReadOpts
+	ctx context.Context
 }
 
 // NewImporter returns trdsql default Importer.
@@ -65,6 +67,14 @@ func NewImporter(options ...ReadOpt) *ReadFormat {
 	}
 }
 
+func NewImporterContext(ctx context.Context, options ...ReadOpt) *ReadFormat {
+	readOpts := NewReadOpts(options...)
+	return &ReadFormat{
+		ReadOpts: readOpts,
+		ctx:      ctx,
+	}
+}
+
 // DefaultDBType is default type.
 const DefaultDBType = "text"
 
@@ -73,6 +83,11 @@ const DefaultDBType = "text"
 // Return the rewritten SQL and error.
 // No error is returned if there is no table to import.
 func (i *ReadFormat) Import(db *DB, query string) (string, error) {
+	ctx := i.ctx
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
 	parsedQuery := SQLFields(query)
 	tables, tableIdx := TableNames(parsedQuery)
 	if len(tables) == 0 {
@@ -82,7 +97,7 @@ func (i *ReadFormat) Import(db *DB, query string) (string, error) {
 	}
 
 	for fileName := range tables {
-		tableName, err := ImportFile(db, fileName, i.ReadOpts)
+		tableName, err := ImportFileContext(ctx, db, fileName, i.ReadOpts)
 		if err != nil {
 			return query, err
 		}
@@ -197,6 +212,14 @@ func isSQLKeyWords(str string) bool {
 // Do not import if file not found (no error).
 // Wildcards can be passed as fileName.
 func ImportFile(db *DB, fileName string, readOpts *ReadOpts) (string, error) {
+	return ImportFileContext(context.Background(), db, fileName, readOpts)
+}
+
+// ImportFileContext is imports a file.
+// Return the quoted table name and error.
+// Do not import if file not found (no error).
+// Wildcards can be passed as fileName.
+func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 	file, err := importFileOpen(fileName)
 	if err != nil {
 		debug.Printf("%s\n", err)
@@ -232,11 +255,11 @@ func ImportFile(db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 	debug.Printf("Column Names: [%v]", strings.Join(columnNames, ","))
 	debug.Printf("Column Types: [%v]", strings.Join(columnTypes, ","))
 
-	err = db.CreateTable(tableName, columnNames, columnTypes, readOpts.IsTemporary)
+	err = db.CreateTableContext(ctx, tableName, columnNames, columnTypes, readOpts.IsTemporary)
 	if err != nil {
 		return tableName, err
 	}
-	err = db.Import(tableName, columnNames, reader)
+	err = db.ImportContext(ctx, tableName, columnNames, reader)
 	return tableName, err
 }
 

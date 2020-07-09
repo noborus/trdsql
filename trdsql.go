@@ -5,6 +5,7 @@
 package trdsql
 
 import (
+	"context"
 	"fmt"
 	"log"
 )
@@ -25,6 +26,9 @@ type TRDSQL struct {
 	// Exporter is interface export to the process of
 	//  export(select) from the database.
 	Exporter Exporter
+
+	// Context
+	ctx context.Context
 }
 
 // NewTRDSQL returns a new TRDSQL structure.
@@ -34,6 +38,17 @@ func NewTRDSQL(im Importer, ex Exporter) *TRDSQL {
 		Dsn:      "",
 		Importer: im,
 		Exporter: ex,
+	}
+}
+
+// NewTRDSQL returns a new TRDSQL structure.
+func NewTRDSQLContext(ctx context.Context, im Importer, ex Exporter) *TRDSQL {
+	return &TRDSQL{
+		Driver:   "sqlite3",
+		Dsn:      "",
+		Importer: im,
+		Exporter: ex,
+		ctx:      ctx,
 	}
 }
 
@@ -112,10 +127,16 @@ func (f Format) String() string {
 
 // Exec is actually executed.
 func (trd *TRDSQL) Exec(sql string) error {
+	ctx := trd.ctx
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
 	db, err := Connect(trd.Driver, trd.Dsn)
 	if err != nil {
 		return fmt.Errorf("connect: %w", err)
 	}
+
 	defer func() {
 		err = db.Disconnect()
 		if err != nil {
@@ -123,11 +144,10 @@ func (trd *TRDSQL) Exec(sql string) error {
 		}
 	}()
 
-	db.Tx, err = db.Begin()
+	db.Tx, err = db.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("begin: %w", err)
 	}
-
 	if trd.Importer != nil {
 		sql, err = trd.Importer.Import(db, sql)
 		if err != nil {

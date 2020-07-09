@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"compress/gzip"
+	"context"
 	"database/sql"
 	"flag"
 	"fmt"
@@ -231,6 +232,8 @@ func (cli Cli) Run(args []string) int {
 		return 0
 	}
 
+	ctx := context.Background()
+
 	query, err := getQuery(flags.Args(), queryFile)
 	if err != nil {
 		log.Printf("ERROR: %s", err)
@@ -242,7 +245,8 @@ func (cli Cli) Run(args []string) int {
 		return 2
 	}
 
-	importer := trdsql.NewImporter(
+	importer := trdsql.NewImporterContext(
+		ctx,
 		trdsql.InFormat(inputFormat(inFlag)),
 		trdsql.InDelimiter(inDelimiter),
 		trdsql.InHeader(inHeader),
@@ -289,9 +293,9 @@ func (cli Cli) Run(args []string) int {
 		trdsql.OutStream(writer),
 		trdsql.ErrStream(cli.ErrStream),
 	)
-	exporter := trdsql.NewExporter(w)
+	exporter := trdsql.NewExporterContext(ctx, w)
 
-	trd := trdsql.NewTRDSQL(importer, exporter)
+	trd := trdsql.NewTRDSQLContext(ctx, importer, exporter)
 
 	if driver != "" {
 		trd.Driver = driver
