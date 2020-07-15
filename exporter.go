@@ -1,6 +1,7 @@
 package trdsql
 
 import (
+	"context"
 	"encoding/hex"
 	"fmt"
 	"log"
@@ -18,6 +19,7 @@ type Exporter interface {
 // WriteFormat represents a structure that satisfies Exporter.
 type WriteFormat struct {
 	Writer
+	ctx context.Context
 }
 
 // NewExporter returns trdsql default Exporter.
@@ -27,11 +29,24 @@ func NewExporter(writer Writer) *WriteFormat {
 	}
 }
 
+// NewExporter returns trdsql default Exporter.
+func NewExporterContext(ctx context.Context, writer Writer) *WriteFormat {
+	return &WriteFormat{
+		Writer: writer,
+		ctx:    ctx,
+	}
+}
+
 // Export is execute SQL(Select) and
 // the result is written out by the writer.
 // Export is called from Exec.
 func (e *WriteFormat) Export(db *DB, query string) error {
-	rows, err := db.Select(query)
+	ctx := e.ctx
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	rows, err := db.SelectContext(ctx, query)
 	if err != nil {
 		return err
 	}
@@ -46,6 +61,7 @@ func (e *WriteFormat) Export(db *DB, query string) error {
 			log.Printf("ERROR: close:%s", err)
 		}
 	}()
+
 	values := make([]interface{}, len(columns))
 	scanArgs := make([]interface{}, len(columns))
 	for i := range values {

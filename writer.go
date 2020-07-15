@@ -1,6 +1,7 @@
 package trdsql
 
 import (
+	"context"
 	"io"
 	"os"
 )
@@ -35,12 +36,13 @@ type WriteOpts struct {
 
 	// OutNoWrap is true, do not wrap long columns(Use only AT and MD).
 	OutNoWrap bool
-
 	// OutStream is the output destination.
 	OutStream io.Writer
 
 	// ErrStream is the error output destination.
 	ErrStream io.Writer
+
+	ctx context.Context
 }
 
 // WriteOpt is a function to set WriteOpts.
@@ -128,6 +130,7 @@ func NewWriter(options ...WriteOpt) Writer {
 		OutHeader:    false,
 		OutStream:    os.Stdout,
 		ErrStream:    os.Stderr,
+		ctx:          context.Background(),
 	}
 	for _, option := range options {
 		option(writeOpts)

@@ -1,6 +1,7 @@
 package trdsql
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -85,6 +86,12 @@ func (db *DB) Disconnect() error {
 // CreateTable is create a (temporary) table in the database.
 // The arguments are the table name, column name, column type, and temporary flag.
 func (db *DB) CreateTable(tableName string, columnNames []string, columnTypes []string, isTemporary bool) error {
+	return db.CreateTableContext(context.Background(), tableName, columnNames, columnTypes, isTemporary)
+}
+
+// CreateTableContext is create a (temporary) table in the database.
+// The arguments are the table name, column name, column type, and temporary flag.
+func (db *DB) CreateTableContext(ctx context.Context, tableName string, columnNames []string, columnTypes []string, isTemporary bool) error {
 	if len(columnNames) == 0 {
 		return ErrInvalidNames
 	}
@@ -106,12 +113,12 @@ func (db *DB) CreateTable(tableName string, columnNames []string, columnTypes []
 	}
 	query += tableName + " ( " + strings.Join(columns, ",") + " );"
 	debug.Printf(query)
-	_, err := db.Tx.Exec(query)
+	_, err := db.Tx.ExecContext(ctx, query)
 	return err
 }
 
-// Table represents the table data to be imported.
-type Table struct {
+// importTable represents the table data to be imported.
+type importTable struct {
 	tableName string
 	columns   []string
 	query     string
@@ -124,32 +131,40 @@ type Table struct {
 
 // Import is imports data into a table.
 func (db *DB) Import(tableName string, columnNames []string, reader Reader) error {
+	return db.ImportContext(context.Background(), tableName, columnNames, reader)
+}
+
+// ImportContext is imports data into a table.
+func (db *DB) ImportContext(ctx context.Context, tableName string, columnNames []string, reader Reader) error {
 	if db.Tx == nil {
 		return ErrNoTransaction
 	}
 	if reader == nil {
 		return ErrNilReader
 	}
+
 	columns := make([]string, len(columnNames))
 	for i := range columnNames {
 		columns[i] = db.QuotedName(columnNames[i])
 	}
+
 	row := make([]interface{}, len(columnNames))
-	table := &Table{
+	table := &importTable{
 		tableName: tableName,
 		columns:   columns,
 		row:       row,
 		lastCount: 0,
 		count:     0,
 	}
+
 	if db.driver == "postgres" {
-		return db.copyImport(table, reader)
+		return db.copyImport(ctx, table, reader)
 	}
-	return db.insertImport(table, reader)
+	return db.insertImport(ctx, table, reader)
 }
 
 // copyImport adds rows to a table with the COPY clause (PostgreSQL only).
-func (db *DB) copyImport(table *Table, reader Reader) error {
+func (db *DB) copyImport(ctx context.Context, table *importTable, reader Reader) error {
 	query := "COPY " + table.tableName + " (" + strings.Join(table.columns, ",") + ") FROM STDIN"
 	debug.Printf(query)
 
@@ -157,14 +172,13 @@ func (db *DB) copyImport(table *Table, reader Reader) error {
 	if err != nil {
 		return fmt.Errorf("COPY prepare: %w", err)
 	}
-	defer db.stmtClose(stmt)
 
 	preReadRows := reader.PreReadRow()
 	for _, row := range preReadRows {
 		if row == nil {
 			break
 		}
-		_, err = stmt.Exec(row...)
+		_, err = stmt.ExecContext(ctx, row...)
 		if err != nil {
 			return err
 		}
@@ -182,7 +196,7 @@ func (db *DB) copyImport(table *Table, reader Reader) error {
 		if len(table.row) == 0 {
 			continue
 		}
-		_, err = stmt.Exec(table.row...)
+		_, err = stmt.ExecContext(ctx, table.row...)
 		if err != nil {
 			return err
 		}
@@ -192,17 +206,16 @@ func (db *DB) copyImport(table *Table, reader Reader) error {
 	if err != nil {
 		return err
 	}
+	db.stmtClose(stmt)
 
 	return nil
 }
 
 // insertImport adds a row to a table with an INSERT clause.
 // Insert multiple rows by bulk insert.
-func (db *DB) insertImport(table *Table, reader Reader) error {
+func (db *DB) insertImport(ctx context.Context, table *importTable, reader Reader) error {
 	var err error
 	var stmt *sql.Stmt
-
-	defer db.stmtClose(stmt)
 
 	// #nosec G202
 	table.query = "INSERT INTO " + table.tableName + " (" + strings.Join(table.columns, ",") + ") VALUES "
@@ -243,13 +256,14 @@ func (db *DB) insertImport(table *Table, reader Reader) error {
 		if err != nil {
 			return err
 		}
-		_, err = stmt.Exec(bulk...)
+		_, err = stmt.ExecContext(ctx, bulk...)
 		if err != nil {
 			return err
 		}
 		bulk = bulk[:0]
 		table.count = 0
 	}
+	db.stmtClose(stmt)
 	return nil
 }
 
@@ -262,7 +276,7 @@ func (db *DB) stmtClose(stmt *sql.Stmt) {
 	}
 }
 
-func bulkPush(table *Table, input Reader, bulk []interface{}) ([]interface{}, error) {
+func bulkPush(table *importTable, input Reader, bulk []interface{}) ([]interface{}, error) {
 	var err error
 	for (table.count * len(table.row)) < table.maxCap {
 		table.row, err = input.ReadRow(table.row)
@@ -280,7 +294,7 @@ func bulkPush(table *Table, input Reader, bulk []interface{}) ([]interface{}, er
 	return bulk, nil
 }
 
-func (db *DB) bulkStmtOpen(table *Table, stmt *sql.Stmt) (*sql.Stmt, error) {
+func (db *DB) bulkStmtOpen(table *importTable, stmt *sql.Stmt) (*sql.Stmt, error) {
 	var err error
 
 	if table.lastCount != table.count {
@@ -299,7 +313,7 @@ func (db *DB) bulkStmtOpen(table *Table, stmt *sql.Stmt) (*sql.Stmt, error) {
 	return stmt, nil
 }
 
-func (db *DB) insertPrepare(table *Table) (*sql.Stmt, error) {
+func (db *DB) insertPrepare(table *importTable) (*sql.Stmt, error) {
 	query := table.query +
 		strings.Repeat(table.place+",", table.count-1) + table.place
 	debug.Printf(query)
@@ -321,6 +335,11 @@ func (db *DB) QuotedName(oldName string) string {
 
 // Select is executes SQL select statements.
 func (db *DB) Select(query string) (*sql.Rows, error) {
+	return db.SelectContext(context.Background(), query)
+}
+
+// SelectContext is executes SQL select statements with context.
+func (db *DB) SelectContext(ctx context.Context, query string) (*sql.Rows, error) {
 	if db.Tx == nil {
 		return nil, ErrNoTransaction
 	}
@@ -331,7 +350,7 @@ func (db *DB) Select(query string) (*sql.Rows, error) {
 	}
 	debug.Printf(query)
 
-	rows, err := db.Tx.Query(query)
+	rows, err := db.Tx.QueryContext(ctx, query)
 	if err != nil {
 		return rows, fmt.Errorf("%w [%s]", err, query)
 	}
