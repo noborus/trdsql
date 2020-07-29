@@ -1,7 +1,7 @@
 VERSION=$(shell git describe --tags 2>/dev/null)
 
 GOCMD=go
-TAGS="json1"
+TAGS="sqlite_json"
 GOGET=$(GOCMD) get
 GOCLEAN=$(GOCMD) clean
 ifeq ($(strip $(VERSION)),)

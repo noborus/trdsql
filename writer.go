@@ -1,7 +1,6 @@
 package trdsql
 
 import (
-	"context"
 	"io"
 	"os"
 )
@@ -9,8 +8,11 @@ import (
 // Writer is file format writer.
 // Writer is a group of methods called from Export.
 type Writer interface {
+	// PreWrite is called first to write.
 	PreWrite([]string, []string) error
+	// WriteRow is row write.
 	WriteRow([]interface{}, []string) error
+	// PostWrite is called last in the write.
 	PostWrite() error
 }
 
@@ -41,8 +43,6 @@ type WriteOpts struct {
 
 	// ErrStream is the error output destination.
 	ErrStream io.Writer
-
-	ctx context.Context
 }
 
 // WriteOpt is a function to set WriteOpts.
@@ -130,7 +130,6 @@ func NewWriter(options ...WriteOpt) Writer {
 		OutHeader:    false,
 		OutStream:    os.Stdout,
 		ErrStream:    os.Stderr,
-		ctx:          context.Background(),
 	}
 	for _, option := range options {
 		option(writeOpts)

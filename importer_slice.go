@@ -1,5 +1,7 @@
 package trdsql
 
+import "context"
+
 // SliceImporter is a structure that includes SliceReader.
 // SliceImporter can be used as a library from another program.
 // It is not used from the command.
@@ -17,6 +19,11 @@ func NewSliceImporter(tableName string, data interface{}) *SliceImporter {
 
 // Import is a method to import from SliceReader in SliceImporter.
 func (i *SliceImporter) Import(db *DB, query string) (string, error) {
+	ctx := context.Background()
+	return i.ImportContext(ctx, db, query)
+}
+
+func (i *SliceImporter) ImportContext(ctx context.Context, db *DB, query string) (string, error) {
 	names, err := i.Names()
 	if err != nil {
 		return query, err

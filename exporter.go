@@ -16,10 +16,13 @@ type Exporter interface {
 	Export(db *DB, query string) error
 }
 
+type ExporterContext interface {
+	ExportContext(ctx context.Context, db *DB, query string) error
+}
+
 // WriteFormat represents a structure that satisfies Exporter.
 type WriteFormat struct {
 	Writer
-	ctx context.Context
 }
 
 // NewExporter returns trdsql default Exporter.
@@ -29,23 +32,15 @@ func NewExporter(writer Writer) *WriteFormat {
 	}
 }
 
-// NewExporter returns trdsql default Exporter.
-func NewExporterContext(ctx context.Context, writer Writer) *WriteFormat {
-	return &WriteFormat{
-		Writer: writer,
-		ctx:    ctx,
-	}
-}
-
 // Export is execute SQL(Select) and
 // the result is written out by the writer.
 // Export is called from Exec.
 func (e *WriteFormat) Export(db *DB, query string) error {
-	ctx := e.ctx
-	if ctx == nil {
-		ctx = context.Background()
-	}
+	ctx := context.Background()
+	return e.ExportContext(ctx, db, query)
+}
 
+func (e *WriteFormat) ExportContext(ctx context.Context, db *DB, query string) error {
 	rows, err := db.SelectContext(ctx, query)
 	if err != nil {
 		return err
