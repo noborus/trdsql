@@ -232,8 +232,6 @@ func (cli Cli) Run(args []string) int {
 		return 0
 	}
 
-	ctx := context.Background()
-
 	query, err := getQuery(flags.Args(), queryFile)
 	if err != nil {
 		log.Printf("ERROR: %s", err)
@@ -245,8 +243,7 @@ func (cli Cli) Run(args []string) int {
 		return 2
 	}
 
-	importer := trdsql.NewImporterContext(
-		ctx,
+	importer := trdsql.NewImporter(
 		trdsql.InFormat(inputFormat(inFlag)),
 		trdsql.InDelimiter(inDelimiter),
 		trdsql.InHeader(inHeader),
@@ -293,9 +290,9 @@ func (cli Cli) Run(args []string) int {
 		trdsql.OutStream(writer),
 		trdsql.ErrStream(cli.ErrStream),
 	)
-	exporter := trdsql.NewExporterContext(ctx, w)
+	exporter := trdsql.NewExporter(w)
 
-	trd := trdsql.NewTRDSQLContext(ctx, importer, exporter)
+	trd := trdsql.NewTRDSQL(importer, exporter)
 
 	if driver != "" {
 		trd.Driver = driver
@@ -304,7 +301,9 @@ func (cli Cli) Run(args []string) int {
 		trd.Dsn = dsn
 	}
 
-	err = trd.Exec(query)
+	ctx := context.Background()
+
+	err = trd.ExecContext(ctx, query)
 	if err != nil {
 		log.Printf("%s", err)
 		return 1

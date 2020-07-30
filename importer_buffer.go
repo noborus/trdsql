@@ -1,6 +1,7 @@
 package trdsql
 
 import (
+	"context"
 	"io"
 )
 
@@ -26,6 +27,11 @@ func NewBufferImporter(tableName string, r io.Reader, options ...ReadOpt) (*Buff
 
 // Import is a method to import from Reader in BufferImporter.
 func (i *BufferImporter) Import(db *DB, query string) (string, error) {
+	ctx := context.Background()
+	return i.ImportContext(ctx, db, query)
+}
+
+func (i *BufferImporter) ImportContext(ctx context.Context, db *DB, query string) (string, error) {
 	names, err := i.Names()
 	if err != nil {
 		return query, err

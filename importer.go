@@ -45,10 +45,13 @@ type Importer interface {
 	Import(db *DB, query string) (string, error)
 }
 
+type ImporterContext interface {
+	ImportContext(ctx context.Context, db *DB, query string) (string, error)
+}
+
 // ReadFormat represents a structure that satisfies the Importer.
 type ReadFormat struct {
 	*ReadOpts
-	ctx context.Context
 }
 
 // NewImporter returns trdsql default Importer.
@@ -67,14 +70,6 @@ func NewImporter(options ...ReadOpt) *ReadFormat {
 	}
 }
 
-func NewImporterContext(ctx context.Context, options ...ReadOpt) *ReadFormat {
-	readOpts := NewReadOpts(options...)
-	return &ReadFormat{
-		ReadOpts: readOpts,
-		ctx:      ctx,
-	}
-}
-
 // DefaultDBType is default type.
 const DefaultDBType = "text"
 
@@ -83,11 +78,11 @@ const DefaultDBType = "text"
 // Return the rewritten SQL and error.
 // No error is returned if there is no table to import.
 func (i *ReadFormat) Import(db *DB, query string) (string, error) {
-	ctx := i.ctx
-	if ctx == nil {
-		ctx = context.Background()
-	}
+	ctx := context.Background()
+	return i.ImportContext(ctx, db, query)
+}
 
+func (i *ReadFormat) ImportContext(ctx context.Context, db *DB, query string) (string, error) {
 	parsedQuery := SQLFields(query)
 	tables, tableIdx := TableNames(parsedQuery)
 	if len(tables) == 0 {

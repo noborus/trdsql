@@ -22,33 +22,19 @@ type TRDSQL struct {
 
 	// Importer is interface of processing to
 	// import(create/insert) data.
-	Importer Importer
+	Importer ImporterContext
 	// Exporter is interface export to the process of
 	//  export(select) from the database.
-	Exporter Exporter
-
-	// Context
-	ctx context.Context
+	Exporter ExporterContext
 }
 
 // NewTRDSQL returns a new TRDSQL structure.
-func NewTRDSQL(im Importer, ex Exporter) *TRDSQL {
+func NewTRDSQL(im ImporterContext, ex ExporterContext) *TRDSQL {
 	return &TRDSQL{
 		Driver:   "sqlite3",
 		Dsn:      "",
 		Importer: im,
 		Exporter: ex,
-	}
-}
-
-// NewTRDSQL returns a new TRDSQL structure.
-func NewTRDSQLContext(ctx context.Context, im Importer, ex Exporter) *TRDSQL {
-	return &TRDSQL{
-		Driver:   "sqlite3",
-		Dsn:      "",
-		Importer: im,
-		Exporter: ex,
-		ctx:      ctx,
 	}
 }
 
@@ -127,11 +113,12 @@ func (f Format) String() string {
 
 // Exec is actually executed.
 func (trd *TRDSQL) Exec(sql string) error {
-	ctx := trd.ctx
-	if ctx == nil {
-		ctx = context.Background()
-	}
+	ctx := context.Background()
+	return trd.ExecContext(ctx, sql)
+}
 
+// Exec is actually executed.
+func (trd *TRDSQL) ExecContext(ctx context.Context, sql string) error {
 	db, err := Connect(trd.Driver, trd.Dsn)
 	if err != nil {
 		return fmt.Errorf("connect: %w", err)
@@ -149,14 +136,14 @@ func (trd *TRDSQL) Exec(sql string) error {
 		return fmt.Errorf("begin: %w", err)
 	}
 	if trd.Importer != nil {
-		sql, err = trd.Importer.Import(db, sql)
+		sql, err = trd.Importer.ImportContext(ctx, db, sql)
 		if err != nil {
 			return fmt.Errorf("import: %w", err)
 		}
 	}
 
 	if trd.Exporter != nil {
-		err = trd.Exporter.Export(db, sql)
+		err = trd.Exporter.ExportContext(ctx, db, sql)
 		if err != nil {
 			return fmt.Errorf("export: %w", err)
 		}

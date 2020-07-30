@@ -7,9 +7,13 @@ import (
 
 // Reader is wrap the reader.
 type Reader interface {
+	// Names returns column names.
 	Names() ([]string, error)
+	// Types returns column types.
 	Types() ([]string, error)
+	// PreReadRow is returns only columns that store preread rows.
 	PreReadRow() [][]interface{}
+	// ReadRow is read the rest of the row.
 	ReadRow([]interface{}) ([]interface{}, error)
 }
 
