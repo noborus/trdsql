@@ -729,15 +729,19 @@ func benchmarkFormat(b *testing.B, format Format) {
 func BenchmarkOutput_CSV(b *testing.B) {
 	benchmarkFormat(b, CSV)
 }
+
 func BenchmarkOutput_LTSV(b *testing.B) {
 	benchmarkFormat(b, LTSV)
 }
+
 func BenchmarkOutput_RAW(b *testing.B) {
 	benchmarkFormat(b, RAW)
 }
+
 func BenchmarkOutput_TBLN(b *testing.B) {
 	benchmarkFormat(b, TBLN)
 }
+
 func BenchmarkOutput_JSON(b *testing.B) {
 	benchmarkFormat(b, JSON)
 }

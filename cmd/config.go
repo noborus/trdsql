@@ -13,10 +13,8 @@ import (
 	"github.com/noborus/trdsql"
 )
 
-var (
-	// ErrNoFile is returned when there is no file.
-	ErrNoFile = errors.New("no file")
-)
+// ErrNoFile is returned when there is no file.
+var ErrNoFile = errors.New("no file")
 
 type database struct {
 	Driver string `json:"driver"`
