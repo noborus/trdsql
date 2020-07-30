@@ -22,14 +22,14 @@ type TRDSQL struct {
 
 	// Importer is interface of processing to
 	// import(create/insert) data.
-	Importer ImporterContext
+	Importer Importer
 	// Exporter is interface export to the process of
 	//  export(select) from the database.
-	Exporter ExporterContext
+	Exporter Exporter
 }
 
 // NewTRDSQL returns a new TRDSQL structure.
-func NewTRDSQL(im ImporterContext, ex ExporterContext) *TRDSQL {
+func NewTRDSQL(im Importer, ex Exporter) *TRDSQL {
 	return &TRDSQL{
 		Driver:   "sqlite3",
 		Dsn:      "",

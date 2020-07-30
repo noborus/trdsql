@@ -14,9 +14,6 @@ import (
 // Exporter executes SQL and outputs to Writer.
 type Exporter interface {
 	Export(db *DB, query string) error
-}
-
-type ExporterContext interface {
 	ExportContext(ctx context.Context, db *DB, query string) error
 }
 

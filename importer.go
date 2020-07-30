@@ -43,9 +43,6 @@ var (
 // Therefore, the reader does not receive it directly.
 type Importer interface {
 	Import(db *DB, query string) (string, error)
-}
-
-type ImporterContext interface {
 	ImportContext(ctx context.Context, db *DB, query string) (string, error)
 }
 
