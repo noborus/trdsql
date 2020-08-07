@@ -23,6 +23,7 @@ func (i *SliceImporter) Import(db *DB, query string) (string, error) {
 	return i.ImportContext(ctx, db, query)
 }
 
+// ImportContext is a method to import from SliceReader in SliceImporter.
 func (i *SliceImporter) ImportContext(ctx context.Context, db *DB, query string) (string, error) {
 	names, err := i.Names()
 	if err != nil {

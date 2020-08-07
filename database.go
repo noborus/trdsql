@@ -168,7 +168,7 @@ func (db *DB) copyImport(ctx context.Context, table *importTable, reader Reader)
 	query := "COPY " + table.tableName + " (" + strings.Join(table.columns, ",") + ") FROM STDIN"
 	debug.Printf(query)
 
-	stmt, err := db.Tx.Prepare(query)
+	stmt, err := db.Tx.PrepareContext(ctx, query)
 	if err != nil {
 		return fmt.Errorf("COPY prepare: %w", err)
 	}
@@ -202,10 +202,11 @@ func (db *DB) copyImport(ctx context.Context, table *importTable, reader Reader)
 		}
 	}
 
-	_, err = stmt.Exec()
+	_, err = stmt.ExecContext(ctx)
 	if err != nil {
 		return err
 	}
+
 	db.stmtClose(stmt)
 
 	return nil
@@ -216,6 +217,7 @@ func (db *DB) copyImport(ctx context.Context, table *importTable, reader Reader)
 func (db *DB) insertImport(ctx context.Context, table *importTable, reader Reader) error {
 	var err error
 	var stmt *sql.Stmt
+	defer db.stmtClose(stmt)
 
 	// #nosec G202
 	table.query = "INSERT INTO " + table.tableName + " (" + strings.Join(table.columns, ",") + ") VALUES "
@@ -240,7 +242,7 @@ func (db *DB) insertImport(ctx context.Context, table *importTable, reader Reade
 			}
 		} else {
 			// Read
-			bulk, err = bulkPush(table, reader, bulk)
+			bulk, err = bulkPush(ctx, table, reader, bulk)
 			if err != nil {
 				if !errors.Is(err, io.EOF) {
 					return fmt.Errorf("bulk read: %w", err)
@@ -252,7 +254,7 @@ func (db *DB) insertImport(ctx context.Context, table *importTable, reader Reade
 			}
 		}
 
-		stmt, err = db.bulkStmtOpen(table, stmt)
+		stmt, err = db.bulkStmtOpen(ctx, table, stmt)
 		if err != nil {
 			return err
 		}
@@ -263,7 +265,6 @@ func (db *DB) insertImport(ctx context.Context, table *importTable, reader Reade
 		bulk = bulk[:0]
 		table.count = 0
 	}
-	db.stmtClose(stmt)
 	return nil
 }
 
@@ -276,25 +277,29 @@ func (db *DB) stmtClose(stmt *sql.Stmt) {
 	}
 }
 
-func bulkPush(table *importTable, input Reader, bulk []interface{}) ([]interface{}, error) {
-	var err error
+func bulkPush(ctx context.Context, table *importTable, input Reader, bulk []interface{}) ([]interface{}, error) {
 	for (table.count * len(table.row)) < table.maxCap {
-		table.row, err = input.ReadRow(table.row)
+		rows, err := input.ReadRow(table.row)
 		if err != nil {
 			return bulk, err
 		}
 		// Skip when empty read.
-		if len(table.row) == 0 {
+		if len(rows) == 0 {
 			continue
 		}
 
-		bulk = append(bulk, table.row...)
+		bulk = append(bulk, rows...)
 		table.count++
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		default:
+		}
 	}
 	return bulk, nil
 }
 
-func (db *DB) bulkStmtOpen(table *importTable, stmt *sql.Stmt) (*sql.Stmt, error) {
+func (db *DB) bulkStmtOpen(ctx context.Context, table *importTable, stmt *sql.Stmt) (*sql.Stmt, error) {
 	var err error
 
 	if table.lastCount != table.count {
@@ -304,7 +309,7 @@ func (db *DB) bulkStmtOpen(table *importTable, stmt *sql.Stmt) (*sql.Stmt, error
 				return nil, err
 			}
 		}
-		stmt, err = db.insertPrepare(table)
+		stmt, err = db.insertPrepare(ctx, table)
 		if err != nil {
 			return nil, err
 		}
@@ -313,11 +318,11 @@ func (db *DB) bulkStmtOpen(table *importTable, stmt *sql.Stmt) (*sql.Stmt, error
 	return stmt, nil
 }
 
-func (db *DB) insertPrepare(table *importTable) (*sql.Stmt, error) {
+func (db *DB) insertPrepare(ctx context.Context, table *importTable) (*sql.Stmt, error) {
 	query := table.query +
 		strings.Repeat(table.place+",", table.count-1) + table.place
 	debug.Printf(query)
-	stmt, err := db.Tx.Prepare(query)
+	stmt, err := db.Tx.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("INSERT Prepare: %s:%w", query, err)
 	}

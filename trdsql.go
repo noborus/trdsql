@@ -117,7 +117,7 @@ func (trd *TRDSQL) Exec(sql string) error {
 	return trd.ExecContext(ctx, sql)
 }
 
-// Exec is actually executed.
+// ExecContext is actually executed.
 func (trd *TRDSQL) ExecContext(ctx context.Context, sql string) error {
 	db, err := Connect(trd.Driver, trd.Dsn)
 	if err != nil {

@@ -29,14 +29,15 @@ func NewExporter(writer Writer) *WriteFormat {
 	}
 }
 
-// Export is execute SQL(Select) and
-// the result is written out by the writer.
+// Export is execute SQL(Select) and the result is written out by the writer.
 // Export is called from Exec.
 func (e *WriteFormat) Export(db *DB, query string) error {
 	ctx := context.Background()
 	return e.ExportContext(ctx, db, query)
 }
 
+// ExportContext is execute SQL(Select) and the result is written out by the writer.
+// ExportContext is called from ExecContext.
 func (e *WriteFormat) ExportContext(ctx context.Context, db *DB, query string) error {
 	rows, err := db.SelectContext(ctx, query)
 	if err != nil {

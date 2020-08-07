@@ -14,7 +14,7 @@ require (
 	github.com/pierrec/lz4 v2.5.2+incompatible
 	github.com/ulikunitz/xz v0.5.7
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
-	golang.org/x/sys v0.0.0-20200728102440-3e129f6d46b1 // indirect
+	golang.org/x/sys v0.0.0-20200806060901-a37d78b92225 // indirect
 )
 
 go 1.13

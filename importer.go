@@ -79,6 +79,10 @@ func (i *ReadFormat) Import(db *DB, query string) (string, error) {
 	return i.ImportContext(ctx, db, query)
 }
 
+// ImportContext is parses the SQL statement and imports one or more tables.
+// ImportContext is called from ExecContext.
+// Return the rewritten SQL and error.
+// No error is returned if there is no table to import.
 func (i *ReadFormat) ImportContext(ctx context.Context, db *DB, query string) (string, error) {
 	parsedQuery := SQLFields(query)
 	tables, tableIdx := TableNames(parsedQuery)
