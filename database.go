@@ -9,11 +9,11 @@ import (
 	"log"
 	"strings"
 
-	// MySQL driver
+	// MySQL driver.
 	_ "github.com/go-sql-driver/mysql"
-	// PostgreSQL driver
+	// PostgreSQL driver.
 	_ "github.com/lib/pq"
-	// SQLite3 driver
+	// SQLite3 driver.
 	_ "github.com/mattn/go-sqlite3"
 )
 
