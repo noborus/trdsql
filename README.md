@@ -14,7 +14,7 @@ It is a tool like [q](https://github.com/harelba/q),
 The difference from these tools is that the syntax of
  PostgreSQL or MySQL can be used.
 
-Please refer to [godoc](https://godoc.org/github.com/noborus/trdsql)
+Please refer to [godoc](https://pkg.go.dev/github.com/noborus/trdsql)
  and _example for usage as a library.
 
 ![trdsql.gif](https://raw.githubusercontent.com/noborus/trdsql/master/doc/trdsql.gif)
