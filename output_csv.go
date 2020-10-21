@@ -21,13 +21,15 @@ type CSVWriter struct {
 
 // NewCSVWriter returns CSVWriter.
 func NewCSVWriter(writeOpts *WriteOpts) *CSVWriter {
-	var err error
 	w := &CSVWriter{}
 	w.writer = bufio.NewWriter(writeOpts.OutStream)
-	w.outDelimiter, err = delimiter(writeOpts.OutDelimiter)
+
+	d, err := delimiter(writeOpts.OutDelimiter)
 	if err != nil {
 		debug.Printf("%s\n", err)
 	}
+	w.outDelimiter = d
+
 	if len(writeOpts.OutQuote) > 0 {
 		w.outQuote = ([]rune(writeOpts.OutQuote))[0]
 	} else {
@@ -47,38 +49,36 @@ func NewCSVWriter(writeOpts *WriteOpts) *CSVWriter {
 
 // PreWrite is output of header and preparation.
 func (w *CSVWriter) PreWrite(columns []string, types []string) error {
-	var err error
-	if w.outHeader {
-		for n, column := range columns {
-			if n > 0 {
-				if _, err = w.writer.WriteRune(w.outDelimiter); err != nil {
-					return err
-				}
-			}
-			if err = w.writeColumn(column); err != nil {
+	if !w.outHeader {
+		return nil
+	}
+	for n, column := range columns {
+		if n > 0 {
+			if _, err := w.writer.WriteRune(w.outDelimiter); err != nil {
 				return err
 			}
 		}
-		_, err = w.writer.WriteString(w.endLine)
-		return err
+		if err := w.writeColumn(column); err != nil {
+			return err
+		}
 	}
-	return nil
+	_, err := w.writer.WriteString(w.endLine)
+	return err
 }
 
 // WriteRow is row write.
 func (w *CSVWriter) WriteRow(values []interface{}, columns []string) error {
-	var err error
 	for n, field := range values {
 		if n > 0 {
-			if _, err = w.writer.WriteRune(w.outDelimiter); err != nil {
+			if _, err := w.writer.WriteRune(w.outDelimiter); err != nil {
 				return err
 			}
 		}
-		if err = w.writeColumn(ValString(field)); err != nil {
+		if err := w.writeColumn(ValString(field)); err != nil {
 			return err
 		}
 	}
-	_, err = w.writer.WriteString(w.endLine)
+	_, err := w.writer.WriteString(w.endLine)
 	return err
 }
 
