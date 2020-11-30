@@ -1,6 +1,7 @@
 package trdsql
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"errors"
@@ -92,26 +93,36 @@ func (db *DB) CreateTable(tableName string, columnNames []string, columnTypes []
 // CreateTableContext is create a (temporary) table in the database.
 // The arguments are the table name, column name, column type, and temporary flag.
 func (db *DB) CreateTableContext(ctx context.Context, tableName string, columnNames []string, columnTypes []string, isTemporary bool) error {
+	if db.Tx == nil {
+		return ErrNoTransaction
+	}
 	if len(columnNames) == 0 {
 		return ErrInvalidNames
 	}
 	if len(columnNames) != len(columnTypes) {
 		return ErrInvalidTypes
 	}
-	if db.Tx == nil {
-		return ErrNoTransaction
-	}
 
-	query := "CREATE TABLE "
+	buf := &bytes.Buffer{}
 	if isTemporary {
-		query = "CREATE TEMPORARY TABLE "
+		buf.WriteString("CREATE TEMPORARY TABLE ")
+	} else {
+		buf.WriteString("CREATE TABLE ")
 	}
+	buf.WriteString(tableName)
+	buf.WriteString(" ( ")
+	buf.WriteString(columnNames[0])
+	buf.WriteString(" ")
+	buf.WriteString(columnTypes[0])
+	for i := 1; i < len(columnNames); i++ {
+		buf.WriteString(", ")
+		buf.WriteString(columnNames[i])
+		buf.WriteString(" ")
+		buf.WriteString(columnTypes[i])
+	}
+	buf.WriteString(" );")
 
-	columns := make([]string, len(columnNames))
-	for i := 0; i < len(columnNames); i++ {
-		columns[i] = db.QuotedName(columnNames[i]) + " " + columnTypes[i]
-	}
-	query += tableName + " ( " + strings.Join(columns, ",") + " );"
+	query := buf.String()
 	debug.Printf(query)
 	_, err := db.Tx.ExecContext(ctx, query)
 	return err
@@ -121,8 +132,6 @@ func (db *DB) CreateTableContext(ctx context.Context, tableName string, columnNa
 type importTable struct {
 	tableName string
 	columns   []string
-	query     string
-	place     string
 	maxCap    int
 	row       []interface{}
 	lastCount int
@@ -165,7 +174,7 @@ func (db *DB) ImportContext(ctx context.Context, tableName string, columnNames [
 
 // copyImport adds rows to a table with the COPY clause (PostgreSQL only).
 func (db *DB) copyImport(ctx context.Context, table *importTable, reader Reader) error {
-	query := "COPY " + table.tableName + " (" + strings.Join(table.columns, ",") + ") FROM STDIN"
+	query := queryCopy(table)
 	debug.Printf(query)
 
 	stmt, err := db.Tx.PrepareContext(ctx, query)
@@ -212,6 +221,21 @@ func (db *DB) copyImport(ctx context.Context, table *importTable, reader Reader)
 	return nil
 }
 
+// queryCopy constructs a SQL COPY statement.
+func queryCopy(table *importTable) string {
+	buf := &bytes.Buffer{}
+	buf.WriteString("COPY ")
+	buf.WriteString(table.tableName)
+	buf.WriteString(" (")
+	buf.WriteString(table.columns[0])
+	for i := 1; i < len(table.columns); i++ {
+		buf.WriteString(", ")
+		buf.WriteString(table.columns[i])
+	}
+	buf.WriteString(") FROM STDIN;")
+	return buf.String()
+}
+
 // insertImport adds a row to a table with an INSERT clause.
 // Insert multiple rows by bulk insert.
 func (db *DB) insertImport(ctx context.Context, table *importTable, reader Reader) error {
@@ -219,9 +243,6 @@ func (db *DB) insertImport(ctx context.Context, table *importTable, reader Reade
 	var stmt *sql.Stmt
 	defer db.stmtClose(stmt)
 
-	// #nosec G202
-	table.query = "INSERT INTO " + table.tableName + " (" + strings.Join(table.columns, ",") + ") VALUES "
-	table.place = "(" + strings.Repeat("?,", len(table.columns)-1) + "?)"
 	table.maxCap = (db.maxBulk / len(table.row)) * len(table.row)
 	bulk := make([]interface{}, 0, table.maxCap)
 
@@ -319,9 +340,9 @@ func (db *DB) bulkStmtOpen(ctx context.Context, table *importTable, stmt *sql.St
 }
 
 func (db *DB) insertPrepare(ctx context.Context, table *importTable) (*sql.Stmt, error) {
-	query := table.query +
-		strings.Repeat(table.place+",", table.count-1) + table.place
+	query := queryInsert(table)
 	debug.Printf(query)
+
 	stmt, err := db.Tx.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("INSERT Prepare: %s:%w", query, err)
@@ -329,13 +350,47 @@ func (db *DB) insertPrepare(ctx context.Context, table *importTable) (*sql.Stmt,
 	return stmt, nil
 }
 
+// queryInsert constructs a SQL INSERT statement.
+func queryInsert(table *importTable) string {
+	buf := &bytes.Buffer{}
+	buf.WriteString("INSERT INTO ")
+	buf.WriteString(table.tableName)
+	buf.WriteString(" (")
+	buf.WriteString(table.columns[0])
+	for i := 1; i < len(table.columns); i++ {
+		buf.WriteString(", ")
+		buf.WriteString(table.columns[i])
+	}
+	buf.WriteString(") VALUES ")
+	buf.WriteString("(")
+	buf.WriteString("?")
+	for i := 1; i < len(table.columns); i++ {
+		buf.WriteString(",?")
+	}
+	buf.WriteString(")")
+	for i := 1; i < table.count; i++ {
+		buf.WriteString(",(")
+		buf.WriteString("?")
+		for i := 1; i < len(table.columns); i++ {
+			buf.WriteString(",?")
+		}
+		buf.WriteString(")")
+	}
+	buf.WriteString(";")
+	return buf.String()
+}
+
 // QuotedName returns the table name quoted.
 // Returns as is, if already quoted.
-func (db *DB) QuotedName(oldName string) string {
-	if oldName[0] != db.quote[0] {
-		return db.quote + oldName + db.quote
+func (db *DB) QuotedName(orgName string) string {
+	if orgName[0] != db.quote[0] {
+		buf := &bytes.Buffer{}
+		buf.WriteString(db.quote)
+		buf.WriteString(orgName)
+		buf.WriteString(db.quote)
+		return buf.String()
 	}
-	return oldName
+	return orgName
 }
 
 // Select is executes SQL select statements.
