@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"golang.org/x/term"
+
 	runewidth "github.com/mattn/go-runewidth"
-	"golang.org/x/crypto/ssh/terminal"
 )
 
 // VFWriter is Vertical Format output.
@@ -23,7 +24,7 @@ func NewVFWriter(writeOpts *WriteOpts) *VFWriter {
 	var err error
 	w := &VFWriter{}
 	w.writer = bufio.NewWriter(writeOpts.OutStream)
-	w.termWidth, _, err = terminal.GetSize(0)
+	w.termWidth, _, err = term.GetSize(0)
 	if err != nil {
 		w.termWidth = 40
 	}
