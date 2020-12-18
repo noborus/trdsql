@@ -12,6 +12,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/user"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -345,7 +347,7 @@ func singleFileOpen(fileName string) (io.ReadCloser, error) {
 	if len(fileName) == 0 || fileName == "-" || strings.ToLower(fileName) == "stdin" {
 		return uncompressedReader(bufio.NewReader(os.Stdin)), nil
 	}
-	fileName = trimQuote(fileName)
+	fileName = expandTilde(trimQuote(fileName))
 	file, err := os.Open(fileName)
 	if err != nil {
 		return nil, err
@@ -354,7 +356,7 @@ func singleFileOpen(fileName string) (io.ReadCloser, error) {
 }
 
 func globFileOpen(globName string) (*io.PipeReader, error) {
-	globName = trimQuote(globName)
+	globName = expandTilde(trimQuote(globName))
 	fileNames, err := filepath.Glob(globName)
 	if err != nil {
 		return nil, err
@@ -398,12 +400,24 @@ func globFileOpen(globName string) (*io.PipeReader, error) {
 	return pipeReader, nil
 }
 
-func trimQuote(fileName string) string {
-	if fileName[0] == '`' {
-		fileName = strings.Replace(fileName, "`", "", 2)
+func expandTilde(fileName string) string {
+	if strings.HasPrefix(fileName, "~") {
+		usr, err := user.Current()
+		if err != nil {
+			log.Printf("ERROR: %s", err)
+		} else {
+			fileName = path.Join(usr.HomeDir, fileName[1:])
+		}
 	}
-	if fileName[0] == '"' {
-		fileName = strings.Replace(fileName, "\"", "", 2)
+	return fileName
+}
+
+func trimQuote(fileName string) string {
+	if fileName[0] == '`' && fileName[len(fileName)-1] == '`' {
+		fileName = fileName[1 : len(fileName)-1]
+	}
+	if fileName[0] == '"' && fileName[len(fileName)-1] == '"' {
+		fileName = fileName[1 : len(fileName)-1]
 	}
 	return fileName
 }
