@@ -111,12 +111,12 @@ func (db *DB) CreateTableContext(ctx context.Context, tableName string, columnNa
 	}
 	buf.WriteString(tableName)
 	buf.WriteString(" ( ")
-	buf.WriteString(columnNames[0])
+	buf.WriteString(db.QuotedName(columnNames[0]))
 	buf.WriteString(" ")
 	buf.WriteString(columnTypes[0])
 	for i := 1; i < len(columnNames); i++ {
 		buf.WriteString(", ")
-		buf.WriteString(columnNames[i])
+		buf.WriteString(db.QuotedName(columnNames[i]))
 		buf.WriteString(" ")
 		buf.WriteString(columnTypes[i])
 	}
