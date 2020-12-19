@@ -228,6 +228,7 @@ func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *R
 			log.Printf("file close:%s", err)
 		}
 	}()
+
 	readOpts = realFormat(fileName, readOpts)
 	reader, err := NewReader(file, readOpts)
 	if err != nil {
@@ -404,9 +405,9 @@ func expandTilde(fileName string) string {
 		usr, err := user.Current()
 		if err != nil {
 			log.Printf("ERROR: %s", err)
-		} else {
-			fileName = filepath.Join(usr.HomeDir, fileName[1:])
+			return fileName
 		}
+		fileName = filepath.Join(usr.HomeDir, fileName[1:])
 	}
 	return fileName
 }
