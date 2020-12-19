@@ -13,7 +13,6 @@ import (
 	"log"
 	"os"
 	"os/user"
-	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -406,7 +405,7 @@ func expandTilde(fileName string) string {
 		if err != nil {
 			log.Printf("ERROR: %s", err)
 		} else {
-			fileName = path.Join(usr.HomeDir, fileName[1:])
+			fileName = filepath.Join(usr.HomeDir, fileName[1:])
 		}
 	}
 	return fileName
