@@ -223,8 +223,7 @@ func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *R
 		return "", nil
 	}
 	defer func() {
-		err = file.Close()
-		if err != nil {
+		if err := file.Close(); err != nil {
 			log.Printf("file close:%s", err)
 		}
 	}()
@@ -253,20 +252,21 @@ func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *R
 	debug.Printf("Column Names: [%v]", strings.Join(columnNames, ","))
 	debug.Printf("Column Types: [%v]", strings.Join(columnTypes, ","))
 
-	err = db.CreateTableContext(ctx, tableName, columnNames, columnTypes, readOpts.IsTemporary)
-	if err != nil {
+	if err := db.CreateTableContext(ctx, tableName, columnNames, columnTypes, readOpts.IsTemporary); err != nil {
 		return tableName, err
 	}
-	err = db.ImportContext(ctx, tableName, columnNames, reader)
-	return tableName, err
+
+	return tableName, db.ImportContext(ctx, tableName, columnNames, reader)
 }
 
 func realFormat(fileName string, readOpts *ReadOpts) *ReadOpts {
-	if readOpts.InFormat == GUESS {
-		readOpts.realFormat = guessFormat(fileName)
-	} else {
+	if readOpts.InFormat != GUESS {
 		readOpts.realFormat = readOpts.InFormat
+		return readOpts
 	}
+
+	readOpts.realFormat = guessFormat(fileName)
+	debug.Printf("Guess file type as %s: [%s]", readOpts.realFormat, fileName)
 	return readOpts
 }
 
@@ -284,16 +284,12 @@ func guessFormat(tableName string) Format {
 		ext := strings.ToUpper(strings.TrimLeft(dotExt, "."))
 		switch ext {
 		case "CSV":
-			debug.Printf("Guess file type as CSV: [%s]", tableName)
 			return CSV
 		case "LTSV":
-			debug.Printf("Guess file type as LTSV: [%s]", tableName)
 			return LTSV
 		case "JSON", "JSONL":
-			debug.Printf("Guess file type as JSON: [%s]", tableName)
 			return JSON
 		case "TBLN":
-			debug.Printf("Guess file type as TBLN: [%s]", tableName)
 			return TBLN
 		}
 		tableName = tableName[0 : len(tableName)-len(dotExt)]
@@ -337,6 +333,7 @@ func uncompressedReader(reader io.Reader) io.ReadCloser {
 		zr, err = xz.NewReader(rd)
 		r = ioutil.NopCloser(zr)
 	}
+
 	if err != nil || r == nil {
 		r = ioutil.NopCloser(rd)
 	}
@@ -367,8 +364,7 @@ func globFileOpen(globName string) (*io.PipeReader, error) {
 	pipeReader, pipeWriter := io.Pipe()
 	go func() {
 		defer func() {
-			err = pipeWriter.Close()
-			if err != nil {
+			if err := pipeWriter.Close(); err != nil {
 				log.Printf("pipe close:%s", err)
 			}
 		}()
@@ -380,6 +376,7 @@ func globFileOpen(globName string) (*io.PipeReader, error) {
 				continue
 			}
 			r := uncompressedReader(f)
+
 			_, err = io.Copy(pipeWriter, r)
 			if err != nil {
 				log.Printf("ERROR: %s:%s", fileName, err)
@@ -390,8 +387,8 @@ func globFileOpen(globName string) (*io.PipeReader, error) {
 				log.Printf("ERROR: %s:%s", fileName, err)
 				continue
 			}
-			err = f.Close()
-			if err != nil {
+
+			if err := f.Close(); err != nil {
 				log.Printf("ERROR: %s:%s", fileName, err)
 			}
 			debug.Printf("Close: [%s]", fileName)

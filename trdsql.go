@@ -125,8 +125,7 @@ func (trd *TRDSQL) ExecContext(ctx context.Context, sql string) error {
 	}
 
 	defer func() {
-		err = db.Disconnect()
-		if err != nil {
+		if err := db.Disconnect(); err != nil {
 			log.Printf("disconnect: %s", err)
 		}
 	}()
@@ -135,6 +134,7 @@ func (trd *TRDSQL) ExecContext(ctx context.Context, sql string) error {
 	if err != nil {
 		return fmt.Errorf("begin: %w", err)
 	}
+
 	if trd.Importer != nil {
 		sql, err = trd.Importer.ImportContext(ctx, db, sql)
 		if err != nil {
@@ -143,14 +143,12 @@ func (trd *TRDSQL) ExecContext(ctx context.Context, sql string) error {
 	}
 
 	if trd.Exporter != nil {
-		err = trd.Exporter.ExportContext(ctx, db, sql)
-		if err != nil {
+		if err := trd.Exporter.ExportContext(ctx, db, sql); err != nil {
 			return fmt.Errorf("export: %w", err)
 		}
 	}
 
-	err = db.Tx.Commit()
-	if err != nil {
+	if err := db.Tx.Commit(); err != nil {
 		return fmt.Errorf("commit: %w", err)
 	}
 

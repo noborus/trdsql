@@ -34,6 +34,7 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 			if !errors.Is(err, io.EOF) {
 				return r, err
 			}
+			debug.Printf(err.Error())
 			return r, nil
 		}
 		r.preRead = append(r.preRead, row)

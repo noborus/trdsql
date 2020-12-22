@@ -70,20 +70,18 @@ func (e *WriteFormat) ExportContext(ctx context.Context, db *DB, query string) e
 		types[i] = ct.DatabaseTypeName()
 	}
 
-	err = e.Writer.PreWrite(columns, types)
-	if err != nil {
+	if err = e.Writer.PreWrite(columns, types); err != nil {
 		return err
 	}
 	for rows.Next() {
-		err = rows.Scan(scanArgs...)
-		if err != nil {
+		if err := rows.Scan(scanArgs...); err != nil {
 			return err
 		}
-		err = e.Writer.WriteRow(values, columns)
-		if err != nil {
+		if err := e.Writer.WriteRow(values, columns); err != nil {
 			return err
 		}
 	}
+
 	return e.Writer.PostWrite()
 }
 

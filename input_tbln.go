@@ -24,6 +24,7 @@ func NewTBLNReader(reader io.Reader) (*TBLNRead, error) {
 		if !errors.Is(err, io.EOF) {
 			return r, err
 		}
+		debug.Printf(err.Error())
 		return r, nil
 	}
 	r.preRead = make([][]interface{}, 1)
@@ -41,8 +42,7 @@ func NewTBLNReader(reader io.Reader) (*TBLNRead, error) {
 		for i := range rec {
 			names[i] = "c" + strconv.Itoa(i+1)
 		}
-		err = d.SetNames(names)
-		if err != nil {
+		if err := d.SetNames(names); err != nil {
 			return r, err
 		}
 	}
@@ -54,8 +54,8 @@ func NewTBLNReader(reader io.Reader) (*TBLNRead, error) {
 		for i := range rec {
 			types[i] = DefaultDBType
 		}
-		err = d.SetTypes(types)
-		if err != nil {
+
+		if err := d.SetTypes(types); err != nil {
 			return r, err
 		}
 	}

@@ -47,8 +47,7 @@ func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
 	}
 
 	defer func() {
-		err = file.Close()
-		if err != nil {
+		if err := file.Close(); err != nil {
 			log.Printf("file close:%s", err)
 		}
 	}()

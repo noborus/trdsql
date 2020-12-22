@@ -54,13 +54,13 @@ type DB struct {
 // Currently supported drivers are sqlite3, mysql, postgres.
 // Set quote character and maxBulk depending on the driver type.
 func Connect(driver, dsn string) (*DB, error) {
-	var err error
-
-	db := &DB{}
-	db.DB, err = sql.Open(driver, dsn)
+	sqlDB, err := sql.Open(driver, dsn)
 	if err != nil {
 		return nil, err
 	}
+
+	db := &DB{}
+	db.DB = sqlDB
 	db.driver = driver
 	db.dsn = dsn
 	debug.Printf("driver: %s, dsn: %s", driver, dsn)
@@ -181,14 +181,14 @@ func (db *DB) copyImport(ctx context.Context, table *importTable, reader Reader)
 	if err != nil {
 		return fmt.Errorf("COPY prepare: %w", err)
 	}
+	defer db.stmtClose(stmt)
 
 	preReadRows := reader.PreReadRow()
 	for _, row := range preReadRows {
 		if row == nil {
 			break
 		}
-		_, err = stmt.ExecContext(ctx, row...)
-		if err != nil {
+		if _, err = stmt.ExecContext(ctx, row...); err != nil {
 			return err
 		}
 	}
@@ -205,20 +205,13 @@ func (db *DB) copyImport(ctx context.Context, table *importTable, reader Reader)
 		if len(table.row) == 0 {
 			continue
 		}
-		_, err = stmt.ExecContext(ctx, table.row...)
-		if err != nil {
+		if _, err = stmt.ExecContext(ctx, table.row...); err != nil {
 			return err
 		}
 	}
 
 	_, err = stmt.ExecContext(ctx)
-	if err != nil {
-		return err
-	}
-
-	db.stmtClose(stmt)
-
-	return nil
+	return err
 }
 
 // queryCopy constructs a SQL COPY statement.
@@ -279,8 +272,7 @@ func (db *DB) insertImport(ctx context.Context, table *importTable, reader Reade
 		if err != nil {
 			return err
 		}
-		_, err = stmt.ExecContext(ctx, bulk...)
-		if err != nil {
+		if _, err = stmt.ExecContext(ctx, bulk...); err != nil {
 			return err
 		}
 		bulk = bulk[:0]
