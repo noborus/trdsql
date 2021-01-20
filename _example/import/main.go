@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/noborus/trdsql"
@@ -10,16 +11,20 @@ import (
 type importer struct {
 }
 
-func (f *importer) Import(db *trdsql.DB, query string) (string, error) {
-	err := db.CreateTable("test", []string{"a"}, []string{"text"}, true)
+func (f *importer) ImportContext(ctx context.Context, db *trdsql.DB, query string) (string, error) {
+	err := db.CreateTableContext(ctx, "test", []string{"a"}, []string{"text"}, true)
 	if err != nil {
 		return query, err
 	}
-	_, err = db.Tx.Exec("INSERT INTO test (a) VALUES ('aaaa')")
+	_, err = db.Tx.ExecContext(ctx, "INSERT INTO test (a) VALUES ('aaaa')")
 	if err != nil {
 		return query, err
 	}
 	return query, err
+}
+func (f *importer) Import(db *trdsql.DB, query string) (string, error) {
+	ctx := context.Background()
+	return f.ImportContext(ctx, db, query)
 }
 
 func main() {
