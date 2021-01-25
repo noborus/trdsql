@@ -74,6 +74,12 @@ func (e *WriteFormat) ExportContext(ctx context.Context, db *DB, query string) e
 		return err
 	}
 	for rows.Next() {
+		select {
+		case <-ctx.Done(): // cancellation
+			return ctx.Err()
+		default:
+		}
+
 		if err := rows.Scan(scanArgs...); err != nil {
 			return err
 		}

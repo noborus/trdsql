@@ -24,20 +24,17 @@ func (w *Write) PreWrite(columns []string, types []string) error {
 }
 
 func (w *Write) WriteRow(values []interface{}, columns []string) error {
-	var err error
 	for i, v := range values {
 		if i > 0 {
-			_, err = w.writer.Write([]byte(","))
-			if err != nil {
+			if _, err := w.writer.Write([]byte(",")); err != nil {
 				return err
 			}
 		}
-		_, err = w.writer.Write([]byte(trdsql.ValString(v)))
-		if err != nil {
+		if _, err := w.writer.Write([]byte(trdsql.ValString(v))); err != nil {
 			return err
 		}
 	}
-	_, err = w.writer.Write([]byte("\n"))
+	_, err := w.writer.Write([]byte("\n"))
 	return err
 }
 
