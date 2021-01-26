@@ -56,7 +56,7 @@ build-all:
 
 DIST_DIRS := find trdsql* -type d -exec
 
-dist: dist-clean build-all linux-amd64 linux-386 linux-arm-5 linux-arm-6 linux-arm-7 linux-arm64 linux-mips linux-mips64 linux-mipsle windows-386 windows-amd64 darwin-386 darwin-amd64
+dist: dist-clean build-all linux-amd64 linux-386 linux-arm-5 linux-arm-6 linux-arm-7 linux-arm64 linux-mips linux-mips64 linux-mipsle windows-386 windows-amd64 darwin-amd64
 	cd dist && \
 	$(DIST_DIRS) cp ../README.md {} \; && \
 	$(DIST_DIRS) cp ../LICENSE {} \; && \
