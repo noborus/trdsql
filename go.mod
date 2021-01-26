@@ -4,6 +4,7 @@ require (
 	github.com/dsnet/compress v0.0.1
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
+	github.com/iancoleman/orderedmap v0.2.0
 	github.com/klauspost/compress v1.11.7
 	github.com/lib/pq v1.9.0
 	github.com/logrusorgru/aurora v2.0.3+incompatible

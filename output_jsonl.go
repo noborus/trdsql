@@ -2,6 +2,8 @@ package trdsql
 
 import (
 	"encoding/json"
+
+	"github.com/iancoleman/orderedmap"
 )
 
 // JSONLWriter provides methods of the Writer interface.
@@ -23,9 +25,9 @@ func (w *JSONLWriter) PreWrite(columns []string, types []string) error {
 
 // WriteRow is write one JSONL.
 func (w *JSONLWriter) WriteRow(values []interface{}, columns []string) error {
-	m := make(map[string]interface{}, len(columns))
+	m := orderedmap.New()
 	for i, col := range values {
-		m[columns[i]] = compatibleJSON(col)
+		m.Set(columns[i], compatibleJSON(col))
 	}
 	return w.writer.Encode(m)
 }
