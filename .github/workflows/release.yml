@@ -18,8 +18,8 @@ jobs:
     - name: Set environment variables
       shell: bash
       run: |
-        echo '::set-env name=GOPATH::${{ runner.workspace }}'
-        echo '::add-path::${{ runner.workspace }}/bin'
+        echo "GOPATH=${{ runner.workspace }}""  >> $GITHUB_ENV
+        echo "${{ runner.workspace }}/bin" >> $GITHUB_PATH
     - name: Setup XGO
       run: go get github.com/crazy-max/xgo
 
