@@ -24,6 +24,7 @@ Please refer to [godoc](https://pkg.go.dev/github.com/noborus/trdsql)
 	* 1.1. [Requirements](#Requirements)
 	* 1.2. [Download](#Download)
 	* 1.3. [Homebrew](#Homebrew)
+	* 1.4. [MacPorts](#MacPorts)
 * 2. [Docker](#Docker)
 	* 2.1. [Docker pull](#Dockerpull)
 	* 2.2. [image build](#imagebuild)
@@ -88,6 +89,13 @@ Download binary from the [releases](https://github.com/noborus/trdsql/releases) 
 
 ```console
 brew install noborus/tap/trdsql
+```
+
+###  1.4. <a name='MacPorts'></a>MacPorts
+
+```console
+sudo port selfupdate
+sudo port install trdsql
 ```
 
 ##  2. <a name='Docker'></a>Docker
