@@ -21,8 +21,9 @@ Please refer to [godoc](https://pkg.go.dev/github.com/noborus/trdsql)
 
 <!-- vscode-markdown-toc -->
 * 1. [INSTALL](#INSTALL)
-	* 1.1. [Requirements](#Requirements)
-	* 1.2. [Download](#Download)
+	* 1.1. [go get](#goget)
+		* 1.1.1. [Requirements](#Requirements)
+	* 1.2. [Download binary](#DownloadBinary)
 	* 1.3. [Homebrew](#Homebrew)
 	* 1.4. [MacPorts](#MacPorts)
 * 2. [Docker](#Docker)
@@ -70,6 +71,8 @@ Please refer to [godoc](https://pkg.go.dev/github.com/noborus/trdsql)
 
 ##  1. <a name='INSTALL'></a>INSTALL
 
+###  1.1. <a name='goget'></a>go get
+
 ```console
 go get -d github.com/noborus/trdsql
 cd $GOPATH/src/github.com/noborus/trdsql
@@ -77,11 +80,11 @@ make
 make install
 ```
 
-###  1.1. <a name='Requirements'></a>Requirements
+####  1.1.1. <a name='Requirements'></a>Requirements
 
 go 1.13 or higher.
 
-###  1.2. <a name='Download'></a>Download
+###  1.2. <a name='DownloadBinary'></a>Download binary
 
 Download binary from the [releases](https://github.com/noborus/trdsql/releases) page(Linux/Windows/macOS).
 
