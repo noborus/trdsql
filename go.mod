@@ -1,6 +1,7 @@
 module github.com/noborus/trdsql
 
 require (
+	github.com/Jeffail/gabs/v2 v2.6.0
 	github.com/dsnet/compress v0.0.1
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
@@ -16,7 +17,7 @@ require (
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/ulikunitz/xz v0.5.10
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad // indirect
-	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
+	golang.org/x/sys v0.0.0-20210218085108-9555bcde0c6a // indirect
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf
 )
 

@@ -24,10 +24,11 @@ import (
 
 // inputFlag represents the format of the input.
 type inputFlag struct {
-	CSV  bool
-	LTSV bool
-	JSON bool
-	TBLN bool
+	CSV      bool
+	LTSV     bool
+	JSON     bool
+	TBLN     bool
+	JSONPATH bool
 }
 
 // outputFlag represents the format of the output.
@@ -51,6 +52,8 @@ func inputFormat(i inputFlag) trdsql.Format {
 		return trdsql.LTSV
 	case i.JSON:
 		return trdsql.JSON
+	case i.JSONPATH:
+		return trdsql.JSONPATH
 	case i.TBLN:
 		return trdsql.TBLN
 	default:
@@ -116,6 +119,7 @@ func (cli Cli) Run(args []string) int {
 		inHeader    bool
 		inSkip      int
 		inPreRead   int
+		inPath      string
 
 		outFlag         outputFlag
 		outFile         string
@@ -149,10 +153,12 @@ func (cli Cli) Run(args []string) int {
 	flags.BoolVar(&inHeader, "ih", false, "the first line is interpreted as column names(CSV only).")
 	flags.IntVar(&inSkip, "is", 0, "skip header row.")
 	flags.IntVar(&inPreRead, "ir", 1, "number of row preread for column determination.")
+	flags.StringVar(&inPath, "path", "", "PATH string for input.")
 
 	flags.BoolVar(&inFlag.CSV, "icsv", false, "CSV format for input.")
 	flags.BoolVar(&inFlag.LTSV, "iltsv", false, "LTSV format for input.")
 	flags.BoolVar(&inFlag.JSON, "ijson", false, "JSON format for input.")
+	flags.BoolVar(&inFlag.JSONPATH, "ijsonpath", false, "JSONPATH format for input.")
 	flags.BoolVar(&inFlag.TBLN, "itbln", false, "TBLN format for input.")
 
 	flags.StringVar(&outFile, "out", "", "output file name.")
@@ -249,6 +255,7 @@ func (cli Cli) Run(args []string) int {
 		trdsql.InHeader(inHeader),
 		trdsql.InSkip(inSkip),
 		trdsql.InPreRead(inPreRead),
+		trdsql.InPath(inPath),
 	)
 
 	writer := cli.OutStream
