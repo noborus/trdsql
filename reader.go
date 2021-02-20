@@ -131,8 +131,6 @@ func NewReader(reader io.Reader, readOpts *ReadOpts) (Reader, error) {
 		return NewLTSVReader(reader, readOpts)
 	case JSON:
 		return NewJSONReader(reader, readOpts)
-	case JSONPATH:
-		return NewJSONPATHReader(reader, readOpts)
 	case TBLN:
 		return NewTBLNReader(reader)
 	default:

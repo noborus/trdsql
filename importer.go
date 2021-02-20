@@ -281,9 +281,6 @@ func realFormat(fileName string, readOpts *ReadOpts) *ReadOpts {
 	}
 
 	readOpts.realFormat = guessFormat(fileName)
-	if readOpts.realFormat == JSON && readOpts.InPath != "" {
-		readOpts.realFormat = JSONPATH
-	}
 	debug.Printf("Guess file type as %s: [%s]", readOpts.realFormat, fileName)
 	return readOpts
 }

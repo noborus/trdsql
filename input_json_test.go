@@ -108,7 +108,7 @@ func TestNewJSONReader(t *testing.T) {
 			},
 			want: &JSONReader{
 				names:   []string{"c1"},
-				preRead: []map[string]string{{"c1": "[\"a\"]"}},
+				preRead: []map[string]string{{"c1": "[\"a\"]"}, {"c1": "[\"b\"]"}},
 			},
 			wantErr: false,
 		},
@@ -120,7 +120,7 @@ func TestNewJSONReader(t *testing.T) {
 			},
 			want: &JSONReader{
 				names:   []string{"c1"},
-				preRead: []map[string]string{{"c1": "[\"a\",\"b\"]"}},
+				preRead: []map[string]string{{"c1": "[\"a\",\"b\"]"}, {"c1": "[\"c\",\"d\"]"}},
 			},
 			wantErr: false,
 		},
@@ -132,7 +132,7 @@ func TestNewJSONReader(t *testing.T) {
 			},
 			want: &JSONReader{
 				names:   []string{"c1"},
-				preRead: []map[string]string{{"c1": "[\"a\",\"b\"]"}},
+				preRead: []map[string]string{{"c1": "a"}, {"c1": "b"}},
 			},
 			wantErr: false,
 		},
@@ -185,6 +185,64 @@ func TestNewJSONReader(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "testPath",
+			args: args{
+				reader: strings.NewReader(`[{"c1":"1","c2":"Orange"},{"c1":"2","c2":"Melon"},{"c1":"3","c2":"Apple"}]`),
+				opts:   NewReadOpts(InPath("0")),
+			},
+			want: &JSONReader{
+				names:   []string{"c1", "c2"},
+				preRead: []map[string]string{{"c1": "1", "c2": "Orange"}},
+			},
+			wantErr: false,
+		},
+		{
+			name: "testPath2",
+			args: args{
+				reader: strings.NewReader(`{"employees":[
+					{"name":"Shyam", "email":"shyamjaiswal@gmail.com"},
+					{"name":"Bob", "email":"bob32@gmail.com"},
+					{"name":"Jai", "email":"jai87@gmail.com"}
+				]}`),
+				opts: NewReadOpts(InPath("employees")),
+			},
+			want: &JSONReader{
+				names: []string{"name", "email"},
+				preRead: []map[string]string{
+					{"name": "Shyam", "email": "shyamjaiswal@gmail.com"},
+					{"name": "Bob", "email": "bob32@gmail.com"},
+					{"name": "Jai", "email": "jai87@gmail.com"},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "testPath3",
+			args: args{
+				reader: strings.NewReader(`{"menu": {
+					"id": "file",
+					"value": "File",
+					"popup": {
+					  "menuitem": [
+						{"value": "New", "onclick": "CreateDoc()"},
+						{"value": "Open", "onclick": "OpenDoc()"},
+						{"value": "Save", "onclick": "SaveDoc()"}
+					  ]
+					}
+				  }}`),
+				opts: NewReadOpts(InPath("menu.popup.menuitem")),
+			},
+			want: &JSONReader{
+				names: []string{"value", "onclick"},
+				preRead: []map[string]string{
+					{"value": "New", "onclick": "CreateDoc()"},
+					{"value": "Open", "onclick": "OpenDoc()"},
+					{"value": "Save", "onclick": "SaveDoc()"},
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -194,10 +252,10 @@ func TestNewJSONReader(t *testing.T) {
 				return
 			}
 			if !arraySortEqual(t, got.names, tt.want.names) {
-				t.Errorf("NewJSONReader().names = %v, want %v", got.names, tt.want.names)
+				t.Errorf("NewJSONReader() = %v, want %v", got.names, tt.want.names)
 			}
 			if !reflect.DeepEqual(got.preRead, tt.want.preRead) {
-				t.Errorf("NewJSONReader().preRead = %v, want %v", got.preRead, tt.want.preRead)
+				t.Errorf("NewJSONReader() = %v, want %v", got.preRead, tt.want.preRead)
 			}
 		})
 	}

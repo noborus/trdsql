@@ -24,11 +24,10 @@ import (
 
 // inputFlag represents the format of the input.
 type inputFlag struct {
-	CSV      bool
-	LTSV     bool
-	JSON     bool
-	TBLN     bool
-	JSONPATH bool
+	CSV  bool
+	LTSV bool
+	JSON bool
+	TBLN bool
 }
 
 // outputFlag represents the format of the output.
@@ -52,8 +51,6 @@ func inputFormat(i inputFlag) trdsql.Format {
 		return trdsql.LTSV
 	case i.JSON:
 		return trdsql.JSON
-	case i.JSONPATH:
-		return trdsql.JSONPATH
 	case i.TBLN:
 		return trdsql.TBLN
 	default:
@@ -158,7 +155,6 @@ func (cli Cli) Run(args []string) int {
 	flags.BoolVar(&inFlag.CSV, "icsv", false, "CSV format for input.")
 	flags.BoolVar(&inFlag.LTSV, "iltsv", false, "LTSV format for input.")
 	flags.BoolVar(&inFlag.JSON, "ijson", false, "JSON format for input.")
-	flags.BoolVar(&inFlag.JSONPATH, "ijsonpath", false, "JSONPATH format for input.")
 	flags.BoolVar(&inFlag.TBLN, "itbln", false, "TBLN format for input.")
 
 	flags.StringVar(&outFile, "out", "", "output file name.")

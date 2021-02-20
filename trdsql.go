@@ -62,10 +62,6 @@ const (
 	// TBLN format(https://tbln.dev).
 	TBLN
 
-	// import
-	// Specify path for json(https://github.com/Jeffail/gabs).
-	JSONPATH
-
 	// export
 	// Output as it is.
 	// Multiple characters can be selected as delimiter.
@@ -110,8 +106,6 @@ func (f Format) String() string {
 		return "VF"
 	case JSONL:
 		return "JSONL"
-	case JSONPATH:
-		return "JSONPATH"
 	default:
 		return "Unknown"
 	}
