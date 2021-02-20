@@ -219,9 +219,20 @@ func ImportFile(db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 	file, err := importFileOpen(fileName)
 	if err != nil {
-		debug.Printf("%s\n", err)
-		return "", nil
+		if !strings.Contains(fileName, "::") {
+			debug.Printf("%s\n", err)
+			return "", nil
+		}
+		// path notation.
+		readOpts.InPath = fileName[strings.Index(fileName, "::")+2:]
+		fileName = fileName[0:strings.Index(fileName, "::")]
+		file, err = importFileOpen(fileName)
+		if err != nil {
+			debug.Printf("%s\n", err)
+			return "", nil
+		}
 	}
+
 	defer func() {
 		if err := file.Close(); err != nil {
 			log.Printf("file close:%s", err)
@@ -235,6 +246,10 @@ func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *R
 	}
 
 	tableName := db.QuotedName(fileName)
+	if readOpts.InPath != "" {
+		tableName = db.QuotedName(fileName + "::" + readOpts.InPath)
+	}
+
 	columnNames, err := reader.Names()
 	if err != nil {
 		if !errors.Is(err, io.EOF) {
@@ -266,6 +281,9 @@ func realFormat(fileName string, readOpts *ReadOpts) *ReadOpts {
 	}
 
 	readOpts.realFormat = guessFormat(fileName)
+	if readOpts.realFormat == JSON && readOpts.InPath != "" {
+		readOpts.realFormat = JSONPATH
+	}
 	debug.Printf("Guess file type as %s: [%s]", readOpts.realFormat, fileName)
 	return readOpts
 }
