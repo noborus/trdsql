@@ -3,6 +3,7 @@ package trdsql
 // Make a table from json and path.
 import (
 	"encoding/json"
+	"errors"
 	"io"
 
 	"github.com/Jeffail/gabs/v2"
@@ -26,9 +27,12 @@ func NewJSONPATHReader(reader io.Reader, opts *ReadOpts) (*JSONPATHReader, error
 	for i := 0; i < opts.InPreRead; i++ {
 		jsonParsed, err := gabs.ParseJSONDecoder(r.reader)
 		if err != nil {
-			return nil, err
+			if !errors.Is(err, io.EOF) {
+				return r, err
+			}
+			debug.Printf(err.Error())
+			return r, nil
 		}
-
 		if opts.InPath != "" {
 			jsonParsed = jsonParsed.Path(r.path)
 		}
@@ -60,8 +64,19 @@ func (r *JSONPATHReader) readAhead(top interface{}) (*JSONPATHReader, error) {
 	switch m := top.(type) {
 	case []interface{}:
 		// []
-		already := map[string]bool{}
 		r.preRead = make([]map[string]string, 0, len(m))
+		if r.reader.More() {
+			pre, names, err := etcRow(m)
+			if err != nil {
+				return nil, err
+			}
+
+			r.names = names
+			r.preRead = append(r.preRead, pre)
+			return r, nil
+		}
+
+		already := map[string]bool{}
 		for _, v := range m {
 			pre, names, err := topLevel(v)
 			if err != nil {

@@ -19,10 +19,46 @@ func TestNewJSONPATHReader(t *testing.T) {
 		wantErr bool
 	}{
 		{
+			name: "empty",
+			args: args{
+				reader: strings.NewReader(""),
+				opts:   NewReadOpts(),
+			},
+			want: &JSONPATHReader{
+				names:   nil,
+				preRead: nil,
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalidJSON",
+			args: args{
+				reader: strings.NewReader("t"),
+				opts:   NewReadOpts(),
+			},
+			want: &JSONPATHReader{
+				names:   nil,
+				preRead: nil,
+			},
+			wantErr: true,
+		},
+		{
+			name: "emptyJSON",
+			args: args{
+				reader: strings.NewReader("{}"),
+				opts:   NewReadOpts(),
+			},
+			want: &JSONPATHReader{
+				names:   nil,
+				preRead: []map[string]string{{}},
+			},
+			wantErr: false,
+		},
+		{
 			name: "test1",
 			args: args{
 				reader: strings.NewReader(`[{"c1":"1","c2":"Orange"},{"c1":"2","c2":"Melon"},{"c1":"3","c2":"Apple"}]`),
-				opts:   NewReadOpts(),
+				opts:   NewReadOpts(InPreRead(3)),
 			},
 			want: &JSONPATHReader{
 				names:   []string{"c1", "c2"},
@@ -39,6 +75,106 @@ func TestNewJSONPATHReader(t *testing.T) {
 			want: &JSONPATHReader{
 				names:   []string{"c1", "c2"},
 				preRead: []map[string]string{{"c1": "1", "c2": "Orange"}},
+			},
+			wantErr: false,
+		},
+		{
+			name: "test2",
+			args: args{
+				reader: strings.NewReader(`
+{"c1":"1","c2":"Orange"}
+{"c1":"2","c2":"Melon"}
+{"c1":"3","c2":"Apple"}`),
+				opts: NewReadOpts(),
+			},
+			want: &JSONPATHReader{
+				names:   []string{"c1", "c2"},
+				preRead: []map[string]string{{"c1": "1", "c2": "Orange"}},
+			},
+			wantErr: false,
+		},
+		{
+			name: "testArray",
+			args: args{
+				reader: strings.NewReader(`[["a"],["b"]]`),
+				opts:   NewReadOpts(),
+			},
+			want: &JSONPATHReader{
+				names:   []string{"c1"},
+				preRead: []map[string]string{{"c1": "[\"a\"]"}, {"c1": "[\"b\"]"}},
+			},
+			wantErr: false,
+		},
+		{
+			name: "testArray2",
+			args: args{
+				reader: strings.NewReader(`[["a","b"],["c","d"]]`),
+				opts:   NewReadOpts(),
+			},
+			want: &JSONPATHReader{
+				names:   []string{"c1"},
+				preRead: []map[string]string{{"c1": "[\"a\",\"b\"]"}, {"c1": "[\"c\",\"d\"]"}},
+			},
+			wantErr: false,
+		},
+		{
+			name: "testArray3",
+			args: args{
+				reader: strings.NewReader(`["a","b"]`),
+				opts:   NewReadOpts(),
+			},
+			want: &JSONPATHReader{
+				names:   []string{"c1"},
+				preRead: []map[string]string{{"c1": "a"}, {"c1": "b"}},
+			},
+			wantErr: false,
+		},
+		{
+			name: "testObject",
+			args: args{
+				reader: strings.NewReader(`{"a":"b"}`),
+				opts:   NewReadOpts(),
+			},
+			want: &JSONPATHReader{
+				names:   []string{"a"},
+				preRead: []map[string]string{{"a": "b"}},
+			},
+			wantErr: false,
+		},
+		{
+			name: "diffColumn",
+			args: args{
+				reader: strings.NewReader(`
+{"id":"1","name":"Orange"}
+{"id":"2","name":"Melon"}
+{"id":"3","name":"Apple"}
+{"id":"4","name":"Banana","color":"Yellow"}`),
+				opts: NewReadOpts(),
+			},
+			want: &JSONPATHReader{
+				names:   []string{"id", "name"},
+				preRead: []map[string]string{{"id": "1", "name": "Orange"}},
+			},
+			wantErr: false,
+		},
+		{
+			name: "diffColumn2",
+			args: args{
+				reader: strings.NewReader(`
+{"id":"1","name":"Orange"}
+{"id":"2","name":"Melon"}
+{"id":"3","name":"Apple"}
+{"id":"4","name":"Banana","color":"Yellow"}`),
+				opts: NewReadOpts(InPreRead(5)),
+			},
+			want: &JSONPATHReader{
+				names: []string{"id", "name", "color"},
+				preRead: []map[string]string{
+					{"id": "1", "name": "Orange"},
+					{"id": "2", "name": "Melon"},
+					{"id": "3", "name": "Apple"},
+					{"id": "4", "name": "Banana", "color": "Yellow"},
+				},
 			},
 			wantErr: false,
 		},
