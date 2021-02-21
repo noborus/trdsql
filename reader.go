@@ -44,6 +44,8 @@ type ReadOpts struct {
 	// IsTemporary is a flag whether to make temporary table.
 	// default is true.
 	IsTemporary bool
+
+	InPath string
 }
 
 // NewReadOpts Returns ReadOpts.
@@ -55,6 +57,7 @@ func NewReadOpts(options ...ReadOpt) *ReadOpts {
 		InDelimiter: ",",
 		InHeader:    false,
 		IsTemporary: true,
+		InPath:      "",
 	}
 	for _, option := range options {
 		option(readOpts)
@@ -77,6 +80,13 @@ func InFormat(f Format) ReadOpt {
 func InPreRead(p int) ReadOpt {
 	return func(args *ReadOpts) {
 		args.InPreRead = p
+	}
+}
+
+// InPath is string of path.
+func InPath(p string) ReadOpt {
+	return func(args *ReadOpts) {
+		args.InPath = p
 	}
 }
 
