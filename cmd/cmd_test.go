@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"runtime"
 	"testing"
 
 	"github.com/noborus/trdsql"
@@ -570,39 +569,6 @@ func Test_printDBList(t *testing.T) {
 		outStream := new(bytes.Buffer)
 		t.Run(tt.name, func(t *testing.T) {
 			printDBList(outStream, tt.cfg)
-		})
-	}
-}
-
-func Test_colorOpts(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("skipping specific test")
-	}
-	tests := []struct {
-		name   string
-		setEnv bool
-		want   bool
-	}{
-		{
-			name:   "test",
-			setEnv: false,
-			want:   true,
-		},
-		{
-			name:   "test",
-			setEnv: true,
-			want:   false,
-		},
-	}
-	for _, tt := range tests {
-		opts := trdsql.NewAnalyzeOpts()
-		if tt.setEnv {
-			os.Setenv("NO_COLOR", "1")
-		}
-		t.Run(tt.name, func(t *testing.T) {
-			if got := colorOpts(opts); !reflect.DeepEqual(got.Color, tt.want) {
-				t.Errorf("colorOpts() = %v, want %v", got.Color, tt.want)
-			}
 		})
 	}
 }
