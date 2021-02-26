@@ -31,11 +31,11 @@ Please refer to [godoc](https://pkg.go.dev/github.com/noborus/trdsql)
 	* 2.2. [image build](#imagebuild)
 	* 2.3. [Docker Run](#DockerRun)
 * 3. [Usage](#Usage)
-	* 3.1. [global option](#globaloption)
-	* 3.2. [Input format](#Inputformat)
-		* 3.2.1. [Input option](#Inputoption)
-	* 3.3. [Output format](#Outputformat)
-		* 3.3.1. [Output option](#Outputoption)
+	* 3.1. [global options](#globaloption)
+	* 3.2. [Input formats](#Inputformat)
+		* 3.2.1. [Input options](#Inputoption)
+	* 3.3. [Output formats](#Outputformat)
+		* 3.3.1. [Output options](#Outputoption)
 * 4. [Example](#Example)
 	* 4.1. [STDIN input](#STDINinput)
 	* 4.2. [Multiple files](#Multiplefiles)
@@ -133,7 +133,7 @@ docker run --rm -it -v $(pwd)/tmp trdsql [options and commands]
 trdsql [options] SQL
 ```
 
-###  3.1. <a name='globaloption'></a>global option
+###  3.1. <a name='globaloption'></a>global options
 
 * `-a` **filename** analyze the file and suggest SQL.
 * `-A` **filename** analyze the file but only suggest SQL.
@@ -147,7 +147,7 @@ trdsql [options] SQL
 * `-version` display version information.
 * `-q` **filename** read query from the specified file.
 
-###  3.2. <a name='Inputformat'></a>Input format
+###  3.2. <a name='Inputformat'></a>Input formats
 
 * `-ig` guess format from extension. (default)
 * `-icsv` CSV format for input.
@@ -155,14 +155,15 @@ trdsql [options] SQL
 * `-iltsv` LTSV format for input.
 * `-itbln` TBLN format for input.
 
-####  3.2.1. <a name='Inputoption'></a>Input option
+####  3.2.1. <a name='Inputoption'></a>Input options
 
 * `-ih` the first line is interpreted as column names(CSV only).
 * `-id` **character** field delimiter for input. (default ",")(CSV only)
+* `-ipath` **string** PATH string for input(JSON/JSONL only).
 * `-is` **int** skip header row.
 * `-ir` **int** number of row pre-read for column determination. (default 1)
 
-###  3.3. <a name='Outputformat'></a>Output format
+###  3.3. <a name='Outputformat'></a>Output formats
 
 * `-ocsv` CSV format for output. (default)
 * `-ojson` JSON format for output.
@@ -176,7 +177,7 @@ trdsql [options] SQL
 
 Or, [guess the output format by file name](#Guessbyoutputfilename).
 
-####  3.3.1. <a name='Outputoption'></a>Output option
+####  3.3.1. <a name='Outputoption'></a>Output options
 
 * `-out` **filename** output file name.
 * `-out-without-guess` output without guessing (when using -out).
