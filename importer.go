@@ -217,7 +217,7 @@ func ImportFile(db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 // Do not import if file not found (no error).
 // Wildcards can be passed as fileName.
 func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *ReadOpts) (string, error) {
-	readOpts, fileName = guessOpts(readOpts, fileName)
+	opts, fileName := guessOpts(*readOpts, fileName)
 	file, err := importFileOpen(fileName)
 	if err != nil {
 		debug.Printf("%s\n", err)
@@ -230,14 +230,14 @@ func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *R
 		}
 	}()
 
-	reader, err := NewReader(file, readOpts)
+	reader, err := NewReader(file, &opts)
 	if err != nil {
 		return "", err
 	}
 
 	tableName := db.QuotedName(fileName)
-	if readOpts.InPath != "" {
-		tableName = db.QuotedName(fileName + "::" + readOpts.InPath)
+	if opts.InPath != "" {
+		tableName = db.QuotedName(fileName + "::" + opts.InPath)
 	}
 
 	columnNames, err := reader.Names()
@@ -257,14 +257,14 @@ func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *R
 	debug.Printf("Column Names: [%v]", strings.Join(columnNames, ","))
 	debug.Printf("Column Types: [%v]", strings.Join(columnTypes, ","))
 
-	if err := db.CreateTableContext(ctx, tableName, columnNames, columnTypes, readOpts.IsTemporary); err != nil {
+	if err := db.CreateTableContext(ctx, tableName, columnNames, columnTypes, opts.IsTemporary); err != nil {
 		return tableName, err
 	}
 
 	return tableName, db.ImportContext(ctx, tableName, columnNames, reader)
 }
 
-func guessOpts(readOpts *ReadOpts, fileName string) (*ReadOpts, string) {
+func guessOpts(readOpts ReadOpts, fileName string) (ReadOpts, string) {
 	_, err := os.Stat(fileName)
 	if err != nil && strings.Contains(fileName, "::") {
 		// path notation.
