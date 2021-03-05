@@ -338,7 +338,7 @@ func TestImportFile(t *testing.T) {
 	}
 }
 
-func Test_guessExtension(t *testing.T) {
+func Test_guessFormat(t *testing.T) {
 	tests := []struct {
 		name      string
 		tableName string
@@ -346,6 +346,8 @@ func Test_guessExtension(t *testing.T) {
 	}{
 		{name: "testCSV", tableName: "test.csv", want: CSV},
 		{name: "testLTSV", tableName: "test.ltsv", want: LTSV},
+		{name: "testTSV", tableName: "test.tsv", want: TSV},
+		{name: "testPSV", tableName: "test.psv", want: PSV},
 		{name: "testgz", tableName: "test.ltsv.gz", want: LTSV},
 		{name: "testzstd", tableName: "test.ltsv.zst", want: LTSV},
 		{name: "testlz4", tableName: "test.ltsv.lz4", want: LTSV},

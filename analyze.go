@@ -41,6 +41,7 @@ func NewAnalyzeOpts() *AnalyzeOpts {
 // In addition, SQL execution examples are output.
 func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
 	au := aurora.NewAurora(opts.Color)
+	readOpts, fileName = guessOpts(readOpts, fileName)
 	file, err := importFileOpen(fileName)
 	if err != nil {
 		return err
@@ -52,7 +53,6 @@ func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
 		}
 	}()
 
-	readOpts = realFormat(fileName, readOpts)
 	reader, err := NewReader(file, readOpts)
 	if err != nil {
 		return err

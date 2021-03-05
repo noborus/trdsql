@@ -127,6 +127,12 @@ func NewReader(reader io.Reader, readOpts *ReadOpts) (Reader, error) {
 	switch readOpts.realFormat {
 	case CSV:
 		return NewCSVReader(reader, readOpts)
+	case TSV:
+		readOpts.InDelimiter = "\t"
+		return NewCSVReader(reader, readOpts)
+	case PSV:
+		readOpts.InDelimiter = "|"
+		return NewCSVReader(reader, readOpts)
 	case LTSV:
 		return NewLTSVReader(reader, readOpts)
 	case JSON:

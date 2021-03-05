@@ -82,6 +82,14 @@ const (
 	// export
 	// JSON Lines format(http://jsonlines.org/).
 	JSONL
+
+	// import
+	// Tab-Separated Values format.
+	TSV
+
+	// import
+	// Pipe-Separated Values format.
+	PSV
 )
 
 func (f Format) String() string {
@@ -106,6 +114,10 @@ func (f Format) String() string {
 		return "VF"
 	case JSONL:
 		return "JSONL"
+	case TSV:
+		return "TSV"
+	case PSV:
+		return "PSV"
 	default:
 		return "Unknown"
 	}
