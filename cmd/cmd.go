@@ -225,7 +225,9 @@ func (cli Cli) Run(args []string) int {
 			trdsql.InDelimiter(inDelimiter),
 			trdsql.InHeader(inHeader),
 			trdsql.InSkip(inSkip),
-			trdsql.InPreRead(inPreRead))
+			trdsql.InPreRead(inPreRead),
+			trdsql.InPath(inPath),
+		)
 		err := trdsql.Analyze(analyze, opts, readOpts)
 		if err != nil {
 			log.Printf("ERROR: %s", err)

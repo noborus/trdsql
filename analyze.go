@@ -41,6 +41,7 @@ func NewAnalyzeOpts() *AnalyzeOpts {
 // In addition, SQL execution examples are output.
 func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
 	au := aurora.NewAurora(opts.Color)
+	rOpts, fileName := guessOpts(*readOpts, fileName)
 	file, err := importFileOpen(fileName)
 	if err != nil {
 		return err
@@ -52,8 +53,7 @@ func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
 		}
 	}()
 
-	readOpts = realFormat(fileName, readOpts)
-	reader, err := NewReader(file, readOpts)
+	reader, err := NewReader(file, &rOpts)
 	if err != nil {
 		return err
 	}
@@ -91,8 +91,8 @@ func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
 	}
 	if opts.Detail {
 		fmt.Fprintf(opts.OutStream, "The table name is %s.\n", au.Yellow(fileName))
-		fmt.Fprintf(opts.OutStream, "The file type is %s.\n", au.Red(readOpts.realFormat))
-		if len(names) <= 1 && readOpts.realFormat == CSV {
+		fmt.Fprintf(opts.OutStream, "The file type is %s.\n", au.Red(rOpts.realFormat))
+		if len(names) <= 1 && rOpts.realFormat == CSV {
 			fmt.Fprintln(opts.OutStream, au.Magenta("Is the delimiter different?"))
 			fmt.Fprintln(opts.OutStream, au.Magenta(`Please try again with -id "\t" or -id " ".`))
 		}

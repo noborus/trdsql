@@ -217,20 +217,11 @@ func ImportFile(db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 // Do not import if file not found (no error).
 // Wildcards can be passed as fileName.
 func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *ReadOpts) (string, error) {
+	opts, fileName := guessOpts(*readOpts, fileName)
 	file, err := importFileOpen(fileName)
 	if err != nil {
-		if !strings.Contains(fileName, "::") {
-			debug.Printf("%s\n", err)
-			return "", nil
-		}
-		// path notation.
-		readOpts.InPath = fileName[strings.Index(fileName, "::")+2:]
-		fileName = fileName[0:strings.Index(fileName, "::")]
-		file, err = importFileOpen(fileName)
-		if err != nil {
-			debug.Printf("%s\n", err)
-			return "", nil
-		}
+		debug.Printf("%s\n", err)
+		return "", nil
 	}
 
 	defer func() {
@@ -239,15 +230,14 @@ func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *R
 		}
 	}()
 
-	readOpts = realFormat(fileName, readOpts)
-	reader, err := NewReader(file, readOpts)
+	reader, err := NewReader(file, &opts)
 	if err != nil {
 		return "", err
 	}
 
 	tableName := db.QuotedName(fileName)
-	if readOpts.InPath != "" {
-		tableName = db.QuotedName(fileName + "::" + readOpts.InPath)
+	if opts.InPath != "" {
+		tableName = db.QuotedName(fileName + "::" + opts.InPath)
 	}
 
 	columnNames, err := reader.Names()
@@ -267,39 +257,51 @@ func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *R
 	debug.Printf("Column Names: [%v]", strings.Join(columnNames, ","))
 	debug.Printf("Column Types: [%v]", strings.Join(columnTypes, ","))
 
-	if err := db.CreateTableContext(ctx, tableName, columnNames, columnTypes, readOpts.IsTemporary); err != nil {
+	if err := db.CreateTableContext(ctx, tableName, columnNames, columnTypes, opts.IsTemporary); err != nil {
 		return tableName, err
 	}
 
 	return tableName, db.ImportContext(ctx, tableName, columnNames, reader)
 }
 
-func realFormat(fileName string, readOpts *ReadOpts) *ReadOpts {
-	if readOpts.InFormat != GUESS {
-		readOpts.realFormat = readOpts.InFormat
-		return readOpts
+func guessOpts(readOpts ReadOpts, fileName string) (ReadOpts, string) {
+	_, err := os.Stat(fileName)
+	if err != nil && strings.Contains(fileName, "::") {
+		// path notation.
+		readOpts.InPath = fileName[strings.Index(fileName, "::")+2:]
+		fileName = fileName[:strings.Index(fileName, "::")]
 	}
 
-	readOpts.realFormat = guessFormat(fileName)
+	if readOpts.InFormat != GUESS {
+		readOpts.realFormat = readOpts.InFormat
+		return readOpts, fileName
+	}
+
+	format := guessFormat(fileName)
+	readOpts.realFormat = format
 	debug.Printf("Guess file type as %s: [%s]", readOpts.realFormat, fileName)
-	return readOpts
+	return readOpts, fileName
 }
 
 // guessFormat is guess format from the file name extension.
 // Format extensions are searched recursively to remove
 // compression extensions such as .gz.
-func guessFormat(tableName string) Format {
-	tableName = strings.TrimRight(tableName, "\"'`")
+func guessFormat(fileName string) Format {
+	fileName = strings.TrimRight(fileName, "\"'`")
 	for {
-		dotExt := filepath.Ext(tableName)
+		dotExt := filepath.Ext(fileName)
 		if dotExt == "" {
-			debug.Printf("Set in CSV because the extension is unknown: [%s]", tableName)
+			debug.Printf("Set in CSV because the extension is unknown: [%s]", fileName)
 			return CSV
 		}
 		ext := strings.ToUpper(strings.TrimLeft(dotExt, "."))
 		switch ext {
 		case "CSV":
 			return CSV
+		case "TSV":
+			return TSV
+		case "PSV":
+			return PSV
 		case "LTSV":
 			return LTSV
 		case "JSON", "JSONL":
@@ -307,7 +309,7 @@ func guessFormat(tableName string) Format {
 		case "TBLN":
 			return TBLN
 		}
-		tableName = tableName[0 : len(tableName)-len(dotExt)]
+		fileName = fileName[:len(fileName)-len(dotExt)]
 	}
 }
 
