@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/logrusorgru/aurora"
+	"github.com/gookit/color"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -20,8 +20,6 @@ type AnalyzeOpts struct {
 	Quote string
 	// Detail is outputs detailed information.
 	Detail bool
-	// Color is a bool value for enabling color.
-	Color bool
 	// OutStream is the output destination.
 	OutStream io.Writer
 }
@@ -31,7 +29,6 @@ func NewAnalyzeOpts() *AnalyzeOpts {
 	return &AnalyzeOpts{
 		Command:   AppName,
 		Quote:     "\\`",
-		Color:     true,
 		Detail:    true,
 		OutStream: os.Stdout,
 	}
@@ -40,7 +37,6 @@ func NewAnalyzeOpts() *AnalyzeOpts {
 // Analyze analyzes the file and outputs the table information.
 // In addition, SQL execution examples are output.
 func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
-	au := aurora.NewAurora(opts.Color)
 	rOpts, fileName := guessOpts(*readOpts, fileName)
 	file, err := importFileOpen(fileName)
 	if err != nil {
@@ -89,18 +85,23 @@ func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
 	for _, row := range results {
 		sampleTable.Append(row)
 	}
+
+	yellow := color.FgYellow.Render
+	red := color.FgRed.Render
+	magenta := color.FgMagenta.Render
+	cyan := color.FgCyan.Render
 	if opts.Detail {
-		fmt.Fprintf(opts.OutStream, "The table name is %s.\n", au.Yellow(fileName))
-		fmt.Fprintf(opts.OutStream, "The file type is %s.\n", au.Red(rOpts.realFormat))
+		fmt.Fprintf(opts.OutStream, "The table name is %s.\n", yellow(fileName))
+		fmt.Fprintf(opts.OutStream, "The file type is %s.\n", red(rOpts.realFormat))
 		if len(names) <= 1 && rOpts.realFormat == CSV {
-			fmt.Fprintln(opts.OutStream, au.Magenta("Is the delimiter different?"))
-			fmt.Fprintln(opts.OutStream, au.Magenta(`Please try again with -id "\t" or -id " ".`))
+			fmt.Fprintln(opts.OutStream, magenta("Is the delimiter different?"))
+			fmt.Fprintln(opts.OutStream, magenta(`Please try again with -id "\t" or -id " ".`))
 		}
-		fmt.Fprintln(opts.OutStream, au.Cyan("\nData types:"))
+		fmt.Fprintln(opts.OutStream, cyan("\nData types:"))
 		typeTable.Render()
-		fmt.Fprintln(opts.OutStream, au.Cyan("\nData samples:"))
+		fmt.Fprintln(opts.OutStream, cyan("\nData samples:"))
 		sampleTable.Render()
-		fmt.Fprintln(opts.OutStream, au.Cyan("\nExamples:"))
+		fmt.Fprintln(opts.OutStream, cyan("\nExamples:"))
 	}
 	queries := examples(fileName, names, results[0])
 	for _, query := range queries {

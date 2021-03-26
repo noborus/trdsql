@@ -18,7 +18,6 @@ func TestNewAnalyzeOpts(t *testing.T) {
 			want: &AnalyzeOpts{
 				Command:   AppName,
 				Quote:     "\\`",
-				Color:     true,
 				Detail:    true,
 				OutStream: os.Stdout,
 			},
@@ -51,7 +50,6 @@ func TestAnalyze(t *testing.T) {
 				opts: &AnalyzeOpts{
 					Command:   AppName,
 					Quote:     "\\`",
-					Color:     true,
 					Detail:    true,
 					OutStream: new(bytes.Buffer),
 				},
@@ -66,7 +64,6 @@ func TestAnalyze(t *testing.T) {
 				opts: &AnalyzeOpts{
 					Command:   AppName,
 					Quote:     "\\`",
-					Color:     true,
 					Detail:    true,
 					OutStream: new(bytes.Buffer),
 				},
@@ -81,7 +78,6 @@ func TestAnalyze(t *testing.T) {
 				opts: &AnalyzeOpts{
 					Command:   AppName,
 					Quote:     "\\`",
-					Color:     true,
 					Detail:    true,
 					OutStream: new(bytes.Buffer),
 				},
@@ -96,7 +92,6 @@ func TestAnalyze(t *testing.T) {
 				opts: &AnalyzeOpts{
 					Command:   AppName,
 					Quote:     "\\`",
-					Color:     true,
 					Detail:    true,
 					OutStream: new(bytes.Buffer),
 				},

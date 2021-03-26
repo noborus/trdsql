@@ -5,10 +5,10 @@ require (
 	github.com/dsnet/compress v0.0.1
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
+	github.com/gookit/color v1.3.8
 	github.com/iancoleman/orderedmap v0.2.0
-	github.com/klauspost/compress v1.11.9
-	github.com/lib/pq v1.9.0
-	github.com/logrusorgru/aurora v2.0.3+incompatible
+	github.com/klauspost/compress v1.11.12
+	github.com/lib/pq v1.10.0
 	github.com/mattn/go-runewidth v0.0.10
 	github.com/mattn/go-sqlite3 v1.14.6
 	github.com/noborus/tbln v0.0.1
@@ -16,9 +16,9 @@ require (
 	github.com/pierrec/lz4 v2.6.0+incompatible
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/ulikunitz/xz v0.5.10
-	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83 // indirect
-	golang.org/x/sys v0.0.0-20210301091718-77cc2087c03b // indirect
-	golang.org/x/term v0.0.0-20210220032956-6a3ed077a48d
+	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2 // indirect
+	golang.org/x/sys v0.0.0-20210324051608-47abb6519492 // indirect
+	golang.org/x/term v0.0.0-20210317153231-de623e64d2a6
 )
 
 go 1.13
