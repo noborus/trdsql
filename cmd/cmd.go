@@ -12,12 +12,12 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
+
+	"github.com/gookit/color"
 
 	"github.com/dsnet/compress/bzip2"
 	"github.com/klauspost/compress/zstd"
-	"github.com/logrusorgru/aurora"
 	"github.com/noborus/trdsql"
 	"github.com/pierrec/lz4"
 	"github.com/ulikunitz/xz"
@@ -193,6 +193,10 @@ func (cli Cli) Run(args []string) int {
 		trdsql.EnableDebug()
 	}
 
+	if colorBool() {
+		log.Println(color.Disable())
+	}
+
 	cfgFile := configOpen(config)
 	cfg, err := loadConfig(cfgFile)
 	if err != nil && config != "" {
@@ -210,7 +214,6 @@ func (cli Cli) Run(args []string) int {
 	if analyze != "" || onlySQL != "" {
 		opts := trdsql.NewAnalyzeOpts()
 		opts.OutStream = cli.OutStream
-		opts.Color = colorBool()
 		opts = quoteOpts(opts, driver)
 		if onlySQL != "" {
 			analyze = onlySQL
@@ -337,9 +340,9 @@ func formatBool(name string) bool {
 
 // Usage is outputs usage information.
 func Usage(flags *flag.FlagSet) {
-	au := aurora.NewAurora(colorBool())
+	bold := color.Bold.Render
 	fmt.Fprintf(flags.Output(), "%s - Execute SQL queries on CSV, LTSV, JSON and TBLN.\n\n", trdsql.AppName)
-	fmt.Fprintf(flags.Output(), "%s\n", au.Reset("Usage").Bold())
+	fmt.Fprintf(flags.Output(), "%s\n", bold("Usage"))
 	fmt.Fprintf(flags.Output(), "\t%s [OPTIONS] [SQL(SELECT...)]\n\n", trdsql.AppName)
 
 	global := []string{}
@@ -366,30 +369,29 @@ func Usage(flags *flag.FlagSet) {
 			global = append(global, usageFlag(flag))
 		}
 	})
-
-	fmt.Fprintf(flags.Output(), "%s\n", au.Reset("Options:").Bold())
+	fmt.Fprintf(flags.Output(), "%s\n", bold("Options:"))
 	for _, u := range global {
 		fmt.Fprint(flags.Output(), u, "\n")
 	}
 
-	fmt.Fprintf(flags.Output(), "\n%s\n", au.Reset("Input Formats:").Bold())
+	fmt.Fprintf(flags.Output(), "\n%s\n", bold("Input Formats:"))
 	for _, u := range inputF {
 		fmt.Fprint(flags.Output(), u, "\n")
 	}
-	fmt.Fprintf(flags.Output(), "\n%s\n", au.Reset("Input options:").Bold())
+	fmt.Fprintf(flags.Output(), "\n%s\n", bold("Input options:"))
 	for _, u := range input {
 		fmt.Fprint(flags.Output(), u, "\n")
 	}
 
-	fmt.Fprintf(flags.Output(), "\n%s\n", au.Reset("Output Formats:").Bold())
+	fmt.Fprintf(flags.Output(), "\n%s\n", bold("Output Formats:"))
 	for _, u := range outputF {
 		fmt.Fprint(flags.Output(), u, "\n")
 	}
-	fmt.Fprintf(flags.Output(), "\n%s\n", au.Reset("Output options:").Bold())
+	fmt.Fprintf(flags.Output(), "\n%s\n", bold("Output options:"))
 	for _, u := range output {
 		fmt.Fprint(flags.Output(), u, "\n")
 	}
-	fmt.Fprintf(flags.Output(), "\n%s\n", au.Reset("Examples:").Bold())
+	fmt.Fprintf(flags.Output(), "\n%s\n", bold("Examples:"))
 	fmt.Fprintf(flags.Output(), "  $ trdsql \"SELECT c1,c2 FRM test.csv\"\n")
 	fmt.Fprintf(flags.Output(), "  $ trdsql -oltsv \"SELECT c1,c2 FRM test.json::items\"\n")
 	fmt.Fprintf(flags.Output(), "  $ cat test.csv | trdsql -i csv -oltsv \"SELECT c1,c2 FRM -\"\n")
@@ -417,11 +419,7 @@ func printDBList(w io.Writer, cfg *config) {
 }
 
 func colorBool() bool {
-	color := os.Getenv("NO_COLOR")
-	if color != "" || runtime.GOOS == "windows" {
-		return false
-	}
-	return true
+	return os.Getenv("NO_COLOR") != ""
 }
 
 func quoteOpts(opts *trdsql.AnalyzeOpts, driver string) *trdsql.AnalyzeOpts {
