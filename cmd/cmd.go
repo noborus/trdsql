@@ -441,6 +441,10 @@ func optsCommand(opts *trdsql.AnalyzeOpts, args []string) *trdsql.AnalyzeOpts {
 			omitFlag = true
 			continue
 		}
+		if arg == "-ipath" {
+			omitFlag = true
+			continue
+		}
 		if len(arg) <= 1 || arg[0] != '-' {
 			arg = quotedArg(arg)
 		}
