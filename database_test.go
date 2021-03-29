@@ -165,12 +165,10 @@ func TestDB_CreateTable(t *testing.T) {
 			if err := db.CreateTable(tt.args.tableName, tt.args.names, tt.args.types, tt.args.isTemporary); (err != nil) != tt.wantErr {
 				t.Errorf("DB.CreateTable() error = %v, wantErr %v", err, tt.wantErr)
 			}
-			err = db.Tx.Commit()
-			if err != nil {
+			if err := db.Tx.Commit(); err != nil {
 				t.Fatal(err)
 			}
-			err = db.Disconnect()
-			if err != nil {
+			if err := db.Disconnect(); err != nil {
 				t.Fatal(err)
 			}
 		})
@@ -271,12 +269,10 @@ func TestDB_Import(t *testing.T) {
 			if err := db.Import(tt.args.tableName, tt.args.columnNames, tt.args.reader); (err != nil) != tt.wantErr {
 				t.Errorf("DB.Import() error = %v, wantErr %v", err, tt.wantErr)
 			}
-			err = db.Tx.Commit()
-			if err != nil {
+			if err := db.Tx.Commit(); err != nil {
 				t.Fatal(err)
 			}
-			err = db.Disconnect()
-			if err != nil {
+			if err := db.Disconnect(); err != nil {
 				t.Fatal(err)
 			}
 		})

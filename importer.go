@@ -225,8 +225,8 @@ func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *R
 	}
 
 	defer func() {
-		if err := file.Close(); err != nil {
-			log.Printf("file close:%s", err)
+		if deferr := file.Close(); deferr != nil {
+			log.Printf("file close:%s", deferr)
 		}
 	}()
 

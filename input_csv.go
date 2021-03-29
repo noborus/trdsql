@@ -18,16 +18,17 @@ type CSVReader struct {
 
 // NewCSVReader returns CSVReader and error.
 func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
-	var err error
 	r := &CSVReader{}
 	r.reader = csv.NewReader(reader)
 	r.reader.LazyQuotes = true
 	r.reader.FieldsPerRecord = -1 // no check count
 
-	r.reader.Comma, err = delimiter(opts.InDelimiter)
+	delimiter, err := delimiter(opts.InDelimiter)
 	if err != nil {
 		return nil, err
 	}
+	r.reader.Comma = delimiter
+
 	if opts.InDelimiter == " " {
 		r.reader.TrimLeadingSpace = true
 	}
@@ -78,7 +79,7 @@ func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 		r.preRead = append(r.preRead, rows)
 	}
 	r.setColumnType()
-	return r, err
+	return r, nil
 }
 
 func (r *CSVReader) setColumnType() {
