@@ -42,6 +42,10 @@ func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
 	if err != nil {
 		return err
 	}
+	tableName := fileName
+	if rOpts.InPath != "" {
+		tableName = fileName + "::" + rOpts.InPath
+	}
 
 	defer func() {
 		if err := file.Close(); err != nil {
@@ -91,7 +95,7 @@ func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
 	magenta := color.FgMagenta.Render
 	cyan := color.FgCyan.Render
 	if opts.Detail {
-		fmt.Fprintf(opts.OutStream, "The table name is %s.\n", yellow(fileName))
+		fmt.Fprintf(opts.OutStream, "The table name is %s.\n", yellow(tableName))
 		fmt.Fprintf(opts.OutStream, "The file type is %s.\n", red(rOpts.realFormat))
 		if len(names) <= 1 && rOpts.realFormat == CSV {
 			fmt.Fprintln(opts.OutStream, magenta("Is the delimiter different?"))
@@ -103,7 +107,7 @@ func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
 		sampleTable.Render()
 		fmt.Fprintln(opts.OutStream, cyan("\nExamples:"))
 	}
-	queries := examples(fileName, names, results[0])
+	queries := examples(tableName, names, results[0])
 	for _, query := range queries {
 		fmt.Fprintf(opts.OutStream, "%s %s\n", opts.Command, `"`+query+`"`)
 	}
