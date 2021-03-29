@@ -22,6 +22,7 @@ func (f *importer) ImportContext(ctx context.Context, db *trdsql.DB, query strin
 	}
 	return query, err
 }
+
 func (f *importer) Import(db *trdsql.DB, query string) (string, error) {
 	ctx := context.Background()
 	return f.ImportContext(ctx, db, query)

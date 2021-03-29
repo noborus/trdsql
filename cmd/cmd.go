@@ -357,7 +357,6 @@ func Usage(flags *flag.FlagSet) {
 				inputF = append(inputF, usageFlag(flag))
 			} else {
 				input = append(input, usageFlag(flag))
-
 			}
 		case 'o':
 			if formatBool(flag.Name) {
