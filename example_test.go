@@ -17,14 +17,16 @@ Ken,Thompson,ken
 `)
 	tmpfile, err := ioutil.TempFile(os.TempDir(), "xxx")
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return
 	}
 	defer func() {
 		defer os.Remove(tmpfile.Name())
 	}()
 	_, err = tmpfile.Write(in)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return
 	}
 	trd := trdsql.NewTRDSQL(
 		trdsql.NewImporter(),
@@ -34,7 +36,8 @@ Ken,Thompson,ken
 	query := fmt.Sprintf("SELECT c1 FROM %s ORDER BY c1", tmpfile.Name())
 	err = trd.Exec(query)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return
 	}
 	// Output:
 	// Ken
@@ -50,14 +53,16 @@ Ken,Thompson,ken
 `)
 	tmpfile, err := ioutil.TempFile(os.TempDir(), "xxx")
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return
 	}
 	defer func() {
 		defer os.Remove(tmpfile.Name())
 	}()
 	_, err = tmpfile.Write(in)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return
 	}
 
 	// NewImporter
@@ -77,7 +82,8 @@ Ken,Thompson,ken
 	query := fmt.Sprintf("SELECT * FROM %s ORDER BY username", tmpfile.Name())
 	err = trd.Exec(query)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return
 	}
 	// Output:
 	//[
@@ -114,7 +120,8 @@ func ExampleSliceImporter() {
 
 	err := trd.Exec("SELECT name,id FROM slice ORDER BY id DESC")
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return
 	}
 	// Output:
 	// Henry,3
@@ -138,7 +145,8 @@ func ExampleSliceWriter() {
 
 	err := trd.Exec("SELECT name,id FROM slice ORDER BY id DESC")
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return
 	}
 	table := writer.Table
 	fmt.Print(table)
@@ -199,7 +207,8 @@ func ExampleBufferImporter() {
 	r := bytes.NewBufferString(jsonString)
 	importer, err := trdsql.NewBufferImporter("test", r, trdsql.InFormat(trdsql.JSON))
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return
 	}
 	writer := trdsql.NewWriter(
 		trdsql.OutFormat(trdsql.CSV),
@@ -208,7 +217,8 @@ func ExampleBufferImporter() {
 	trd := trdsql.NewTRDSQL(importer, trdsql.NewExporter(writer))
 	err = trd.Exec("SELECT name,gender,company FROM test")
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return
 	}
 	// Output:
 	// Sarah Carpenter	female	ACCUSAGE
