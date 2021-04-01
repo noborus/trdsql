@@ -124,7 +124,7 @@ docker build -t trdsql .
 Docker run.
 
 ```console
-docker run --rm -it -v $(pwd)/tmp trdsql [options and commands]
+docker run --rm -it -v $(pwd):/tmp trdsql [options and commands]
 ```
 
 ##  3. <a name='Usage'></a>Usage
