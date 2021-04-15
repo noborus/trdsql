@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/term"
-
 	runewidth "github.com/mattn/go-runewidth"
+	"golang.org/x/term"
 )
 
 // VFWriter is Vertical Format output.

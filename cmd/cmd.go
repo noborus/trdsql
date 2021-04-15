@@ -14,9 +14,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/gookit/color"
-
 	"github.com/dsnet/compress/bzip2"
+	"github.com/gookit/color"
 	"github.com/klauspost/compress/zstd"
 	"github.com/noborus/trdsql"
 	"github.com/pierrec/lz4"
