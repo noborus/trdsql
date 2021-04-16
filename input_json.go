@@ -28,6 +28,7 @@ type JSONReader struct {
 func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 	r := &JSONReader{}
 	r.reader = json.NewDecoder(reader)
+	r.reader.UseNumber()
 	r.path = opts.InPath
 
 	for i := 0; i < opts.InPreRead; i++ {
