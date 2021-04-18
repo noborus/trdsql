@@ -23,19 +23,20 @@ Please refer to [godoc](https://pkg.go.dev/github.com/noborus/trdsql)
 * 1. [INSTALL](#INSTALL)
 	* 1.1. [go get](#goget)
 		* 1.1.1. [Requirements](#Requirements)
-	* 1.2. [Download binary](#DownloadBinary)
+	* 1.2. [Download binary](#Downloadbinary)
 	* 1.3. [Homebrew](#Homebrew)
 	* 1.4. [MacPorts](#MacPorts)
+	* 1.5. [FreeBSD](#FreeBSD)
 * 2. [Docker](#Docker)
 	* 2.1. [Docker pull](#Dockerpull)
 	* 2.2. [image build](#imagebuild)
 	* 2.3. [Docker Run](#DockerRun)
 * 3. [Usage](#Usage)
-	* 3.1. [global options](#globaloption)
-	* 3.2. [Input formats](#Inputformat)
-		* 3.2.1. [Input options](#Inputoption)
-	* 3.3. [Output formats](#Outputformat)
-		* 3.3.1. [Output options](#Outputoption)
+	* 3.1. [global options](#globaloptions)
+	* 3.2. [Input formats](#Inputformats)
+		* 3.2.1. [Input options](#Inputoptions)
+	* 3.3. [Output formats](#Outputformats)
+		* 3.3.1. [Output options](#Outputoptions)
 * 4. [Example](#Example)
 	* 4.1. [STDIN input](#STDINinput)
 	* 4.2. [Multiple files](#Multiplefiles)
@@ -84,7 +85,7 @@ make install
 
 go 1.13 or higher.
 
-###  1.2. <a name='DownloadBinary'></a>Download binary
+###  1.2. <a name='Downloadbinary'></a>Download binary
 
 Download binary from the [releases](https://github.com/noborus/trdsql/releases) page(Linux/Windows/macOS).
 
@@ -99,6 +100,14 @@ brew install noborus/tap/trdsql
 ```console
 sudo port selfupdate
 sudo port install trdsql
+```
+
+###  1.5. <a name='FreeBSD'></a>FreeBSD
+
+[freshports](https://www.freshports.org/textproc/trdsql/)
+
+```console
+pkg install trdsql
 ```
 
 ##  2. <a name='Docker'></a>Docker
@@ -133,7 +142,7 @@ docker run --rm -it -v $(pwd):/tmp trdsql [options and commands]
 trdsql [options] SQL
 ```
 
-###  3.1. <a name='globaloption'></a>global options
+###  3.1. <a name='globaloptions'></a>global options
 
 * `-a` **filename** analyze the file and suggest SQL.
 * `-A` **filename** analyze the file but only suggest SQL.
@@ -147,7 +156,7 @@ trdsql [options] SQL
 * `-version` display version information.
 * `-q` **filename** read query from the specified file.
 
-###  3.2. <a name='Inputformat'></a>Input formats
+###  3.2. <a name='Inputformats'></a>Input formats
 
 * `-ig` guess format from extension. (default)
 * `-icsv` CSV format for input.
@@ -155,7 +164,7 @@ trdsql [options] SQL
 * `-iltsv` LTSV format for input.
 * `-itbln` TBLN format for input.
 
-####  3.2.1. <a name='Inputoption'></a>Input options
+####  3.2.1. <a name='Inputoptions'></a>Input options
 
 * `-ih` the first line is interpreted as column names(CSV only).
 * `-id` **character** field delimiter for input. (default ",")(CSV only)
@@ -163,7 +172,7 @@ trdsql [options] SQL
 * `-is` **int** skip header row.
 * `-ir` **int** number of row pre-read for column determination. (default 1)
 
-###  3.3. <a name='Outputformat'></a>Output formats
+###  3.3. <a name='Outputformats'></a>Output formats
 
 * `-ocsv` CSV format for output. (default)
 * `-ojson` JSON format for output.
@@ -177,7 +186,7 @@ trdsql [options] SQL
 
 Or, [guess the output format by file name](#Guessbyoutputfilename).
 
-####  3.3.1. <a name='Outputoption'></a>Output options
+####  3.3.1. <a name='Outputoptions'></a>Output options
 
 * `-out` **filename** output file name.
 * `-out-without-guess` output without guessing (when using -out).
