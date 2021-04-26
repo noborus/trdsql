@@ -15,7 +15,7 @@ import (
 	"strings"
 
 	"github.com/dsnet/compress/bzip2"
-	"github.com/gookit/color"
+	"github.com/jwalton/gchalk"
 	"github.com/klauspost/compress/zstd"
 	"github.com/noborus/trdsql"
 	"github.com/pierrec/lz4"
@@ -192,10 +192,6 @@ func (cli Cli) Run(args []string) int {
 		trdsql.EnableDebug()
 	}
 
-	if colorBool() {
-		log.Println(color.Disable())
-	}
-
 	cfgFile := configOpen(config)
 	cfg, err := loadConfig(cfgFile)
 	if err != nil && config != "" {
@@ -327,10 +323,16 @@ func (cli Cli) Run(args []string) int {
 	return 0
 }
 
-func formatBool(name string) bool {
+func isInFormat(name string) bool {
 	switch name {
 	case "ig", "icsv", "iltsv", "ijson", "itbln":
 		return true
+	}
+	return false
+}
+
+func isOutFormat(name string) bool {
+	switch name {
 	case "ocsv", "oltsv", "ojson", "ojsonl", "otbln", "oat", "omd", "ovf", "oraw":
 		return true
 	}
@@ -339,7 +341,7 @@ func formatBool(name string) bool {
 
 // Usage is outputs usage information.
 func Usage(flags *flag.FlagSet) {
-	bold := color.Bold.Render
+	bold := gchalk.Bold
 	fmt.Fprintf(flags.Output(), "%s - Execute SQL queries on CSV, LTSV, JSON and TBLN.\n\n", trdsql.AppName)
 	fmt.Fprintf(flags.Output(), "%s\n", bold("Usage"))
 	fmt.Fprintf(flags.Output(), "\t%s [OPTIONS] [SQL(SELECT...)]\n\n", trdsql.AppName)
@@ -352,13 +354,13 @@ func Usage(flags *flag.FlagSet) {
 	flags.VisitAll(func(flag *flag.Flag) {
 		switch flag.Name[0] {
 		case 'i':
-			if formatBool(flag.Name) {
+			if isInFormat(flag.Name) {
 				inputF = append(inputF, usageFlag(flag))
 			} else {
 				input = append(input, usageFlag(flag))
 			}
 		case 'o':
-			if formatBool(flag.Name) {
+			if isOutFormat(flag.Name) {
 				outputF = append(outputF, usageFlag(flag))
 			} else {
 				output = append(output, usageFlag(flag))
@@ -414,10 +416,6 @@ func printDBList(w io.Writer, cfg *config) {
 	for od, odb := range cfg.Database {
 		fmt.Fprintf(w, "%s:%s\n", od, odb.Driver)
 	}
-}
-
-func colorBool() bool {
-	return os.Getenv("NO_COLOR") != ""
 }
 
 func quoteOpts(opts *trdsql.AnalyzeOpts, driver string) *trdsql.AnalyzeOpts {

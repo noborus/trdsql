@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/gookit/color"
+	"github.com/jwalton/gchalk"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -90,13 +90,13 @@ func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
 		sampleTable.Append(row)
 	}
 
-	yellow := color.FgYellow.Render
-	red := color.FgRed.Render
-	magenta := color.FgMagenta.Render
-	cyan := color.FgCyan.Render
+	yellow := gchalk.Yellow
+	red := gchalk.Red
+	magenta := gchalk.Magenta
+	cyan := gchalk.Cyan
 	if opts.Detail {
 		fmt.Fprintf(opts.OutStream, "The table name is %s.\n", yellow(tableName))
-		fmt.Fprintf(opts.OutStream, "The file type is %s.\n", red(rOpts.realFormat))
+		fmt.Fprintf(opts.OutStream, "The file type is %s.\n", red(rOpts.realFormat.String()))
 		if len(names) <= 1 && rOpts.realFormat == CSV {
 			fmt.Fprintln(opts.OutStream, magenta("Is the delimiter different?"))
 			fmt.Fprintln(opts.OutStream, magenta(`Please try again with -id "\t" or -id " ".`))
