@@ -22,67 +22,6 @@ import (
 	"github.com/ulikunitz/xz"
 )
 
-// inputFlag represents the format of the input.
-type inputFlag struct {
-	CSV  bool
-	LTSV bool
-	JSON bool
-	TBLN bool
-}
-
-// outputFlag represents the format of the output.
-type outputFlag struct {
-	CSV   bool
-	LTSV  bool
-	AT    bool
-	MD    bool
-	VF    bool
-	RAW   bool
-	JSON  bool
-	TBLN  bool
-	JSONL bool
-}
-
-func inputFormat(i inputFlag) trdsql.Format {
-	switch {
-	case i.CSV:
-		return trdsql.CSV
-	case i.LTSV:
-		return trdsql.LTSV
-	case i.JSON:
-		return trdsql.JSON
-	case i.TBLN:
-		return trdsql.TBLN
-	default:
-		return trdsql.GUESS
-	}
-}
-
-func outputFormat(o outputFlag) trdsql.Format {
-	switch {
-	case o.LTSV:
-		return trdsql.LTSV
-	case o.JSON:
-		return trdsql.JSON
-	case o.RAW:
-		return trdsql.RAW
-	case o.MD:
-		return trdsql.MD
-	case o.AT:
-		return trdsql.AT
-	case o.VF:
-		return trdsql.VF
-	case o.TBLN:
-		return trdsql.TBLN
-	case o.JSONL:
-		return trdsql.JSONL
-	case o.CSV:
-		return trdsql.CSV
-	default:
-		return trdsql.GUESS
-	}
-}
-
 // Cli wraps stdout and error output specification.
 type Cli struct {
 	// OutStream is the output destination.
@@ -131,7 +70,10 @@ func (cli Cli) Run(args []string) int {
 	)
 
 	flags := flag.NewFlagSet(trdsql.AppName, flag.ExitOnError)
+
 	flags.SetOutput(cli.ErrStream)
+	log.SetOutput(cli.ErrStream)
+
 	flags.Usage = func() { Usage(flags) }
 	flags.StringVar(&config, "config", config, "configuration file location.")
 	flags.StringVar(&cDB, "db", "", "specify db name of the setting.")
@@ -177,8 +119,7 @@ func (cli Cli) Run(args []string) int {
 	flags.BoolVar(&outFlag.TBLN, "otbln", false, "TBLN format for output.")
 	flags.BoolVar(&outFlag.JSONL, "ojsonl", false, "JSON lines format for output.")
 
-	err := flags.Parse(args[1:])
-	if err != nil {
+	if err := flags.Parse(args[1:]); err != nil {
 		log.Printf("ERROR: %s", err)
 		return 1
 	}
@@ -226,8 +167,7 @@ func (cli Cli) Run(args []string) int {
 			trdsql.InPreRead(inPreRead),
 			trdsql.InPath(inPath),
 		)
-		err := trdsql.Analyze(analyze, opts, readOpts)
-		if err != nil {
+		if err := trdsql.Analyze(analyze, opts, readOpts); err != nil {
 			log.Printf("ERROR: %s", err)
 			return 1
 		}
@@ -307,8 +247,7 @@ func (cli Cli) Run(args []string) int {
 
 	ctx := context.Background()
 
-	err = trd.ExecContext(ctx, query)
-	if err != nil {
+	if err := trd.ExecContext(ctx, query); err != nil {
 		log.Printf("%s", err)
 		return 1
 	}
@@ -321,22 +260,6 @@ func (cli Cli) Run(args []string) int {
 		}
 	}
 	return 0
-}
-
-func isInFormat(name string) bool {
-	switch name {
-	case "ig", "icsv", "iltsv", "ijson", "itbln":
-		return true
-	}
-	return false
-}
-
-func isOutFormat(name string) bool {
-	switch name {
-	case "ocsv", "oltsv", "ojson", "ojsonl", "otbln", "oat", "omd", "ovf", "oraw":
-		return true
-	}
-	return false
 }
 
 // Usage is outputs usage information.
@@ -502,6 +425,85 @@ func quotedArg(arg string) string {
 		return arg
 	}
 	return `"` + arg + `"`
+}
+
+// inputFlag represents the format of the input.
+type inputFlag struct {
+	CSV  bool
+	LTSV bool
+	JSON bool
+	TBLN bool
+}
+
+// inputFormat returns format from flag.
+func inputFormat(i inputFlag) trdsql.Format {
+	switch {
+	case i.CSV:
+		return trdsql.CSV
+	case i.LTSV:
+		return trdsql.LTSV
+	case i.JSON:
+		return trdsql.JSON
+	case i.TBLN:
+		return trdsql.TBLN
+	default:
+		return trdsql.GUESS
+	}
+}
+
+func isInFormat(name string) bool {
+	switch name {
+	case "ig", "icsv", "iltsv", "ijson", "itbln":
+		return true
+	}
+	return false
+}
+
+// outputFlag represents the format of the output.
+type outputFlag struct {
+	CSV   bool
+	LTSV  bool
+	JSON  bool
+	JSONL bool
+	TBLN  bool
+	AT    bool
+	MD    bool
+	VF    bool
+	RAW   bool
+}
+
+// outFormat returns format from flag.
+func outputFormat(o outputFlag) trdsql.Format {
+	switch {
+	case o.LTSV:
+		return trdsql.LTSV
+	case o.JSON:
+		return trdsql.JSON
+	case o.RAW:
+		return trdsql.RAW
+	case o.MD:
+		return trdsql.MD
+	case o.AT:
+		return trdsql.AT
+	case o.VF:
+		return trdsql.VF
+	case o.TBLN:
+		return trdsql.TBLN
+	case o.JSONL:
+		return trdsql.JSONL
+	case o.CSV:
+		return trdsql.CSV
+	default:
+		return trdsql.GUESS
+	}
+}
+
+func isOutFormat(name string) bool {
+	switch name {
+	case "ocsv", "oltsv", "ojson", "ojsonl", "otbln", "oat", "omd", "ovf", "oraw":
+		return true
+	}
+	return false
 }
 
 func outGuessFormat(fileName string) trdsql.Format {
