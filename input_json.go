@@ -12,7 +12,7 @@ import (
 	"io"
 	"log"
 
-	"github.com/Jeffail/gabs/v2"
+	"github.com/itchyny/gojq"
 )
 
 // JSONReader provides methods of the Reader interface.
@@ -30,9 +30,10 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 	r.reader = json.NewDecoder(reader)
 	r.reader.UseNumber()
 	r.path = opts.InPath
+	var top interface{}
 
 	for i := 0; i < opts.InPreRead; i++ {
-		jsonParsed, err := gabs.ParseJSONDecoder(r.reader)
+		err := r.reader.Decode(&top)
 		if err != nil {
 			if !errors.Is(err, io.EOF) {
 				return r, err
@@ -40,12 +41,31 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 			debug.Printf(err.Error())
 			return r, nil
 		}
-		if opts.InPath != "" {
-			jsonParsed = jsonParsed.Path(r.path)
-		}
-		r, err = r.readAhead(jsonParsed.Data())
-		if err != nil {
-			return nil, err
+
+		if r.path == "" {
+			r, err = r.readAhead(top)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			jquery, err := gojq.Parse(r.path)
+			if err != nil {
+				return nil, err
+			}
+			iter := jquery.Run(top)
+			for {
+				v, ok := iter.Next()
+				if !ok {
+					break
+				}
+				if err, ok := v.(error); ok {
+					return r, err
+				}
+				r, err = r.readAhead(v)
+				if err != nil {
+					return r, err
+				}
+			}
 		}
 	}
 
@@ -136,17 +156,35 @@ func (r *JSONReader) PreReadRow() [][]interface{} {
 // ReadRow is read the rest of the row.
 // Only jsonl requires ReadRow in json.
 func (r *JSONReader) ReadRow(row []interface{}) ([]interface{}, error) {
-	jsonParsed, err := gabs.ParseJSONDecoder(r.reader)
+	var data interface{}
+	err := r.reader.Decode(&data)
 	if err != nil {
 		return nil, err
 	}
 
-	if r.path != "" {
-		jsonParsed = jsonParsed.Path(r.path)
+	if r.path == "" {
+		row = r.rowParse(row, data)
+		return row, nil
 	}
-	jsonRow := jsonParsed.Data()
 
-	return r.rowParse(row, jsonRow), nil
+	// json query.
+	jquery, err := gojq.Parse(r.path)
+	if err != nil {
+		return nil, err
+	}
+	iter := jquery.Run(data)
+	debug.Printf(jquery.String())
+	for {
+		data, ok := iter.Next()
+		if !ok {
+			break
+		}
+		if err, ok := data.(error); ok {
+			return nil, err
+		}
+		row = r.rowParse(row, data)
+	}
+	return row, nil
 }
 
 func (r *JSONReader) rowParse(row []interface{}, jsonRow interface{}) []interface{} {

@@ -189,7 +189,7 @@ func TestNewJSONReader(t *testing.T) {
 			name: "testPath",
 			args: args{
 				reader: strings.NewReader(`[{"c1":"1","c2":"Orange"},{"c1":"2","c2":"Melon"},{"c1":"3","c2":"Apple"}]`),
-				opts:   NewReadOpts(InPath("0")),
+				opts:   NewReadOpts(InPath(".[0]")),
 			},
 			want: &JSONReader{
 				names:   []string{"c1", "c2"},
@@ -201,11 +201,11 @@ func TestNewJSONReader(t *testing.T) {
 			name: "testPath2",
 			args: args{
 				reader: strings.NewReader(`{"employees":[
-					{"name":"Shyam", "email":"shyamjaiswal@gmail.com"},
-					{"name":"Bob", "email":"bob32@gmail.com"},
-					{"name":"Jai", "email":"jai87@gmail.com"}
-				]}`),
-				opts: NewReadOpts(InPath("employees")),
+						{"name":"Shyam", "email":"shyamjaiswal@gmail.com"},
+						{"name":"Bob", "email":"bob32@gmail.com"},
+						{"name":"Jai", "email":"jai87@gmail.com"}
+					]}`),
+				opts: NewReadOpts(InPath(".employees")),
 			},
 			want: &JSONReader{
 				names: []string{"name", "email"},
@@ -221,17 +221,17 @@ func TestNewJSONReader(t *testing.T) {
 			name: "testPath3",
 			args: args{
 				reader: strings.NewReader(`{"menu": {
-					"id": "file",
-					"value": "File",
-					"popup": {
-					  "menuitem": [
-						{"value": "New", "onclick": "CreateDoc()"},
-						{"value": "Open", "onclick": "OpenDoc()"},
-						{"value": "Save", "onclick": "SaveDoc()"}
-					  ]
-					}
-				  }}`),
-				opts: NewReadOpts(InPath("menu.popup.menuitem")),
+						"id": "file",
+						"value": "File",
+						"popup": {
+						  "menuitem": [
+							{"value": "New", "onclick": "CreateDoc()"},
+							{"value": "Open", "onclick": "OpenDoc()"},
+							{"value": "Save", "onclick": "SaveDoc()"}
+						  ]
+						}
+					  }}`),
+				opts: NewReadOpts(InPath(".menu.popup.menuitem")),
 			},
 			want: &JSONReader{
 				names: []string{"value", "onclick"},
