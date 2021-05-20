@@ -236,8 +236,8 @@ func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *R
 	}
 
 	tableName := db.QuotedName(fileName)
-	if opts.InPath != "" {
-		tableName = db.QuotedName(fileName + "::" + opts.InPath)
+	if opts.InJQuery != "" {
+		tableName = db.QuotedName(fileName + "::" + opts.InJQuery)
 	}
 
 	columnNames, err := reader.Names()
@@ -267,8 +267,8 @@ func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *R
 func guessOpts(readOpts ReadOpts, fileName string) (ReadOpts, string) {
 	_, err := os.Stat(fileName)
 	if err != nil && strings.Contains(fileName, "::") {
-		// path notation.
-		readOpts.InPath = fileName[strings.Index(fileName, "::")+2:]
+		// jq expression.
+		readOpts.InJQuery = fileName[strings.Index(fileName, "::")+2:]
 		fileName = fileName[:strings.Index(fileName, "::")]
 	}
 

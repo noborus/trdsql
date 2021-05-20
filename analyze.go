@@ -43,8 +43,8 @@ func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
 		return err
 	}
 	tableName := fileName
-	if rOpts.InPath != "" {
-		tableName = fileName + "::" + rOpts.InPath
+	if rOpts.InJQuery != "" {
+		tableName = fileName + "::" + rOpts.InJQuery
 	}
 
 	defer func() {

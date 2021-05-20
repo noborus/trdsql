@@ -5,12 +5,15 @@ package trdsql
 // * Array ([{c1: 1}, {c1: 2}, {c1: 3}])
 // * Multiple JSON ({c1: 1}\n {c1: 2}\n {c1: 3}\n)
 
-// Make a table from json and path.
+// Make a table from json
+// or make the result of json filter by jq.
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
+	"strconv"
 
 	"github.com/itchyny/gojq"
 )
@@ -19,7 +22,7 @@ import (
 type JSONReader struct {
 	reader  *json.Decoder
 	preRead []map[string]string
-	path    string
+	query   *gojq.Query
 	names   []string
 	types   []string
 }
@@ -29,8 +32,19 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 	r := &JSONReader{}
 	r.reader = json.NewDecoder(reader)
 	r.reader.UseNumber()
-	r.path = opts.InPath
 	var top interface{}
+
+	if opts.InJQuery != "" {
+		str, err := strconv.Unquote(opts.InJQuery)
+		if err != nil {
+			str = opts.InJQuery
+		}
+		query, err := gojq.Parse(str)
+		if err != nil {
+			return nil, fmt.Errorf("gojq: %w (%s)", err, opts.InJQuery)
+		}
+		r.query = query
+	}
 
 	for i := 0; i < opts.InPreRead; i++ {
 		err := r.reader.Decode(&top)
@@ -42,24 +56,21 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 			return r, nil
 		}
 
-		if r.path == "" {
+		if r.query == nil {
 			r, err = r.readAhead(top)
 			if err != nil {
 				return nil, err
 			}
 		} else {
-			jquery, err := gojq.Parse(r.path)
-			if err != nil {
-				return nil, err
-			}
-			iter := jquery.Run(top)
+			iter := r.query.Run(top)
 			for {
 				v, ok := iter.Next()
 				if !ok {
 					break
 				}
 				if err, ok := v.(error); ok {
-					return r, err
+					debug.Printf("query %s", err.Error())
+					continue
 				}
 				r, err = r.readAhead(v)
 				if err != nil {
@@ -162,27 +173,25 @@ func (r *JSONReader) ReadRow(row []interface{}) ([]interface{}, error) {
 		return nil, err
 	}
 
-	if r.path == "" {
-		row = r.rowParse(row, data)
-		return row, nil
+	if r.query != nil {
+		// json query.
+		return r.queryRun(row, data)
 	}
+	return r.rowParse(row, data), nil
+}
 
-	// json query.
-	jquery, err := gojq.Parse(r.path)
-	if err != nil {
-		return nil, err
-	}
-	iter := jquery.Run(data)
-	debug.Printf(jquery.String())
+func (r *JSONReader) queryRun(row []interface{}, jsonRow interface{}) ([]interface{}, error) {
+	iter := r.query.Run(jsonRow)
 	for {
-		data, ok := iter.Next()
+		v, ok := iter.Next()
 		if !ok {
 			break
 		}
-		if err, ok := data.(error); ok {
-			return nil, err
+		if err, ok := v.(error); ok {
+			debug.Printf("query %s", err.Error())
+			continue
 		}
-		row = r.rowParse(row, data)
+		row = r.rowParse(row, v)
 	}
 	return row, nil
 }
