@@ -186,7 +186,7 @@ func TestNewJSONReader(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "testPath",
+			name: "testJQ",
 			args: args{
 				reader: strings.NewReader(`[{"c1":"1","c2":"Orange"},{"c1":"2","c2":"Melon"},{"c1":"3","c2":"Apple"}]`),
 				opts:   NewReadOpts(InJQ(".[0]")),
@@ -198,7 +198,7 @@ func TestNewJSONReader(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "testPath2",
+			name: "testJQ2",
 			args: args{
 				reader: strings.NewReader(`{"employees":[
 						{"name":"Shyam", "email":"shyamjaiswal@gmail.com"},
@@ -218,7 +218,7 @@ func TestNewJSONReader(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "testPath3",
+			name: "testJQ3",
 			args: args{
 				reader: strings.NewReader(`{"menu": {
 						"id": "file",
@@ -231,7 +231,7 @@ func TestNewJSONReader(t *testing.T) {
 						  ]
 						}
 					  }}`),
-				opts: NewReadOpts(InJQ(".menu.popup.menuitem")),
+				opts: NewReadOpts(InJQ(`".menu.popup.menuitem"`)),
 			},
 			want: &JSONReader{
 				names: []string{"value", "onclick"},
