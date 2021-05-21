@@ -48,6 +48,7 @@ Please refer to [godoc](https://pkg.go.dev/github.com/noborus/trdsql)
 	* 4.8. [TSV (Tab Separated Value)](#TSVTabSeparatedValue)
 	* 4.9. [LTSV (Labeled Tab-separated Values)](#LTSVLabeledTab-separatedValues)
 	* 4.10. [JSON](#JSON)
+		* 4.10.1. [jq expression](#jqexpression)
 	* 4.11. [JSONL](#JSONL)
 	* 4.12. [TBLN](#TBLN)
 	* 4.13. [Raw output](#Rawoutput)
@@ -168,7 +169,7 @@ trdsql [options] SQL
 
 * `-ih` the first line is interpreted as column names(CSV only).
 * `-id` **character** field delimiter for input. (default ",")(CSV only)
-* `-ipath` **string** PATH string for input(JSON/JSONL only).
+* `-ijq` **string** jq expression string for input(JSON/JSONL only).
 * `-is` **int** skip header row.
 * `-ir` **int** number of row pre-read for column determination. (default 1)
 
@@ -435,6 +436,70 @@ $ trdsql -ijson "SELECT id, name, JSON_EXTRACT(attribute,'$country'), JSON_EXTRA
 3,Tuck,Mayotte,antiquewhite
 ```
 
+####  4.10.1. <a name='jqexpression'></a>jq expression
+
+If json has a hierarchy, you can filter by jq expression.
+
+menu.json
+
+```json
+{
+	"menu": {
+		"id": "file",
+		"value": "File",
+		"popup": {
+			"menuitem": [
+				{
+					"value": "New",
+					"onclick": "CreateDoc()"
+				},
+				{
+					"value": "Open",
+					"onclick": "OpenDoc()"
+				},
+				{
+					"value": "Save",
+					"onclick": "SaveDoc()"
+				}
+			]
+		}
+	}
+}
+```
+
+As it is, it is a 1 column table.
+
+```console
+trdsql -oat 'SELECT * FROM menu.json'
+```
+
+```
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|                                                                                   menu                                                                                    |
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| {"id":"file","popup":{"menuitem":[{"onclick":"CreateDoc()","value":"New"},{"onclick":"OpenDoc()","value":"Open"},{"onclick":"SaveDoc()","value":"Save"}]},"value":"File"} |
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+```
+
+You can write a jq expression by connecting :: after the json file name.
+Enclose the jq expression in double quotes if needed.
+
+```console
+trdsql -oat 'SELECT value, onclick FROM menu.json::".menu.popup.menuitem"'
+```
+
+```
++-------+-------------+
+| value |   onclick   |
++-------+-------------+
+| New   | CreateDoc() |
+| Open  | OpenDoc()   |
+| Save  | SaveDoc()   |
++-------+-------------+
+```
+
+###  4.11. <a name='JSONL'></a>JSONL
+
 Another json format. JSONL(JSON Lines).
 
 sample2.json
@@ -467,8 +532,6 @@ trdsql -ojson "SELECT * FROM test.csv"
   }
 ]
 ```
-
-###  4.11. <a name='JSONL'></a>JSONL
 
 To output in JSONL, specify `-ojsonl`.
 
