@@ -45,7 +45,8 @@ type ReadOpts struct {
 	// default is true.
 	IsTemporary bool
 
-	InPath string
+	// InJQuery is a jq expression.
+	InJQuery string
 }
 
 // NewReadOpts Returns ReadOpts.
@@ -57,7 +58,7 @@ func NewReadOpts(options ...ReadOpt) *ReadOpts {
 		InDelimiter: ",",
 		InHeader:    false,
 		IsTemporary: true,
-		InPath:      "",
+		InJQuery:    "",
 	}
 	for _, option := range options {
 		option(readOpts)
@@ -83,10 +84,10 @@ func InPreRead(p int) ReadOpt {
 	}
 }
 
-// InPath is string of path.
-func InPath(p string) ReadOpt {
+// InJQ is jq expression.
+func InJQ(p string) ReadOpt {
 	return func(args *ReadOpts) {
-		args.InPath = p
+		args.InJQuery = p
 	}
 }
 

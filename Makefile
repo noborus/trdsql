@@ -12,7 +12,7 @@ endif
 GOVERSION="1.16.x"
 BUILDFLAG=-tags $(TAGS) -ldflags=$(LDFLAGS)
 GOBUILD=$(GOCMD) build $(BUILDFLAG)
-GOTEST=$(GOCMD) test -tags $(TAGS) -v ./...
+GOTEST=$(GOCMD) test -tags $(TAGS) ./...
 GOINSTALL=$(GOCMD) install $(BUILDFLAG)
 
 XGOCMD=xgo -go $(GOVERSION) $(BUILDFLAG)

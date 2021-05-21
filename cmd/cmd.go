@@ -55,7 +55,7 @@ func (cli Cli) Run(args []string) int {
 		inHeader    bool
 		inSkip      int
 		inPreRead   int
-		inPath      string
+		inJQuery    string
 
 		outFlag         outputFlag
 		outFile         string
@@ -92,7 +92,7 @@ func (cli Cli) Run(args []string) int {
 	flags.BoolVar(&inHeader, "ih", false, "the first line is interpreted as column names(CSV only).")
 	flags.IntVar(&inSkip, "is", 0, "skip header row.")
 	flags.IntVar(&inPreRead, "ir", 1, "number of row preread for column determination.")
-	flags.StringVar(&inPath, "ipath", "", "PATH string for input(JSON/JSONL only).")
+	flags.StringVar(&inJQuery, "ijq", "", "jq expression string for input(JSON/JSONL only).")
 
 	flags.BoolVar(&inFlag.CSV, "icsv", false, "CSV format for input.")
 	flags.BoolVar(&inFlag.LTSV, "iltsv", false, "LTSV format for input.")
@@ -165,7 +165,7 @@ func (cli Cli) Run(args []string) int {
 			trdsql.InHeader(inHeader),
 			trdsql.InSkip(inSkip),
 			trdsql.InPreRead(inPreRead),
-			trdsql.InPath(inPath),
+			trdsql.InJQ(inJQuery),
 		)
 		if err := trdsql.Analyze(analyze, opts, readOpts); err != nil {
 			log.Printf("ERROR: %s", err)
@@ -192,7 +192,7 @@ func (cli Cli) Run(args []string) int {
 		trdsql.InHeader(inHeader),
 		trdsql.InSkip(inSkip),
 		trdsql.InPreRead(inPreRead),
-		trdsql.InPath(inPath),
+		trdsql.InJQ(inJQuery),
 	)
 
 	writer := cli.OutStream
@@ -360,7 +360,7 @@ func optsCommand(opts *trdsql.AnalyzeOpts, args []string) *trdsql.AnalyzeOpts {
 			omitFlag = true
 			continue
 		}
-		if arg == "-ipath" {
+		if arg == "-ijq" {
 			omitFlag = true
 			continue
 		}

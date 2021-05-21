@@ -186,10 +186,10 @@ func TestNewJSONReader(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "testPath",
+			name: "testJQ",
 			args: args{
 				reader: strings.NewReader(`[{"c1":"1","c2":"Orange"},{"c1":"2","c2":"Melon"},{"c1":"3","c2":"Apple"}]`),
-				opts:   NewReadOpts(InPath("0")),
+				opts:   NewReadOpts(InJQ(".[0]")),
 			},
 			want: &JSONReader{
 				names:   []string{"c1", "c2"},
@@ -198,14 +198,14 @@ func TestNewJSONReader(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "testPath2",
+			name: "testJQ2",
 			args: args{
 				reader: strings.NewReader(`{"employees":[
-					{"name":"Shyam", "email":"shyamjaiswal@gmail.com"},
-					{"name":"Bob", "email":"bob32@gmail.com"},
-					{"name":"Jai", "email":"jai87@gmail.com"}
-				]}`),
-				opts: NewReadOpts(InPath("employees")),
+						{"name":"Shyam", "email":"shyamjaiswal@gmail.com"},
+						{"name":"Bob", "email":"bob32@gmail.com"},
+						{"name":"Jai", "email":"jai87@gmail.com"}
+					]}`),
+				opts: NewReadOpts(InJQ(".employees")),
 			},
 			want: &JSONReader{
 				names: []string{"name", "email"},
@@ -218,20 +218,20 @@ func TestNewJSONReader(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "testPath3",
+			name: "testJQ3",
 			args: args{
 				reader: strings.NewReader(`{"menu": {
-					"id": "file",
-					"value": "File",
-					"popup": {
-					  "menuitem": [
-						{"value": "New", "onclick": "CreateDoc()"},
-						{"value": "Open", "onclick": "OpenDoc()"},
-						{"value": "Save", "onclick": "SaveDoc()"}
-					  ]
-					}
-				  }}`),
-				opts: NewReadOpts(InPath("menu.popup.menuitem")),
+						"id": "file",
+						"value": "File",
+						"popup": {
+						  "menuitem": [
+							{"value": "New", "onclick": "CreateDoc()"},
+							{"value": "Open", "onclick": "OpenDoc()"},
+							{"value": "Save", "onclick": "SaveDoc()"}
+						  ]
+						}
+					  }}`),
+				opts: NewReadOpts(InJQ(`".menu.popup.menuitem"`)),
 			},
 			want: &JSONReader{
 				names: []string{"value", "onclick"},

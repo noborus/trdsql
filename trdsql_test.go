@@ -123,6 +123,18 @@ func TestTRDSQL_Exec(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name:    "testTestJSON",
+			sql:     "SELECT c2 FROM \"" + filepath.Join(dataDir, "test.json\""),
+			want:    "Orange\nMelon\nApple\n",
+			wantErr: false,
+		},
+		{
+			name:    "testTestJSONJQ",
+			sql:     "SELECT * FROM " + filepath.Join(dataDir, "test.json::\".[] | .c2\""),
+			want:    "Orange\nMelon\nApple\n",
+			wantErr: false,
+		},
+		{
 			name:    "testJoin",
 			sql:     "SELECT j.c1,j.c2,c.c1,c.c2 FROM " + filepath.Join(dataDir, "test.json") + " AS j LEFT JOIN " + filepath.Join(dataDir, "test.csv") + " AS c ON (j.c1 = c.c1)",
 			want:    "1,Orange,1,Orange\n2,Melon,2,Melon\n3,Apple,3,Apple\n",
