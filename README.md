@@ -438,7 +438,9 @@ $ trdsql -ijson "SELECT id, name, JSON_EXTRACT(attribute,'$country'), JSON_EXTRA
 
 ####  4.10.1. <a name='jqexpression'></a>jq expression
 
-If json has a hierarchy, you can filter by jq expression.
+If json has a hierarchy, you can filter by [jq](https://stedolan.github.io/jq/) expression.
+
+The jq expression is implemented using [gojq](https://github.com/itchyny/gojq).
 
 menu.json
 
@@ -467,7 +469,7 @@ menu.json
 }
 ```
 
-As it is, it is a 1 column table.
+Normally it is a 1 column table as it is.
 
 ```console
 trdsql -oat 'SELECT * FROM menu.json'
