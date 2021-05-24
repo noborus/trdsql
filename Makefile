@@ -56,7 +56,7 @@ build-all:
 
 DIST_DIRS := find trdsql* -type d -exec
 
-dist: dist-clean build-all linux-amd64 linux-386 linux-arm-5 linux-arm-6 linux-arm-7 linux-arm64 linux-mips linux-mips64 linux-mipsle windows-386 windows-amd64 darwin-amd64
+dist: dist-clean build-all linux-amd64 linux-386 linux-arm-5 linux-arm-6 linux-arm-7 linux-arm64 linux-mips linux-mips64 linux-mipsle windows-386 windows-amd64 darwin-amd64 darwin-arm64
 	cd dist && \
 	$(DIST_DIRS) cp ../README.md {} \; && \
 	$(DIST_DIRS) cp ../LICENSE {} \; && \
@@ -108,10 +108,11 @@ windows-amd64:
 	mkdir dist/trdsql_$(VERSION)_windows_amd64
 	cp $(DIST_BIN)/$(BINARY_NAME)-windows-4.0-amd64.exe dist/trdsql_$(VERSION)_windows_amd64/$(BINARY_NAME).exe
 
-darwin-386:
-	mkdir dist/trdsql_$(VERSION)_darwin_386
-	cp $(DIST_BIN)/$(BINARY_NAME)-darwin-10.6-386 dist/trdsql_$(VERSION)_darwin_386/$(BINARY_NAME)
-
 darwin-amd64:
 	mkdir dist/trdsql_$(VERSION)_darwin_amd64
-	cp $(DIST_BIN)/$(BINARY_NAME)-darwin-10.6-amd64 dist/trdsql_$(VERSION)_darwin_amd64/$(BINARY_NAME)
+	cp $(DIST_BIN)/$(BINARY_NAME)-darwin-10.12-amd64 dist/trdsql_$(VERSION)_darwin_amd64/$(BINARY_NAME)
+
+darwin-arm64:
+	mkdir dist/trdsql_$(VERSION)_darwin_arm64
+	cp $(DIST_BIN)/$(BINARY_NAME)-darwin-10.12-arm64 dist/trdsql_$(VERSION)_darwin_arm64/$(BINARY_NAME)
+
