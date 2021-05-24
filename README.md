@@ -469,25 +469,16 @@ menu.json
 }
 ```
 
-Normally it is a 1 column table as it is.
-
-```console
-trdsql -oat 'SELECT * FROM menu.json'
-```
-
-```
-+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|                                                                                   menu                                                                                    |
-+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| {"id":"file","popup":{"menuitem":[{"onclick":"CreateDoc()","value":"New"},{"onclick":"OpenDoc()","value":"Open"},{"onclick":"SaveDoc()","value":"Save"}]},"value":"File"} |
-+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-```
-
 You can write a jq expression by connecting :: after the json file name.
 Enclose the jq expression in double quotes if needed.
 
 ```console
 trdsql -oat 'SELECT value, onclick FROM menu.json::".menu.popup.menuitem"'
+```
+Or specify with the `-ijq` option.
+
+```console
+trdsql -oat -ijq ".menu.popup.menuitem" "SELECT * FROM menu.json"
 ```
 
 ```
