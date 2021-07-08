@@ -315,9 +315,9 @@ func Usage(flags *flag.FlagSet) {
 		fmt.Fprint(flags.Output(), u, "\n")
 	}
 	fmt.Fprintf(flags.Output(), "\n%s\n", bold("Examples:"))
-	fmt.Fprintf(flags.Output(), "  $ trdsql \"SELECT c1,c2 FRM test.csv\"\n")
-	fmt.Fprintf(flags.Output(), "  $ trdsql -oltsv \"SELECT c1,c2 FRM test.json::items\"\n")
-	fmt.Fprintf(flags.Output(), "  $ cat test.csv | trdsql -i csv -oltsv \"SELECT c1,c2 FRM -\"\n")
+	fmt.Fprintf(flags.Output(), "  $ trdsql \"SELECT c1,c2 FROM test.csv\"\n")
+	fmt.Fprintf(flags.Output(), "  $ trdsql -oltsv \"SELECT c1,c2 FROM test.json::items\"\n")
+	fmt.Fprintf(flags.Output(), "  $ cat test.csv | trdsql -i csv -oltsv \"SELECT c1,c2 FROM -\"\n")
 }
 
 func usageFlag(f *flag.Flag) string {
