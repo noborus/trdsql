@@ -15,7 +15,7 @@ RUN set -ex; \
 	; \
   mkdir -p ${GOPATH}/src ${GOPATH}/bin; \
 	# download
-	go get -d github.com/noborus/trdsql; \
+	git clone --depth 1 https://github.com/noborus/trdsql $GOPATH/src/github.com/noborus/trdsql; \
 	cd $GOPATH/src/github.com/noborus/trdsql; \
 	# install
 	make; \
