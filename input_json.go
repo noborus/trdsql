@@ -13,7 +13,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"strconv"
 
 	"github.com/itchyny/gojq"
 )
@@ -35,10 +34,7 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 	var top interface{}
 
 	if opts.InJQuery != "" {
-		str, err := strconv.Unquote(opts.InJQuery)
-		if err != nil {
-			str = opts.InJQuery
-		}
+		str := trimQuoteAll(opts.InJQuery)
 		query, err := gojq.Parse(str)
 		if err != nil {
 			return nil, fmt.Errorf("gojq: %w (%s)", err, opts.InJQuery)
