@@ -491,6 +491,27 @@ trdsql -oat -ijq ".menu.popup.menuitem" "SELECT * FROM menu.json"
 +-------+-------------+
 ```
 
+Example to use instead of gojq.
+
+```sh
+$ echo '{"foo": 128}' | trdsql -ijson "SELECT * FROM -::'.foo'"
+ 128
+$ echo '{"a": {"b": 42}}' | trdsql -ijson "SELECT * FROM -::'.a.b'"
+42
+$ echo '{"id": "sample", "10": {"b": 42}}' | trdsql -ijson "SELECT * FROM -::'{(.id): .[\"10\"].b}'"
+42
+$ echo '[{"id":1},{"id":2},{"id":3}]' | trdsql -ijson "SELECT * FROM -::'.[] | .id'"
+1
+2
+3
+$ echo '{"a":1,"b":2}' | trdsql -ijson "SELECT * FROM -::'.a += 1 | .b *= 2'"
+4,2
+$ echo '{"a":1} [2] 3' | trdsql -ijson "SELECT * FROM -::'. as {\$a} ?// [\$a] ?// \$a | \$a'"
+1
+2
+3
+```
+
 ###  4.11. <a name='JSONL'></a>JSONL
 
 Another json format. JSONL(JSON Lines).

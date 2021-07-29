@@ -15,6 +15,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/klauspost/compress/zstd"
@@ -38,6 +39,8 @@ var (
 	// ErrNonDefinition is returned when there is no definition.
 	ErrNonDefinition = errors.New("no definition")
 )
+
+var importCount int
 
 // Importer is the interface import data into the database.
 // Importer parses sql query to decide which file to Import.
@@ -218,6 +221,7 @@ func ImportFile(db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 // Wildcards can be passed as fileName.
 func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 	opts, fileName := guessOpts(*readOpts, fileName)
+	importCount++
 	file, err := importFileOpen(fileName)
 	if err != nil {
 		debug.Printf("%s\n", err)
@@ -237,7 +241,7 @@ func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *R
 
 	tableName := db.QuotedName(fileName)
 	if opts.InJQuery != "" {
-		tableName = db.QuotedName(fileName + "::" + opts.InJQuery)
+		tableName = db.QuotedName(fileName + "::" + "jq" + strconv.Itoa(importCount))
 	}
 
 	columnNames, err := reader.Names()
@@ -426,12 +430,28 @@ func expandTilde(fileName string) string {
 	return fileName
 }
 
-func trimQuote(fileName string) string {
-	if fileName[0] == '`' && fileName[len(fileName)-1] == '`' {
-		fileName = fileName[1 : len(fileName)-1]
+func trimQuote(str string) string {
+	if str[0] == '`' && str[len(str)-1] == '`' {
+		str = str[1 : len(str)-1]
 	}
-	if fileName[0] == '"' && fileName[len(fileName)-1] == '"' {
-		fileName = fileName[1 : len(fileName)-1]
+	if str[0] == '"' && str[len(str)-1] == '"' {
+		str = str[1 : len(str)-1]
 	}
-	return fileName
+	return str
+}
+
+func trimQuoteAll(str string) string {
+	if len(str) < 2 {
+		return str
+	}
+	if str[0] == '\'' && str[len(str)-1] == '\'' {
+		return str[1 : len(str)-1]
+	}
+	if str[0] == '`' && str[len(str)-1] == '`' {
+		return str[1 : len(str)-1]
+	}
+	if str[0] == '"' && str[len(str)-1] == '"' {
+		return str[1 : len(str)-1]
+	}
+	return str
 }
