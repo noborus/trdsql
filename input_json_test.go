@@ -243,6 +243,23 @@ func TestNewJSONReader(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "testJQ4",
+			args: args{
+				reader: strings.NewReader(`[{"id":1},{"id":2},{"id":3}]`),
+				opts:   NewReadOpts(InJQ(".")),
+				// opts:   NewReadOpts(InJQ(`. as {$a} ?// [$a] ?// $a | $a`)),
+			},
+			want: &JSONReader{
+				names: []string{"id"},
+				preRead: []map[string]string{
+					{"id": "1"},
+					{"id": "2"},
+					{"id": "3"},
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

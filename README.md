@@ -495,7 +495,7 @@ Example to use instead of gojq.
 
 ```sh
 $ echo '{"foo": 128}' | trdsql -ijson "SELECT * FROM -::'.foo'"
- 128
+128
 $ echo '{"a": {"b": 42}}' | trdsql -ijson "SELECT * FROM -::'.a.b'"
 42
 $ echo '{"id": "sample", "10": {"b": 42}}' | trdsql -ijson "SELECT * FROM -::'{(.id): .[\"10\"].b}'"
