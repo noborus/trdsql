@@ -491,7 +491,7 @@ trdsql -oat -ijq ".menu.popup.menuitem" "SELECT * FROM menu.json"
 +-------+-------------+
 ```
 
-Example to use instead of gojq.
+Example to use instead of [gojq](https://github.com/itchyny/gojq#usage).
 
 ```sh
 $ echo '{"foo": 128}' | trdsql -ijson "SELECT * FROM -::'.foo'"
