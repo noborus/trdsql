@@ -84,7 +84,7 @@ make install
 
 ####  1.1.1. <a name='Requirements'></a>Requirements
 
-go 1.13 or higher.
+go 1.15 or higher.
 
 ###  1.2. <a name='Downloadbinary'></a>Download binary
 
@@ -491,7 +491,7 @@ trdsql -oat -ijq ".menu.popup.menuitem" "SELECT * FROM menu.json"
 +-------+-------------+
 ```
 
-Example to use instead of gojq.
+Example to use instead of [gojq](https://github.com/itchyny/gojq#usage).
 
 ```sh
 $ echo '{"foo": 128}' | trdsql -ijson "SELECT * FROM -::'.foo'"
