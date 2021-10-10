@@ -694,7 +694,7 @@ TIME,TTY,PID,CMD
 00:00:05,pts/20,15576,zsh
 ```
 
-Note: the available functions and their syntax depend on the driver you have chosen ( mysql oe postgres or sqlite3). The default one is sqlite.
+Note: the available functions and their syntax depend on the driver you have chosen (mysql or postgres or sqlite). The default one is sqlite.
 
 ###  4.17. <a name='JOIN'></a>JOIN
 
