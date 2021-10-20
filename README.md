@@ -429,6 +429,10 @@ $ trdsql -ijson "SELECT * FROM sample2.json"
 
 Please use SQL function.
 
+* [SQLite3 - The JSON1 Extension](https://www.sqlite.org/json1.html)
+* [PostgreSQL - JSON Functions and Operators](https://www.postgresql.org/docs/current/functions-json.html)
+* [MySQL - Functions That Search JSON Values](https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html)
+
 ```console
 $ trdsql -ijson "SELECT id, name, JSON_EXTRACT(attribute,'$country'), JSON_EXTRACT(attribute,'$color') FROM sample2.json"
 1,Drolet,Maldives,burlywood
