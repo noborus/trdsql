@@ -1,7 +1,6 @@
 package trdsql
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
 	"errors"
@@ -61,10 +60,11 @@ func Connect(driver, dsn string) (*DB, error) {
 		return nil, err
 	}
 
-	db := &DB{}
-	db.DB = sqlDB
-	db.driver = driver
-	db.dsn = dsn
+	db := &DB{
+		DB:     sqlDB,
+		driver: driver,
+		dsn:    dsn,
+	}
 	debug.Printf("driver: %s, dsn: %s", driver, dsn)
 
 	switch driver {
@@ -105,7 +105,7 @@ func (db *DB) CreateTableContext(ctx context.Context, tableName string, columnNa
 		return ErrInvalidTypes
 	}
 
-	buf := &bytes.Buffer{}
+	var buf strings.Builder
 	if isTemporary {
 		buf.WriteString("CREATE TEMPORARY TABLE ")
 	} else {
@@ -123,7 +123,6 @@ func (db *DB) CreateTableContext(ctx context.Context, tableName string, columnNa
 		buf.WriteString(columnTypes[i])
 	}
 	buf.WriteString(" );")
-
 	query := buf.String()
 	debug.Printf(query)
 	_, err := db.Tx.ExecContext(ctx, query)
@@ -218,7 +217,7 @@ func (db *DB) copyImport(ctx context.Context, table *importTable, reader Reader)
 
 // queryCopy constructs a SQL COPY statement.
 func queryCopy(table *importTable) string {
-	buf := &bytes.Buffer{}
+	var buf strings.Builder
 	buf.WriteString("COPY ")
 	buf.WriteString(table.tableName)
 	buf.WriteString(" (")
@@ -346,7 +345,7 @@ func (db *DB) insertPrepare(ctx context.Context, table *importTable) (*sql.Stmt,
 
 // queryInsert constructs a SQL INSERT statement.
 func queryInsert(table *importTable) string {
-	buf := &bytes.Buffer{}
+	var buf strings.Builder
 	buf.WriteString("INSERT INTO ")
 	buf.WriteString(table.tableName)
 	buf.WriteString(" (")
@@ -377,14 +376,15 @@ func queryInsert(table *importTable) string {
 // QuotedName returns the table name quoted.
 // Returns as is, if already quoted.
 func (db *DB) QuotedName(orgName string) string {
-	if orgName[0] != db.quote[0] {
-		buf := &bytes.Buffer{}
-		buf.WriteString(db.quote)
-		buf.WriteString(orgName)
-		buf.WriteString(db.quote)
-		return buf.String()
+	if orgName[0] == db.quote[0] {
+		return orgName
 	}
-	return orgName
+
+	var buf strings.Builder
+	buf.WriteString(db.quote)
+	buf.WriteString(orgName)
+	buf.WriteString(db.quote)
+	return buf.String()
 }
 
 // Select is executes SQL select statements.
