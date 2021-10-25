@@ -29,21 +29,17 @@ func (w *LTSVWriter) PreWrite(columns []string, types []string) error {
 func (w *LTSVWriter) WriteRow(values []interface{}, labels []string) error {
 	for n, col := range values {
 		if n > 0 {
-			_, err := w.writer.WriteRune(w.delimiter)
-			if err != nil {
+			if _, err := w.writer.WriteRune(w.delimiter); err != nil {
 				return err
 			}
 		}
-		_, err := w.writer.WriteString(labels[n])
-		if err != nil {
+		if _, err := w.writer.WriteString(labels[n]); err != nil {
 			return err
 		}
-		err = w.writer.WriteByte(':')
-		if err != nil {
+		if err := w.writer.WriteByte(':'); err != nil {
 			return err
 		}
-		_, err = w.writer.WriteString(ValString(col))
-		if err != nil {
+		if _, err := w.writer.WriteString(ValString(col)); err != nil {
 			return err
 		}
 	}

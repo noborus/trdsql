@@ -43,7 +43,7 @@ type Format int
 
 // Represents Format.
 const (
-	// import (guesses for import format)
+	// import (guesses for import format).
 	GUESS Format = iota
 
 	// import/export

@@ -131,7 +131,7 @@ func TableNames(parsedQuery []string) (map[string]string, []int) {
 	debug.Printf("[%s]", strings.Join(parsedQuery, "]["))
 	for i, w := range parsedQuery {
 		switch {
-		case strings.Contains(" \t\r\n;=", w):
+		case strings.Contains(" \t\r\n;=", w): // nolint // Because each character is parsed by SQLFields.
 			continue
 		case strings.EqualFold(w, "FROM"),
 			strings.EqualFold(w, "JOIN"),

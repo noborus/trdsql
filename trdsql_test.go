@@ -720,6 +720,7 @@ func TestFormat_String(t *testing.T) {
 }
 
 func benchmarkFormat(b *testing.B, format Format) {
+	b.Helper()
 	sql := "SELECT * FROM " + filepath.Join(dataDir, "KEN_ALL.CSV")
 	outStream := new(bytes.Buffer)
 	importer := NewImporter(InFormat(GUESS))
@@ -732,8 +733,7 @@ func benchmarkFormat(b *testing.B, format Format) {
 	trd := NewTRDSQL(importer, exporter)
 	trd.Driver = "sqlite3"
 	trd.Dsn = ""
-	err := trd.Exec(sql)
-	if err != nil {
+	if err := trd.Exec(sql); err != nil {
 		b.Fatal(err)
 	}
 }
