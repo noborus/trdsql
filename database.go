@@ -120,7 +120,7 @@ func (db *DB) CreateTableContext(ctx context.Context, tableName string, columnNa
 		buf.WriteString(", ")
 		buf.WriteString(db.QuotedName(columnName))
 		buf.WriteString(" ")
-		buf.WriteString(columnTypes[i])
+		buf.WriteString(columnTypes[i+1])
 	}
 	buf.WriteString(" );")
 	query := buf.String()
