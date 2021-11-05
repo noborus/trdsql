@@ -116,11 +116,11 @@ func (db *DB) CreateTableContext(ctx context.Context, tableName string, columnNa
 	buf.WriteString(db.QuotedName(columnNames[0]))
 	buf.WriteString(" ")
 	buf.WriteString(columnTypes[0])
-	for i := 1; i < len(columnNames); i++ {
+	for i, columnName := range columnNames[1:] {
 		buf.WriteString(", ")
-		buf.WriteString(db.QuotedName(columnNames[i]))
+		buf.WriteString(db.QuotedName(columnName))
 		buf.WriteString(" ")
-		buf.WriteString(columnTypes[i])
+		buf.WriteString(columnTypes[i+1])
 	}
 	buf.WriteString(" );")
 	query := buf.String()
@@ -222,9 +222,9 @@ func queryCopy(table *importTable) string {
 	buf.WriteString(table.tableName)
 	buf.WriteString(" (")
 	buf.WriteString(table.columns[0])
-	for i := 1; i < len(table.columns); i++ {
+	for _, column := range table.columns[1:] {
 		buf.WriteString(", ")
-		buf.WriteString(table.columns[i])
+		buf.WriteString(column)
 	}
 	buf.WriteString(") FROM STDIN;")
 	return buf.String()
@@ -314,21 +314,15 @@ func bulkPush(ctx context.Context, table *importTable, input Reader, bulk []inte
 }
 
 func (db *DB) bulkStmtOpen(ctx context.Context, table *importTable, stmt *sql.Stmt) (*sql.Stmt, error) {
-	var err error
-
-	if table.lastCount != table.count {
-		if stmt != nil {
-			err = stmt.Close()
-			if err != nil {
-				return nil, err
-			}
-		}
-		stmt, err = db.insertPrepare(ctx, table)
-		if err != nil {
-			return nil, err
-		}
-		table.lastCount = table.count
+	if table.lastCount == table.count {
+		return stmt, nil
 	}
+	db.stmtClose(stmt)
+	stmt, err := db.insertPrepare(ctx, table)
+	if err != nil {
+		return nil, err
+	}
+	table.lastCount = table.count
 	return stmt, nil
 }
 
@@ -350,9 +344,9 @@ func queryInsert(table *importTable) string {
 	buf.WriteString(table.tableName)
 	buf.WriteString(" (")
 	buf.WriteString(table.columns[0])
-	for i := 1; i < len(table.columns); i++ {
+	for _, column := range table.columns[1:] {
 		buf.WriteString(", ")
-		buf.WriteString(table.columns[i])
+		buf.WriteString(column)
 	}
 	buf.WriteString(") VALUES ")
 	buf.WriteString("(")
@@ -364,7 +358,7 @@ func queryInsert(table *importTable) string {
 	for i := 1; i < table.count; i++ {
 		buf.WriteString(",(")
 		buf.WriteString("?")
-		for i := 1; i < len(table.columns); i++ {
+		for j := 1; j < len(table.columns); j++ {
 			buf.WriteString(",?")
 		}
 		buf.WriteString(")")
