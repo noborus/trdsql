@@ -6,6 +6,7 @@ import (
 )
 
 // Reader is wrap the reader.
+// Reader reads from tabular files.
 type Reader interface {
 	// Names returns column names.
 	Names() ([]string, error)
@@ -14,7 +15,7 @@ type Reader interface {
 	// PreReadRow is returns only columns that store preread rows.
 	PreReadRow() [][]interface{}
 	// ReadRow is read the rest of the row.
-	ReadRow([]interface{}) ([]interface{}, error)
+	ReadRow(row []interface{}) ([]interface{}, error)
 }
 
 // ReadOpts represents options that determine the behavior of the reader.

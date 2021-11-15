@@ -107,6 +107,11 @@ func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
 		sampleTable.Render()
 		fmt.Fprintln(opts.OutStream, cyan("\nExamples:"))
 	}
+
+	if len(results) == 0 {
+		return nil
+	}
+
 	queries := examples(tableName, names, results[0])
 	for _, query := range queries {
 		fmt.Fprintf(opts.OutStream, "%s %s\n", opts.Command, `"`+query+`"`)

@@ -5,13 +5,14 @@ import (
 	"os"
 )
 
-// Writer is file format writer.
+// Writer is an interface that wraps the Write method that writes from the database to a file.
 // Writer is a group of methods called from Export.
 type Writer interface {
 	// PreWrite is called first to write.
-	PreWrite([]string, []string) error
+	// The arguments are a list of column names and a list of type names.
+	PreWrite(columns []string, types []string) error
 	// WriteRow is row write.
-	WriteRow([]interface{}, []string) error
+	WriteRow(row []interface{}, columns []string) error
 	// PostWrite is called last in the write.
 	PostWrite() error
 }

@@ -10,6 +10,7 @@ type RAWWriter struct {
 	writer    *bufio.Writer
 	delimiter string
 	outHeader bool
+	endLine   string
 }
 
 // NewRAWWriter returns RAWWriter.
@@ -22,6 +23,11 @@ func NewRAWWriter(writeOpts *WriteOpts) *RAWWriter {
 		debug.Printf("%s\n", err)
 	}
 	w.outHeader = writeOpts.OutHeader
+	if writeOpts.OutUseCRLF {
+		w.endLine = "\r\n"
+	} else {
+		w.endLine = "\n"
+	}
 	return w
 }
 
@@ -40,11 +46,12 @@ func (w *RAWWriter) PreWrite(columns []string, types []string) error {
 			return err
 		}
 	}
-	return w.writer.WriteByte('\n')
+	_, err := w.writer.WriteString(w.endLine)
+	return err
 }
 
 // WriteRow is row write.
-func (w *RAWWriter) WriteRow(values []interface{}, columns []string) error {
+func (w *RAWWriter) WriteRow(values []interface{}, _ []string) error {
 	for n, col := range values {
 		if n > 0 {
 			if _, err := w.writer.WriteString(w.delimiter); err != nil {

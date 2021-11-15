@@ -8,15 +8,15 @@ require (
 	github.com/itchyny/gojq v0.12.5
 	github.com/jwalton/gchalk v1.2.1
 	github.com/klauspost/compress v1.13.6
-	github.com/lib/pq v1.10.3
+	github.com/lib/pq v1.10.4
 	github.com/mattn/go-runewidth v0.0.13
 	github.com/mattn/go-sqlite3 v1.14.9
 	github.com/noborus/tbln v0.0.1
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pierrec/lz4 v2.6.1+incompatible
 	github.com/ulikunitz/xz v0.5.10
-	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
-	golang.org/x/sys v0.0.0-20211103235746-7861aae1554b // indirect
+	golang.org/x/crypto v0.0.0-20211108221036-ceb1ce70b4fa // indirect
+	golang.org/x/sys v0.0.0-20211113001501-0c823b97ae02 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 )
 
