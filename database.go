@@ -105,6 +105,13 @@ func (db *DB) CreateTableContext(ctx context.Context, tableName string, columnNa
 		return ErrInvalidTypes
 	}
 
+	query := db.queryCreateTable(tableName, columnNames, columnTypes, isTemporary)
+	debug.Printf(query)
+	_, err := db.Tx.ExecContext(ctx, query)
+	return err
+}
+
+func (db *DB) queryCreateTable(tableName string, columnNames []string, columnTypes []string, isTemporary bool) string {
 	var buf strings.Builder
 	if isTemporary {
 		buf.WriteString("CREATE TEMPORARY TABLE ")
@@ -123,10 +130,7 @@ func (db *DB) CreateTableContext(ctx context.Context, tableName string, columnNa
 		buf.WriteString(columnTypes[i+1])
 	}
 	buf.WriteString(" );")
-	query := buf.String()
-	debug.Printf(query)
-	_, err := db.Tx.ExecContext(ctx, query)
-	return err
+	return buf.String()
 }
 
 // importTable represents the table data to be imported.
@@ -387,6 +391,7 @@ func (db *DB) Select(query string) (*sql.Rows, error) {
 }
 
 // SelectContext is executes SQL select statements with context.
+// SelectContext is a wrapper for QueryContext.
 func (db *DB) SelectContext(ctx context.Context, query string) (*sql.Rows, error) {
 	if db.Tx == nil {
 		return nil, ErrNoTransaction

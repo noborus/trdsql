@@ -10,12 +10,13 @@ import (
 
 // TBLNRead provides methods of the Reader interface.
 type TBLNRead struct {
-	reader  tbln.Reader
-	preRead [][]interface{}
+	reader    tbln.Reader
+	preRead   [][]interface{}
+	limitRead bool
 }
 
 // NewTBLNReader returns TBLNRead and error.
-func NewTBLNReader(reader io.Reader) (*TBLNRead, error) {
+func NewTBLNReader(reader io.Reader, opts *ReadOpts) (*TBLNRead, error) {
 	r := &TBLNRead{}
 	r.reader = tbln.NewReader(reader)
 
@@ -33,6 +34,8 @@ func NewTBLNReader(reader io.Reader) (*TBLNRead, error) {
 		row[i] = c
 	}
 	r.preRead[0] = row
+
+	r.limitRead = opts.InLimitRead
 
 	// SetNames if there is no names header.
 	d := r.reader.GetDefinition()
@@ -90,6 +93,10 @@ func (r *TBLNRead) PreReadRow() [][]interface{} {
 
 // ReadRow is read the rest of the row.
 func (r *TBLNRead) ReadRow(row []interface{}) ([]interface{}, error) {
+	if r.limitRead {
+		return nil, io.EOF
+	}
+
 	rec, err := r.reader.ReadRow()
 	if err != nil {
 		return row, err

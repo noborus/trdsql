@@ -170,8 +170,9 @@ trdsql [options] SQL
 * `-ih` the first line is interpreted as column names(CSV only).
 * `-id` **character** field delimiter for input. (default ",")(CSV only)
 * `-ijq` **string** jq expression string for input(JSON/JSONL only).
+* `-ilr` **int** "limited number of rows to read.
+* `-ir` **int** number of rows to preread. (default 1)
 * `-is` **int** skip header row.
-* `-ir` **int** number of row pre-read for column determination. (default 1)
 
 ###  3.3. <a name='Outputformats'></a>Output formats
 

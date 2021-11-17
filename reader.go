@@ -6,6 +6,7 @@ import (
 )
 
 // Reader is wrap the reader.
+// Reader reads from tabular files.
 type Reader interface {
 	// Names returns column names.
 	Names() ([]string, error)
@@ -14,7 +15,7 @@ type Reader interface {
 	// PreReadRow is returns only columns that store preread rows.
 	PreReadRow() [][]interface{}
 	// ReadRow is read the rest of the row.
-	ReadRow([]interface{}) ([]interface{}, error)
+	ReadRow(row []interface{}) ([]interface{}, error)
 }
 
 // ReadOpts represents options that determine the behavior of the reader.
@@ -24,12 +25,15 @@ type ReadOpts struct {
 	InFormat   Format
 	realFormat Format
 
-	// InPreRead is number of lines to read ahead.
+	// InPreRead is number of rows to read ahead.
 	// CSV/LTSV reads the specified number of rows to
 	// determine the number of columns.
 	InPreRead int
 
-	// InSkip is number of lines to skip.
+	// InLimitRead is limit read.
+	InLimitRead bool
+
+	// InSkip is number of rows to skip.
 	// Skip reading specified number of lines.
 	InSkip int
 
@@ -54,6 +58,7 @@ func NewReadOpts(options ...ReadOpt) *ReadOpts {
 	readOpts := &ReadOpts{
 		InFormat:    GUESS,
 		InPreRead:   1,
+		InLimitRead: false,
 		InSkip:      0,
 		InDelimiter: ",",
 		InHeader:    false,
@@ -81,6 +86,12 @@ func InFormat(f Format) ReadOpt {
 func InPreRead(p int) ReadOpt {
 	return func(args *ReadOpts) {
 		args.InPreRead = p
+	}
+}
+
+func InLimitRead(p bool) ReadOpt {
+	return func(args *ReadOpts) {
+		args.InLimitRead = p
 	}
 }
 
@@ -139,7 +150,7 @@ func NewReader(reader io.Reader, readOpts *ReadOpts) (Reader, error) {
 	case JSON:
 		return NewJSONReader(reader, readOpts)
 	case TBLN:
-		return NewTBLNReader(reader)
+		return NewTBLNReader(reader, readOpts)
 	default:
 		return nil, ErrUnknownFormat
 	}

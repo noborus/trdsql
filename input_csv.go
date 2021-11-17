@@ -10,10 +10,11 @@ import (
 
 // CSVReader provides methods of the Reader interface.
 type CSVReader struct {
-	reader  *csv.Reader
-	names   []string
-	types   []string
-	preRead [][]string
+	reader    *csv.Reader
+	names     []string
+	types     []string
+	preRead   [][]string
+	limitRead bool
 }
 
 // NewCSVReader returns CSVReader and error.
@@ -36,6 +37,8 @@ func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 	if opts.InSkip > 0 {
 		skipRead(r, opts.InSkip)
 	}
+
+	r.limitRead = opts.InLimitRead
 
 	// Read the header.
 	preReadN := opts.InPreRead
@@ -136,6 +139,9 @@ func (r *CSVReader) PreReadRow() [][]interface{} {
 
 // ReadRow is read the rest of the row.
 func (r *CSVReader) ReadRow(row []interface{}) ([]interface{}, error) {
+	if r.limitRead {
+		return nil, io.EOF
+	}
 	record, err := r.reader.Read()
 	if err != nil {
 		return row, err

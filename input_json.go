@@ -19,11 +19,12 @@ import (
 
 // JSONReader provides methods of the Reader interface.
 type JSONReader struct {
-	reader  *json.Decoder
-	preRead []map[string]string
-	query   *gojq.Query
-	names   []string
-	types   []string
+	reader    *json.Decoder
+	preRead   []map[string]string
+	query     *gojq.Query
+	names     []string
+	types     []string
+	limitRead bool
 }
 
 // NewJSONReader returns JSONReader and error.
@@ -41,6 +42,8 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 		}
 		r.query = query
 	}
+
+	r.limitRead = opts.InLimitRead
 
 	for i := 0; i < opts.InPreRead; i++ {
 		err := r.reader.Decode(&top)
@@ -163,6 +166,10 @@ func (r *JSONReader) PreReadRow() [][]interface{} {
 // ReadRow is read the rest of the row.
 // Only jsonl requires ReadRow in json.
 func (r *JSONReader) ReadRow(row []interface{}) ([]interface{}, error) {
+	if r.limitRead {
+		return nil, io.EOF
+	}
+
 	var data interface{}
 	err := r.reader.Decode(&data)
 	if err != nil {

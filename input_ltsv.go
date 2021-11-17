@@ -14,6 +14,7 @@ type LTSVReader struct {
 	delimiter string
 	names     []string
 	types     []string
+	limitRead bool
 }
 
 // NewLTSVReader returns LTSVReader and error.
@@ -25,6 +26,8 @@ func NewLTSVReader(reader io.Reader, opts *ReadOpts) (*LTSVReader, error) {
 	if opts.InSkip > 0 {
 		skipRead(r, opts.InSkip)
 	}
+
+	r.limitRead = opts.InLimitRead
 
 	names := map[string]bool{}
 	for i := 0; i < opts.InPreRead; i++ {
@@ -87,6 +90,10 @@ func (r *LTSVReader) PreReadRow() [][]interface{} {
 
 // ReadRow is read the rest of the row.
 func (r *LTSVReader) ReadRow(row []interface{}) ([]interface{}, error) {
+	if r.limitRead {
+		return nil, io.EOF
+	}
+
 	record, _, err := r.read()
 	if err != nil {
 		return row, err

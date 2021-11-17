@@ -56,6 +56,7 @@ func (cli Cli) Run(args []string) int {
 		inSkip      int
 		inPreRead   int
 		inJQuery    string
+		inLimitRead int
 
 		outFlag         outputFlag
 		outFile         string
@@ -91,7 +92,8 @@ func (cli Cli) Run(args []string) int {
 	flags.StringVar(&inDelimiter, "id", ",", "field delimiter for input.")
 	flags.BoolVar(&inHeader, "ih", false, "the first line is interpreted as column names(CSV only).")
 	flags.IntVar(&inSkip, "is", 0, "skip header row.")
-	flags.IntVar(&inPreRead, "ir", 1, "number of row preread for column determination.")
+	flags.IntVar(&inPreRead, "ir", 1, "number of rows to preread.")
+	flags.IntVar(&inLimitRead, "ilr", 0, "limited number of rows to read.")
 	flags.StringVar(&inJQuery, "ijq", "", "jq expression string for input(JSON/JSONL only).")
 
 	flags.BoolVar(&inFlag.CSV, "icsv", false, "CSV format for input.")
@@ -186,12 +188,26 @@ func (cli Cli) Run(args []string) int {
 		return 2
 	}
 
+	preRead := inPreRead
+	limitRead := false
+	if inLimitRead > 0 {
+		limitRead = true
+		preRead = inLimitRead
+		if inSkip > 0 {
+			preRead += inSkip
+		}
+		if inHeader {
+			preRead++
+		}
+	}
+
 	importer := trdsql.NewImporter(
 		trdsql.InFormat(inputFormat(inFlag)),
 		trdsql.InDelimiter(inDelimiter),
 		trdsql.InHeader(inHeader),
 		trdsql.InSkip(inSkip),
-		trdsql.InPreRead(inPreRead),
+		trdsql.InPreRead(preRead),
+		trdsql.InLimitRead(limitRead),
 		trdsql.InJQ(inJQuery),
 	)
 
