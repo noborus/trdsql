@@ -106,7 +106,8 @@ func TestNewTBLNReader(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewTBLNReader(tt.args.reader)
+			ro := NewReadOpts()
+			got, err := NewTBLNReader(tt.args.reader, ro)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewTBLNReader() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -132,7 +133,8 @@ func TestTBLNFile(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	tr, err := NewTBLNReader(file)
+	ro := NewReadOpts()
+	tr, err := NewTBLNReader(file, ro)
 	if err != nil {
 		t.Error(`tblnInputNew error`)
 	}
