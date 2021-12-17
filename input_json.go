@@ -22,6 +22,7 @@ type JSONReader struct {
 	reader    *json.Decoder
 	preRead   []map[string]string
 	query     *gojq.Query
+	already   map[string]bool
 	names     []string
 	types     []string
 	limitRead bool
@@ -32,6 +33,7 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 	r := &JSONReader{}
 	r.reader = json.NewDecoder(reader)
 	r.reader.UseNumber()
+	r.already = make(map[string]bool)
 	var top interface{}
 
 	if opts.InJQuery != "" {
@@ -54,7 +56,6 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 			debug.Printf(err.Error())
 			return r, nil
 		}
-
 		if r.query == nil {
 			r, err = r.readAhead(top)
 			if err != nil {
@@ -108,25 +109,18 @@ func (r *JSONReader) readAhead(top interface{}) (*JSONReader, error) {
 				return nil, err
 			}
 
-			r.names = names
+			r.appendNames(names)
 			r.preRead = append(r.preRead, pre)
 			return r, nil
 		}
 
-		already := map[string]bool{}
 		for _, v := range m {
 			pre, names, err := topLevel(v)
 			if err != nil {
 				return nil, err
 			}
 
-			for k := 0; k < len(names); k++ {
-				if !already[names[k]] {
-					already[names[k]] = true
-					r.names = append(r.names, names[k])
-				}
-			}
-
+			r.appendNames(names)
 			r.preRead = append(r.preRead, pre)
 		}
 		return r, nil
@@ -135,10 +129,20 @@ func (r *JSONReader) readAhead(top interface{}) (*JSONReader, error) {
 		if err != nil {
 			return nil, err
 		}
-		r.names = names
+		r.appendNames(names)
 		r.preRead = append(r.preRead, pre)
 	}
 	return r, nil
+}
+
+// appendNames adds multiple names for the argument to be unique.
+func (r *JSONReader) appendNames(names []string) {
+	for _, name := range names {
+		if !r.already[name] {
+			r.already[name] = true
+			r.names = append(r.names, name)
+		}
+	}
 }
 
 func topLevel(top interface{}) (map[string]string, []string, error) {
