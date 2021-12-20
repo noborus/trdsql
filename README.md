@@ -950,7 +950,7 @@ func main() {
 }
 ```
 
-Please refer to [godoc](https://godoc.org/github.com/noborus/trdsql) and _example for usage as a library.
+Please refer to  [godoc](https://pkg.go.dev/github.com/noborus/trdsql) and _example for usage as a library.
 
 See also [psutilsql](https://github.com/noborus/psutilsql), which uses trdsql as a library.
 
