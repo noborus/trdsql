@@ -1,14 +1,9 @@
-FROM alpine:3.13
-
-# Configure Go
-ENV GOROOT /usr/lib/go
-ENV GOPATH /go
-ENV PATH /go/bin:$PATH
+FROM golang:1.17-alpine as build-dev
 
 RUN set -ex; \
 	# build dependencies
 	apk add --no-cache --update --virtual .build-deps \
-		go \
+		gcc \
 		make \
 		git \
 		musl-dev \
@@ -25,5 +20,7 @@ RUN set -ex; \
 	rm -rf /go; \
 	apk del .build-deps
 
+FROM alpine:latest
+COPY --from=build-dev /usr/local/bin/trdsql /usr/local/bin/trdsql
 
 ENTRYPOINT ["trdsql"]
