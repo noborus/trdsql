@@ -136,7 +136,7 @@ func (r *LTSVReader) readline() (string, error) {
 			continue
 		}
 		str := strings.TrimSpace(buffer.String())
-		if len(str) == 0 {
+		if len(str) != 0 {
 			return str, nil
 		}
 		buffer.Reset()
