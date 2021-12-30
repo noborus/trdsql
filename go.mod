@@ -10,7 +10,7 @@ require (
 	github.com/klauspost/compress v1.13.6
 	github.com/lib/pq v1.10.4
 	github.com/mattn/go-runewidth v0.0.13
-	github.com/mattn/go-sqlite3 v1.14.9
+	github.com/mattn/go-sqlite3 v1.14.10
 	github.com/noborus/tbln v0.0.1
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pierrec/lz4 v2.6.1+incompatible

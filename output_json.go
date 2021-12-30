@@ -4,12 +4,14 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"unicode/utf8"
+
+	"github.com/iancoleman/orderedmap"
 )
 
 // JSONWriter provides methods of the Writer interface.
 type JSONWriter struct {
 	writer  *json.Encoder
-	results []map[string]interface{}
+	results []*orderedmap.OrderedMap
 }
 
 // NewJSONWriter returns JSONWriter.
@@ -22,15 +24,15 @@ func NewJSONWriter(writeOpts *WriteOpts) *JSONWriter {
 
 // PreWrite is area preparation.
 func (w *JSONWriter) PreWrite(columns []string, types []string) error {
-	w.results = make([]map[string]interface{}, 0)
+	w.results = make([]*orderedmap.OrderedMap, 0)
 	return nil
 }
 
 // WriteRow is Addition to array.
 func (w *JSONWriter) WriteRow(values []interface{}, columns []string) error {
-	m := make(map[string]interface{}, len(columns))
+	m := orderedmap.New()
 	for i, col := range values {
-		m[columns[i]] = compatibleJSON(col)
+		m.Set(columns[i], compatibleJSON(col))
 	}
 	w.results = append(w.results, m)
 	return nil
