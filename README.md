@@ -480,6 +480,7 @@ Enclose the jq expression in double quotes if needed.
 ```console
 trdsql -oat 'SELECT value, onclick FROM menu.json::".menu.popup.menuitem"'
 ```
+
 Or specify with the `-ijq` option.
 
 ```console
@@ -950,7 +951,7 @@ func main() {
 }
 ```
 
-Please refer to  [godoc](https://pkg.go.dev/github.com/noborus/trdsql) and _example for usage as a library.
+Please refer to [godoc](https://pkg.go.dev/github.com/noborus/trdsql) and _example for usage as a library.
 
 See also [psutilsql](https://github.com/noborus/psutilsql), which uses trdsql as a library.
 
