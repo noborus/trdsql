@@ -3,7 +3,6 @@ package trdsql
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -541,7 +540,7 @@ func TestOutFormatRun(t *testing.T) {
 			t.Errorf("trdsql error. %s", err)
 		}
 		got := outStream.String()
-		golden, err := ioutil.ReadFile(filepath.Join("testdata", c.result+".golden"))
+		golden, err := os.ReadFile(filepath.Join("testdata", c.result+".golden"))
 		if err != nil {
 			t.Fatalf("failed reading .golden: %s", err)
 		}

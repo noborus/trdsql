@@ -3,7 +3,6 @@ package trdsql_test
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -15,7 +14,7 @@ func Example() {
 Ken,Thompson,ken
 "Robert","Griesemer","gri"
 `)
-	tmpfile, err := ioutil.TempFile(os.TempDir(), "xxx")
+	tmpfile, err := os.CreateTemp(os.TempDir(), "xxx")
 	if err != nil {
 		log.Print(err)
 		return
@@ -51,7 +50,7 @@ func Example_options() {
 Ken,Thompson,ken
 "Robert","Griesemer","gri"
 `)
-	tmpfile, err := ioutil.TempFile(os.TempDir(), "xxx")
+	tmpfile, err := os.CreateTemp(os.TempDir(), "xxx")
 	if err != nil {
 		log.Print(err)
 		return

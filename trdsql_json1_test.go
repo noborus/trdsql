@@ -1,3 +1,4 @@
+//go:build json1
 // +build json1
 
 package trdsql
