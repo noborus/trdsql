@@ -1,7 +1,7 @@
 package trdsql
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -444,7 +444,7 @@ func Test_uncompressedReader(t *testing.T) {
 				t.Fatalf("extFileReader() file open error %s:%s", tt.fileName, err)
 			}
 			got := uncompressedReader(file)
-			r, err := ioutil.ReadAll(got)
+			r, err := io.ReadAll(got)
 			if err != nil {
 				t.Fatalf("extFileReader() read error %s:%s", tt.fileName, err)
 			}
