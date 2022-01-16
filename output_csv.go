@@ -133,6 +133,5 @@ func (w *CSVWriter) fieldNeedsQuotes(field string) bool {
 
 // PostWrite is flush.
 func (w *CSVWriter) PostWrite() error {
-	w.writer.Flush()
-	return nil
+	return w.writer.Flush()
 }
