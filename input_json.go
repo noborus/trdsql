@@ -48,8 +48,7 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 	r.limitRead = opts.InLimitRead
 
 	for i := 0; i < opts.InPreRead; i++ {
-		err := r.reader.Decode(&top)
-		if err != nil {
+		if err := r.reader.Decode(&top); err != nil {
 			if !errors.Is(err, io.EOF) {
 				return r, err
 			}
@@ -57,30 +56,35 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 			return r, nil
 		}
 		if r.query == nil {
-			r, err = r.readAhead(top)
-			if err != nil {
+			if err := r.readAhead(top); err != nil {
 				return nil, err
 			}
 		} else {
-			iter := r.query.Run(top)
-			for {
-				v, ok := iter.Next()
-				if !ok {
-					break
-				}
-				if err, ok := v.(error); ok {
-					debug.Printf("query %s", err.Error())
-					continue
-				}
-				r, err = r.readAhead(v)
-				if err != nil {
-					return r, err
-				}
+			if err := r.jquery(top); err != nil {
+				return nil, err
 			}
 		}
 	}
 
 	return r, nil
+}
+
+func (r *JSONReader) jquery(top interface{}) error {
+	iter := r.query.Run(top)
+	for {
+		v, ok := iter.Next()
+		if !ok {
+			break
+		}
+		if err, ok := v.(error); ok {
+			debug.Printf("query %s", err.Error())
+			continue
+		}
+		if err := r.readAhead(v); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Names returns column names.
@@ -98,7 +102,7 @@ func (r *JSONReader) Types() ([]string, error) {
 	return r.types, nil
 }
 
-func (r *JSONReader) readAhead(top interface{}) (*JSONReader, error) {
+func (r *JSONReader) readAhead(top interface{}) error {
 	switch m := top.(type) {
 	case []interface{}:
 		// []
@@ -106,33 +110,33 @@ func (r *JSONReader) readAhead(top interface{}) (*JSONReader, error) {
 		if r.reader.More() {
 			pre, names, err := etcRow(m)
 			if err != nil {
-				return nil, err
+				return err
 			}
 
 			r.appendNames(names)
 			r.preRead = append(r.preRead, pre)
-			return r, nil
+			return nil
 		}
 
 		for _, v := range m {
 			pre, names, err := topLevel(v)
 			if err != nil {
-				return nil, err
+				return err
 			}
 
 			r.appendNames(names)
 			r.preRead = append(r.preRead, pre)
 		}
-		return r, nil
+		return nil
 	default:
 		pre, names, err := topLevel(m)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		r.appendNames(names)
 		r.preRead = append(r.preRead, pre)
 	}
-	return r, nil
+	return nil
 }
 
 // appendNames adds multiple names for the argument to be unique.
