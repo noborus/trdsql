@@ -19,6 +19,7 @@ type TBLNRead struct {
 func NewTBLNReader(reader io.Reader, opts *ReadOpts) (*TBLNRead, error) {
 	r := &TBLNRead{}
 	r.reader = tbln.NewReader(reader)
+	r.limitRead = opts.InLimitRead
 
 	rec, err := r.reader.ReadRow()
 	if err != nil {
@@ -28,14 +29,6 @@ func NewTBLNReader(reader io.Reader, opts *ReadOpts) (*TBLNRead, error) {
 		debug.Printf(err.Error())
 		return r, nil
 	}
-	r.preRead = make([][]interface{}, 1)
-	row := make([]interface{}, len(rec))
-	for i, c := range rec {
-		row[i] = c
-	}
-	r.preRead[0] = row
-
-	r.limitRead = opts.InLimitRead
 
 	// SetNames if there is no names header.
 	d := r.reader.GetDefinition()
@@ -63,6 +56,19 @@ func NewTBLNReader(reader io.Reader, opts *ReadOpts) (*TBLNRead, error) {
 		}
 	}
 
+	r.preRead = make([][]interface{}, 0, opts.InPreRead)
+	r.preRead = append(r.preRead, recToRow(rec))
+	for n := 1; n < opts.InPreRead; n++ {
+		rec, err := r.reader.ReadRow()
+		if err != nil {
+			if !errors.Is(err, io.EOF) {
+				return r, err
+			}
+			debug.Printf(err.Error())
+			return r, nil
+		}
+		r.preRead = append(r.preRead, recToRow(rec))
+	}
 	return r, nil
 }
 
@@ -101,9 +107,16 @@ func (r *TBLNRead) ReadRow(row []interface{}) ([]interface{}, error) {
 	if err != nil {
 		return row, err
 	}
-	row = make([]interface{}, len(rec))
-	for i, c := range rec {
-		row[i] = c
-	}
+	row = recToRow(rec)
 	return row, nil
+}
+
+func recToRow(rec []string) []interface{} {
+	row := make([]interface{}, len(rec))
+	for i, c := range rec {
+		if c != "" {
+			row[i] = c
+		}
+	}
+	return row
 }
