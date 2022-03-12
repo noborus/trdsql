@@ -77,7 +77,7 @@ func (r *JSONReader) jquery(top interface{}) error {
 			break
 		}
 		if err, ok := v.(error); ok {
-			debug.Printf("query %s", err.Error())
+			log.Printf("ERROR: gojq [%s] %s", r.query, err.Error())
 			continue
 		}
 		if err := r.readAhead(v); err != nil {
