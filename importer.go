@@ -275,6 +275,11 @@ func guessOpts(readOpts ReadOpts, fileName string) (ReadOpts, string) {
 		fileName = fileName[:strings.Index(fileName, "::")]
 	}
 
+	// If the option -ijq is specified, it is assumed to be json(only for guess).
+	if readOpts.InJQuery != "" && readOpts.InFormat == GUESS {
+		readOpts.InFormat = JSON
+	}
+
 	if readOpts.InFormat != GUESS {
 		readOpts.realFormat = readOpts.InFormat
 		return readOpts, fileName
