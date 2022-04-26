@@ -37,7 +37,7 @@ func NewAnalyzeOpts() *AnalyzeOpts {
 // Analyze analyzes the file and outputs the table information.
 // In addition, SQL execution examples are output.
 func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
-	rOpts, fileName := guessOpts(*readOpts, fileName)
+	rOpts, fileName := GuessOpts(readOpts, fileName)
 	file, err := importFileOpen(fileName)
 	if err != nil {
 		return err
@@ -53,7 +53,7 @@ func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
 		}
 	}()
 
-	reader, err := NewReader(file, &rOpts)
+	reader, err := NewReader(file, rOpts)
 	if err != nil {
 		return err
 	}
