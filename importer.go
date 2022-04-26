@@ -219,7 +219,7 @@ func ImportFile(db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 // Do not import if file not found (no error).
 // Wildcards can be passed as fileName.
 func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *ReadOpts) (string, error) {
-	opts, fileName := guessOpts(*readOpts, fileName)
+	opts, fileName := GuessOpts(readOpts, fileName)
 	importCount++
 	file, err := importFileOpen(fileName)
 	if err != nil {
@@ -233,7 +233,7 @@ func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *R
 		}
 	}()
 
-	reader, err := NewReader(file, &opts)
+	reader, err := NewReader(file, opts)
 	if err != nil {
 		return "", err
 	}
@@ -267,7 +267,7 @@ func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *R
 	return tableName, db.ImportContext(ctx, tableName, columnNames, reader)
 }
 
-func guessOpts(readOpts ReadOpts, fileName string) (ReadOpts, string) {
+func GuessOpts(readOpts *ReadOpts, fileName string) (*ReadOpts, string) {
 	_, err := os.Stat(fileName)
 	if err != nil && strings.Contains(fileName, "::") {
 		// jq expression.
