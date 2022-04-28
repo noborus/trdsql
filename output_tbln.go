@@ -41,7 +41,7 @@ func (w *TBLNWriter) PreWrite(columns []string, types []string) error {
 // WriteRow is row write.
 func (w *TBLNWriter) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
-		str := ValString(col)
+		str := exportString(col)
 		w.results[i] = strings.ReplaceAll(str, "\n", "\\n")
 	}
 	return w.writer.WriteRow(w.results)

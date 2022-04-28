@@ -57,7 +57,7 @@ func (w *VFWriter) WriteRow(values []interface{}, columns []string) error {
 			"%s%s | %-s\n",
 			strings.Repeat(" ", v+2),
 			col,
-			ValString(values[i]))
+			exportString(values[i]))
 		if err != nil {
 			debug.Printf("%s\n", err)
 		}

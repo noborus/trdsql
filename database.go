@@ -193,7 +193,6 @@ func (db *DB) copyImport(ctx context.Context, table *importTable, reader Reader)
 		if row == nil {
 			break
 		}
-		debug.Printf("%v\n", row)
 		if _, err = stmt.ExecContext(ctx, row...); err != nil {
 			return err
 		}
@@ -211,7 +210,6 @@ func (db *DB) copyImport(ctx context.Context, table *importTable, reader Reader)
 		if len(table.row) == 0 {
 			continue
 		}
-		debug.Printf("%v\n", table.row)
 		if _, err = stmt.ExecContext(ctx, table.row...); err != nil {
 			return err
 		}
@@ -260,6 +258,9 @@ func (db *DB) insertImport(ctx context.Context, table *importTable, reader Reade
 			// PreRead
 			for preCount < preRowNum {
 				row := preRows[preCount]
+				if IsImportNULL {
+					row = replaceImportNull(row)
+				}
 				bulk = append(bulk, row...)
 				table.count++
 				preCount++
@@ -315,7 +316,7 @@ func bulkPush(ctx context.Context, table *importTable, input Reader, bulk []inte
 		}
 
 		if IsImportNULL {
-			row = replaceNull(row)
+			row = replaceImportNull(row)
 		}
 		bulk = append(bulk, row...)
 		table.count++
@@ -326,17 +327,6 @@ func bulkPush(ctx context.Context, table *importTable, input Reader, bulk []inte
 		}
 	}
 	return bulk, nil
-}
-
-func replaceNull(row []interface{}) []interface{} {
-	rr := make([]interface{}, len(row))
-	for n, r := range row {
-		// Leave nil if it is the same string as ImportNULL.
-		if r != ImportNULL {
-			rr[n] = r
-		}
-	}
-	return rr
 }
 
 func (db *DB) bulkStmtOpen(ctx context.Context, table *importTable, stmt *sql.Stmt) (*sql.Stmt, error) {
@@ -430,4 +420,16 @@ func (db *DB) SelectContext(ctx context.Context, query string) (*sql.Rows, error
 		return rows, fmt.Errorf("%w [%s]", err, query)
 	}
 	return rows, nil
+}
+
+//replaceImportNull converts strings that match ImportNULL to nil.
+func replaceImportNull(row []interface{}) []interface{} {
+	rr := make([]interface{}, len(row))
+	for n, r := range row {
+		// Leave nil if it is the same string as ImportNULL.
+		if r != ImportNULL {
+			rr[n] = r
+		}
+	}
+	return rr
 }

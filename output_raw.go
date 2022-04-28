@@ -58,7 +58,7 @@ func (w *RAWWriter) WriteRow(values []interface{}, _ []string) error {
 				return err
 			}
 		}
-		if _, err := w.writer.WriteString(ValString(col)); err != nil {
+		if _, err := w.writer.WriteString(exportString(col)); err != nil {
 			return err
 		}
 	}

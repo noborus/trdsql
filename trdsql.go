@@ -125,6 +125,7 @@ func (f Format) String() string {
 
 var IsImportNULL bool
 var ImportNULL = ""
+var IsExportNULL bool
 var ExportNULL = ""
 
 // Exec is actually executed.

@@ -74,7 +74,7 @@ func (w *CSVWriter) WriteRow(values []interface{}, _ []string) error {
 				return err
 			}
 		}
-		if err := w.writeColumn(ValString(field)); err != nil {
+		if err := w.writeColumn(exportString(field)); err != nil {
 			return err
 		}
 	}

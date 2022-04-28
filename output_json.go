@@ -55,6 +55,9 @@ func compatibleJSON(v interface{}) interface{} {
 		}
 		return v
 	default:
+		if IsExportNULL {
+			return ExportNULL
+		}
 		return v
 	}
 }

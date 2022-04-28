@@ -216,7 +216,7 @@ func (r *JSONReader) rowParse(row []interface{}, jsonRow interface{}) []interfac
 		for i := range r.names {
 			row[i] = nil
 		}
-		row[0] = jsonString(jsonRow)
+		row[0] = jsonNullString(jsonRow)
 	}
 	return row
 }
@@ -227,7 +227,7 @@ func objectRow(obj map[string]interface{}) (map[string]interface{}, []string, er
 	row := make(map[string]interface{})
 	for k, v := range obj {
 		names = append(names, k)
-		row[k] = jsonString(v)
+		row[k] = jsonNullString(v)
 	}
 	return row, names, nil
 }
@@ -242,6 +242,16 @@ func etcRow(val interface{}) (map[string]interface{}, []string, error) {
 	row := make(map[string]interface{})
 	row[k] = jsonString(val)
 	return row, names, nil
+}
+
+func jsonNullString(val interface{}) interface{} {
+	if val == nil {
+		if IsImportNULL {
+			return ImportNULL
+		}
+		return nil
+	}
+	return jsonString(val)
 }
 
 func jsonString(val interface{}) string {

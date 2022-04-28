@@ -19,9 +19,7 @@ func (w *SliceWriter) PreWrite(columns []string, types []string) error {
 // WriteRow stores the result in Table.
 func (w *SliceWriter) WriteRow(values []interface{}, columns []string) error {
 	row := make([]interface{}, len(values))
-	for i, v := range values {
-		row[i] = ValString(v)
-	}
+	copy(row, values)
 	w.Table = append(w.Table, row)
 	return nil
 }

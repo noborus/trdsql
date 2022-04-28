@@ -39,7 +39,7 @@ func (w *LTSVWriter) WriteRow(values []interface{}, labels []string) error {
 		if err := w.writer.WriteByte(':'); err != nil {
 			return err
 		}
-		if _, err := w.writer.WriteString(ValString(col)); err != nil {
+		if _, err := w.writer.WriteString(exportString(col)); err != nil {
 			return err
 		}
 	}

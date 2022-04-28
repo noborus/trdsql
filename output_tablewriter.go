@@ -34,7 +34,7 @@ func (w *TWWriter) PreWrite(columns []string, types []string) error {
 // WriteRow is Addition to array.
 func (w *TWWriter) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
-		w.results[i] = ValString(col)
+		w.results[i] = exportString(col)
 	}
 	w.writer.Append(w.results)
 	return nil

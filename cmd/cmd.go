@@ -84,7 +84,7 @@ func (cli Cli) Run(args []string) int {
 		outUseCRLF      bool
 		outHeader       bool
 		outNoWrap       bool
-		outNull         string
+		outNull         nilString
 	)
 
 	flags := flag.NewFlagSet(trdsql.AppName, flag.ExitOnError)
@@ -112,7 +112,7 @@ func (cli Cli) Run(args []string) int {
 	flags.IntVar(&inPreRead, "ir", 1, "number of rows to preread.")
 	flags.IntVar(&inLimitRead, "ilr", 0, "limited number of rows to read.")
 	flags.StringVar(&inJQuery, "ijq", "", "jq expression string for input(JSON/JSONL only).")
-	flags.Var(&inNull, "inull", "null string.")
+	flags.Var(&inNull, "inull", "input null string.")
 
 	flags.BoolVar(&inFlag.CSV, "icsv", false, "CSV format for input.")
 	flags.BoolVar(&inFlag.LTSV, "iltsv", false, "LTSV format for input.")
@@ -128,7 +128,7 @@ func (cli Cli) Run(args []string) int {
 	flags.BoolVar(&outNoWrap, "onowrap", false, "do not wrap long lines(at/md only).")
 	flags.BoolVar(&outHeader, "oh", false, "output column name as header.")
 	flags.StringVar(&outCompression, "oz", "", "output compression format. [ gz | bz2 | zstd | lz4 | xz ]")
-	flags.StringVar(&outNull, "onull", "", "output null string.")
+	flags.Var(&outNull, "onull", "output null string.")
 
 	flags.BoolVar(&outFlag.CSV, "ocsv", false, "CSV format for output.")
 	flags.BoolVar(&outFlag.LTSV, "oltsv", false, "LTSV format for output.")
@@ -156,7 +156,8 @@ func (cli Cli) Run(args []string) int {
 
 	trdsql.IsImportNULL = inNull.n
 	trdsql.ImportNULL = strings.Replace(inNull.s, "\\", "\\\\", 1)
-	trdsql.ExportNULL = outNull
+	trdsql.IsExportNULL = outNull.n
+	trdsql.ExportNULL = strings.Replace(outNull.s, "\\", "\\\\", 1)
 
 	cfgFile := configOpen(config)
 	cfg, err := loadConfig(cfgFile)
