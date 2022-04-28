@@ -95,7 +95,7 @@ func (e *WriteFormat) ExportContext(ctx context.Context, db *DB, query string) e
 func ValString(v interface{}) string {
 	switch t := v.(type) {
 	case nil:
-		return ""
+		return ExportNULL
 	case string:
 		return t
 	case []byte:

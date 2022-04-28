@@ -193,6 +193,7 @@ func (db *DB) copyImport(ctx context.Context, table *importTable, reader Reader)
 		if row == nil {
 			break
 		}
+		debug.Printf("%v\n", row)
 		if _, err = stmt.ExecContext(ctx, row...); err != nil {
 			return err
 		}
@@ -210,6 +211,7 @@ func (db *DB) copyImport(ctx context.Context, table *importTable, reader Reader)
 		if len(table.row) == 0 {
 			continue
 		}
+		debug.Printf("%v\n", table.row)
 		if _, err = stmt.ExecContext(ctx, table.row...); err != nil {
 			return err
 		}
@@ -230,7 +232,13 @@ func queryCopy(table *importTable) string {
 		buf.WriteString(", ")
 		buf.WriteString(column)
 	}
-	buf.WriteString(") FROM STDIN;")
+	buf.WriteString(") FROM STDIN")
+	if IsImportNULL {
+		buf.WriteString(" (NULL '")
+		buf.WriteString(ImportNULL)
+		buf.WriteString("')")
+	}
+	buf.WriteString(";")
 	return buf.String()
 }
 
@@ -297,16 +305,19 @@ func (db *DB) stmtClose(stmt *sql.Stmt) {
 
 func bulkPush(ctx context.Context, table *importTable, input Reader, bulk []interface{}) ([]interface{}, error) {
 	for (table.count * len(table.row)) < table.maxCap {
-		rows, err := input.ReadRow(table.row)
+		row, err := input.ReadRow(table.row)
 		if err != nil {
 			return bulk, err
 		}
 		// Skip when empty read.
-		if len(rows) == 0 {
+		if len(row) == 0 {
 			continue
 		}
 
-		bulk = append(bulk, rows...)
+		if IsImportNULL {
+			row = replaceNull(row)
+		}
+		bulk = append(bulk, row...)
 		table.count++
 		select {
 		case <-ctx.Done():
@@ -315,6 +326,17 @@ func bulkPush(ctx context.Context, table *importTable, input Reader, bulk []inte
 		}
 	}
 	return bulk, nil
+}
+
+func replaceNull(row []interface{}) []interface{} {
+	rr := make([]interface{}, len(row))
+	for n, r := range row {
+		// Leave nil if it is the same string as ImportNULL.
+		if r != ImportNULL {
+			rr[n] = r
+		}
+	}
+	return rr
 }
 
 func (db *DB) bulkStmtOpen(ctx context.Context, table *importTable, stmt *sql.Stmt) (*sql.Stmt, error) {

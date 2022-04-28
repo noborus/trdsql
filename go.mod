@@ -7,7 +7,7 @@ require (
 	github.com/iancoleman/orderedmap v0.2.0
 	github.com/itchyny/gojq v0.12.7
 	github.com/jwalton/gchalk v1.3.0
-	github.com/klauspost/compress v1.15.1
+	github.com/klauspost/compress v1.15.2
 	github.com/lib/pq v1.10.5
 	github.com/mattn/go-runewidth v0.0.13
 	github.com/mattn/go-sqlite3 v1.14.12

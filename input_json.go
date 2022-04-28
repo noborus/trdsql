@@ -20,7 +20,7 @@ import (
 // JSONReader provides methods of the Reader interface.
 type JSONReader struct {
 	reader    *json.Decoder
-	preRead   []map[string]string
+	preRead   []map[string]interface{}
 	query     *gojq.Query
 	already   map[string]bool
 	names     []string
@@ -106,13 +106,12 @@ func (r *JSONReader) readAhead(top interface{}) error {
 	switch m := top.(type) {
 	case []interface{}:
 		// []
-		r.preRead = make([]map[string]string, 0, len(m))
+		r.preRead = make([]map[string]interface{}, 0, len(m))
 		if r.reader.More() {
 			pre, names, err := etcRow(m)
 			if err != nil {
 				return err
 			}
-
 			r.appendNames(names)
 			r.preRead = append(r.preRead, pre)
 			return nil
@@ -149,7 +148,7 @@ func (r *JSONReader) appendNames(names []string) {
 	}
 }
 
-func topLevel(top interface{}) (map[string]string, []string, error) {
+func topLevel(top interface{}) (map[string]interface{}, []string, error) {
 	switch obj := top.(type) {
 	case map[string]interface{}:
 		return objectRow(obj)
@@ -217,32 +216,42 @@ func (r *JSONReader) rowParse(row []interface{}, jsonRow interface{}) []interfac
 		for i := range r.names {
 			row[i] = nil
 		}
-		row[0] = jsonString(jsonRow)
+		row[0] = jsonValue(jsonRow)
 	}
 	return row
 }
 
-func objectRow(obj map[string]interface{}) (map[string]string, []string, error) {
+func objectRow(obj map[string]interface{}) (map[string]interface{}, []string, error) {
 	// {"a":"b"} object
 	names := make([]string, 0, len(obj))
-	row := make(map[string]string)
+	row := make(map[string]interface{})
 	for k, v := range obj {
 		names = append(names, k)
-		row[k] = jsonString(v)
+		row[k] = jsonValue(v)
 	}
 	return row, names, nil
 }
 
-func etcRow(val interface{}) (map[string]string, []string, error) {
+func etcRow(val interface{}) (map[string]interface{}, []string, error) {
 	// ex. array array
 	// [["a"],
 	//  ["b"]]
 	var names []string
 	k := "c1"
 	names = append(names, k)
-	row := make(map[string]string)
+	row := make(map[string]interface{})
 	row[k] = jsonString(val)
 	return row, names, nil
+}
+
+func jsonValue(val interface{}) interface{} {
+	if val == nil {
+		if !IsImportNULL {
+			return nil
+		}
+		return ImportNULL
+	}
+	return jsonString(val)
 }
 
 func jsonString(val interface{}) string {
