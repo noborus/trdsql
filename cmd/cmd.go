@@ -34,19 +34,25 @@ type Cli struct {
 // Debug represents a flag for detailed output.
 var Debug bool
 
+// The nilString structure represents a string
+// that distinguishes between empty strings and nil.
 type nilString struct {
-	s string
-	n bool
+	str   string
+	valid bool
 }
 
-func (v *nilString) Set(s string) error {
-	v.s = s
-	v.n = true
-	return nil
-}
-
+// String returns a string.
+// nilString fills the flag#value interface.
 func (v *nilString) String() string {
-	return v.s
+	return v.str
+}
+
+// Set sets the string with the valid flag set to true.
+// nilString fills the flag#value interface.
+func (v *nilString) Set(s string) error {
+	v.str = s
+	v.valid = true
+	return nil
 }
 
 // Run executes the main routine.
@@ -228,8 +234,8 @@ func (cli Cli) Run(args []string) int {
 		trdsql.InPreRead(preRead),
 		trdsql.InLimitRead(limitRead),
 		trdsql.InJQ(inJQuery),
-		trdsql.InNeedNULL(inNull.n),
-		trdsql.InNULL(inNull.s),
+		trdsql.InNeedNULL(inNull.valid),
+		trdsql.InNULL(inNull.str),
 	)
 
 	writer := cli.OutStream
@@ -268,8 +274,8 @@ func (cli Cli) Run(args []string) int {
 		trdsql.OutUseCRLF(outUseCRLF),
 		trdsql.OutHeader(outHeader),
 		trdsql.OutNoWrap(outNoWrap),
-		trdsql.OutNeedNULL(outNull.n),
-		trdsql.OutNULL(outNull.s),
+		trdsql.OutNeedNULL(outNull.valid),
+		trdsql.OutNULL(outNull.str),
 		trdsql.OutStream(writer),
 		trdsql.ErrStream(cli.ErrStream),
 	)
