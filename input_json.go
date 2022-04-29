@@ -26,6 +26,8 @@ type JSONReader struct {
 	names     []string
 	types     []string
 	limitRead bool
+	needNULL  bool
+	inNULL    string
 }
 
 // NewJSONReader returns JSONReader and error.
@@ -46,6 +48,8 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 	}
 
 	r.limitRead = opts.InLimitRead
+	r.needNULL = opts.InNeedNULL
+	r.inNULL = opts.InNULL
 
 	for i := 0; i < opts.InPreRead; i++ {
 		if err := r.reader.Decode(&top); err != nil {
@@ -165,6 +169,9 @@ func (r *JSONReader) PreReadRow() [][]interface{} {
 		rows[n] = make([]interface{}, len(r.names))
 		for i := range r.names {
 			rows[n][i] = v[r.names[i]]
+			if r.needNULL {
+				rows[n][i] = replaceNULL(r.inNULL, rows[n][i])
+			}
 		}
 	}
 	return rows
@@ -211,12 +218,24 @@ func (r *JSONReader) rowParse(row []interface{}, jsonRow interface{}) []interfac
 	case map[string]interface{}:
 		for i := range r.names {
 			row[i] = jsonString(m[r.names[i]])
+			if r.needNULL {
+				row[i] = replaceNULL(r.inNULL, row[i])
+				debug.Printf("row%v", row)
+			}
 		}
 	default:
 		for i := range r.names {
 			row[i] = nil
 		}
-		row[0] = jsonNullString(jsonRow)
+		if jsonRow == nil {
+			row[0] = nil
+		} else {
+			row[0] = jsonString(jsonRow)
+			if r.needNULL {
+				row[0] = replaceNULL(r.inNULL, row[0])
+			}
+
+		}
 	}
 	return row
 }
@@ -227,7 +246,11 @@ func objectRow(obj map[string]interface{}) (map[string]interface{}, []string, er
 	row := make(map[string]interface{})
 	for k, v := range obj {
 		names = append(names, k)
-		row[k] = jsonNullString(v)
+		if v == nil {
+			row[k] = nil
+		} else {
+			row[k] = jsonString(v)
+		}
 	}
 	return row, names, nil
 }
@@ -244,17 +267,7 @@ func etcRow(val interface{}) (map[string]interface{}, []string, error) {
 	return row, names, nil
 }
 
-func jsonNullString(val interface{}) interface{} {
-	if val == nil {
-		if IsImportNULL {
-			return ImportNULL
-		}
-		return nil
-	}
-	return jsonString(val)
-}
-
-func jsonString(val interface{}) string {
+func jsonString(val interface{}) interface{} {
 	switch val.(type) {
 	case map[string]interface{}, []interface{}:
 		str, err := json.Marshal(val)

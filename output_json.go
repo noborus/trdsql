@@ -10,8 +10,10 @@ import (
 
 // JSONWriter provides methods of the Writer interface.
 type JSONWriter struct {
-	writer  *json.Encoder
-	results []*orderedmap.OrderedMap
+	writer   *json.Encoder
+	results  []*orderedmap.OrderedMap
+	needNULL bool
+	outNULL  string
 }
 
 // NewJSONWriter returns JSONWriter.
@@ -19,6 +21,8 @@ func NewJSONWriter(writeOpts *WriteOpts) *JSONWriter {
 	w := &JSONWriter{}
 	w.writer = json.NewEncoder(writeOpts.OutStream)
 	w.writer.SetIndent("", "  ")
+	w.needNULL = writeOpts.OutNeedNULL
+	w.outNULL = writeOpts.OutNULL
 	return w
 }
 
@@ -32,14 +36,14 @@ func (w *JSONWriter) PreWrite(columns []string, types []string) error {
 func (w *JSONWriter) WriteRow(values []interface{}, columns []string) error {
 	m := orderedmap.New()
 	for i, col := range values {
-		m.Set(columns[i], compatibleJSON(col))
+		m.Set(columns[i], compatibleJSON(col, w.needNULL, w.outNULL))
 	}
 	w.results = append(w.results, m)
 	return nil
 }
 
 // CompatibleJSON converts the value to a JSON-compatible value.
-func compatibleJSON(v interface{}) interface{} {
+func compatibleJSON(v interface{}, needNULL bool, outNULL string) interface{} {
 	switch t := v.(type) {
 	case []byte:
 		if isJSON(t) {
@@ -55,8 +59,8 @@ func compatibleJSON(v interface{}) interface{} {
 		}
 		return v
 	default:
-		if IsExportNULL {
-			return ExportNULL
+		if needNULL {
+			return outNULL
 		}
 		return v
 	}

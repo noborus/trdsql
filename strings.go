@@ -33,9 +33,18 @@ func ValString(v interface{}) string {
 	}
 }
 
-func exportString(val interface{}) string {
-	if val == nil {
-		return ExportNULL
+func replaceNULL(NULLString string, v interface{}) interface{} {
+	switch t := v.(type) {
+	case nil:
+		return nil
+	case string:
+		if t == NULLString {
+			return nil
+		}
+	case []byte:
+		if string(t) == NULLString {
+			return nil
+		}
 	}
-	return ValString(val)
+	return v
 }

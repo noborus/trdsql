@@ -154,10 +154,8 @@ func (cli Cli) Run(args []string) int {
 		trdsql.EnableDebug()
 	}
 
-	trdsql.IsImportNULL = inNull.n
-	trdsql.ImportNULL = strings.Replace(inNull.s, "\\", "\\\\", 1)
-	trdsql.IsExportNULL = outNull.n
-	trdsql.ExportNULL = strings.Replace(outNull.s, "\\", "\\\\", 1)
+	inNull.s = strings.Replace(inNull.s, "\\", "\\\\", 1)
+	outNull.s = strings.Replace(outNull.s, "\\", "\\\\", 1)
 
 	cfgFile := configOpen(config)
 	cfg, err := loadConfig(cfgFile)
@@ -233,6 +231,8 @@ func (cli Cli) Run(args []string) int {
 		trdsql.InPreRead(preRead),
 		trdsql.InLimitRead(limitRead),
 		trdsql.InJQ(inJQuery),
+		trdsql.InNeedNULL(inNull.n),
+		trdsql.InNULL(inNull.s),
 	)
 
 	writer := cli.OutStream
@@ -271,6 +271,8 @@ func (cli Cli) Run(args []string) int {
 		trdsql.OutUseCRLF(outUseCRLF),
 		trdsql.OutHeader(outHeader),
 		trdsql.OutNoWrap(outNoWrap),
+		trdsql.OutNeedNULL(outNull.n),
+		trdsql.OutNULL(outNull.s),
 		trdsql.OutStream(writer),
 		trdsql.ErrStream(cli.ErrStream),
 	)

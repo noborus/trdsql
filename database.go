@@ -230,13 +230,7 @@ func queryCopy(table *importTable) string {
 		buf.WriteString(", ")
 		buf.WriteString(column)
 	}
-	buf.WriteString(") FROM STDIN")
-	if IsImportNULL {
-		buf.WriteString(" (NULL '")
-		buf.WriteString(ImportNULL)
-		buf.WriteString("')")
-	}
-	buf.WriteString(";")
+	buf.WriteString(") FROM STDIN;")
 	return buf.String()
 }
 
@@ -258,9 +252,6 @@ func (db *DB) insertImport(ctx context.Context, table *importTable, reader Reade
 			// PreRead
 			for preCount < preRowNum {
 				row := preRows[preCount]
-				if IsImportNULL {
-					row = replaceImportNull(row)
-				}
 				bulk = append(bulk, row...)
 				table.count++
 				preCount++
@@ -315,9 +306,6 @@ func bulkPush(ctx context.Context, table *importTable, input Reader, bulk []inte
 			continue
 		}
 
-		if IsImportNULL {
-			row = replaceImportNull(row)
-		}
 		bulk = append(bulk, row...)
 		table.count++
 		select {
@@ -420,16 +408,4 @@ func (db *DB) SelectContext(ctx context.Context, query string) (*sql.Rows, error
 		return rows, fmt.Errorf("%w [%s]", err, query)
 	}
 	return rows, nil
-}
-
-//replaceImportNull converts strings that match ImportNULL to nil.
-func replaceImportNull(row []interface{}) []interface{} {
-	rr := make([]interface{}, len(row))
-	for n, r := range row {
-		// Leave nil if it is the same string as ImportNULL.
-		if r != ImportNULL {
-			rr[n] = r
-		}
-	}
-	return rr
 }
