@@ -154,9 +154,6 @@ func (cli Cli) Run(args []string) int {
 		trdsql.EnableDebug()
 	}
 
-	inNull.s = strings.Replace(inNull.s, "\\", "\\\\", 1)
-	outNull.s = strings.Replace(outNull.s, "\\", "\\\\", 1)
-
 	cfgFile := configOpen(config)
 	cfg, err := loadConfig(cfgFile)
 	if err != nil && config != "" {
