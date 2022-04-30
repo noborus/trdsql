@@ -408,32 +408,32 @@ func Test_uncompressedReader(t *testing.T) {
 	}{
 		{
 			name:     "testGzFile",
-			fileName: filepath.Join("testdata", "test.csv.gz"),
+			fileName: filepath.Join(dataDir, "test.csv.gz"),
 			want:     "1,Orange\n2,Melon\n3,Apple\n",
 		},
 		{
 			name:     "testBzip2File",
-			fileName: filepath.Join("testdata", "test.csv.bz2"),
+			fileName: filepath.Join(dataDir, "test.csv.bz2"),
 			want:     "1,Orange\n2,Melon\n3,Apple\n",
 		},
 		{
 			name:     "testZSTDFile",
-			fileName: filepath.Join("testdata", "test.csv.zst"),
+			fileName: filepath.Join(dataDir, "test.csv.zst"),
 			want:     "1,Orange\n2,Melon\n3,Apple\n",
 		},
 		{
 			name:     "testLZ4File",
-			fileName: filepath.Join("testdata", "test.csv.lz4"),
+			fileName: filepath.Join(dataDir, "test.csv.lz4"),
 			want:     "1,Orange\n2,Melon\n3,Apple\n",
 		},
 		{
 			name:     "testXZFile",
-			fileName: filepath.Join("testdata", "test.csv.xz"),
+			fileName: filepath.Join(dataDir, "test.csv.xz"),
 			want:     "1,Orange\n2,Melon\n3,Apple\n",
 		},
 		{
 			name:     "testNoGzFile",
-			fileName: filepath.Join("testdata", "testNoGzFile.gz"),
+			fileName: filepath.Join(dataDir, "testNoGzFile.gz"),
 			want:     "1,Orange\n2,Melon\n3,Apple",
 		},
 	}

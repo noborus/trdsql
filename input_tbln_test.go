@@ -2,6 +2,7 @@ package trdsql
 
 import (
 	"io"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -127,26 +128,100 @@ func TestNewTBLNReader(t *testing.T) {
 	}
 }
 
-func TestTBLNFile(t *testing.T) {
-	file, err := singleFileOpen("testdata/test.tbln")
-	want := [][]interface{}{{"1", "Bob"}}
-	if err != nil {
-		t.Error(err)
+func TestNewTBLNReaderFile(t *testing.T) {
+	tests := []struct {
+		name     string
+		fileName string
+		opts     *ReadOpts
+		want     *TBLNRead
+		wantErr  bool
+	}{
+		{
+			name:     "test.tbln",
+			fileName: "test.tbln",
+			opts:     NewReadOpts(),
+			want: &TBLNRead{
+				preRead: [][]interface{}{
+					{"1", "Bob"},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:     "test.tbln2",
+			fileName: "test.tbln",
+			opts: NewReadOpts(
+				InPreRead(2),
+			),
+			want: &TBLNRead{
+				preRead: [][]interface{}{
+					{"1", "Bob"},
+					{"2", "Alice"},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:     "test.tbln3",
+			fileName: "test.tbln",
+			opts: NewReadOpts(
+				InPreRead(100),
+			),
+			want: &TBLNRead{
+				preRead: [][]interface{}{
+					{"1", "Bob"},
+					{"2", "Alice"},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:     "testNotNULL",
+			fileName: "testnull.tbln",
+			opts: NewReadOpts(
+				InPreRead(3),
+			),
+			want: &TBLNRead{
+				preRead: [][]interface{}{
+					{"1", "Bob"},
+					{"2", "Alice"},
+					{"3", "NULL"},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:     "testNULL",
+			fileName: "testnull.tbln",
+			opts: NewReadOpts(
+				InPreRead(3),
+				InNeedNULL(true),
+				InNULL("NULL"),
+			),
+			want: &TBLNRead{
+				preRead: [][]interface{}{
+					{"1", "Bob"},
+					{"2", "Alice"},
+					{"3", nil},
+				},
+			},
+			wantErr: false,
+		},
 	}
-	ro := NewReadOpts()
-	tr, err := NewTBLNReader(file, ro)
-	if err != nil {
-		t.Error(`tblnInputNew error`)
-	}
-	list, err := tr.Names()
-	if err != nil {
-		t.Error(`Names error`)
-	}
-	if len(list) != 2 {
-		t.Error(`invalid column`)
-	}
-	got := tr.PreReadRow()
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("TBLN file %v, want %v", got, want)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			file, err := singleFileOpen(filepath.Join(dataDir, tt.fileName))
+			if err != nil {
+				t.Error(err)
+			}
+			got, err := NewTBLNReader(file, tt.opts)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NewTBLNReader() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got.preRead, tt.want.preRead) {
+				t.Errorf("NewTBLNReader().preRead = %v, want %v", got.preRead, tt.want.preRead)
+			}
+		})
 	}
 }

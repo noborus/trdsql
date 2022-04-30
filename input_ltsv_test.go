@@ -1,8 +1,8 @@
 package trdsql
 
 import (
-	"errors"
 	"io"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -108,80 +108,210 @@ func TestNewLTSVReader(t *testing.T) {
 	}
 }
 
-func TestLtsvFile(t *testing.T) {
-	file, err := singleFileOpen("testdata/test.ltsv")
-	if err != nil {
-		t.Error(err)
+func TestNewLTSVReaderFile(t *testing.T) {
+	tests := []struct {
+		name     string
+		fileName string
+		opts     *ReadOpts
+		want     *LTSVReader
+		wantErr  bool
+	}{
+		{
+			name:     "test.ltsv",
+			fileName: "test.ltsv",
+			opts:     NewReadOpts(),
+			want: &LTSVReader{
+				names: []string{"id", "name", "price"},
+				types: []string{"text", "text", "text"},
+				preRead: []map[string]string{
+					{"id": "1", "name": "Orange", "price": "50"},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:     "test_indefinite",
+			fileName: "test_indefinite.ltsv",
+			opts:     NewReadOpts(),
+			want: &LTSVReader{
+				names: []string{"id", "name", "price"},
+				types: []string{"text", "text", "text"},
+				preRead: []map[string]string{
+					{"id": "1", "name": "Orange", "price": "50"},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:     "test_indefinite2",
+			fileName: "test_indefinite.ltsv",
+			opts: NewReadOpts(
+				InPreRead(2),
+			),
+			want: &LTSVReader{
+				names: []string{"id", "name", "price", "area"},
+				types: []string{"text", "text", "text", "text"},
+				preRead: []map[string]string{
+					{"id": "1", "name": "Orange", "price": "50"},
+					{"id": "2", "name": "Melon", "price": "500", "area": "ibaraki"},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:     "test_indefinite3",
+			fileName: "test_indefinite.ltsv",
+			opts: NewReadOpts(
+				InPreRead(100),
+			),
+			want: &LTSVReader{
+				names: []string{"id", "name", "price", "area", "color"},
+				types: []string{"text", "text", "text", "text", "text"},
+				preRead: []map[string]string{
+					{"id": "1", "name": "Orange", "price": "50"},
+					{"id": "2", "name": "Melon", "price": "500", "area": "ibaraki"},
+					{"id": "3", "name": "Apple", "price": "100", "area": "aomori", "color": "red"},
+				},
+			},
+			wantErr: false,
+		},
 	}
-	lr, err := NewLTSVReader(file, NewReadOpts())
-	if err != nil {
-		t.Error(`NewLTSVReader error`)
-	}
-	list, err := lr.Names()
-	if err != nil {
-		t.Error(`Names error`)
-	}
-	if len(list) != 3 {
-		t.Error(`invalid column`)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			file, err := singleFileOpen(filepath.Join(dataDir, tt.fileName))
+			if err != nil {
+				t.Error(err)
+			}
+			got, err := NewLTSVReader(file, tt.opts)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NewLTSVReader() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got.names, tt.want.names) {
+				t.Errorf("NewLTSVReader().names = %v, want %v", got.names, tt.want.names)
+			}
+			if !reflect.DeepEqual(got.types, tt.want.types) {
+				t.Errorf("NewLTSVReader().types = %v, want %v", got.types, tt.want.types)
+			}
+			if !reflect.DeepEqual(got.preRead, tt.want.preRead) {
+				t.Errorf("NewLTSVReader().preRead = %v, want %v", got.preRead, tt.want.preRead)
+			}
+		})
 	}
 }
 
-func TestIndefiniteLtsvFile1(t *testing.T) {
-	file, err := singleFileOpen("testdata/test_indefinite.ltsv")
-	if err != nil {
-		t.Error(err)
+func TestLTSVReader_PreReadRow(t *testing.T) {
+	tests := []struct {
+		name     string
+		fileName string
+		opts     *ReadOpts
+		want     [][]interface{}
+	}{
+		{
+			name:     "test1",
+			fileName: "test_indefinite.ltsv",
+			opts: NewReadOpts(
+				InPreRead(100),
+			),
+			want: [][]interface{}{
+				{"1", "Orange", "50", "", ""},
+				{"2", "Melon", "500", "ibaraki", ""},
+				{"3", "Apple", "100", "aomori", "red"},
+			},
+		},
+		{
+			name:     "testNULL",
+			fileName: "test_indefinite.ltsv",
+			opts: NewReadOpts(
+				InPreRead(100),
+				InNeedNULL(true),
+				InNULL(""),
+			),
+			want: [][]interface{}{
+				{"1", "Orange", "50", nil, nil},
+				{"2", "Melon", "500", "ibaraki", nil},
+				{"3", "Apple", "100", "aomori", "red"},
+			},
+		},
 	}
-	lr, err := NewLTSVReader(file, NewReadOpts())
-	if err != nil {
-		t.Error(`NewLTSVReader error`)
-	}
-	list, err := lr.Names()
-	if err != nil {
-		t.Error(`Names error`)
-	}
-	if len(list) != 3 {
-		t.Error(`invalid column`)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			file, err := singleFileOpen(filepath.Join(dataDir, tt.fileName))
+			if err != nil {
+				t.Error(err)
+			}
+			r, err := NewLTSVReader(file, tt.opts)
+			if err != nil {
+				t.Error(err)
+			}
+			if got := r.PreReadRow(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("LTSVReader.PreReadRow() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
 
-func TestIndefiniteLtsvFile2(t *testing.T) {
-	file, err := singleFileOpen("testdata/test_indefinite.ltsv")
-	if err != nil {
-		t.Error(err)
+func TestLTSVReader_ReadRow(t *testing.T) {
+	type args struct {
+		row []interface{}
 	}
-	ro := NewReadOpts()
-	ro.InPreRead = 2
-	lr, err := NewLTSVReader(file, ro)
-	if err != nil {
-		t.Error(`NewLTSVReader error`)
+	tests := []struct {
+		name     string
+		fileName string
+		opts     *ReadOpts
+		args     args
+		want     []interface{}
+		wantErr  bool
+	}{
+		{
+			name:     "test1",
+			fileName: "test_indefinite.ltsv",
+			opts:     NewReadOpts(),
+			args: args{
+				[]interface{}{
+					"", "", "",
+				},
+			},
+			want: []interface{}{
+				"2", "Melon", "500",
+			},
+			wantErr: false,
+		},
+		{
+			name:     "testNULL",
+			fileName: "testnull.ltsv",
+			opts: NewReadOpts(
+				InNeedNULL(true),
+				InNULL(""),
+			),
+			args: args{
+				[]interface{}{
+					"", "", "",
+				},
+			},
+			want: []interface{}{
+				"2", nil, "500",
+			},
+			wantErr: false,
+		},
 	}
-	list, err := lr.Names()
-	if err != nil {
-		t.Error(`Names error`)
-	}
-	if len(list) != 4 {
-		t.Error(`invalid column`)
-	}
-}
-
-func TestIndefiniteLtsvFile3(t *testing.T) {
-	file, err := singleFileOpen("testdata/test_indefinite.ltsv")
-	if err != nil {
-		t.Error(err)
-	}
-	ro := NewReadOpts()
-	ro.InPreRead = 100
-	lr, err := NewLTSVReader(file, ro)
-	if err != nil {
-		t.Error(`NewLTSVReader error`)
-	}
-	list, err := lr.Names()
-	if err != nil {
-		if !errors.Is(err, io.EOF) {
-			t.Error(err)
-		}
-	}
-	if len(list) != 5 {
-		t.Error(`invalid column`)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			file, err := singleFileOpen(filepath.Join(dataDir, tt.fileName))
+			if err != nil {
+				t.Error(err)
+			}
+			r, err := NewLTSVReader(file, tt.opts)
+			if err != nil {
+				t.Error(err)
+			}
+			got, err := r.ReadRow(tt.args.row)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("LTSVReader.ReadRow() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("LTSVReader.ReadRow() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

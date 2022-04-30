@@ -13,6 +13,8 @@ type TBLNRead struct {
 	reader    tbln.Reader
 	preRead   [][]interface{}
 	limitRead bool
+	needNULL  bool
+	inNULL    string
 }
 
 // NewTBLNReader returns TBLNRead and error.
@@ -20,6 +22,9 @@ func NewTBLNReader(reader io.Reader, opts *ReadOpts) (*TBLNRead, error) {
 	r := &TBLNRead{}
 	r.reader = tbln.NewReader(reader)
 	r.limitRead = opts.InLimitRead
+
+	r.needNULL = opts.InNeedNULL
+	r.inNULL = opts.InNULL
 
 	rec, err := r.reader.ReadRow()
 	if err != nil {
@@ -57,7 +62,7 @@ func NewTBLNReader(reader io.Reader, opts *ReadOpts) (*TBLNRead, error) {
 	}
 
 	r.preRead = make([][]interface{}, 0, opts.InPreRead)
-	r.preRead = append(r.preRead, recToRow(rec))
+	r.preRead = append(r.preRead, r.recToRow(rec))
 	for n := 1; n < opts.InPreRead; n++ {
 		rec, err := r.reader.ReadRow()
 		if err != nil {
@@ -67,7 +72,7 @@ func NewTBLNReader(reader io.Reader, opts *ReadOpts) (*TBLNRead, error) {
 			debug.Printf(err.Error())
 			return r, nil
 		}
-		r.preRead = append(r.preRead, recToRow(rec))
+		r.preRead = append(r.preRead, r.recToRow(rec))
 	}
 	return r, nil
 }
@@ -107,15 +112,20 @@ func (r *TBLNRead) ReadRow(row []interface{}) ([]interface{}, error) {
 	if err != nil {
 		return row, err
 	}
-	row = recToRow(rec)
+	row = r.recToRow(rec)
 	return row, nil
 }
 
-func recToRow(rec []string) []interface{} {
+func (r *TBLNRead) recToRow(rec []string) []interface{} {
 	row := make([]interface{}, len(rec))
 	for i, c := range rec {
 		if c != "" {
 			row[i] = c
+		}
+		if r.needNULL {
+			if row[i] == r.inNULL {
+				row[i] = nil
+			}
 		}
 	}
 	return row
