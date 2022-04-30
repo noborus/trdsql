@@ -112,7 +112,7 @@ func (r *JSONReader) readAhead(top interface{}) error {
 		// []
 		r.preRead = make([]map[string]interface{}, 0, len(m))
 		if r.reader.More() {
-			pre, names, err := etcRow(m)
+			pre, names, err := r.etcRow(m)
 			if err != nil {
 				return err
 			}
@@ -122,17 +122,16 @@ func (r *JSONReader) readAhead(top interface{}) error {
 		}
 
 		for _, v := range m {
-			pre, names, err := topLevel(v)
+			pre, names, err := r.topLevel(v)
 			if err != nil {
 				return err
 			}
-
 			r.appendNames(names)
 			r.preRead = append(r.preRead, pre)
 		}
 		return nil
 	default:
-		pre, names, err := topLevel(m)
+		pre, names, err := r.topLevel(m)
 		if err != nil {
 			return err
 		}
@@ -152,12 +151,12 @@ func (r *JSONReader) appendNames(names []string) {
 	}
 }
 
-func topLevel(top interface{}) (map[string]interface{}, []string, error) {
+func (r *JSONReader) topLevel(top interface{}) (map[string]interface{}, []string, error) {
 	switch obj := top.(type) {
 	case map[string]interface{}:
-		return objectRow(obj)
+		return r.objectRow(obj)
 	default:
-		return etcRow(obj)
+		return r.etcRow(obj)
 	}
 }
 
@@ -217,30 +216,18 @@ func (r *JSONReader) rowParse(row []interface{}, jsonRow interface{}) []interfac
 	switch m := jsonRow.(type) {
 	case map[string]interface{}:
 		for i := range r.names {
-			row[i] = jsonString(m[r.names[i]])
-			if r.needNULL {
-				row[i] = replaceNULL(r.inNULL, row[i])
-				debug.Printf("row%v", row)
-			}
+			row[i] = r.jsonString(m[r.names[i]])
 		}
 	default:
 		for i := range r.names {
 			row[i] = nil
 		}
-		if jsonRow == nil {
-			row[0] = nil
-		} else {
-			row[0] = jsonString(jsonRow)
-			if r.needNULL {
-				row[0] = replaceNULL(r.inNULL, row[0])
-			}
-
-		}
+		row[0] = r.jsonString(jsonRow)
 	}
 	return row
 }
 
-func objectRow(obj map[string]interface{}) (map[string]interface{}, []string, error) {
+func (r *JSONReader) objectRow(obj map[string]interface{}) (map[string]interface{}, []string, error) {
 	// {"a":"b"} object
 	names := make([]string, 0, len(obj))
 	row := make(map[string]interface{})
@@ -249,13 +236,13 @@ func objectRow(obj map[string]interface{}) (map[string]interface{}, []string, er
 		if v == nil {
 			row[k] = nil
 		} else {
-			row[k] = jsonString(v)
+			row[k] = r.jsonString(v)
 		}
 	}
 	return row, names, nil
 }
 
-func etcRow(val interface{}) (map[string]interface{}, []string, error) {
+func (r *JSONReader) etcRow(val interface{}) (map[string]interface{}, []string, error) {
 	// ex. array array
 	// [["a"],
 	//  ["b"]]
@@ -263,19 +250,26 @@ func etcRow(val interface{}) (map[string]interface{}, []string, error) {
 	k := "c1"
 	names = append(names, k)
 	row := make(map[string]interface{})
-	row[k] = jsonString(val)
+	row[k] = r.jsonString(val)
 	return row, names, nil
 }
 
-func jsonString(val interface{}) interface{} {
+func (r *JSONReader) jsonString(val interface{}) interface{} {
+	var str string
 	switch val.(type) {
+	case nil:
+		return nil
 	case map[string]interface{}, []interface{}:
-		str, err := json.Marshal(val)
+		b, err := json.Marshal(val)
 		if err != nil {
 			log.Printf("ERROR: jsonString:%s", err)
 		}
-		return ValString(str)
+		str = ValString(b)
 	default:
-		return ValString(val)
+		str = ValString(val)
 	}
+	if r.needNULL {
+		return replaceNULL(r.inNULL, str)
+	}
+	return str
 }
