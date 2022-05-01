@@ -208,6 +208,7 @@ Or, [guess the output format by file name](#Guessbyoutputfilename).
 NULL is undecided in many text formats.
 JSON `null` is considered the same as SQL `NULL`.
 For formats other than JSON, you must specify a string that is considered NULL.
+In most cases you will need to specify an empty string ("").
 
 If `-inull ""` is specified, an empty string will be treated as SQL NULL.
 
@@ -344,7 +345,10 @@ trdsql -out result.ltsv.zst "SELECT * FROM testdata/test.csv"
 If the number of columns is not a constant, read and decide multiple rows.
 
 ```console
-$ trdsql -ir 3 -iltsv "SELECT * FROM test_indefinite.ltsv"
+trdsql -ir 3 -iltsv "SELECT * FROM test_indefinite.ltsv"
+```
+
+```csv
 1,Orange,50,,
 2,Melon,500,ibaraki,
 3,Apple,100,aomori,red
@@ -389,7 +393,10 @@ id:3	name:Apple	price:100
 ```
 
 ```console
-$ trdsql -iltsv "SELECT * FROM sample.ltsv"
+trdsql -iltsv "SELECT * FROM sample.ltsv"
+```
+
+```ltsv
 1,Orange,50
 2,Melon,500
 3,Apple,100
@@ -400,7 +407,10 @@ $ trdsql -iltsv "SELECT * FROM sample.ltsv"
 `-oltsv` is LTSV(Labeled Tab-separated Values) output.
 
 ```console
-$ trdsql -iltsv -oltsv "SELECT * FROM sample.ltsv"
+trdsql -iltsv -oltsv "SELECT * FROM sample.ltsv"
+```
+
+```ltsv
 id:1	name:Orange	price:50
 id:2	name:Melon	price:500
 id:3	name:Apple	price:100
@@ -433,7 +443,10 @@ sample.json
 ```
 
 ```console
-$ trdsql -ijson "SELECT * FROM sample.json"
+trdsql -ijson "SELECT * FROM sample.json"
+```
+
+```csv
 1,Orange,50
 2,Melon,500
 3,Apple,100
@@ -464,7 +477,10 @@ sample2.json
 ```
 
 ```console
-$ trdsql -ijson "SELECT * FROM sample2.json"
+trdsql -ijson "SELECT * FROM sample2.json"
+```
+
+```csv
 1,Drolet,"{""color"":""burlywood"",""country"":""Maldives""}"
 2,Shelly,"{""color"":""plum"",""country"":""Yemen""}"
 3,Tuck,"{""color"":""antiquewhite"",""country"":""Mayotte""}"
@@ -477,7 +493,10 @@ Please use SQL function.
 * [MySQL - Functions That Search JSON Values](https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html)
 
 ```console
-$ trdsql -ijson "SELECT id, name, JSON_EXTRACT(attribute,'$country'), JSON_EXTRACT(attribute,'$color') FROM sample2.json"
+trdsql -ijson "SELECT id, name, JSON_EXTRACT(attribute,'$country'), JSON_EXTRACT(attribute,'$color') FROM sample2.json"
+```
+
+```csv
 1,Drolet,Maldives,burlywood
 2,Shelly,Yemen,plum
 3,Tuck,Mayotte,antiquewhite
@@ -529,7 +548,7 @@ Or specify with the `-ijq` option.
 trdsql -oat -ijq ".menu.popup.menuitem" "SELECT * FROM menu.json"
 ```
 
-```
+```at
 +-------+-------------+
 | value |   onclick   |
 +-------+-------------+
