@@ -8,14 +8,18 @@ import (
 
 // TBLNWriter provides methods of the Writer interface.
 type TBLNWriter struct {
-	writer  *tbln.Writer
-	results []string
+	writer   *tbln.Writer
+	results  []string
+	needNULL bool
+	outNULL  string
 }
 
 // NewTBLNWriter returns TBLNWriter.
 func NewTBLNWriter(writeOpts *WriteOpts) *TBLNWriter {
 	w := &TBLNWriter{}
 	w.writer = tbln.NewWriter(writeOpts.OutStream)
+	w.needNULL = writeOpts.OutNeedNULL
+	w.outNULL = writeOpts.OutNULL
 	return w
 }
 
@@ -41,7 +45,12 @@ func (w *TBLNWriter) PreWrite(columns []string, types []string) error {
 // WriteRow is row write.
 func (w *TBLNWriter) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
-		str := ValString(col)
+		str := ""
+		if col == nil && w.needNULL {
+			str = w.outNULL
+		} else {
+			str = ValString(col)
+		}
 		w.results[i] = strings.ReplaceAll(str, "\n", "\\n")
 	}
 	return w.writer.WriteRow(w.results)

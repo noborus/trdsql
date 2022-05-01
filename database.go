@@ -297,16 +297,16 @@ func (db *DB) stmtClose(stmt *sql.Stmt) {
 
 func bulkPush(ctx context.Context, table *importTable, input Reader, bulk []interface{}) ([]interface{}, error) {
 	for (table.count * len(table.row)) < table.maxCap {
-		rows, err := input.ReadRow(table.row)
+		row, err := input.ReadRow(table.row)
 		if err != nil {
 			return bulk, err
 		}
 		// Skip when empty read.
-		if len(rows) == 0 {
+		if len(row) == 0 {
 			continue
 		}
 
-		bulk = append(bulk, rows...)
+		bulk = append(bulk, row...)
 		table.count++
 		select {
 		case <-ctx.Done():

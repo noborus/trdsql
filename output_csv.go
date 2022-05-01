@@ -17,6 +17,8 @@ type CSVWriter struct {
 	outUseCRLF   bool
 	needQuotes   string
 	endLine      string
+	needNULL     bool
+	outNULL      string
 }
 
 // NewCSVWriter returns CSVWriter.
@@ -44,6 +46,8 @@ func NewCSVWriter(writeOpts *WriteOpts) *CSVWriter {
 	} else {
 		w.endLine = "\n"
 	}
+	w.needNULL = writeOpts.OutNeedNULL
+	w.outNULL = writeOpts.OutNULL
 	return w
 }
 
@@ -58,7 +62,7 @@ func (w *CSVWriter) PreWrite(columns []string, types []string) error {
 				return err
 			}
 		}
-		if err := w.writeColumn(column); err != nil {
+		if err := w.writeColumnString(column); err != nil {
 			return err
 		}
 	}
@@ -68,13 +72,13 @@ func (w *CSVWriter) PreWrite(columns []string, types []string) error {
 
 // WriteRow is row write.
 func (w *CSVWriter) WriteRow(values []interface{}, _ []string) error {
-	for n, field := range values {
+	for n, column := range values {
 		if n > 0 {
 			if _, err := w.writer.WriteRune(w.outDelimiter); err != nil {
 				return err
 			}
 		}
-		if err := w.writeColumn(ValString(field)); err != nil {
+		if err := w.writeColumn(column); err != nil {
 			return err
 		}
 	}
@@ -82,7 +86,22 @@ func (w *CSVWriter) WriteRow(values []interface{}, _ []string) error {
 	return err
 }
 
-func (w *CSVWriter) writeColumn(column string) error {
+func (w *CSVWriter) writeColumn(column interface{}) error {
+	if column == nil {
+		var err error
+		if w.needNULL {
+			_, err = w.writer.WriteString(w.outNULL)
+		} else {
+			_, err = w.writer.WriteString("")
+		}
+		return err
+	}
+
+	str := ValString(column)
+	return w.writeColumnString(str)
+}
+
+func (w *CSVWriter) writeColumnString(column string) error {
 	if !w.fieldNeedsQuotes(column) {
 		_, err := w.writer.WriteString(column)
 		return err

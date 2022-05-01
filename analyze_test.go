@@ -46,7 +46,7 @@ func TestAnalyze(t *testing.T) {
 		{
 			name: "empty",
 			args: args{
-				fileName: filepath.Join("testdata", ""),
+				fileName: filepath.Join(dataDir, ""),
 				opts: &AnalyzeOpts{
 					Command:   AppName,
 					Quote:     "\\`",
@@ -60,7 +60,7 @@ func TestAnalyze(t *testing.T) {
 		{
 			name: "testNoFile",
 			args: args{
-				fileName: filepath.Join("testdata", "nofile"),
+				fileName: filepath.Join(dataDir, "nofile"),
 				opts: &AnalyzeOpts{
 					Command:   AppName,
 					Quote:     "\\`",
@@ -74,7 +74,7 @@ func TestAnalyze(t *testing.T) {
 		{
 			name: "test",
 			args: args{
-				fileName: filepath.Join("testdata", "test.csv"),
+				fileName: filepath.Join(dataDir, "test.csv"),
 				opts: &AnalyzeOpts{
 					Command:   AppName,
 					Quote:     "\\`",
@@ -88,7 +88,7 @@ func TestAnalyze(t *testing.T) {
 		{
 			name: "invalidDelimiter",
 			args: args{
-				fileName: filepath.Join("testdata", "test.csv"),
+				fileName: filepath.Join(dataDir, "test.csv"),
 				opts: &AnalyzeOpts{
 					Command:   AppName,
 					Quote:     "\\`",

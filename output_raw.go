@@ -11,6 +11,8 @@ type RAWWriter struct {
 	delimiter string
 	outHeader bool
 	endLine   string
+	needNULL  bool
+	outNULL   string
 }
 
 // NewRAWWriter returns RAWWriter.
@@ -28,6 +30,8 @@ func NewRAWWriter(writeOpts *WriteOpts) *RAWWriter {
 	} else {
 		w.endLine = "\n"
 	}
+	w.needNULL = writeOpts.OutNeedNULL
+	w.outNULL = writeOpts.OutNULL
 	return w
 }
 
@@ -58,7 +62,13 @@ func (w *RAWWriter) WriteRow(values []interface{}, _ []string) error {
 				return err
 			}
 		}
-		if _, err := w.writer.WriteString(ValString(col)); err != nil {
+		str := ""
+		if col == nil && w.needNULL {
+			str = w.outNULL
+		} else {
+			str = ValString(col)
+		}
+		if _, err := w.writer.WriteString(str); err != nil {
 			return err
 		}
 	}

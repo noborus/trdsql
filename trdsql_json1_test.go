@@ -1,16 +1,14 @@
-//go:build json1
-// +build json1
-
 package trdsql
 
 import (
 	"errors"
 	"io"
+	"path/filepath"
 	"testing"
 )
 
 func TestJSONIndefiniteInputFile(t *testing.T) {
-	file, err := singleFileOpen("testdata/test_indefinite.json")
+	file, err := singleFileOpen(filepath.Join(dataDir, "test_indefinite.json"))
 	if err != nil {
 		t.Error(err)
 	}
@@ -28,7 +26,7 @@ func TestJSONIndefiniteInputFile(t *testing.T) {
 }
 
 func TestJSONIndefiniteInputFile2(t *testing.T) {
-	file, err := singleFileOpen("testdata/test_indefinite.json")
+	file, err := singleFileOpen(filepath.Join(dataDir, "test_indefinite.json"))
 	if err != nil {
 		t.Error(err)
 	}
@@ -48,7 +46,7 @@ func TestJSONIndefiniteInputFile2(t *testing.T) {
 }
 
 func TestJSONIndefiniteInputFile3(t *testing.T) {
-	file, err := singleFileOpen("testdata/test_indefinite.json")
+	file, err := singleFileOpen(filepath.Join(dataDir, "test_indefinite.json"))
 	if err != nil {
 		t.Error(err)
 	}

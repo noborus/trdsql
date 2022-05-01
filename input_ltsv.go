@@ -16,6 +16,8 @@ type LTSVReader struct {
 	names     []string
 	types     []string
 	limitRead bool
+	needNULL  bool
+	inNULL    string
 }
 
 // NewLTSVReader returns LTSVReader and error.
@@ -29,6 +31,9 @@ func NewLTSVReader(reader io.Reader, opts *ReadOpts) (*LTSVReader, error) {
 	}
 
 	r.limitRead = opts.InLimitRead
+
+	r.needNULL = opts.InNeedNULL
+	r.inNULL = opts.InNULL
 
 	names := map[string]bool{}
 	for i := 0; i < opts.InPreRead; i++ {
@@ -84,6 +89,9 @@ func (r *LTSVReader) PreReadRow() [][]interface{} {
 		rows[n] = make([]interface{}, len(r.names))
 		for i := range r.names {
 			rows[n][i] = r.preRead[n][r.names[i]]
+			if r.needNULL {
+				rows[n][i] = replaceNULL(r.inNULL, rows[n][i])
+			}
 		}
 	}
 	return rows
@@ -101,6 +109,9 @@ func (r *LTSVReader) ReadRow(row []interface{}) ([]interface{}, error) {
 	}
 	for i, name := range r.names {
 		row[i] = record[name]
+		if r.needNULL {
+			row[i] = replaceNULL(r.inNULL, row[i])
+		}
 	}
 	return row, nil
 }

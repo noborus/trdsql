@@ -20,12 +20,14 @@ import (
 // JSONReader provides methods of the Reader interface.
 type JSONReader struct {
 	reader    *json.Decoder
-	preRead   []map[string]string
+	preRead   []map[string]interface{}
 	query     *gojq.Query
 	already   map[string]bool
 	names     []string
 	types     []string
 	limitRead bool
+	needNULL  bool
+	inNULL    string
 }
 
 // NewJSONReader returns JSONReader and error.
@@ -46,6 +48,8 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 	}
 
 	r.limitRead = opts.InLimitRead
+	r.needNULL = opts.InNeedNULL
+	r.inNULL = opts.InNULL
 
 	for i := 0; i < opts.InPreRead; i++ {
 		if err := r.reader.Decode(&top); err != nil {
@@ -106,30 +110,28 @@ func (r *JSONReader) readAhead(top interface{}) error {
 	switch m := top.(type) {
 	case []interface{}:
 		// []
-		r.preRead = make([]map[string]string, 0, len(m))
+		r.preRead = make([]map[string]interface{}, 0, len(m))
 		if r.reader.More() {
-			pre, names, err := etcRow(m)
+			pre, names, err := r.etcRow(m)
 			if err != nil {
 				return err
 			}
-
 			r.appendNames(names)
 			r.preRead = append(r.preRead, pre)
 			return nil
 		}
 
 		for _, v := range m {
-			pre, names, err := topLevel(v)
+			pre, names, err := r.topLevel(v)
 			if err != nil {
 				return err
 			}
-
 			r.appendNames(names)
 			r.preRead = append(r.preRead, pre)
 		}
 		return nil
 	default:
-		pre, names, err := topLevel(m)
+		pre, names, err := r.topLevel(m)
 		if err != nil {
 			return err
 		}
@@ -149,12 +151,12 @@ func (r *JSONReader) appendNames(names []string) {
 	}
 }
 
-func topLevel(top interface{}) (map[string]string, []string, error) {
+func (r *JSONReader) topLevel(top interface{}) (map[string]interface{}, []string, error) {
 	switch obj := top.(type) {
 	case map[string]interface{}:
-		return objectRow(obj)
+		return r.objectRow(obj)
 	default:
-		return etcRow(obj)
+		return r.etcRow(obj)
 	}
 }
 
@@ -166,6 +168,9 @@ func (r *JSONReader) PreReadRow() [][]interface{} {
 		rows[n] = make([]interface{}, len(r.names))
 		for i := range r.names {
 			rows[n][i] = v[r.names[i]]
+			if r.needNULL {
+				rows[n][i] = replaceNULL(r.inNULL, rows[n][i])
+			}
 		}
 	}
 	return rows
@@ -211,49 +216,60 @@ func (r *JSONReader) rowParse(row []interface{}, jsonRow interface{}) []interfac
 	switch m := jsonRow.(type) {
 	case map[string]interface{}:
 		for i := range r.names {
-			row[i] = jsonString(m[r.names[i]])
+			row[i] = r.jsonString(m[r.names[i]])
 		}
 	default:
 		for i := range r.names {
 			row[i] = nil
 		}
-		row[0] = jsonString(jsonRow)
+		row[0] = r.jsonString(jsonRow)
 	}
 	return row
 }
 
-func objectRow(obj map[string]interface{}) (map[string]string, []string, error) {
+func (r *JSONReader) objectRow(obj map[string]interface{}) (map[string]interface{}, []string, error) {
 	// {"a":"b"} object
 	names := make([]string, 0, len(obj))
-	row := make(map[string]string)
+	row := make(map[string]interface{})
 	for k, v := range obj {
 		names = append(names, k)
-		row[k] = jsonString(v)
+		if v == nil {
+			row[k] = nil
+		} else {
+			row[k] = r.jsonString(v)
+		}
 	}
 	return row, names, nil
 }
 
-func etcRow(val interface{}) (map[string]string, []string, error) {
+func (r *JSONReader) etcRow(val interface{}) (map[string]interface{}, []string, error) {
 	// ex. array array
 	// [["a"],
 	//  ["b"]]
 	var names []string
 	k := "c1"
 	names = append(names, k)
-	row := make(map[string]string)
-	row[k] = jsonString(val)
+	row := make(map[string]interface{})
+	row[k] = r.jsonString(val)
 	return row, names, nil
 }
 
-func jsonString(val interface{}) string {
+func (r *JSONReader) jsonString(val interface{}) interface{} {
+	var str string
 	switch val.(type) {
+	case nil:
+		return nil
 	case map[string]interface{}, []interface{}:
-		str, err := json.Marshal(val)
+		b, err := json.Marshal(val)
 		if err != nil {
 			log.Printf("ERROR: jsonString:%s", err)
 		}
-		return ValString(str)
+		str = ValString(b)
 	default:
-		return ValString(val)
+		str = ValString(val)
 	}
+	if r.needNULL {
+		return replaceNULL(r.inNULL, str)
+	}
+	return str
 }

@@ -34,6 +34,27 @@ type Cli struct {
 // Debug represents a flag for detailed output.
 var Debug bool
 
+// The nilString structure represents a string
+// that distinguishes between empty strings and nil.
+type nilString struct {
+	str   string
+	valid bool
+}
+
+// String returns a string.
+// nilString fills the flag#value interface.
+func (v *nilString) String() string {
+	return v.str
+}
+
+// Set sets the string with the valid flag set to true.
+// nilString fills the flag#value interface.
+func (v *nilString) Set(s string) error {
+	v.str = s
+	v.valid = true
+	return nil
+}
+
 // Run executes the main routine.
 // The return value is the exit code.
 func (cli Cli) Run(args []string) int {
@@ -57,6 +78,7 @@ func (cli Cli) Run(args []string) int {
 		inPreRead   int
 		inJQuery    string
 		inLimitRead int
+		inNull      nilString
 
 		outFlag         outputFlag
 		outFile         string
@@ -68,6 +90,7 @@ func (cli Cli) Run(args []string) int {
 		outUseCRLF      bool
 		outHeader       bool
 		outNoWrap       bool
+		outNull         nilString
 	)
 
 	flags := flag.NewFlagSet(trdsql.AppName, flag.ExitOnError)
@@ -95,6 +118,7 @@ func (cli Cli) Run(args []string) int {
 	flags.IntVar(&inPreRead, "ir", 1, "number of rows to preread.")
 	flags.IntVar(&inLimitRead, "ilr", 0, "limited number of rows to read.")
 	flags.StringVar(&inJQuery, "ijq", "", "jq expression string for input(JSON/JSONL only).")
+	flags.Var(&inNull, "inull", "value(string) to convert to null on input.")
 
 	flags.BoolVar(&inFlag.CSV, "icsv", false, "CSV format for input.")
 	flags.BoolVar(&inFlag.LTSV, "iltsv", false, "LTSV format for input.")
@@ -110,6 +134,7 @@ func (cli Cli) Run(args []string) int {
 	flags.BoolVar(&outNoWrap, "onowrap", false, "do not wrap long lines(at/md only).")
 	flags.BoolVar(&outHeader, "oh", false, "output column name as header.")
 	flags.StringVar(&outCompression, "oz", "", "output compression format. [ gz | bz2 | zstd | lz4 | xz ]")
+	flags.Var(&outNull, "onull", "value(string) to convert from null on output.")
 
 	flags.BoolVar(&outFlag.CSV, "ocsv", false, "CSV format for output.")
 	flags.BoolVar(&outFlag.LTSV, "oltsv", false, "LTSV format for output.")
@@ -209,6 +234,8 @@ func (cli Cli) Run(args []string) int {
 		trdsql.InPreRead(preRead),
 		trdsql.InLimitRead(limitRead),
 		trdsql.InJQ(inJQuery),
+		trdsql.InNeedNULL(inNull.valid),
+		trdsql.InNULL(inNull.str),
 	)
 
 	writer := cli.OutStream
@@ -247,6 +274,8 @@ func (cli Cli) Run(args []string) int {
 		trdsql.OutUseCRLF(outUseCRLF),
 		trdsql.OutHeader(outHeader),
 		trdsql.OutNoWrap(outNoWrap),
+		trdsql.OutNeedNULL(outNull.valid),
+		trdsql.OutNULL(outNull.str),
 		trdsql.OutStream(writer),
 		trdsql.ErrStream(cli.ErrStream),
 	)

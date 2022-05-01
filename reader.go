@@ -45,6 +45,12 @@ type ReadOpts struct {
 	// It is used as a column name.
 	InHeader bool
 
+	// InNeedNULL is true, replace InNULL with NULL.
+	InNeedNULL bool
+
+	// InNULL is a string to replace with NULL.
+	InNULL string
+
 	// IsTemporary is a flag whether to make temporary table.
 	// default is true.
 	IsTemporary bool
@@ -64,6 +70,8 @@ func NewReadOpts(options ...ReadOpt) *ReadOpts {
 		InHeader:    false,
 		IsTemporary: true,
 		InJQuery:    "",
+		InNeedNULL:  false,
+		InNULL:      "",
 	}
 	for _, option := range options {
 		option(readOpts)
@@ -120,6 +128,20 @@ func InDelimiter(d string) ReadOpt {
 func InHeader(h bool) ReadOpt {
 	return func(args *ReadOpts) {
 		args.InHeader = h
+	}
+}
+
+// InNeedNULL sets a flag as to whether it should be replaced with NULL.
+func InNeedNULL(n bool) ReadOpt {
+	return func(args *ReadOpts) {
+		args.InNeedNULL = n
+	}
+}
+
+// In NULL is a string to replace with NULL.
+func InNULL(s string) ReadOpt {
+	return func(args *ReadOpts) {
+		args.InNULL = s
 	}
 }
 

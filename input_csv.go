@@ -15,6 +15,8 @@ type CSVReader struct {
 	types     []string
 	preRead   [][]string
 	limitRead bool
+	needNULL  bool
+	inNULL    string
 }
 
 // NewCSVReader returns CSVReader and error.
@@ -37,6 +39,9 @@ func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 	if opts.InSkip > 0 {
 		skipRead(r, opts.InSkip)
 	}
+
+	r.needNULL = opts.InNeedNULL
+	r.inNULL = opts.InNULL
 
 	r.limitRead = opts.InLimitRead
 
@@ -132,6 +137,9 @@ func (r *CSVReader) PreReadRow() [][]interface{} {
 		rows[n] = make([]interface{}, len(r.names))
 		for i, f := range r.preRead[n] {
 			rows[n][i] = f
+			if r.needNULL {
+				rows[n][i] = replaceNULL(r.inNULL, rows[n][i])
+			}
 		}
 	}
 	return rows
@@ -149,6 +157,9 @@ func (r *CSVReader) ReadRow(row []interface{}) ([]interface{}, error) {
 	for i := 0; len(row) > i; i++ {
 		if len(record) > i {
 			row[i] = record[i]
+			if r.needNULL {
+				row[i] = replaceNULL(r.inNULL, row[i])
+			}
 		} else {
 			row[i] = nil
 		}

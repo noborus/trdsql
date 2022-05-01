@@ -6,8 +6,10 @@ import (
 
 // TWWriter provides methods of the Writer interface.
 type TWWriter struct {
-	writer  *tablewriter.Table
-	results []string
+	writer   *tablewriter.Table
+	results  []string
+	needNULL bool
+	outNULL  string
 }
 
 // NewTWWriter returns TWWriter.
@@ -20,6 +22,8 @@ func NewTWWriter(writeOpts *WriteOpts, markdown bool) *TWWriter {
 		w.writer.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 		w.writer.SetCenterSeparator("|")
 	}
+	w.needNULL = writeOpts.OutNeedNULL
+	w.outNULL = writeOpts.OutNULL
 	return w
 }
 
@@ -34,7 +38,13 @@ func (w *TWWriter) PreWrite(columns []string, types []string) error {
 // WriteRow is Addition to array.
 func (w *TWWriter) WriteRow(values []interface{}, columns []string) error {
 	for i, col := range values {
-		w.results[i] = ValString(col)
+		str := ""
+		if col == nil && w.needNULL {
+			str = w.outNULL
+		} else {
+			str = ValString(col)
+		}
+		w.results[i] = str
 	}
 	w.writer.Append(w.results)
 	return nil

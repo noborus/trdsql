@@ -16,6 +16,8 @@ type VFWriter struct {
 	hSize     int
 	header    []string
 	count     int
+	needNULL  bool
+	outNULL   string
 }
 
 // NewVFWriter returns VFWriter.
@@ -27,6 +29,8 @@ func NewVFWriter(writeOpts *WriteOpts) *VFWriter {
 	if err != nil {
 		w.termWidth = 40
 	}
+	w.needNULL = writeOpts.OutNeedNULL
+	w.outNULL = writeOpts.OutNULL
 	return w
 }
 
@@ -53,11 +57,18 @@ func (w *VFWriter) WriteRow(values []interface{}, columns []string) error {
 	}
 	for i, col := range w.header {
 		v := w.hSize - runewidth.StringWidth(col)
+		str := ""
+		if values[i] == nil && w.needNULL {
+			str = w.outNULL
+		} else {
+			str = ValString(values[i])
+		}
+
 		_, err := fmt.Fprintf(w.writer,
 			"%s%s | %-s\n",
 			strings.Repeat(" ", v+2),
 			col,
-			ValString(values[i]))
+			str)
 		if err != nil {
 			debug.Printf("%s\n", err)
 		}

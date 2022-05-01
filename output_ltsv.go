@@ -9,6 +9,8 @@ type LTSVWriter struct {
 	writer    *bufio.Writer
 	delimiter rune
 	results   []string
+	needNULL  bool
+	outNULL   string
 }
 
 // NewLTSVWriter returns LTSVWriter.
@@ -16,6 +18,8 @@ func NewLTSVWriter(writeOpts *WriteOpts) *LTSVWriter {
 	w := &LTSVWriter{}
 	w.delimiter = '\t'
 	w.writer = bufio.NewWriter(writeOpts.OutStream)
+	w.needNULL = writeOpts.OutNeedNULL
+	w.outNULL = writeOpts.OutNULL
 	return w
 }
 
@@ -39,7 +43,14 @@ func (w *LTSVWriter) WriteRow(values []interface{}, labels []string) error {
 		if err := w.writer.WriteByte(':'); err != nil {
 			return err
 		}
-		if _, err := w.writer.WriteString(ValString(col)); err != nil {
+
+		str := ""
+		if col == nil && w.needNULL {
+			str = w.outNULL
+		} else {
+			str = ValString(col)
+		}
+		if _, err := w.writer.WriteString(str); err != nil {
 			return err
 		}
 	}

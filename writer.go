@@ -39,6 +39,13 @@ type WriteOpts struct {
 
 	// OutNoWrap is true, do not wrap long columns(Use only AT and MD).
 	OutNoWrap bool
+
+	// OutNeedNULL is true, replace NULL with OutNULL.
+	OutNeedNULL bool
+
+	// OutNULL is a string that replaces NULL.
+	OutNULL string
+
 	// OutStream is the output destination.
 	OutStream io.Writer
 
@@ -98,6 +105,20 @@ func OutNoWrap(w bool) WriteOpt {
 	}
 }
 
+// OutNeedNULL sets a flag to replace NULL.
+func OutNeedNULL(n bool) WriteOpt {
+	return func(args *WriteOpts) {
+		args.OutNeedNULL = n
+	}
+}
+
+// OutNULL sets the output NULL string.
+func OutNULL(s string) WriteOpt {
+	return func(args *WriteOpts) {
+		args.OutNULL = s
+	}
+}
+
 // OutStream sets the output destination.
 func OutStream(w io.Writer) WriteOpt {
 	return func(args *WriteOpts) {
@@ -129,6 +150,8 @@ func NewWriter(options ...WriteOpt) Writer {
 		OutAllQuotes: false,
 		OutUseCRLF:   false,
 		OutHeader:    false,
+		OutNeedNULL:  false,
+		OutNULL:      "",
 		OutStream:    os.Stdout,
 		ErrStream:    os.Stderr,
 	}

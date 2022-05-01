@@ -7,7 +7,9 @@ import (
 
 func Test_compatibleJSON(t *testing.T) {
 	type args struct {
-		v interface{}
+		v        interface{}
+		needNULL bool
+		outNULL  string
 	}
 	tests := []struct {
 		name string
@@ -16,23 +18,23 @@ func Test_compatibleJSON(t *testing.T) {
 	}{
 		{
 			name: "testText",
-			args: args{"text"},
+			args: args{"text", false, ""},
 			want: "text",
 		},
 		{
 			name: "testByte",
-			args: args{[]byte{0xe3, 0x81, 0x82}},
+			args: args{[]byte{0xe3, 0x81, 0x82}, false, ""},
 			want: "あ",
 		},
 		{
 			name: "testInvalidByte",
-			args: args{[]byte{0xef, 0xef, 0xef}},
+			args: args{[]byte{0xef, 0xef, 0xef}, false, ""},
 			want: `\xefefef`,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := compatibleJSON(tt.args.v); !reflect.DeepEqual(got, tt.want) {
+			if got := compatibleJSON(tt.args.v, tt.args.needNULL, tt.args.outNULL); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("valInterface() = %v, want %v", got, tt.want)
 			}
 		})
