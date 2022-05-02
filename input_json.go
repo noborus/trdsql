@@ -42,7 +42,7 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 		str := trimQuoteAll(opts.InJQuery)
 		query, err := gojq.Parse(str)
 		if err != nil {
-			return nil, fmt.Errorf("gojq: %w (%s)", err, opts.InJQuery)
+			return nil, fmt.Errorf("%w gojq:(%s)", err, opts.InJQuery)
 		}
 		r.query = query
 	}
@@ -81,8 +81,7 @@ func (r *JSONReader) jquery(top interface{}) error {
 			break
 		}
 		if err, ok := v.(error); ok {
-			log.Printf("ERROR: gojq [%s] %s", r.query, err.Error())
-			continue
+			return fmt.Errorf("%w gojq:(%s) ", err, r.query)
 		}
 		if err := r.readAhead(v); err != nil {
 			return err
