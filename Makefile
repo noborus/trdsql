@@ -110,9 +110,9 @@ windows-amd64:
 
 darwin-amd64:
 	mkdir dist/trdsql_$(VERSION)_darwin_amd64
-	cp $(DIST_BIN)/$(BINARY_NAME)-darwin-10.12-amd64 dist/trdsql_$(VERSION)_darwin_amd64/$(BINARY_NAME)
+	cp $(DIST_BIN)/$(BINARY_NAME)-darwin-10.*-amd64 dist/trdsql_$(VERSION)_darwin_amd64/$(BINARY_NAME)
 
 darwin-arm64:
 	mkdir dist/trdsql_$(VERSION)_darwin_arm64
-	cp $(DIST_BIN)/$(BINARY_NAME)-darwin-10.12-arm64 dist/trdsql_$(VERSION)_darwin_arm64/$(BINARY_NAME)
+	cp $(DIST_BIN)/$(BINARY_NAME)-darwin-10.*-arm64 dist/trdsql_$(VERSION)_darwin_arm64/$(BINARY_NAME)
 
