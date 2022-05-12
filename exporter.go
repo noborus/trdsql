@@ -43,9 +43,9 @@ func (e *WriteFormat) ExportContext(ctx context.Context, db *DB, query string) e
 	if err != nil {
 		return err
 	}
+
 	defer func() {
-		err = rows.Close()
-		if err != nil {
+		if err = rows.Close(); err != nil {
 			log.Printf("ERROR: close:%s", err)
 		}
 	}()
@@ -68,6 +68,7 @@ func (e *WriteFormat) ExportContext(ctx context.Context, db *DB, query string) e
 	if err = e.Writer.PreWrite(columns, types); err != nil {
 		return err
 	}
+
 	for rows.Next() {
 		select {
 		case <-ctx.Done(): // cancellation
@@ -81,6 +82,9 @@ func (e *WriteFormat) ExportContext(ctx context.Context, db *DB, query string) e
 		if err := e.Writer.WriteRow(values, columns); err != nil {
 			return err
 		}
+	}
+	if err := rows.Err(); err != nil {
+		return err
 	}
 
 	return e.Writer.PostWrite()
