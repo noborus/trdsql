@@ -26,16 +26,14 @@ func NewTBLNWriter(writeOpts *WriteOpts) *TBLNWriter {
 // PreWrite is prepare tbln definition body.
 func (w *TBLNWriter) PreWrite(columns []string, types []string) error {
 	d := tbln.NewDefinition()
-	err := d.SetNames(columns)
-	if err != nil {
+
+	if err := d.SetNames(columns); err != nil {
 		return err
 	}
-	err = d.SetTypes(ConvertTypes(types))
-	if err != nil {
+	if err := d.SetTypes(ConvertTypes(types)); err != nil {
 		return err
 	}
-	err = w.writer.WriteDefinition(d)
-	if err != nil {
+	if err := w.writer.WriteDefinition(d); err != nil {
 		return err
 	}
 	w.results = make([]string, len(columns))

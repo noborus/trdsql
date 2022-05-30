@@ -267,12 +267,14 @@ func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *R
 	return tableName, db.ImportContext(ctx, tableName, columnNames, reader)
 }
 
+// GuessOpts guesses ReadOpts from the file name and sets it.
 func GuessOpts(readOpts *ReadOpts, fileName string) (*ReadOpts, string) {
-	_, err := os.Stat(fileName)
-	if err != nil && strings.Contains(fileName, "::") {
-		// jq expression.
-		readOpts.InJQuery = fileName[strings.Index(fileName, "::")+2:]
-		fileName = fileName[:strings.Index(fileName, "::")]
+	if _, err := os.Stat(fileName); err != nil {
+		if idx := strings.Index(fileName, "::"); idx != -1 {
+			// jq expression.
+			readOpts.InJQuery = fileName[idx+2:]
+			fileName = fileName[:idx]
+		}
 	}
 
 	// If the option -ijq is specified, it is assumed to be json(only for guess).
@@ -321,6 +323,7 @@ func guessFormat(fileName string) Format {
 	}
 }
 
+// importFileOpen opens the file specified as a table.
 func importFileOpen(tableName string) (io.ReadCloser, error) {
 	r := regexp.MustCompile(`\*|\?|\[`)
 	if r.MatchString(tableName) {
@@ -329,6 +332,8 @@ func importFileOpen(tableName string) (io.ReadCloser, error) {
 	return singleFileOpen(tableName)
 }
 
+// uncompressedReader returns the decompressed reader
+// if it is a compressed file.
 func uncompressedReader(reader io.Reader) io.ReadCloser {
 	var err error
 	buf := [7]byte{}
@@ -365,6 +370,7 @@ func uncompressedReader(reader io.Reader) io.ReadCloser {
 	return r
 }
 
+// singleFileOpen opens one file. Also interpret stdin.
 func singleFileOpen(fileName string) (io.ReadCloser, error) {
 	if len(fileName) == 0 || fileName == "-" || strings.ToLower(fileName) == "stdin" {
 		return uncompressedReader(bufio.NewReader(os.Stdin)), nil
@@ -377,6 +383,8 @@ func singleFileOpen(fileName string) (io.ReadCloser, error) {
 	return uncompressedReader(file), nil
 }
 
+// globFileOpen expands the file path,
+// connects multiple files and returns one io.PipeReader.
 func globFileOpen(globName string) (*io.PipeReader, error) {
 	globName = expandTilde(trimQuote(globName))
 	fileNames, err := filepath.Glob(globName)
@@ -394,32 +402,36 @@ func globFileOpen(globName string) (*io.PipeReader, error) {
 			}
 		}()
 		for _, fileName := range fileNames {
-			f, err := os.Open(fileName)
-			debug.Printf("Open: [%s]", fileName)
-			if err != nil {
+			if err := copyFileOpen(pipeWriter, fileName); err != nil {
 				log.Printf("ERROR: %s:%s", fileName, err)
 				continue
 			}
-			r := uncompressedReader(f)
-
-			_, err = io.Copy(pipeWriter, r)
-			if err != nil {
-				log.Printf("ERROR: %s:%s", fileName, err)
-				continue
-			}
-			_, err = pipeWriter.Write([]byte("\n"))
-			if err != nil {
-				log.Printf("ERROR: %s:%s", fileName, err)
-				continue
-			}
-
-			if err := f.Close(); err != nil {
-				log.Printf("ERROR: %s:%s", fileName, err)
-			}
-			debug.Printf("Close: [%s]", fileName)
 		}
 	}()
 	return pipeReader, nil
+}
+
+// copyFileOpen opens the file and copies it to the writer.
+func copyFileOpen(writer io.Writer, fileName string) error {
+	debug.Printf("Open: [%s]", fileName)
+	file, err := os.Open(fileName)
+	if err != nil {
+		return err
+	}
+	r := uncompressedReader(file)
+
+	if _, err = io.Copy(writer, r); err != nil {
+		return err
+	}
+	// For if the file does not have a line break before EOF.
+	if _, err = writer.Write([]byte("\n")); err != nil {
+		return err
+	}
+	if err := file.Close(); err != nil {
+		return err
+	}
+	debug.Printf("Close: [%s]", fileName)
+	return nil
 }
 
 func expandTilde(fileName string) string {
