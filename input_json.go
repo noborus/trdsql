@@ -183,8 +183,7 @@ func (r *JSONReader) ReadRow(row []interface{}) ([]interface{}, error) {
 	}
 
 	var data interface{}
-	err := r.reader.Decode(&data)
-	if err != nil {
+	if err := r.reader.Decode(&data); err != nil {
 		return nil, err
 	}
 
