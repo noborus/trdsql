@@ -33,16 +33,16 @@ func ValString(v interface{}) string {
 	}
 }
 
-func replaceNULL(NULLString string, v interface{}) interface{} {
+func replaceNULL(nullString string, v interface{}) interface{} {
 	switch t := v.(type) {
 	case nil:
 		return nil
 	case string:
-		if t == NULLString {
+		if t == nullString {
 			return nil
 		}
 	case []byte:
-		if string(t) == NULLString {
+		if string(t) == nullString {
 			return nil
 		}
 	}

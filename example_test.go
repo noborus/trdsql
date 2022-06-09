@@ -22,8 +22,8 @@ Ken,Thompson,ken
 	defer func() {
 		defer os.Remove(tmpfile.Name())
 	}()
-	_, err = tmpfile.Write(in)
-	if err != nil {
+
+	if _, err := tmpfile.Write(in); err != nil {
 		log.Print(err)
 		return
 	}
@@ -33,8 +33,7 @@ Ken,Thompson,ken
 	)
 	// #nosec G201
 	query := fmt.Sprintf("SELECT c1 FROM %s ORDER BY c1", tmpfile.Name())
-	err = trd.Exec(query)
-	if err != nil {
+	if err := trd.Exec(query); err != nil {
 		log.Print(err)
 		return
 	}

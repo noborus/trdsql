@@ -8,8 +8,7 @@ import (
 	"github.com/noborus/trdsql"
 )
 
-type importer struct {
-}
+type importer struct{}
 
 func (f *importer) ImportContext(ctx context.Context, db *trdsql.DB, query string) (string, error) {
 	err := db.CreateTableContext(ctx, "test", []string{"a"}, []string{"text"}, true)

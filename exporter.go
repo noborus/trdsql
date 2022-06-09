@@ -45,7 +45,7 @@ func (e *WriteFormat) ExportContext(ctx context.Context, db *DB, query string) e
 	}
 
 	defer func() {
-		if err = rows.Close(); err != nil {
+		if err := rows.Close(); err != nil {
 			log.Printf("ERROR: close:%s", err)
 		}
 	}()
@@ -65,7 +65,7 @@ func (e *WriteFormat) ExportContext(ctx context.Context, db *DB, query string) e
 		types[i] = ct.DatabaseTypeName()
 	}
 
-	if err = e.Writer.PreWrite(columns, types); err != nil {
+	if err := e.Writer.PreWrite(columns, types); err != nil {
 		return err
 	}
 
