@@ -200,8 +200,7 @@ func newDBTestPostgres() *DB {
 	if err != nil {
 		return nil
 	}
-	err = db.Ping()
-	if err != nil {
+	if err := db.Ping(); err != nil {
 		return nil
 	}
 	return db
@@ -212,8 +211,7 @@ func newDBTestMysql() *DB {
 	if err != nil {
 		return nil
 	}
-	err = db.Ping()
-	if err != nil {
+	if err = db.Ping(); err != nil {
 		return nil
 	}
 	return db
@@ -326,12 +324,10 @@ func TestImportFile(t *testing.T) {
 			if got != tt.want {
 				t.Errorf("ImportFile() = %v, want %v", got, tt.want)
 			}
-			err = tt.args.db.Tx.Commit()
-			if err != nil {
+			if err = tt.args.db.Tx.Commit(); err != nil {
 				t.Fatal(err)
 			}
-			err = tt.args.db.Disconnect()
-			if err != nil {
+			if err = tt.args.db.Disconnect(); err != nil {
 				t.Fatal(err)
 			}
 		})

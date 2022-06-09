@@ -420,11 +420,11 @@ func copyFileOpen(writer io.Writer, fileName string) error {
 	}
 	r := uncompressedReader(file)
 
-	if _, err = io.Copy(writer, r); err != nil {
+	if _, err := io.Copy(writer, r); err != nil {
 		return err
 	}
 	// For if the file does not have a line break before EOF.
-	if _, err = writer.Write([]byte("\n")); err != nil {
+	if _, err := writer.Write([]byte("\n")); err != nil {
 		return err
 	}
 	if err := file.Close(); err != nil {
