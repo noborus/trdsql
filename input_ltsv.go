@@ -2,7 +2,6 @@ package trdsql
 
 import (
 	"bufio"
-	"bytes"
 	"errors"
 	"io"
 	"strings"
@@ -136,20 +135,20 @@ func (r *LTSVReader) read() (map[string]string, []string, error) {
 }
 
 func (r *LTSVReader) readline() (string, error) {
-	var buffer bytes.Buffer
+	var builder strings.Builder
 	for {
 		line, isPrefix, err := r.reader.ReadLine()
 		if err != nil {
 			return "", err
 		}
-		buffer.Write(line)
+		builder.Write(line)
 		if isPrefix {
 			continue
 		}
-		str := strings.TrimSpace(buffer.String())
+		str := strings.TrimSpace(builder.String())
 		if len(str) != 0 {
 			return str, nil
 		}
-		buffer.Reset()
+		builder.Reset()
 	}
 }
