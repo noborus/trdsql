@@ -7,7 +7,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -427,7 +426,7 @@ func getQuery(args []string, fileName string) (string, error) {
 		return trimQuery(strings.Join(args, " ")), nil
 	}
 
-	sqlByte, err := ioutil.ReadFile(fileName)
+	sqlByte, err := os.ReadFile(fileName)
 	if err != nil {
 		return "", err
 	}
