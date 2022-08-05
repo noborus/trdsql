@@ -14,9 +14,11 @@ require (
 	github.com/noborus/tbln v0.0.2
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pierrec/lz4 v2.6.1+incompatible
+	github.com/rivo/uniseg v0.3.1 // indirect
 	github.com/ulikunitz/xz v0.5.10
-	golang.org/x/sys v0.0.0-20220721230656-c6bc011c0c49 // indirect
-	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467
+	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
+	golang.org/x/sys v0.0.0-20220804214406-8e32c043e418 // indirect
+	golang.org/x/term v0.0.0-20220722155259-a9ba230a4035
 )
 
 go 1.16
