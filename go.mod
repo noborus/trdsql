@@ -2,7 +2,6 @@ module github.com/noborus/trdsql
 
 require (
 	github.com/dsnet/compress v0.0.1
-	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/iancoleman/orderedmap v0.2.0
 	github.com/itchyny/gojq v0.12.8
@@ -15,8 +14,16 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pierrec/lz4 v2.6.1+incompatible
 	github.com/ulikunitz/xz v0.5.10
-	golang.org/x/sys v0.0.0-20220721230656-c6bc011c0c49 // indirect
-	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467
+	golang.org/x/term v0.0.0-20220722155259-a9ba230a4035
 )
 
-go 1.16
+require (
+	github.com/frankban/quicktest v1.7.2 // indirect
+	github.com/itchyny/timefmt-go v0.1.3 // indirect
+	github.com/jwalton/go-supportscolor v1.1.0 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
+	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
+	golang.org/x/sys v0.0.0-20220804214406-8e32c043e418 // indirect
+)
+
+go 1.17
