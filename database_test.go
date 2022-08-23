@@ -38,6 +38,11 @@ func TestConnect(t *testing.T) {
 			args:    args{driver: "mysql", dsn: myDsn()},
 			wantErr: false,
 		},
+		{
+			name:    "testSqlite3ext",
+			args:    args{driver: "sqlite3_ext", dsn: ""},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -200,6 +205,66 @@ func TestDB_Select(t *testing.T) {
 			fields:  fields{driver: "sqlite3", dsn: ""},
 			args:    args{query: "SELEC * FROM test"},
 			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db, err := Connect(tt.fields.driver, tt.fields.dsn)
+			if err != nil {
+				t.Fatal(err)
+			}
+			db.Tx, err = db.Begin()
+			if err != nil {
+				t.Fatal(err)
+			}
+			_, err = db.Select(tt.args.query)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("DB.Select() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			err = db.Tx.Commit()
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = db.Disconnect()
+			if err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}
+
+func TestDB_Func(t *testing.T) {
+	type fields struct {
+		driver string
+		dsn    string
+	}
+	type args struct {
+		query string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name:    "testSqlite3Version",
+			fields:  fields{driver: "sqlite3", dsn: ""},
+			args:    args{query: "SELECT sqlite_version();"},
+			wantErr: false,
+		},
+		{
+			name:    "testSqlite3fail",
+			fields:  fields{driver: "sqlite3", dsn: ""},
+			args:    args{query: "SELECT repeat('f', 5);"},
+			wantErr: true,
+		},
+		{
+			name:    "testSqlite3ext",
+			fields:  fields{driver: "sqlite3_ext", dsn: ""},
+			args:    args{query: "SELECT repeat('f', 5);"},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {

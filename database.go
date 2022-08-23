@@ -17,6 +17,8 @@ import (
 
 	// SQLite3 driver.
 	_ "github.com/mattn/go-sqlite3"
+	// SQlite3 extension library.
+	sqlite3_stdlib "github.com/multiprocessio/go-sqlite3-stdlib"
 )
 
 var (
@@ -51,6 +53,12 @@ type DB struct {
 	Tx *sql.Tx
 }
 
+func init() {
+	// Enable sqlite3 extensions.
+	// It can be used by setting the driver to "sqlite3_ext".
+	sqlite3_stdlib.Register("sqlite3_ext")
+}
+
 // Connect is connects to the database.
 // Currently supported drivers are sqlite3, mysql, postgres.
 // Set quote character and maxBulk depending on the driver type.
@@ -68,7 +76,7 @@ func Connect(driver, dsn string) (*DB, error) {
 	debug.Printf("driver: %s, dsn: %s", driver, dsn)
 
 	switch driver {
-	case "sqlite3":
+	case "sqlite3", "sqlite3_ext":
 		db.quote = "`"
 		db.maxBulk = 500
 	case "mysql":
