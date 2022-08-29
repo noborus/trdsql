@@ -23,9 +23,9 @@ require (
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/itchyny/timefmt-go v0.1.3 // indirect
 	github.com/jwalton/go-supportscolor v1.1.0 // indirect
-	github.com/rivo/uniseg v0.2.0 // indirect
-	golang.org/x/crypto v0.0.0-20220817201139-bc19a97f63c8 // indirect
-	golang.org/x/sys v0.0.0-20220818161305-2296e01440c6 // indirect
+	github.com/rivo/uniseg v0.3.4 // indirect
+	golang.org/x/crypto v0.0.0-20220826181053-bd7e27e6170d // indirect
+	golang.org/x/sys v0.0.0-20220825204002-c680a09ffe64 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gonum.org/v1/gonum v0.11.0 // indirect
 )
