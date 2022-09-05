@@ -58,11 +58,12 @@ type ReadFormat struct {
 // The argument is an option of Functional Option Pattern.
 //
 // usage:
-//		trdsql.NewImporter(
-//			trdsql.InFormat(trdsql.CSV),
-//			trdsql.InHeader(true),
-//			trdsql.InDelimiter(";"),
-//		)
+//
+//	trdsql.NewImporter(
+//		trdsql.InFormat(trdsql.CSV),
+//		trdsql.InHeader(true),
+//		trdsql.InDelimiter(";"),
+//	)
 func NewImporter(options ...ReadOpt) *ReadFormat {
 	readOpts := NewReadOpts(options...)
 	return &ReadFormat{
