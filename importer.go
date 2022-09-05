@@ -39,8 +39,6 @@ var (
 	ErrNonDefinition = errors.New("no definition")
 )
 
-var importCount int
-
 // Importer is the interface import data into the database.
 // Importer parses sql query to decide which file to Import.
 // Therefore, the reader does not receive it directly.
@@ -221,7 +219,7 @@ func ImportFile(db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 // Wildcards can be passed as fileName.
 func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 	opts, fileName := GuessOpts(readOpts, fileName)
-	importCount++
+	db.importCount++
 	file, err := importFileOpen(fileName)
 	if err != nil {
 		debug.Printf("%s\n", err)
@@ -241,7 +239,7 @@ func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *R
 
 	tableName := db.QuotedName(fileName)
 	if opts.InJQuery != "" {
-		tableName = db.QuotedName(fileName + "::" + "jq" + strconv.Itoa(importCount))
+		tableName = db.QuotedName(fileName + "::" + "jq" + strconv.Itoa(db.importCount))
 	}
 
 	columnNames, err := reader.Names()

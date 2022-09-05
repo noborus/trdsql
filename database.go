@@ -51,6 +51,8 @@ type DB struct {
 	*sql.DB
 	// Tx represents a database transaction.
 	Tx *sql.Tx
+	// importCount represents the number that is incremented to identify imported files.
+	importCount int
 }
 
 func init() {
