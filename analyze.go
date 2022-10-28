@@ -24,6 +24,14 @@ type AnalyzeOpts struct {
 	OutStream io.Writer
 }
 
+// Defined to wrap string styling.
+var (
+	tableColor    = gchalk.Yellow
+	fileTypeColor = gchalk.Red
+	captionColor  = gchalk.Cyan
+	notesColor    = gchalk.Magenta
+)
+
 // NewAnalyzeOpts returns AnalyzeOpts.
 func NewAnalyzeOpts() *AnalyzeOpts {
 	return &AnalyzeOpts{
@@ -90,22 +98,17 @@ func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
 		sampleTable.Append(row)
 	}
 
-	yellow := gchalk.Yellow
-	red := gchalk.Red
-	magenta := gchalk.Magenta
-	cyan := gchalk.Cyan
 	if opts.Detail {
-		fmt.Fprintf(opts.OutStream, "The table name is %s.\n", yellow(tableName))
-		fmt.Fprintf(opts.OutStream, "The file type is %s.\n", red(rOpts.realFormat.String()))
-		if len(names) <= 1 && rOpts.realFormat == CSV {
-			fmt.Fprintln(opts.OutStream, magenta("Is the delimiter different?"))
-			fmt.Fprintln(opts.OutStream, magenta(`Please try again with -id "\t" or -id " ".`))
+		fmt.Fprintf(opts.OutStream, "The table name is %s.\n", tableColor(tableName))
+		fmt.Fprintf(opts.OutStream, "The file type is %s.\n", fileTypeColor(rOpts.realFormat.String()))
+		if len(names) <= 1 {
+			additionalAdvice(opts, rOpts, columnNames[0], results[0][0])
 		}
-		fmt.Fprintln(opts.OutStream, cyan("\nData types:"))
+		fmt.Fprintln(opts.OutStream, captionColor("\nData types:"))
 		typeTable.Render()
-		fmt.Fprintln(opts.OutStream, cyan("\nData samples:"))
+		fmt.Fprintln(opts.OutStream, captionColor("\nData samples:"))
 		sampleTable.Render()
-		fmt.Fprintln(opts.OutStream, cyan("\nExamples:"))
+		fmt.Fprintln(opts.OutStream, captionColor("\nExamples:"))
 	}
 
 	if len(results) == 0 {
@@ -117,6 +120,36 @@ func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
 		fmt.Fprintf(opts.OutStream, "%s %s\n", opts.Command, `"`+query+`"`)
 	}
 	return nil
+}
+
+func additionalAdvice(opts *AnalyzeOpts, rOpts *ReadOpts, name string, result string) {
+	switch rOpts.realFormat {
+	case CSV:
+		if result == "[" || result == "{" {
+			fmt.Fprintln(opts.OutStream, notesColor("Is it a JSON file?"))
+			fmt.Fprintln(opts.OutStream, notesColor("Please try again with -ijson."))
+			return
+		}
+		fmt.Fprintln(opts.OutStream, notesColor("Is the delimiter different?"))
+		delimiter := " "
+		if strings.Count(result, ";") > 1 {
+			delimiter = ";"
+		}
+		if strings.Count(result, "\t") > 1 {
+			delimiter = "\\t"
+		}
+		fmt.Fprintf(opts.OutStream, notesColor("Please try again with -id \"%s\" or other character.\n"), delimiter)
+		if strings.Contains(result, ":") {
+			fmt.Fprintln(opts.OutStream, notesColor("If it is an ltsv file, please try again with -iltsv."))
+		}
+	case JSON:
+		fmt.Fprintln(opts.OutStream, notesColor("Is it for internal objects?"))
+		jq := "." + name
+		if rOpts.InJQuery != "" {
+			jq = rOpts.InJQuery + jq
+		}
+		fmt.Fprintf(opts.OutStream, notesColor("Please try again with -ijq \"%s\".\n"), jq)
+	}
 }
 
 func examples(tableName string, names []string, results []string) []string {

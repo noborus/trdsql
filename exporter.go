@@ -45,7 +45,7 @@ func (e *WriteFormat) ExportContext(ctx context.Context, db *DB, query string) e
 	}
 
 	defer func() {
-		if err := rows.Close(); err != nil {
+		if err = rows.Close(); err != nil {
 			log.Printf("ERROR: close:%s", err)
 		}
 	}()
