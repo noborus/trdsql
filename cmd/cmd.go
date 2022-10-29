@@ -193,7 +193,7 @@ func (cli Cli) Run(args []string) int {
 			trdsql.InPreRead(inPreRead),
 			trdsql.InJQ(inJQuery),
 		)
-		if err := trdsql.Analyze(analyze, opts, readOpts); err != nil {
+		if err = trdsql.Analyze(analyze, opts, readOpts); err != nil {
 			log.Printf("ERROR: %s", err)
 			return 1
 		}
@@ -291,7 +291,7 @@ func (cli Cli) Run(args []string) int {
 
 	ctx := context.Background()
 
-	if err := trd.ExecContext(ctx, query); err != nil {
+	if err = trd.ExecContext(ctx, query); err != nil {
 		log.Printf("%s", err)
 		return 1
 	}
