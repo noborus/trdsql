@@ -77,10 +77,10 @@ Please refer to [godoc](https://pkg.go.dev/github.com/noborus/trdsql)
 ###  1.1. <a name='goget'></a>go get
 
 ```console
-go get -d github.com/noborus/trdsql
-cd $GOPATH/src/github.com/noborus/trdsql
-make
-make install
+$ go get -d github.com/noborus/trdsql
+$ cd $GOPATH/src/github.com/noborus/trdsql
+$ make
+$ make install
 ```
 
 ####  1.1.1. <a name='Requirements'></a>Requirements
@@ -215,20 +215,14 @@ If `-inull ""` is specified, an empty string will be treated as SQL NULL.
 SQL NULL is an empty string by default. Specify the -onull "(NULL)" option if you want a different string.
 
 ```console
-echo "1,,v" | trdsql -inull "" -onull "(NULL)" "SELECT * FROM -"
-```
-
-```csv
+$ echo "1,,v" | trdsql -inull "" -onull "(NULL)" "SELECT * FROM -"
 1,(NULL),v
 ```
 
 In the case of JSON, null is NULL as it is, and the specified string is converted to NULL.
 
 ```console
-echo '[1,null,""]' | trdsql -inull "" -ojson -ijson "SELECT * FROM -"
-```
-
-```json
+$ echo '[1,null,""]' | trdsql -inull "" -ojson -ijson "SELECT * FROM -"
 [
   {
     "c1": "1"
@@ -345,10 +339,7 @@ trdsql -out result.ltsv.zst "SELECT * FROM testdata/test.csv"
 If the number of columns is not a constant, read and decide multiple rows.
 
 ```console
-trdsql -ir 3 -iltsv "SELECT * FROM test_indefinite.ltsv"
-```
-
-```csv
+$ trdsql -ir 3 -iltsv "SELECT * FROM test_indefinite.ltsv"
 1,Orange,50,,
 2,Melon,500,ibaraki,
 3,Apple,100,aomori,red
@@ -371,10 +362,7 @@ trdsql -id "\t" "SELECT * FROM test-tab.csv"
 `-od "\\t"` is TSV (Tab Separated Value) output.
 
 ```console
-trdsql -od "\t" "SELECT * FROM test.csv"
-```
-
-```tsv
+$ trdsql -od "\t" "SELECT * FROM test.csv"
 1	Orange
 2	Melon
 3	Apple
@@ -407,10 +395,7 @@ trdsql -iltsv "SELECT * FROM sample.ltsv"
 `-oltsv` is LTSV(Labeled Tab-separated Values) output.
 
 ```console
-trdsql -iltsv -oltsv "SELECT * FROM sample.ltsv"
-```
-
-```ltsv
+$ trdsql -iltsv -oltsv "SELECT * FROM sample.ltsv"
 id:1	name:Orange	price:50
 id:2	name:Melon	price:500
 id:3	name:Apple	price:100
@@ -443,10 +428,7 @@ sample.json
 ```
 
 ```console
-trdsql -ijson "SELECT * FROM sample.json"
-```
-
-```csv
+$ trdsql -ijson "SELECT * FROM sample.json"
 1,Orange,50
 2,Melon,500
 3,Apple,100
@@ -477,10 +459,7 @@ sample2.json
 ```
 
 ```console
-trdsql -ijson "SELECT * FROM sample2.json"
-```
-
-```csv
+$ trdsql -ijson "SELECT * FROM sample2.json"
 1,Drolet,"{""color"":""burlywood"",""country"":""Maldives""}"
 2,Shelly,"{""color"":""plum"",""country"":""Yemen""}"
 3,Tuck,"{""color"":""antiquewhite"",""country"":""Mayotte""}"
@@ -493,10 +472,7 @@ Please use SQL function.
 * [MySQL - Functions That Search JSON Values](https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html)
 
 ```console
-trdsql -ijson "SELECT id, name, JSON_EXTRACT(attribute,'$country'), JSON_EXTRACT(attribute,'$color') FROM sample2.json"
-```
-
-```csv
+$ trdsql -ijson "SELECT id, name, JSON_EXTRACT(attribute,'$country'), JSON_EXTRACT(attribute,'$color') FROM sample2.json"
 1,Drolet,Maldives,burlywood
 2,Shelly,Yemen,plum
 3,Tuck,Mayotte,antiquewhite
@@ -545,10 +521,7 @@ trdsql -oat 'SELECT value, onclick FROM menu.json::".menu.popup.menuitem"'
 Or specify with the `-ijq` option.
 
 ```console
-trdsql -oat -ijq ".menu.popup.menuitem" "SELECT * FROM menu.json"
-```
-
-```at
+$ trdsql -oat -ijq ".menu.popup.menuitem" "SELECT * FROM menu.json"
 +-------+-------------+
 | value |   onclick   |
 +-------+-------------+
@@ -594,10 +567,7 @@ sample2.json
 `-ojson` is JSON Output.
 
 ```console
-trdsql -ojson "SELECT * FROM test.csv"
-```
-
-```json
+$ trdsql -ojson "SELECT * FROM test.csv"
 [
   {
     "c1": "1",
@@ -617,10 +587,7 @@ trdsql -ojson "SELECT * FROM test.csv"
 To output in JSONL, specify `-ojsonl`.
 
 ```console
-trdsql -ojsonl "SELECT * FROM test.csv"
-```
-
-```json
+$ trdsql -ojsonl "SELECT * FROM test.csv"
 {"c1":"1","c2":"Orange"}
 {"c1":"2","c2":"Melon"}
 {"c1":"3","c2":"Apple"}
@@ -681,10 +648,7 @@ $ trdsql -oraw "SELECT row_to_json(t,TRUE) FROM test.csv AS t"
 Multiple delimiter characters can be used for raw.
 
 ```console
-trdsql -oraw -od "\t|\t" -db pdb "SELECT * FROM test.csv"
-```
-
-```text
+$ trdsql -oraw -od "\t|\t" -db pdb "SELECT * FROM test.csv"
 1	|	Orange
 2	|	Melon
 3	|	Apple
@@ -880,10 +844,7 @@ MySQL can join tables and CSV files as well as PostgreSQL.
 The ***-a filename*** option parses the file and outputs table information and SQL examples.
 
 ```console
-trdsql -a testdata/test.ltsv
-```
-
-```console
+$ trdsql -a testdata/test.ltsv
 The table name is testdata/header.csv.
 The file type is CSV.
 
@@ -918,10 +879,7 @@ trdsql -ih -a testdata/header.csv
 Similarly, with  ***-A filename*** option, only Examples (SQL) is output.
 
 ```console
-trdsql -ih -A testdata/header.csv
-```
-
-```console
+$ trdsql -ih -A testdata/header.csv
 trdsql -ih "SELECT id, \`name\` FROM testdata/header.csv"
 trdsql -ih "SELECT id, \`name\` FROM testdata/header.csv WHERE id = '1'"
 trdsql -ih "SELECT id, count(id) FROM testdata/header.csv GROUP BY id"
@@ -947,7 +905,7 @@ C:\Users\{"User"}\AppData\Roaming\trdsql\config.json
 Or use the -config file option.
 
 ```console
-trdsql -config config.json "SELECT * FROM test.csv"
+$ trdsql -config config.json "SELECT * FROM test.csv"
 ```
 
  sample: [config.json](config.json.sample)
