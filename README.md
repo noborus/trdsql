@@ -472,7 +472,7 @@ Please use SQL function.
 * [MySQL - Functions That Search JSON Values](https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html)
 
 ```console
-$ trdsql -ijson "SELECT id, name, JSON_EXTRACT(attribute,'$country'), JSON_EXTRACT(attribute,'$color') FROM sample2.json"
+$ trdsql -ijson "SELECT id, name, JSON_EXTRACT(attribute,'$.country'), JSON_EXTRACT(attribute,'$.color') FROM sample2.json"
 1,Drolet,Maldives,burlywood
 2,Shelly,Yemen,plum
 3,Tuck,Mayotte,antiquewhite
