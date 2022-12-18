@@ -19,62 +19,9 @@ Please refer to [godoc](https://pkg.go.dev/github.com/noborus/trdsql)
 
 ![trdsql.gif](https://raw.githubusercontent.com/noborus/trdsql/master/doc/trdsql.gif)
 
-<!-- vscode-markdown-toc -->
-* 1. [INSTALL](#INSTALL)
-	* 1.1. [go get](#goget)
-		* 1.1.1. [Requirements](#Requirements)
-	* 1.2. [Download binary](#Downloadbinary)
-	* 1.3. [Homebrew](#Homebrew)
-	* 1.4. [MacPorts](#MacPorts)
-	* 1.5. [FreeBSD](#FreeBSD)
-* 2. [Docker](#Docker)
-	* 2.1. [Docker pull](#Dockerpull)
-	* 2.2. [image build](#imagebuild)
-	* 2.3. [Docker Run](#DockerRun)
-* 3. [Usage](#Usage)
-	* 3.1. [global options](#globaloptions)
-	* 3.2. [Input formats](#Inputformats)
-		* 3.2.1. [Input options](#Inputoptions)
-	* 3.3. [Output formats](#Outputformats)
-		* 3.3.1. [Output options](#Outputoptions)
-	* 3.4. [Handling of NULL](#HandlingofNULL)
-* 4. [Example](#Example)
-	* 4.1. [STDIN input](#STDINinput)
-	* 4.2. [Multiple files](#Multiplefiles)
-	* 4.3. [Compressed files](#Compressedfiles)
-	* 4.4. [Output file](#Outputfile)
-	* 4.5. [Output compression](#Outputcompression)
-	* 4.6. [Guess by output file name](#Guessbyoutputfilename)
-	* 4.7. [Columns is not constant](#Columnsisnotconstant)
-	* 4.8. [TSV (Tab Separated Value)](#TSVTabSeparatedValue)
-	* 4.9. [LTSV (Labeled Tab-separated Values)](#LTSVLabeledTab-separatedValues)
-	* 4.10. [JSON](#JSON)
-		* 4.10.1. [jq expression](#jqexpression)
-	* 4.11. [JSONL](#JSONL)
-	* 4.12. [TBLN](#TBLN)
-	* 4.13. [Raw output](#Rawoutput)
-	* 4.14. [ASCII Table & MarkDown output](#ASCIITableMarkDownoutput)
-	* 4.15. [Vertical format output](#Verticalformatoutput)
-	* 4.16. [SQL function](#SQLfunction)
-	* 4.17. [JOIN](#JOIN)
-	* 4.18. [PostgreSQL](#PostgreSQL)
-		* 4.18.1. [Function](#Function)
-		* 4.18.2. [Join table and CSV file is possible](#JointableandCSVfileispossible)
-	* 4.19. [MySQL](#MySQL)
-	* 4.20. [Analyze](#Analyze)
-	* 4.21. [configuration](#configuration)
-* 5. [Library](#Library)
-* 6. [License](#License)
+## INSTALL
 
-<!-- vscode-markdown-toc-config
-	numbering=true
-	autoSave=true
-	/vscode-markdown-toc-config -->
-<!-- /vscode-markdown-toc -->
-
-##  1. <a name='INSTALL'></a>INSTALL
-
-###  1.1. <a name='goget'></a>go get
+### go get
 
 ```console
 $ go get -d github.com/noborus/trdsql
@@ -83,28 +30,28 @@ $ make
 $ make install
 ```
 
-####  1.1.1. <a name='Requirements'></a>Requirements
+#### Requirements
 
 go 1.17 or higher.
 
-###  1.2. <a name='Downloadbinary'></a>Download binary
+### Download binary
 
 Download binary from the [releases](https://github.com/noborus/trdsql/releases) page(Linux/Windows/macOS).
 
-###  1.3. <a name='Homebrew'></a>Homebrew
+### Homebrew
 
 ```console
 brew install noborus/tap/trdsql
 ```
 
-###  1.4. <a name='MacPorts'></a>MacPorts
+### MacPorts
 
 ```console
 sudo port selfupdate
 sudo port install trdsql
 ```
 
-###  1.5. <a name='FreeBSD'></a>FreeBSD
+### FreeBSD
 
 [freshports](https://www.freshports.org/textproc/trdsql/)
 
@@ -112,9 +59,9 @@ sudo port install trdsql
 pkg install trdsql
 ```
 
-##  2. <a name='Docker'></a>Docker
+## Docker
 
-###  2.1. <a name='Dockerpull'></a>Docker pull
+### Docker pull
 
 Pull the latest image from the Docker hub.
 
@@ -122,7 +69,7 @@ Pull the latest image from the Docker hub.
 docker pull noborus/trdsql
 ```
 
-###  2.2. <a name='imagebuild'></a>image build
+### image build
 
 Or build it yourself.
 
@@ -130,7 +77,7 @@ Or build it yourself.
 docker build -t trdsql .
 ````
 
-###  2.3. <a name='DockerRun'></a>Docker Run
+### Docker Run
 
 Docker run.
 
@@ -138,13 +85,13 @@ Docker run.
 docker run --rm -it -v $(pwd):/tmp trdsql [options and commands]
 ```
 
-##  3. <a name='Usage'></a>Usage
+## Usage
 
 ```console
 trdsql [options] SQL
 ```
 
-###  3.1. <a name='globaloptions'></a>global options
+### global options
 
 * `-a` **filename** analyze the file and suggest SQL.
 * `-A` **filename** analyze the file but only suggest SQL.
@@ -158,7 +105,7 @@ trdsql [options] SQL
 * `-version` display version information.
 * `-q` **filename** read query from the specified file.
 
-###  3.2. <a name='Inputformats'></a>Input formats
+### Input formats
 
 * `-ig` guess format from extension. (default)
 * `-icsv` CSV format for input.
@@ -166,7 +113,7 @@ trdsql [options] SQL
 * `-iltsv` LTSV format for input.
 * `-itbln` TBLN format for input.
 
-####  3.2.1. <a name='Inputoptions'></a>Input options
+#### Input options
 
 * `-ih` the first line is interpreted as column names(CSV only).
 * `-id` **character** field delimiter for input. (default ",")(CSV only)
@@ -177,7 +124,7 @@ trdsql [options] SQL
 * `-ir` **int** number of rows to preread. (default 1)
 * `-is` **int** skip header row.
 
-###  3.3. <a name='Outputformats'></a>Output formats
+### Output formats
 
 * `-ocsv` CSV format for output. (default)
 * `-ojson` JSON format for output.
@@ -191,7 +138,7 @@ trdsql [options] SQL
 
 Or, [guess the output format by file name](#Guessbyoutputfilename).
 
-####  3.3.1. <a name='Outputoptions'></a>Output options
+#### Output options
 
 * `-out` **filename** output file name.
 * `-out-without-guess` output without guessing (when using -out).
@@ -203,7 +150,7 @@ Or, [guess the output format by file name](#Guessbyoutputfilename).
 * `-onowrap` do not wrap long columns(AT and MD only).
 * `-onull` value(string) to convert from null on output.
 
-###  3.4. <a name='HandlingofNULL'></a>Handling of NULL
+### Handling of NULL
 
 NULL is undecided in many text formats.
 JSON `null` is considered the same as SQL `NULL`.
@@ -236,7 +183,7 @@ $ echo '[1,null,""]' | trdsql -inull "" -ojson -ijson "SELECT * FROM -"
 ]
 ```
 
-##  4. <a name='Example'></a>Example
+## Example
 
 test.csv file.
 
@@ -258,7 +205,7 @@ trdsql "SELECT * FROM test.csv"
 trdsql -q test.sql
 ```
 
-###  4.1. <a name='STDINinput'></a>STDIN input
+### STDIN input
 
 "`-`" or "`stdin`" is received from standard input instead of file name.
 
@@ -272,7 +219,7 @@ or
 ps | trdsql -id " " "SELECT * FROM stdin"
 ```
 
-###  4.2. <a name='Multiplefiles'></a>Multiple files
+### Multiple files
 
 Multiple matched files can be executed as one table.
 
@@ -285,7 +232,7 @@ $ trdsql -ih "SELECT * FROM tt*.csv"
 
 **Note:** It is not possible to mix different formats (ex: CSV and LTSV).
 
-###  4.3. <a name='Compressedfiles'></a>Compressed files
+### Compressed files
 
 If the file is compressed with gzip, bz2, zstd, lz4, xz, it will be automatically uncompressed.
 
@@ -303,7 +250,7 @@ It is possible to mix uncompressed and compressed files using wildcards.
 trdsql "SELECT * FROM testdata/test.csv*"
 ```
 
-###  4.4. <a name='Outputfile'></a>Output file
+### Output file
 
 `-out filename` option to output the file to a file.
 
@@ -311,7 +258,7 @@ trdsql "SELECT * FROM testdata/test.csv*"
 trdsql -out result.csv "SELECT * FROM testdata/test.csv ORDER BY c1"
 ```
 
-###  4.5. <a name='Outputcompression'></a>Output compression
+### Output compression
 
 `-oz compression type` to compress and output.
 
@@ -319,7 +266,7 @@ trdsql -out result.csv "SELECT * FROM testdata/test.csv ORDER BY c1"
 trdsql -oz gz "SELECT * FROM testdata/test.csv ORDER BY c1" > result.csv.gz
 ```
 
-###  4.6. <a name='Guessbyoutputfilename'></a>Guess by output file name
+### Guess by output file name
 
 The filename of `-out filename` option determines
 the output format(csv, ltsv, json, tbln, raw, md, at, vf, jsonl)
@@ -334,7 +281,7 @@ The following is an LTSV file compressed in zstd.
 trdsql -out result.ltsv.zst "SELECT * FROM testdata/test.csv"
 ```
 
-###  4.7. <a name='Columnsisnotconstant'></a>Columns is not constant
+### Columns is not constant
 
 If the number of columns is not a constant, read and decide multiple rows.
 
@@ -345,7 +292,7 @@ $ trdsql -ir 3 -iltsv "SELECT * FROM test_indefinite.ltsv"
 3,Apple,100,aomori,red
 ```
 
-###  4.8. <a name='TSVTabSeparatedValue'></a>TSV (Tab Separated Value)
+### TSV (Tab Separated Value)
 
 `-id "\\t"` is input from TSV (Tab Separated Value)
 
@@ -368,7 +315,7 @@ $ trdsql -od "\t" "SELECT * FROM test.csv"
 3	Apple
 ```
 
-###  4.9. <a name='LTSVLabeledTab-separatedValues'></a>LTSV (Labeled Tab-separated Values)
+### LTSV (Labeled Tab-separated Values)
 
 `-iltsv` is input from LTSV(Labeled Tab-separated Values).
 
@@ -401,7 +348,7 @@ id:2	name:Melon	price:500
 id:3	name:Apple	price:100
 ```
 
-###  4.10. <a name='JSON'></a>JSON
+### JSON
 
 `-ijson` is input from JSON.
 
@@ -478,7 +425,7 @@ $ trdsql -ijson "SELECT id, name, JSON_EXTRACT(attribute,'$.country'), JSON_EXTR
 3,Tuck,Mayotte,antiquewhite
 ```
 
-####  4.10.1. <a name='jqexpression'></a>jq expression
+#### jq expression
 
 If json has a hierarchy, you can filter by [jq](https://stedolan.github.io/jq/) expression.
 
@@ -552,7 +499,7 @@ $ echo '{"a":1} [2] 3' | trdsql -ijson "SELECT * FROM -::'. as {\$a} ?// [\$a] ?
 3
 ```
 
-###  4.11. <a name='JSONL'></a>JSONL
+### JSONL
 
 Another json format. JSONL(JSON Lines).
 
@@ -593,7 +540,7 @@ $ trdsql -ojsonl "SELECT * FROM test.csv"
 {"c1":"3","c2":"Apple"}
 ```
 
-###  4.12. <a name='TBLN'></a>TBLN
+### TBLN
 
 `-itbln` is input from TBLN.
 
@@ -629,7 +576,7 @@ $ trdsql -otbln "SELECT c1::int as id, c2::text as name FROM test.csv"
 TBLN can contain column names and type definitions.
 Please refer to <https://tbln.dev/> for details of TBLN.
 
-###  4.13. <a name='Rawoutput'></a>Raw output
+### Raw output
 
 `-oraw` is Raw Output.
 It is used when "escape processing is unnecessary" in CSV output.
@@ -654,7 +601,7 @@ $ trdsql -oraw -od "\t|\t" -db pdb "SELECT * FROM test.csv"
 3	|	Apple
 ```
 
-###  4.14. <a name='ASCIITableMarkDownoutput'></a>ASCII Table & MarkDown output
+### ASCII Table & MarkDown output
 
 `-oat` is ASCII table output.
 
@@ -682,7 +629,7 @@ $ trdsql -omd "SELECT * FROM test.csv"
 
 The `-onowrap` option does not wrap long columns in `at` or `md` output.
 
-###  4.15. <a name='Verticalformatoutput'></a>Vertical format output
+### Vertical format output
 
 -ovf is Vertical format output("column name | value" vertically).
 
@@ -699,7 +646,7 @@ $ trdsql -ovf "SELECT * FROM test.csv"
   c2 | Apple
 ```
 
-###  4.16. <a name='SQLfunction'></a>SQL function
+### SQL function
 
 ```console
 $ trdsql "SELECT count(*) FROM test.csv"
@@ -727,7 +674,7 @@ TIME,TTY,PID,CMD
 
 Note: the available functions and their syntax depend on the driver you have chosen (mysql or postgres or sqlite). The default one is sqlite.
 
-###  4.17. <a name='JOIN'></a>JOIN
+### JOIN
 
 The SQL JOIN can be used.
 
@@ -753,7 +700,7 @@ $ trdsql "SELECT u.c1,u.c2,h.c2 FROM user.csv as u LEFT JOIN hist.csv as h ON(u.
 2,userB,2017-7-11
 ```
 
-###  4.18. <a name='PostgreSQL'></a>PostgreSQL
+### PostgreSQL
 
 When using PostgreSQL, specify postgres for driver
  and driver-specific data source name for dsn.
@@ -762,7 +709,7 @@ When using PostgreSQL, specify postgres for driver
 trdsql -driver postgres -dsn "dbname=test" "SELECT count(*) FROM test.csv "
 ```
 
-####  4.18.1. <a name='Function'></a>Function
+#### Function
 
 The PostgreSQL driver can use the window function.
 
@@ -782,7 +729,7 @@ $ trdsql -driver postgres -dsn "dbname=test" "SELECT generate_series(1,3);"
 3
 ```
 
-####  4.18.2. <a name='JointableandCSVfileispossible'></a>Join table and CSV file is possible
+#### Join table and CSV file is possible
 
 Test database has a colors table.
 
@@ -821,7 +768,7 @@ $ psql -c "SELECT * FROM fruits;"
 (3 rows)
 ```
 
-###  4.19. <a name='MySQL'></a>MySQL
+### MySQL
 
 When using MySQL, specify mysql for driver and connection information for dsn.
 
@@ -839,7 +786,7 @@ $ trdsql -driver mysql -dsn "user:password@/test" "SELECT c1, SHA2(c2,224) FROM 
 
 MySQL can join tables and CSV files as well as PostgreSQL.
 
-###  4.20. <a name='Analyze'></a>Analyze
+### Analyze
 
 The ***-a filename*** option parses the file and outputs table information and SQL examples.
 
@@ -886,7 +833,7 @@ trdsql -ih "SELECT id, count(id) FROM testdata/header.csv GROUP BY id"
 trdsql -ih "SELECT id, \`name\` FROM testdata/header.csv ORDER BY id LIMIT 10"
 ```
 
-###  4.21. <a name='configuration'></a>configuration
+### configuration
 
 You can specify driver and dsn in the configuration file.
 
@@ -945,7 +892,7 @@ $ trdsql -debug -db pdb "SELECT * FROM test.csv"
 3,Apple
 ```
 
-##  5. <a name='Library'></a>Library
+## Library
 
 Example of use as a library.
 
@@ -974,7 +921,7 @@ Please refer to [godoc](https://pkg.go.dev/github.com/noborus/trdsql) and _examp
 
 See also [psutilsql](https://github.com/noborus/psutilsql), which uses trdsql as a library.
 
-##  6. <a name='License'></a>License
+## License
 
 MIT
 
