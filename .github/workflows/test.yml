@@ -12,11 +12,11 @@ jobs:
     steps:
     - name: Install Go
       if: success()
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
         go-version: ${{ matrix.go-version }}
     - name: Check out code into the Go module directory
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Run tests
       run: make test
 
@@ -44,13 +44,13 @@ jobs:
           MYSQL_DATABASE: trdsql_test
 
     steps:
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v3
     - name: Install Go
       if: success()
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
-        go-version: '1.17'
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v2
+        go-version-file: 'go.mod'
     - name: Run tests
       run: make test
       env:
