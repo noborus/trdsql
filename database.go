@@ -376,6 +376,9 @@ func queryInsert(table *importTable) string {
 // QuotedName returns the table name quoted.
 // Returns as is, if already quoted.
 func (db *DB) QuotedName(orgName string) string {
+	if orgName == "" {
+		return ""
+	}
 	if orgName[0] == db.quote[0] {
 		return orgName
 	}
