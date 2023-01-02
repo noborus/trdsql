@@ -10,15 +10,15 @@ import (
 // CSVWriter provides methods of the Writer interface.
 type CSVWriter struct {
 	writer       *bufio.Writer
-	outHeader    bool
-	outDelimiter rune
-	outQuote     rune
-	outAllQuote  bool
-	outUseCRLF   bool
 	needQuotes   string
 	endLine      string
-	needNULL     bool
 	outNULL      string
+	outDelimiter rune
+	outQuote     rune
+	outHeader    bool
+	outAllQuote  bool
+	outUseCRLF   bool
+	needNULL     bool
 }
 
 // NewCSVWriter returns CSVWriter.

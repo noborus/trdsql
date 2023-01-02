@@ -19,38 +19,28 @@ type Writer interface {
 
 // WriteOpts represents options that determine the behavior of the writer.
 type WriteOpts struct {
-	// OutFormat is the writing format.
-	OutFormat Format
+	// OutStream is the output destination.
+	OutStream io.Writer
+	// ErrStream is the error output destination.
+	ErrStream io.Writer
 
 	// OutDelimiter is the output delimiter (Use only CSV and Raw).
 	OutDelimiter string
-
 	// OutQuote is the output quote character (Use only CSV).
 	OutQuote string
-
+	// OutNeedNULL is true, replace NULL with OutNULL.
+	OutNULL string
+	// OutFormat is the writing format.
+	OutFormat Format
 	// OutAllQuotes is true if Enclose all fields (Use only CSV).
 	OutAllQuotes bool
-
 	// True to use \r\n as the line terminator (Use only CSV).
 	OutUseCRLF bool
-
 	// OutHeader is true if it outputs a header(Use only CSV and Raw).
 	OutHeader bool
-
 	// OutNoWrap is true, do not wrap long columns(Use only AT and MD).
-	OutNoWrap bool
-
-	// OutNeedNULL is true, replace NULL with OutNULL.
+	OutNoWrap   bool
 	OutNeedNULL bool
-
-	// OutNULL is a string that replaces NULL.
-	OutNULL string
-
-	// OutStream is the output destination.
-	OutStream io.Writer
-
-	// ErrStream is the error output destination.
-	ErrStream io.Writer
 }
 
 // WriteOpt is a function to set WriteOpts.

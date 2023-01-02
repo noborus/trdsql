@@ -7,8 +7,8 @@ import (
 
 // BufferImporter a structure that includes tableName and Reader.
 type BufferImporter struct {
-	tableName string
 	Reader
+	tableName string
 }
 
 // NewBufferImporter returns trdsql BufferImporter.

@@ -10,13 +10,13 @@ import (
 // LTSVReader provides methods of the Reader interface.
 type LTSVReader struct {
 	reader    *bufio.Reader
-	preRead   []map[string]string
 	delimiter string
+	inNULL    string
+	preRead   []map[string]string
 	names     []string
 	types     []string
 	limitRead bool
 	needNULL  bool
-	inNULL    string
 }
 
 // NewLTSVReader returns LTSVReader and error.

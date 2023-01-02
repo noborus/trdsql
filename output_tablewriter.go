@@ -7,9 +7,9 @@ import (
 // TWWriter provides methods of the Writer interface.
 type TWWriter struct {
 	writer   *tablewriter.Table
+	outNULL  string
 	results  []string
 	needNULL bool
-	outNULL  string
 }
 
 // NewTWWriter returns TWWriter.

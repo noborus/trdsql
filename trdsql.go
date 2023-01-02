@@ -15,17 +15,17 @@ var AppName = "trdsql"
 
 // TRDSQL represents DB definition and Importer/Exporter interface.
 type TRDSQL struct {
-	// Driver is database driver name(sqlite3/mysql/postgres).
-	Driver string
-	// Dsn is data source name.
-	Dsn string
-
 	// Importer is interface of processing to
 	// import(create/insert) data.
 	Importer Importer
 	// Exporter is interface export to the process of
 	//  export(select) from the database.
 	Exporter Exporter
+
+	// Driver is database driver name(sqlite3/mysql/postgres).
+	Driver string
+	// Dsn is data source name.
+	Dsn string
 }
 
 // NewTRDSQL returns a new TRDSQL structure.

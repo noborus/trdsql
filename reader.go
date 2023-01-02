@@ -20,6 +20,16 @@ type Reader interface {
 
 // ReadOpts represents options that determine the behavior of the reader.
 type ReadOpts struct {
+	// InDelimiter is the field delimiter.
+	// default is ','
+	InDelimiter string
+
+	// InNULL is a string to replace with NULL.
+	InNULL string
+
+	// InJQuery is a jq expression.
+	InJQuery string
+
 	// InFormat is read format.
 	// The supported format is CSV/LTSV/JSON/TBLN.
 	InFormat   Format
@@ -30,33 +40,22 @@ type ReadOpts struct {
 	// determine the number of columns.
 	InPreRead int
 
-	// InLimitRead is limit read.
-	InLimitRead bool
-
 	// InSkip is number of rows to skip.
 	// Skip reading specified number of lines.
 	InSkip int
 
-	// InDelimiter is the field delimiter.
-	// default is ','
-	InDelimiter string
+	// InLimitRead is limit read.
+	InLimitRead bool
 
 	// InHeader is true if there is a header.
 	// It is used as a column name.
 	InHeader bool
-
 	// InNeedNULL is true, replace InNULL with NULL.
 	InNeedNULL bool
-
-	// InNULL is a string to replace with NULL.
-	InNULL string
 
 	// IsTemporary is a flag whether to make temporary table.
 	// default is true.
 	IsTemporary bool
-
-	// InJQuery is a jq expression.
-	InJQuery string
 }
 
 // NewReadOpts Returns ReadOpts.

@@ -139,8 +139,8 @@ func (db *DB) queryCreateTable(tableName string, columnNames []string, columnTyp
 type importTable struct {
 	tableName string
 	columns   []string
-	maxCap    int
 	row       []interface{}
+	maxCap    int
 	lastCount int
 	count     int
 }
