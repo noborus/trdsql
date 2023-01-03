@@ -139,8 +139,8 @@ func (db *DB) queryCreateTable(tableName string, columnNames []string, columnTyp
 type importTable struct {
 	tableName string
 	columns   []string
-	maxCap    int
 	row       []interface{}
+	maxCap    int
 	lastCount int
 	count     int
 }
@@ -376,6 +376,9 @@ func queryInsert(table *importTable) string {
 // QuotedName returns the table name quoted.
 // Returns as is, if already quoted.
 func (db *DB) QuotedName(orgName string) string {
+	if orgName == "" {
+		return ""
+	}
 	if orgName[0] == db.quote[0] {
 		return orgName
 	}

@@ -20,14 +20,14 @@ import (
 // JSONReader provides methods of the Reader interface.
 type JSONReader struct {
 	reader    *json.Decoder
-	preRead   []map[string]interface{}
 	query     *gojq.Query
 	already   map[string]bool
+	inNULL    string
+	preRead   []map[string]interface{}
 	names     []string
 	types     []string
 	limitRead bool
 	needNULL  bool
-	inNULL    string
 }
 
 // NewJSONReader returns JSONReader and error.

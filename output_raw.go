@@ -9,10 +9,10 @@ import (
 type RAWWriter struct {
 	writer    *bufio.Writer
 	delimiter string
-	outHeader bool
 	endLine   string
-	needNULL  bool
 	outNULL   string
+	outHeader bool
+	needNULL  bool
 }
 
 // NewRAWWriter returns RAWWriter.

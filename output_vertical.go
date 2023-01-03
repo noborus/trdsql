@@ -12,12 +12,12 @@ import (
 // VFWriter is Vertical Format output.
 type VFWriter struct {
 	writer    *bufio.Writer
+	outNULL   string
+	header    []string
 	termWidth int
 	hSize     int
-	header    []string
 	count     int
 	needNULL  bool
-	outNULL   string
 }
 
 // NewVFWriter returns VFWriter.

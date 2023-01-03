@@ -11,12 +11,12 @@ import (
 // CSVReader provides methods of the Reader interface.
 type CSVReader struct {
 	reader    *csv.Reader
+	inNULL    string
 	names     []string
 	types     []string
 	preRead   [][]string
 	limitRead bool
 	needNULL  bool
-	inNULL    string
 }
 
 // NewCSVReader returns CSVReader and error.
