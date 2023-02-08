@@ -11,9 +11,9 @@ import (
 // JSONWriter provides methods of the Writer interface.
 type JSONWriter struct {
 	writer   *json.Encoder
+	outNULL  string
 	results  []*orderedmap.OrderedMap
 	needNULL bool
-	outNULL  string
 }
 
 // NewJSONWriter returns JSONWriter.

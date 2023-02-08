@@ -7,10 +7,10 @@ import (
 // LTSVWriter provides methods of the Writer interface.
 type LTSVWriter struct {
 	writer    *bufio.Writer
-	delimiter rune
-	results   []string
-	needNULL  bool
 	outNULL   string
+	results   []string
+	delimiter rune
+	needNULL  bool
 }
 
 // NewLTSVWriter returns LTSVWriter.

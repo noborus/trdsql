@@ -9,9 +9,9 @@ import (
 // TBLNWriter provides methods of the Writer interface.
 type TBLNWriter struct {
 	writer   *tbln.Writer
+	outNULL  string
 	results  []string
 	needNULL bool
-	outNULL  string
 }
 
 // NewTBLNWriter returns TBLNWriter.

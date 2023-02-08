@@ -11,10 +11,10 @@ import (
 // TBLNRead provides methods of the Reader interface.
 type TBLNRead struct {
 	reader    tbln.Reader
+	inNULL    string
 	preRead   [][]interface{}
 	limitRead bool
 	needNULL  bool
-	inNULL    string
 }
 
 // NewTBLNReader returns TBLNRead and error.

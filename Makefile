@@ -1,7 +1,7 @@
 VERSION=$(shell git describe --tags 2>/dev/null)
 
 GOCMD=go
-TAGS=""
+TAGS="sqlite_math_functions"
 GOGET=$(GOCMD) get
 GOCLEAN=$(GOCMD) clean
 ifeq ($(strip $(VERSION)),)
@@ -9,7 +9,7 @@ ifeq ($(strip $(VERSION)),)
 else
   LDFLAGS="-X github.com/noborus/trdsql.Version=$(VERSION)"
 endif
-GOVERSION="1.17.x"
+GOVERSION="1.19.x"
 BUILDFLAG=-tags $(TAGS) -ldflags=$(LDFLAGS)
 GOBUILD=$(GOCMD) build $(BUILDFLAG)
 GOTEST=$(GOCMD) test -tags $(TAGS) ./...
@@ -102,17 +102,17 @@ linux-mipsle:
 
 windows-386:
 	mkdir dist/trdsql_$(VERSION)_windows_386
-	cp $(DIST_BIN)/$(BINARY_NAME)-windows-4.0-386.exe dist/trdsql_$(VERSION)_windows_386/$(BINARY_NAME).exe
+	cp $(DIST_BIN)/$(BINARY_NAME)-windows-386.exe dist/trdsql_$(VERSION)_windows_386/$(BINARY_NAME).exe
 
 windows-amd64:
 	mkdir dist/trdsql_$(VERSION)_windows_amd64
-	cp $(DIST_BIN)/$(BINARY_NAME)-windows-4.0-amd64.exe dist/trdsql_$(VERSION)_windows_amd64/$(BINARY_NAME).exe
+	cp $(DIST_BIN)/$(BINARY_NAME)-windows-amd64.exe dist/trdsql_$(VERSION)_windows_amd64/$(BINARY_NAME).exe
 
 darwin-amd64:
 	mkdir dist/trdsql_$(VERSION)_darwin_amd64
-	cp $(DIST_BIN)/$(BINARY_NAME)-darwin-10.*-amd64 dist/trdsql_$(VERSION)_darwin_amd64/$(BINARY_NAME)
+	cp $(DIST_BIN)/$(BINARY_NAME)-darwin-amd64 dist/trdsql_$(VERSION)_darwin_amd64/$(BINARY_NAME)
 
 darwin-arm64:
 	mkdir dist/trdsql_$(VERSION)_darwin_arm64
-	cp $(DIST_BIN)/$(BINARY_NAME)-darwin-10.*-arm64 dist/trdsql_$(VERSION)_darwin_arm64/$(BINARY_NAME)
+	cp $(DIST_BIN)/$(BINARY_NAME)-darwin-arm64 dist/trdsql_$(VERSION)_darwin_arm64/$(BINARY_NAME)
 

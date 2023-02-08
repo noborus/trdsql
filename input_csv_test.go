@@ -51,7 +51,7 @@ func TestNewCSVReader(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "notEnouphHeader",
+			name: "notEnoughHeader",
 			args: args{
 				reader: strings.NewReader("h1,\nv1,v2"),
 				opts: NewReadOpts(

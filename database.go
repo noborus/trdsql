@@ -147,8 +147,8 @@ func (db *DB) queryCreateTable(tableName string, columnNames []string, columnTyp
 type importTable struct {
 	tableName string
 	columns   []string
-	maxCap    int
 	row       []interface{}
+	maxCap    int
 	lastCount int
 	count     int
 }
@@ -203,7 +203,7 @@ func (db *DB) copyImport(ctx context.Context, table *importTable, reader Reader)
 		if row == nil {
 			break
 		}
-		if _, err := stmt.ExecContext(ctx, row...); err != nil {
+		if _, err = stmt.ExecContext(ctx, row...); err != nil {
 			return err
 		}
 	}
@@ -220,7 +220,7 @@ func (db *DB) copyImport(ctx context.Context, table *importTable, reader Reader)
 		if len(table.row) == 0 {
 			continue
 		}
-		if _, err := stmt.ExecContext(ctx, table.row...); err != nil {
+		if _, err = stmt.ExecContext(ctx, table.row...); err != nil {
 			return err
 		}
 	}
@@ -384,6 +384,9 @@ func queryInsert(table *importTable) string {
 // QuotedName returns the table name quoted.
 // Returns as is, if already quoted.
 func (db *DB) QuotedName(orgName string) string {
+	if orgName == "" {
+		return ""
+	}
 	if orgName[0] == db.quote[0] {
 		return orgName
 	}

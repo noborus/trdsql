@@ -24,6 +24,14 @@ type AnalyzeOpts struct {
 	OutStream io.Writer
 }
 
+// Defined to wrap string styling.
+var (
+	colorTable    = gchalk.Yellow
+	colorFileType = gchalk.Red
+	colorCaption  = gchalk.Cyan
+	colorNotes    = gchalk.Magenta
+)
+
 // NewAnalyzeOpts returns AnalyzeOpts.
 func NewAnalyzeOpts() *AnalyzeOpts {
 	return &AnalyzeOpts{
@@ -37,6 +45,7 @@ func NewAnalyzeOpts() *AnalyzeOpts {
 // Analyze analyzes the file and outputs the table information.
 // In addition, SQL execution examples are output.
 func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
+	w := opts.OutStream
 	rOpts, fileName := GuessOpts(readOpts, fileName)
 	file, err := importFileOpen(fileName)
 	if err != nil {
@@ -61,62 +70,130 @@ func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
 	if err != nil {
 		return err
 	}
+	names := quoteNames(columnNames, opts.Quote)
+
 	columnTypes, err := reader.Types()
 	if err != nil {
 		return err
 	}
-	names := make([]string, len(columnNames))
-	for i := range columnNames {
-		names[i] = quoted(columnNames[i], opts.Quote)
-	}
-	results := make([][]string, 0)
-	for _, row := range reader.PreReadRow() {
-		resultRow := make([]string, len(names))
-		for j, col := range row {
-			resultRow[j] = ValString(col)
-		}
-		results = append(results, resultRow)
-	}
-	typeTable := tablewriter.NewWriter(opts.OutStream)
-	typeTable.SetAutoFormatHeaders(false)
-	typeTable.SetHeader([]string{"column name", "type"})
-	for i := range columnNames {
-		typeTable.Append([]string{names[i], columnTypes[i]})
-	}
-	sampleTable := tablewriter.NewWriter(opts.OutStream)
-	sampleTable.SetAutoFormatHeaders(false)
-	sampleTable.SetHeader(names)
-	for _, row := range results {
-		sampleTable.Append(row)
-	}
 
-	yellow := gchalk.Yellow
-	red := gchalk.Red
-	magenta := gchalk.Magenta
-	cyan := gchalk.Cyan
+	results := getResults(reader, len(names))
+
 	if opts.Detail {
-		fmt.Fprintf(opts.OutStream, "The table name is %s.\n", yellow(tableName))
-		fmt.Fprintf(opts.OutStream, "The file type is %s.\n", red(rOpts.realFormat.String()))
-		if len(names) <= 1 && rOpts.realFormat == CSV {
-			fmt.Fprintln(opts.OutStream, magenta("Is the delimiter different?"))
-			fmt.Fprintln(opts.OutStream, magenta(`Please try again with -id "\t" or -id " ".`))
+		fmt.Fprintf(w, "The table name is %s.\n", colorTable(tableName))
+		fmt.Fprintf(w, "The file type is %s.\n", colorFileType(rOpts.realFormat.String()))
+		if len(names) <= 1 && len(results) != 0 {
+			additionalAdvice(w, rOpts, columnNames[0], results[0][0])
 		}
-		fmt.Fprintln(opts.OutStream, cyan("\nData types:"))
-		typeTable.Render()
-		fmt.Fprintln(opts.OutStream, cyan("\nData samples:"))
-		sampleTable.Render()
-		fmt.Fprintln(opts.OutStream, cyan("\nExamples:"))
+
+		fmt.Fprintln(w, colorCaption("\nData types:"))
+		typeTableRender(w, names, columnTypes)
+
+		fmt.Fprintln(w, colorCaption("\nData samples:"))
+		sampleTableRender(w, names, results)
+
+		fmt.Fprintln(w, colorCaption("\nExamples:"))
 	}
 
 	if len(results) == 0 {
 		return nil
 	}
-
 	queries := examples(tableName, names, results[0])
 	for _, query := range queries {
-		fmt.Fprintf(opts.OutStream, "%s %s\n", opts.Command, `"`+query+`"`)
+		fmt.Fprintf(w, "%s %s\n", opts.Command, `"`+query+`"`)
 	}
 	return nil
+}
+
+func typeTableRender(w io.Writer, names []string, columnTypes []string) {
+	typeTable := tablewriter.NewWriter(w)
+	typeTable.SetAutoFormatHeaders(false)
+	typeTable.SetHeader([]string{"column name", "type"})
+	for i := range names {
+		typeTable.Append([]string{names[i], columnTypes[i]})
+	}
+	typeTable.Render()
+}
+
+func sampleTableRender(w io.Writer, names []string, results [][]string) {
+	sampleTable := tablewriter.NewWriter(w)
+	sampleTable.SetAutoFormatHeaders(false)
+	sampleTable.SetHeader(names)
+	for _, row := range results {
+		sampleTable.Append(row)
+	}
+	sampleTable.Render()
+}
+
+func additionalAdvice(w io.Writer, rOpts *ReadOpts, name string, value string) {
+	switch rOpts.realFormat {
+	case CSV:
+		checkCSV(w, value)
+	case JSON:
+		checkJSON(w, rOpts.InJQuery, name)
+	}
+}
+
+func checkCSV(w io.Writer, value string) {
+	if value == "[" || value == "{" {
+		fmt.Fprintln(w, colorNotes("Is it a JSON file?"))
+		fmt.Fprintln(w, colorNotes("Please try again with -ijson."))
+		return
+	}
+	fmt.Fprintln(w, colorNotes("Is the delimiter different?"))
+	delimiter := " "
+	if strings.Count(value, ";") > 1 {
+		delimiter = ";"
+	}
+	if strings.Count(value, "\t") > 1 {
+		delimiter = "\\t"
+	}
+	fmt.Fprintf(w, colorNotes("Please try again with -id \"%s\" or other character.\n"), delimiter)
+	if strings.Contains(value, ":") {
+		fmt.Fprintln(w, colorNotes("Is it a LTSV file?"))
+		fmt.Fprintln(w, colorNotes("Please try again with -iltsv."))
+	}
+}
+
+func checkJSON(w io.Writer, jquery string, name string) {
+	fmt.Fprintln(w, colorNotes("Is it for internal objects?"))
+	jq := "." + name
+	if jquery != "" {
+		jq = jquery + jq
+	}
+	fmt.Fprintf(w, colorNotes("Please try again with -ijq \"%s\".\n"), jq)
+}
+
+func quoteNames(names []string, quote string) []string {
+	qnames := make([]string, len(names))
+	for i := range names {
+		qnames[i] = quoted(names[i], quote)
+	}
+	return qnames
+}
+
+var noQuoteRegexp = regexp.MustCompile(`^[a-z0-9_]+$`)
+
+func quoted(name string, quote string) string {
+	if noQuoteRegexp.MatchString(name) {
+		_, exist := keywords[name]
+		if !exist {
+			return name
+		}
+	}
+	return quote + name + quote
+}
+
+func getResults(reader Reader, colNum int) [][]string {
+	results := make([][]string, 0)
+	for _, row := range reader.PreReadRow() {
+		resultRow := make([]string, colNum)
+		for j, col := range row {
+			resultRow[j] = ValString(col)
+		}
+		results = append(results, resultRow)
+	}
+	return results
 }
 
 func examples(tableName string, names []string, results []string) []string {
@@ -131,16 +208,4 @@ func examples(tableName string, names []string, results []string) []string {
 		fmt.Sprintf("SELECT %s FROM %s ORDER BY %s LIMIT 10", strings.Join(names, ", "), tableName, names[0]),
 	}
 	return queries
-}
-
-var noQuoteRegexp = regexp.MustCompile(`^[a-z0-9_]+$`)
-
-func quoted(name string, quote string) string {
-	if noQuoteRegexp.MatchString(name) {
-		_, exist := keywords[name]
-		if !exist {
-			return name
-		}
-	}
-	return quote + name + quote
 }

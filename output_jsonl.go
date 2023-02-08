@@ -9,8 +9,8 @@ import (
 // JSONLWriter provides methods of the Writer interface.
 type JSONLWriter struct {
 	writer   *json.Encoder
-	needNULL bool
 	outNULL  string
+	needNULL bool
 }
 
 // NewJSONLWriter returns JSONLWriter.
