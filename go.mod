@@ -23,10 +23,11 @@ require (
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/jwalton/go-supportscolor v1.1.0 // indirect
-	github.com/rivo/uniseg v0.2.0 // indirect
-	golang.org/x/crypto v0.4.0 // indirect
-	golang.org/x/sys v0.3.0 // indirect
+	github.com/rivo/uniseg v0.4.3 // indirect
+	golang.org/x/crypto v0.5.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
+	gonum.org/v1/gonum v0.12.0 // indirect
 )
 
 go 1.18
