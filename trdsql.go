@@ -62,6 +62,10 @@ const (
 	// TBLN format(https://tbln.dev).
 	TBLN
 
+	// import
+	// Format using guesswidth library.
+	GW
+
 	// export
 	// Output as it is.
 	// Multiple characters can be selected as delimiter.
@@ -104,6 +108,8 @@ func (f Format) String() string {
 		return "JSON"
 	case TBLN:
 		return "TBLN"
+	case GW:
+		return "GW"
 	case RAW:
 		return "RAW"
 	case MD:

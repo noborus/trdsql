@@ -172,6 +172,8 @@ func NewReader(reader io.Reader, readOpts *ReadOpts) (Reader, error) {
 		return NewJSONReader(reader, readOpts)
 	case TBLN:
 		return NewTBLNReader(reader, readOpts)
+	case GW:
+		return NewGWReader(reader, readOpts)
 	default:
 		return nil, ErrUnknownFormat
 	}

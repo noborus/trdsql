@@ -1,0 +1,12 @@
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  0.0  0.0 168720 13812 ?        Ss   Mar11   1:11 /sbin/init splash
+root           2  0.0  0.0      0     0 ?        S    Mar11   0:00 [kthreadd]
+root           3  0.0  0.0      0     0 ?        I<   Mar11   0:00 [rcu_gp]
+root           4  0.0  0.0      0     0 ?        I<   Mar11   0:00 [rcu_par_gp]
+root           5  0.0  0.0      0     0 ?        I<   Mar11   0:00 [slub_flushwq]
+root           6  0.0  0.0      0     0 ?        I<   Mar11   0:00 [netns]
+root           8  0.0  0.0      0     0 ?        I<   Mar11   0:00 [kworker/0:0H-events_highpri]
+root          10  0.0  0.0      0     0 ?        I<   Mar11   0:00 [mm_percpu_wq]
+noborus  1234567  1.5  0.2 1234567898 95812 ?    Sl   06:39   0:00 chrome --type=renderer -
+noborus  1234568  0.5  0.2 1234567890 66488 ?    Sl   06:39   0:00 chrome
+noborus  1234569  0.0  0.0  19999  3333 pts/2    R+   06:39   0:00 ps aux

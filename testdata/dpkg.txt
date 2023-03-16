@@ -1,0 +1,9 @@
+要望=(U)不明/(I)インストール/(R)削除/(P)完全削除/(H)保持
+| 状態=(N)無/(I)インストール済/(C)設定/(U)展開/(F)設定失敗/(H)半インストール/(W)トリガ待ち/(T)トリガ保留
+|/ エラー?=(空欄)無/(R)要再インストール (状態,エラーの大文字=異常)
+||/ 名前                                       バージョン                                 アーキテクチ 説明
+ii  accountsservice                            22.07.5-2ubuntu1.3                         amd64        query and manipulate user account information
+ii  acl                                        2.3.1-1                                    amd64        access control list - utilities
+ii  acpi-support                               0.144                                      amd64        scripts for handling many ACPI events
+ii  acpid                                      1:2.0.33-1ubuntu1                          amd64        Advanced Configuration and Power Interface event daemon
+ii  adduser                                    3.118ubuntu5                               all          add and remove users and groups

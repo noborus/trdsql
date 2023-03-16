@@ -6,11 +6,12 @@ require (
 	github.com/iancoleman/orderedmap v0.2.0
 	github.com/itchyny/gojq v0.12.12
 	github.com/jwalton/gchalk v1.3.0
-	github.com/klauspost/compress v1.16.0
+	github.com/klauspost/compress v1.16.3
 	github.com/lib/pq v1.10.7
 	github.com/mattn/go-runewidth v0.0.14
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/multiprocessio/go-sqlite3-stdlib v0.0.0-20220822170115-9f6825a1cd25
+	github.com/noborus/guesswidth v0.3.0
 	github.com/noborus/tbln v0.0.2
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pierrec/lz4 v2.6.1+incompatible
