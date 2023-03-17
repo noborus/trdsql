@@ -40,10 +40,8 @@ github.com/mattn/go-sqlite3 v1.14.16 h1:yOQRA0RpS5PFz/oikGwBEqvAWhWg5ufRz4ETLjwp
 github.com/mattn/go-sqlite3 v1.14.16/go.mod h1:2eHXhiwb8IkHr+BDWZGa96P6+rkvnG63S2DGjv9HUNg=
 github.com/multiprocessio/go-sqlite3-stdlib v0.0.0-20220822170115-9f6825a1cd25 h1:bnhGk2UFFPqylhxTEffs1ehDRn4bEZsEoDH53Z4HqA8=
 github.com/multiprocessio/go-sqlite3-stdlib v0.0.0-20220822170115-9f6825a1cd25/go.mod h1:RrGEZqqiyEcLyTVLDSgtNZVLqJykj0F4vwuuqvMdT60=
-github.com/noborus/guesswidth v0.2.0 h1:bOqiec6tWTIQyouLMclEXwoWARLVtQSSFGjB8sRZAUc=
-github.com/noborus/guesswidth v0.2.0/go.mod h1:yUjU1Wurf1AikEIYRLlKU0DiH+c1sZWjm07IIpESlWQ=
-github.com/noborus/guesswidth v0.3.0 h1:YcIRE1ObgGxzDRK3aaZ1iYvbjV96Zv9ISWHdiCfkf7g=
-github.com/noborus/guesswidth v0.3.0/go.mod h1:yUjU1Wurf1AikEIYRLlKU0DiH+c1sZWjm07IIpESlWQ=
+github.com/noborus/guesswidth v0.3.1 h1:IgdXiTYJpw5MYouFKVW83l/xURay9kQ72FIu8Tatoy8=
+github.com/noborus/guesswidth v0.3.1/go.mod h1:yUjU1Wurf1AikEIYRLlKU0DiH+c1sZWjm07IIpESlWQ=
 github.com/noborus/tbln v0.0.2 h1:pQIv+ZO38KPz52FOuhs/W3inpgmd5qwL8XFDqI+KKyY=
 github.com/noborus/tbln v0.0.2/go.mod h1:kS3WhEDRJhNwF3+aRGl9iaUzu/r3lExDagcPPENtNQ0=
 github.com/olekukonko/tablewriter v0.0.5 h1:P2Ga83D34wi1o9J6Wh1mRuqd4mF/x/lgBS7N7AbDhec=

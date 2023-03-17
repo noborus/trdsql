@@ -26,6 +26,8 @@ func NewGWReader(reader io.Reader, opts *ReadOpts) (*GWReader, error) {
 	r.limitRead = opts.InLimitRead
 	r.reader.Header = opts.InSkip
 	r.scanNum = 1000
+	r.needNULL = opts.InNeedNULL
+	r.inNULL = opts.InNULL
 	r.preRead = opts.InPreRead
 	if r.preRead > r.scanNum {
 		r.scanNum = r.preRead
