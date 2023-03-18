@@ -265,13 +265,13 @@ trdsql -q test.sql
 "`-`" or "`stdin`" is received from standard input instead of file name.
 
 ```console
-ps | trdsql -id " " "SELECT * FROM -"
+cat test.csv | trdsql "SELECT * FROM -"
 ```
 
 or
 
 ```console
-ps | trdsql -id " " "SELECT * FROM stdin"
+cat test.csv | trdsql "SELECT * FROM stdin"
 ```
 
 ###  4.2. <a name='multiple-files'></a>Multiple files
@@ -645,7 +645,9 @@ PID,TTY,TIME,CMD
 733213,pts/3,00:00:00,guesswidth
 ```
 
-`-id " "` doesn't recognize well when there are spaces in the column.
+`-id " "` for `CSV` also works in many cases.
+But `-id " "` does not recognize spaces in columns very well.
+
 `-iwidth` recognizes column widths and space separators.
 
 ###  4.14. <a name='raw-output'></a>Raw output
@@ -732,16 +734,6 @@ $ trdsql "SELECT c2,c1 FROM test.csv"
 Orange,1
 Melon,2
 Apple,3
-```
-
-"- ih" sets the first line to column name
-
-```console
-$ ps |trdsql -ih -oh -id " " "SELECT \`PID\`, \`TTY\`, \`TIME\`, \`CMD\` FROM -"
-TIME,TTY,PID,CMD
-00:00:00,pts/20,3452,ps
-00:00:00,pts/20,3453,trdsql
-00:00:05,pts/20,15576,zsh
 ```
 
 Note: the available functions and their syntax depend on the driver you have chosen (mysql or postgres or sqlite). The default one is sqlite.
