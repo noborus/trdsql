@@ -317,8 +317,8 @@ func guessFormat(fileName string) Format {
 			return JSON
 		case "TBLN":
 			return TBLN
-		case "GW":
-			return GW
+		case "WIDTH":
+			return WIDTH
 		}
 		fileName = fileName[:len(fileName)-len(dotExt)]
 	}

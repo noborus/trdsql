@@ -55,10 +55,10 @@ func TestNewGWReader(t *testing.T) {
 				return
 			}
 			if !reflect.DeepEqual(got.names, tt.want.names) {
-				t.Errorf("NewLTSVReader().names = %v, want %v", got.names, tt.want.names)
+				t.Errorf("NewGWVReader().names = %v, want %v", got.names, tt.want.names)
 			}
 			if !reflect.DeepEqual(got.types, tt.want.types) {
-				t.Errorf("NewLTSVReader().types = %v, want %v", got.types, tt.want.types)
+				t.Errorf("NewGWReader().types = %v, want %v", got.types, tt.want.types)
 			}
 		})
 	}

@@ -85,7 +85,7 @@ $ make install
 
 ####  1.1.1. <a name='requirements'></a>Requirements
 
-go 1.17 or higher.
+go 1.18 or higher.
 
 ###  1.2. <a name='download-binary'></a>Download binary
 
@@ -165,6 +165,7 @@ trdsql [options] SQL
 * `-ijson` JSON format for input.
 * `-iltsv` LTSV format for input.
 * `-itbln` TBLN format for input.
+* `-iwidth` width specification format for input.
 
 ####  3.2.1. <a name='input-options'></a>Input options
 
