@@ -64,7 +64,7 @@ const (
 
 	// import
 	// Format using guesswidth library.
-	GW
+	WIDTH
 
 	// export
 	// Output as it is.
@@ -108,8 +108,8 @@ func (f Format) String() string {
 		return "JSON"
 	case TBLN:
 		return "TBLN"
-	case GW:
-		return "GW"
+	case WIDTH:
+		return "WIDTH"
 	case RAW:
 		return "RAW"
 	case MD:
