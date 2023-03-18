@@ -52,17 +52,18 @@ Please refer to [godoc](https://pkg.go.dev/github.com/noborus/trdsql)
     * 4.10.1. [jq expression](#jq-expression)
   * 4.11. [JSONL](#jsonl)
   * 4.12. [TBLN](#tbln)
-  * 4.13. [Raw output](#raw-output)
-  * 4.14. [ASCII Table & MarkDown output](#ascii-table-&-markdown-output)
-  * 4.15. [Vertical format output](#vertical-format-output)
-  * 4.16. [SQL function](#sql-function)
-  * 4.17. [JOIN](#join)
-  * 4.18. [PostgreSQL](#postgresql)
-    * 4.18.1. [Function](#function)
-    * 4.18.2. [Join table and CSV file is possible](#join-table-and-csv-file-is-possible)
-  * 4.19. [MySQL](#mysql)
-  * 4.20. [Analyze](#analyze)
-  * 4.21. [configuration](#configuration)
+  * 4.13. [WIDTH](#width)
+  * 4.14. [Raw output](#raw-output)
+  * 4.15. [ASCII Table & MarkDown output](#ascii-table-&-markdown-output)
+  * 4.16. [Vertical format output](#vertical-format-output)
+  * 4.17. [SQL function](#sql-function)
+  * 4.18. [JOIN](#join)
+  * 4.19. [PostgreSQL](#postgresql)
+    * 4.19.1. [Function](#function)
+    * 4.19.2. [Join table and CSV file is possible](#join-table-and-csv-file-is-possible)
+  * 4.20. [MySQL](#mysql)
+  * 4.21. [Analyze](#analyze)
+  * 4.22. [configuration](#configuration)
 * 5. [Library](#library)
 * 6. [License](#license)
 
@@ -630,7 +631,24 @@ $ trdsql -otbln "SELECT c1::int as id, c2::text as name FROM test.csv"
 TBLN can contain column names and type definitions.
 Please refer to <https://tbln.dev/> for details of TBLN.
 
-###  4.13. <a name='raw-output'></a>Raw output
+###  4.13. <a name='width'></a>WIDTH
+
+`-iwidth` inputs the format specifying the width.
+This is used when the header column width represents the body column width.
+
+```console
+$ ps | trdsql -oh -iwidth "SELECT * FROM -"
+PID,TTY,TIME,CMD
+302965,pts/3,00:00:12,zsh
+733211,pts/3,00:00:00,ps
+733212,pts/3,00:00:00,tee
+733213,pts/3,00:00:00,guesswidth
+```
+
+`-id " "` doesn't recognize well when there are spaces in the column.
+`-iwidth` recognizes column widths and space separators.
+
+###  4.14. <a name='raw-output'></a>Raw output
 
 `-oraw` is Raw Output.
 It is used when "escape processing is unnecessary" in CSV output.
@@ -655,7 +673,7 @@ $ trdsql -oraw -od "\t|\t" -db pdb "SELECT * FROM test.csv"
 3	|	Apple
 ```
 
-###  4.14. <a name='ascii-table-&-markdown-output'></a>ASCII Table & MarkDown output
+###  4.15. <a name='ascii-table-&-markdown-output'></a>ASCII Table & MarkDown output
 
 `-oat` is ASCII table output.
 
@@ -683,7 +701,7 @@ $ trdsql -omd "SELECT * FROM test.csv"
 
 The `-onowrap` option does not wrap long columns in `at` or `md` output.
 
-###  4.15. <a name='vertical-format-output'></a>Vertical format output
+###  4.16. <a name='vertical-format-output'></a>Vertical format output
 
 -ovf is Vertical format output("column name | value" vertically).
 
@@ -700,7 +718,7 @@ $ trdsql -ovf "SELECT * FROM test.csv"
   c2 | Apple
 ```
 
-###  4.16. <a name='sql-function'></a>SQL function
+###  4.17. <a name='sql-function'></a>SQL function
 
 ```console
 $ trdsql "SELECT count(*) FROM test.csv"
@@ -728,7 +746,7 @@ TIME,TTY,PID,CMD
 
 Note: the available functions and their syntax depend on the driver you have chosen (mysql or postgres or sqlite). The default one is sqlite.
 
-###  4.17. <a name='join'></a>JOIN
+###  4.18. <a name='join'></a>JOIN
 
 The SQL JOIN can be used.
 
@@ -754,7 +772,7 @@ $ trdsql "SELECT u.c1,u.c2,h.c2 FROM user.csv as u LEFT JOIN hist.csv as h ON(u.
 2,userB,2017-7-11
 ```
 
-###  4.18. <a name='postgresql'></a>PostgreSQL
+###  4.19. <a name='postgresql'></a>PostgreSQL
 
 When using PostgreSQL, specify postgres for driver
  and driver-specific data source name for dsn.
@@ -763,7 +781,7 @@ When using PostgreSQL, specify postgres for driver
 trdsql -driver postgres -dsn "dbname=test" "SELECT count(*) FROM test.csv "
 ```
 
-####  4.18.1. <a name='function'></a>Function
+####  4.19.1. <a name='function'></a>Function
 
 The PostgreSQL driver can use the window function.
 
@@ -783,7 +801,7 @@ $ trdsql -driver postgres -dsn "dbname=test" "SELECT generate_series(1,3);"
 3
 ```
 
-####  4.18.2. <a name='join-table-and-csv-file-is-possible'></a>Join table and CSV file is possible
+####  4.19.2. <a name='join-table-and-csv-file-is-possible'></a>Join table and CSV file is possible
 
 Test database has a colors table.
 
@@ -822,7 +840,7 @@ $ psql -c "SELECT * FROM fruits;"
 (3 rows)
 ```
 
-###  4.19. <a name='mysql'></a>MySQL
+###  4.20. <a name='mysql'></a>MySQL
 
 When using MySQL, specify mysql for driver and connection information for dsn.
 
@@ -840,7 +858,7 @@ $ trdsql -driver mysql -dsn "user:password@/test" "SELECT c1, SHA2(c2,224) FROM 
 
 MySQL can join tables and CSV files as well as PostgreSQL.
 
-###  4.20. <a name='analyze'></a>Analyze
+###  4.21. <a name='analyze'></a>Analyze
 
 The ***-a filename*** option parses the file and outputs table information and SQL examples.
 
@@ -887,7 +905,7 @@ trdsql -ih "SELECT id, count(id) FROM testdata/header.csv GROUP BY id"
 trdsql -ih "SELECT id, \`name\` FROM testdata/header.csv ORDER BY id LIMIT 10"
 ```
 
-###  4.21. <a name='configuration'></a>configuration
+###  4.22. <a name='configuration'></a>configuration
 
 You can specify driver and dsn in the configuration file.
 
