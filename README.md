@@ -2,7 +2,7 @@
 
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/noborus/trdsql)](https://pkg.go.dev/github.com/noborus/trdsql)
 [![Go Report Card](https://goreportcard.com/badge/github.com/noborus/trdsql)](https://goreportcard.com/report/github.com/noborus/trdsql)
-[![GoCover.io](https://gocover.io/_badge/github.com/noborus/trdsql)](https://gocover.io/github.com/noborus/trdsql)
+[![Go Coverage](https://github.com/noborus/trdsql/wiki/coverage.svg)](https://raw.githack.com/wiki/noborus/trdsql/coverage.html)
 [![GitHub Actions](https://github.com/noborus/trdsql/workflows/Go/badge.svg)](https://github.com/noborus/trdsql/actions)
 
 CLI tool that can execute SQL queries on [CSV](https://tools.ietf.org/html/rfc4180),
