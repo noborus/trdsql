@@ -3,6 +3,7 @@ module github.com/noborus/trdsql
 require (
 	github.com/dsnet/compress v0.0.1
 	github.com/go-sql-driver/mysql v1.7.1
+	github.com/goccy/go-yaml v1.11.0
 	github.com/iancoleman/orderedmap v0.2.0
 	github.com/itchyny/gojq v0.12.13
 	github.com/jwalton/gchalk v1.3.0
@@ -21,12 +22,16 @@ require (
 
 require (
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de // indirect
+	github.com/fatih/color v1.10.0 // indirect
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/jwalton/go-supportscolor v1.2.0 // indirect
+	github.com/mattn/go-colorable v0.1.8 // indirect
+	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	golang.org/x/crypto v0.11.0 // indirect
 	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gonum.org/v1/gonum v0.13.0 // indirect
 )
 
