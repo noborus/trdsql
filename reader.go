@@ -170,6 +170,8 @@ func NewReader(reader io.Reader, readOpts *ReadOpts) (Reader, error) {
 		return NewLTSVReader(reader, readOpts)
 	case JSON:
 		return NewJSONReader(reader, readOpts)
+	case YAML:
+		return NewYAMLReader(reader, readOpts)
 	case TBLN:
 		return NewTBLNReader(reader, readOpts)
 	case WIDTH:

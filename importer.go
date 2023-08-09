@@ -37,6 +37,8 @@ var (
 	ErrNoMatchFound = errors.New("no match found")
 	// ErrNonDefinition is returned when there is no definition.
 	ErrNonDefinition = errors.New("no definition")
+	// ErrInvalidYAML is returned when the YAML is invalid.
+	ErrInvalidYAML = errors.New("invalid YAML")
 )
 
 // Importer is the interface import data into the database.
@@ -315,6 +317,8 @@ func guessFormat(fileName string) Format {
 			return LTSV
 		case "JSON", "JSONL":
 			return JSON
+		case "YAML", "YML":
+			return YAML
 		case "TBLN":
 			return TBLN
 		case "WIDTH":
