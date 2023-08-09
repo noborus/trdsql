@@ -145,6 +145,7 @@ func (cli Cli) Run(args []string) int {
 	flags.BoolVar(&outFlag.JSON, "ojson", false, "JSON format for output.")
 	flags.BoolVar(&outFlag.TBLN, "otbln", false, "TBLN format for output.")
 	flags.BoolVar(&outFlag.JSONL, "ojsonl", false, "JSON lines format for output.")
+	flags.BoolVar(&outFlag.YAML, "oyaml", false, "YAML format for output.")
 
 	if err := flags.Parse(args[1:]); err != nil {
 		log.Printf("ERROR: %s", err)
@@ -513,6 +514,7 @@ type outputFlag struct {
 	LTSV  bool
 	JSON  bool
 	JSONL bool
+	YAML  bool
 	TBLN  bool
 	AT    bool
 	MD    bool
@@ -539,6 +541,8 @@ func outputFormat(o outputFlag) trdsql.Format {
 		return trdsql.TBLN
 	case o.JSONL:
 		return trdsql.JSONL
+	case o.YAML:
+		return trdsql.YAML
 	case o.CSV:
 		return trdsql.CSV
 	default:
@@ -548,7 +552,7 @@ func outputFormat(o outputFlag) trdsql.Format {
 
 func isOutFormat(name string) bool {
 	switch name {
-	case "ocsv", "oltsv", "ojson", "ojsonl", "otbln", "oat", "omd", "ovf", "oraw":
+	case "ocsv", "oltsv", "ojson", "ojsonl", "oyaml", "otbln", "oat", "omd", "ovf", "oraw":
 		return true
 	}
 	return false
@@ -580,6 +584,8 @@ func outGuessFormat(fileName string) trdsql.Format {
 			return trdsql.VF
 		case "JSONL":
 			return trdsql.JSONL
+		case "YAML", "YML":
+			return trdsql.YAML
 		}
 		fileName = fileName[0 : len(fileName)-len(dotExt)]
 	}

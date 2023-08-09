@@ -154,6 +154,8 @@ func NewWriter(options ...WriteOpt) Writer {
 		return NewLTSVWriter(writeOpts)
 	case JSON:
 		return NewJSONWriter(writeOpts)
+	case YAML:
+		return NewYAMLWriter(writeOpts)
 	case RAW:
 		return NewRAWWriter(writeOpts)
 	case MD:

@@ -529,6 +529,7 @@ func TestOutFormatRun(t *testing.T) {
 		{format: AT, result: "at"},
 		{format: TBLN, result: "tbln"},
 		{format: JSONL, result: "jsonl"},
+		{format: YAML, result: "yaml"},
 	}
 	sql := "SELECT * FROM " + filepath.Join(dataDir, "test.csv")
 	for _, c := range testFormat {
