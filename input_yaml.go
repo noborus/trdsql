@@ -2,15 +2,18 @@ package trdsql
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"log"
 
 	"github.com/goccy/go-yaml"
+	"github.com/itchyny/gojq"
 )
 
 // YAMLReader provides methods of the Reader interface.
 type YAMLReader struct {
 	reader    *yaml.Decoder
+	query     *gojq.Query
 	already   map[string]bool
 	inNULL    string
 	preRead   []map[string]interface{}
@@ -27,6 +30,14 @@ func NewYAMLReader(reader io.Reader, opts *ReadOpts) (*YAMLReader, error) {
 	r.already = make(map[string]bool)
 	var top interface{}
 
+	if opts.InJQuery != "" {
+		str := trimQuoteAll(opts.InJQuery)
+		query, err := gojq.Parse(str)
+		if err != nil {
+			return nil, fmt.Errorf("%w gojq:(%s)", err, opts.InJQuery)
+		}
+		r.query = query
+	}
 	r.limitRead = opts.InLimitRead
 	r.needNULL = opts.InNeedNULL
 	r.inNULL = opts.InNULL
@@ -39,12 +50,38 @@ func NewYAMLReader(reader io.Reader, opts *ReadOpts) (*YAMLReader, error) {
 			debug.Printf(err.Error())
 			return r, nil
 		}
+
+		if r.query != nil {
+			if err := r.jquery(top); err != nil {
+				return nil, err
+			}
+			return r, nil
+		}
+
 		if err := r.readAhead(top); err != nil {
 			return nil, err
 		}
 	}
 
 	return r, nil
+}
+
+func (r *YAMLReader) jquery(top interface{}) error {
+	iter := r.query.Run(top)
+	for {
+		v, ok := iter.Next()
+		if !ok {
+			break
+		}
+		if err, ok := v.(error); ok {
+			return fmt.Errorf("%w gojq:(%s) ", err, r.query)
+		}
+
+		if err := r.readAhead(v); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Names returns column names.
@@ -80,6 +117,13 @@ func (r *YAMLReader) readAhead(top interface{}) error {
 		}
 		r.appendNames(names)
 		r.preRead = append(r.preRead, pre)
+	case yaml.MapSlice:
+		pre, names, err := r.objectMapRow(m)
+		if err != nil {
+			return err
+		}
+		r.appendNames(names)
+		r.preRead = append(r.preRead, pre)
 	default:
 		return ErrInvalidYAML
 	}
@@ -100,6 +144,8 @@ func (r *YAMLReader) topLevel(top interface{}) (map[string]interface{}, []string
 	switch obj := top.(type) {
 	case map[string]interface{}:
 		return r.objectRow(obj)
+	case yaml.MapSlice:
+		return r.objectMapRow(obj)
 	default:
 		return r.etcRow(obj)
 	}
@@ -147,6 +193,21 @@ func (r *YAMLReader) rowParse(row []interface{}, YAMLRow interface{}) []interfac
 		row[0] = r.YAMLString(YAMLRow)
 	}
 	return row
+}
+
+func (r *YAMLReader) objectMapRow(obj yaml.MapSlice) (map[string]interface{}, []string, error) {
+	names := make([]string, 0, len(obj))
+	row := make(map[string]interface{})
+	for _, item := range obj {
+		key := item.Key.(string)
+		names = append(names, key)
+		if item.Value == nil {
+			row[key] = nil
+		} else {
+			row[key] = r.YAMLString(item.Value)
+		}
+	}
+	return row, names, nil
 }
 
 func (r *YAMLReader) objectRow(obj map[string]interface{}) (map[string]interface{}, []string, error) {

@@ -278,11 +278,6 @@ func GuessOpts(readOpts *ReadOpts, fileName string) (*ReadOpts, string) {
 		}
 	}
 
-	// If the option -ijq is specified, it is assumed to be json(only for guess).
-	if readOpts.InJQuery != "" && readOpts.InFormat == GUESS {
-		readOpts.InFormat = JSON
-	}
-
 	if readOpts.InFormat != GUESS {
 		readOpts.realFormat = readOpts.InFormat
 		return readOpts, fileName
