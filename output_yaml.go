@@ -1,7 +1,7 @@
 package trdsql
 
 import (
-	yaml "github.com/goccy/go-yaml"
+	"github.com/goccy/go-yaml"
 )
 
 // YAMLWriter provides methods of the Writer interface.

@@ -87,7 +87,7 @@ const (
 	// JSON Lines format(http://jsonlines.org/).
 	JSONL
 
-	// export
+	// import/export
 	// YAML format.
 	YAML
 

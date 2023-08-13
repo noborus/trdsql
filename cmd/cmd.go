@@ -122,6 +122,7 @@ func (cli Cli) Run(args []string) int {
 	flags.BoolVar(&inFlag.CSV, "icsv", false, "CSV format for input.")
 	flags.BoolVar(&inFlag.LTSV, "iltsv", false, "LTSV format for input.")
 	flags.BoolVar(&inFlag.JSON, "ijson", false, "JSON format for input.")
+	flags.BoolVar(&inFlag.YAML, "iyaml", false, "YAML format for input.")
 	flags.BoolVar(&inFlag.TBLN, "itbln", false, "TBLN format for input.")
 	flags.BoolVar(&inFlag.WIDTH, "iwidth", false, "width specification format for input.")
 
@@ -478,6 +479,7 @@ type inputFlag struct {
 	CSV   bool
 	LTSV  bool
 	JSON  bool
+	YAML  bool
 	TBLN  bool
 	WIDTH bool
 }
@@ -491,6 +493,8 @@ func inputFormat(i inputFlag) trdsql.Format {
 		return trdsql.LTSV
 	case i.JSON:
 		return trdsql.JSON
+	case i.YAML:
+		return trdsql.YAML
 	case i.TBLN:
 		return trdsql.TBLN
 	case i.WIDTH:
@@ -502,7 +506,7 @@ func inputFormat(i inputFlag) trdsql.Format {
 
 func isInFormat(name string) bool {
 	switch name {
-	case "ig", "icsv", "iltsv", "ijson", "itbln", "iwidth":
+	case "ig", "icsv", "iltsv", "ijson", "iyaml", "itbln", "iwidth":
 		return true
 	}
 	return false
