@@ -238,7 +238,7 @@ func (r *YAMLReader) YAMLString(val interface{}) interface{} {
 	switch val.(type) {
 	case nil:
 		return nil
-	case map[string]interface{}, []interface{}:
+	case map[string]interface{}, []yaml.MapSlice, []interface{}:
 		b, err := yaml.Marshal(val)
 		if err != nil {
 			log.Printf("ERROR: YAMLString:%s", err)

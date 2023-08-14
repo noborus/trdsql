@@ -59,14 +59,16 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 			debug.Printf(err.Error())
 			return r, nil
 		}
-		if r.query == nil {
-			if err := r.readAhead(top); err != nil {
-				return nil, err
-			}
-		} else {
+
+		if r.query != nil {
 			if err := r.jquery(top); err != nil {
 				return nil, err
 			}
+			return r, nil
+		}
+
+		if err := r.readAhead(top); err != nil {
+			return nil, err
 		}
 	}
 
