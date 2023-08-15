@@ -2,13 +2,13 @@ jobs:
   build:
     runs-on: ${{ matrix.platform }}
     steps:
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v3
     - name: Install Go
       if: success()
       uses: actions/setup-go@v4
       with:
         go-version: ${{ matrix.go-version }}
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v3
     - name: Run tests
       run: make test
     - name: Update coverage report
