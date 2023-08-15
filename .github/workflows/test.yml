@@ -11,13 +11,6 @@ jobs:
         go-version: ${{ matrix.go-version }}
     - name: Run tests
       run: make test
-    - name: Update coverage report
-      uses: ncruces/go-coverage-report@main
-      if: |
-        matrix.platform == 'ubuntu-latest' &&
-        matrix.go-version == '1.21' &&
-        github.event_name == 'push'
-      continue-on-error: true
     strategy:
       matrix:
         go-version:
@@ -53,7 +46,7 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v3
     - name: Install Go
-      uses: actions/setup-go@v3
+      uses: actions/setup-go@v4
       if: success()
       with:
         go-version-file: go.mod
@@ -63,6 +56,10 @@ jobs:
           sslmode=disable
       name: Run tests
       run: make test
+    - name: Update coverage report
+      uses: ncruces/go-coverage-report@main
+      if: github.event_name == 'push'
+      continue-on-error: true
 name: Go
 "on":
 - push
