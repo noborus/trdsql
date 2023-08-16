@@ -50,7 +50,7 @@ Please refer to [godoc](https://pkg.go.dev/github.com/noborus/trdsql)
   * 4.9. [LTSV (Labeled Tab-separated Values)](#ltsv-(labeled-tab-separated-values))
   * 4.10. [JSON](#json)
     * 4.10.1. [jq expression](#jq-expression)
-  * 4.11. [JSONL](#jsonl)
+  * 4.11. [JSONL(NDJSON)](#jsonl(ndjson))
   * 4.12. [TBLN](#tbln)
   * 4.13. [WIDTH](#width)
   * 4.14. [Raw output](#raw-output)
@@ -554,9 +554,9 @@ $ echo '{"a":1} [2] 3' | trdsql -ijson "SELECT * FROM -::'. as {\$a} ?// [\$a] ?
 3
 ```
 
-###  4.11. <a name='jsonl'></a>JSONL
+###  4.11. <a name='jsonl(ndjson)'></a>JSONL(NDJSON)
 
-Another json format. JSONL(JSON Lines).
+Another json format. JSONL(JSON Lines). It is also called [ndjson](http://ndjson.org/).
 
 sample2.json
 
