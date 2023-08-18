@@ -26,10 +26,8 @@ type YAMLReader struct {
 // NewYAMLReader returns YAMLReader and error.
 func NewYAMLReader(reader io.Reader, opts *ReadOpts) (*YAMLReader, error) {
 	r := &YAMLReader{}
-	r.reader = yaml.NewDecoder(reader)
-	r.already = make(map[string]bool)
-	var top interface{}
 
+	var yamlOpts []yaml.DecodeOption
 	if opts.InJQuery != "" {
 		str := trimQuoteAll(opts.InJQuery)
 		query, err := gojq.Parse(str)
@@ -37,7 +35,13 @@ func NewYAMLReader(reader io.Reader, opts *ReadOpts) (*YAMLReader, error) {
 			return nil, fmt.Errorf("%w gojq:(%s)", err, opts.InJQuery)
 		}
 		r.query = query
+	} else {
+		yamlOpts = append(yamlOpts, yaml.UseOrderedMap())
 	}
+	r.reader = yaml.NewDecoder(reader, yamlOpts...)
+	r.already = make(map[string]bool)
+	var top interface{}
+
 	r.limitRead = opts.InLimitRead
 	r.needNULL = opts.InNeedNULL
 	r.inNULL = opts.InNULL
@@ -195,6 +199,20 @@ func (r *YAMLReader) rowParse(row []interface{}, YAMLRow interface{}) []interfac
 	return row
 }
 
+func (r *YAMLReader) objectRow(obj map[string]interface{}) (map[string]interface{}, []string, error) {
+	names := make([]string, 0, len(obj))
+	row := make(map[string]interface{})
+	for k, v := range obj {
+		names = append(names, k)
+		if v == nil {
+			row[k] = nil
+		} else {
+			row[k] = r.YAMLString(v)
+		}
+	}
+	return row, names, nil
+}
+
 func (r *YAMLReader) objectMapRow(obj yaml.MapSlice) (map[string]interface{}, []string, error) {
 	names := make([]string, 0, len(obj))
 	row := make(map[string]interface{})
@@ -205,20 +223,6 @@ func (r *YAMLReader) objectMapRow(obj yaml.MapSlice) (map[string]interface{}, []
 			row[key] = nil
 		} else {
 			row[key] = r.YAMLString(item.Value)
-		}
-	}
-	return row, names, nil
-}
-
-func (r *YAMLReader) objectRow(obj map[string]interface{}) (map[string]interface{}, []string, error) {
-	names := make([]string, 0, len(obj))
-	row := make(map[string]interface{})
-	for k, v := range obj {
-		names = append(names, k)
-		if v == nil {
-			row[k] = nil
-		} else {
-			row[k] = r.YAMLString(v)
 		}
 	}
 	return row, names, nil
