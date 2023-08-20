@@ -2,9 +2,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - if: success()
-      name: Install Go
-      uses: actions/setup-go@v3
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v3
+    - name: Install Go
+      if: success()
+      uses: actions/setup-go@v4
       with:
         go-version: "1.21"
     - name: Set environment variables
@@ -14,8 +16,6 @@ jobs:
       shell: bash
     - name: Setup XGO
       run: go install github.com/crazy-max/xgo@latest
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v3
     - name: Run dist
       run: make dist
     - name: Upload Asset to Release with a wildcard
