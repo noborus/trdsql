@@ -1,6 +1,7 @@
 package trdsql
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -12,15 +13,16 @@ import (
 
 // YAMLReader provides methods of the Reader interface.
 type YAMLReader struct {
-	reader    *yaml.Decoder
-	query     *gojq.Query
-	already   map[string]bool
-	inNULL    string
-	preRead   []map[string]interface{}
-	names     []string
-	types     []string
-	limitRead bool
-	needNULL  bool
+	reader     *yaml.Decoder
+	query      *gojq.Query
+	already    map[string]bool
+	inNULL     string
+	preRead    []map[string]interface{}
+	names      []string
+	types      []string
+	limitRead  bool
+	yAMLToJSON bool
+	needNULL   bool
 }
 
 // NewYAMLReader returns YAMLReader and error.
@@ -43,6 +45,7 @@ func NewYAMLReader(reader io.Reader, opts *ReadOpts) (*YAMLReader, error) {
 	r.limitRead = opts.InLimitRead
 	r.needNULL = opts.InNeedNULL
 	r.inNULL = opts.InNULL
+	r.yAMLToJSON = opts.InYAMLToJSON
 
 	for i := 0; i < opts.InPreRead; i++ {
 		if err := r.reader.Decode(&top); err != nil {
@@ -127,7 +130,12 @@ func (r *YAMLReader) readAhead(top interface{}) error {
 		r.appendNames(names)
 		r.preRead = append(r.preRead, pre)
 	default:
-		return ErrInvalidYAML
+		pre, names, err := r.etcRow(m)
+		if err != nil {
+			return err
+		}
+		r.appendNames(names)
+		r.preRead = append(r.preRead, pre)
 	}
 	return nil
 }
@@ -186,13 +194,13 @@ func (r *YAMLReader) rowParse(row []interface{}, YAMLRow interface{}) []interfac
 	switch m := YAMLRow.(type) {
 	case map[string]interface{}:
 		for i := range r.names {
-			row[i] = r.YAMLString(m[r.names[i]])
+			row[i] = r.YAMLString(m[r.names[i]], r.yAMLToJSON)
 		}
 	default:
 		for i := range r.names {
 			row[i] = nil
 		}
-		row[0] = r.YAMLString(YAMLRow)
+		row[0] = r.YAMLString(YAMLRow, r.yAMLToJSON)
 	}
 	return row
 }
@@ -205,7 +213,7 @@ func (r *YAMLReader) objectRow(obj map[string]interface{}) (map[string]interface
 		if v == nil {
 			row[k] = nil
 		} else {
-			row[k] = r.YAMLString(v)
+			row[k] = r.YAMLString(v, r.yAMLToJSON)
 		}
 	}
 	return row, names, nil
@@ -220,7 +228,7 @@ func (r *YAMLReader) objectMapRow(obj yaml.MapSlice) (map[string]interface{}, []
 		if item.Value == nil {
 			row[key] = nil
 		} else {
-			row[key] = r.YAMLString(item.Value)
+			row[key] = r.YAMLString(item.Value, r.yAMLToJSON)
 		}
 	}
 	return row, names, nil
@@ -231,13 +239,13 @@ func (r *YAMLReader) etcRow(val interface{}) (map[string]interface{}, []string, 
 	k := "c1"
 	names = append(names, k)
 	row := make(map[string]interface{})
-	row[k] = r.YAMLString(val)
+	row[k] = r.YAMLString(val, r.yAMLToJSON)
 	return row, names, nil
 }
 
-func (r *YAMLReader) YAMLString(val interface{}) interface{} {
+func (r *YAMLReader) YAMLString(val interface{}, yamlToJSON bool) interface{} {
 	var str string
-	switch val.(type) {
+	switch t := val.(type) {
 	case nil:
 		return nil
 	case map[string]interface{}, []yaml.MapSlice, []interface{}:
@@ -245,12 +253,33 @@ func (r *YAMLReader) YAMLString(val interface{}) interface{} {
 		if err != nil {
 			log.Printf("ERROR: YAMLString:%s", err)
 		}
-		str = ValString(b)
+		str = toString(b, yamlToJSON)
+	case []byte:
+		str = toString(t, yamlToJSON)
+	case string:
+		str = toString([]byte(t), yamlToJSON)
 	default:
-		str = ValString(val)
+		str = ValString(t)
 	}
 	if r.needNULL {
 		return replaceNULL(r.inNULL, str)
 	}
 	return str
+}
+
+func toString(buf []byte, yamlToJSON bool) string {
+	/*
+		if !yamlToJSON {
+			return ValString(buf)
+		}
+	*/
+	if !bytes.Contains(buf, []byte("\n")) {
+		return ValString(buf)
+	}
+
+	j, err := yaml.YAMLToJSON(buf)
+	if err != nil {
+		return ValString(buf)
+	}
+	return ValString(j)
 }

@@ -70,14 +70,15 @@ func (cli Cli) Run(args []string) int {
 		analyze   string
 		onlySQL   string
 
-		inFlag      inputFlag
-		inDelimiter string
-		inHeader    bool
-		inSkip      int
-		inPreRead   int
-		inJQuery    string
-		inLimitRead int
-		inNull      nilString
+		inFlag       inputFlag
+		inDelimiter  string
+		inHeader     bool
+		inSkip       int
+		inPreRead    int
+		inJQuery     string
+		inLimitRead  int
+		inNull       nilString
+		inYAMLToJSON bool
 
 		outFlag         outputFlag
 		outFile         string
@@ -89,6 +90,7 @@ func (cli Cli) Run(args []string) int {
 		outUseCRLF      bool
 		outHeader       bool
 		outNoWrap       bool
+		OutJSONToYAML   bool
 		outNull         nilString
 	)
 
@@ -118,6 +120,7 @@ func (cli Cli) Run(args []string) int {
 	flags.IntVar(&inLimitRead, "ilr", 0, "limited number of rows to read.")
 	flags.StringVar(&inJQuery, "ijq", "", "jq expression string for input(JSON/JSONL only).")
 	flags.Var(&inNull, "inull", "value(string) to convert to null on input.")
+	flags.BoolVar(&inYAMLToJSON, "iyaml2json", false, "convert YAML to JSON on input.")
 
 	flags.BoolVar(&inFlag.CSV, "icsv", false, "CSV format for input.")
 	flags.BoolVar(&inFlag.LTSV, "iltsv", false, "LTSV format for input.")
@@ -134,6 +137,7 @@ func (cli Cli) Run(args []string) int {
 	flags.BoolVar(&outUseCRLF, "ocrlf", false, "use CRLF for output. End each output line with '\\r\\n' instead of '\\n'.")
 	flags.BoolVar(&outNoWrap, "onowrap", false, "do not wrap long lines(at/md only).")
 	flags.BoolVar(&outHeader, "oh", false, "output column name as header.")
+	flags.BoolVar(&OutJSONToYAML, "ojson2yaml", false, "convert JSON to YAML on output.")
 	flags.StringVar(&outCompression, "oz", "", "output compression format. [ gz | bz2 | zstd | lz4 | xz ]")
 	flags.Var(&outNull, "onull", "value(string) to convert from null on output.")
 
@@ -238,6 +242,7 @@ func (cli Cli) Run(args []string) int {
 		trdsql.InJQ(inJQuery),
 		trdsql.InNeedNULL(inNull.valid),
 		trdsql.InNULL(inNull.str),
+		trdsql.InYAMLToJSON(inYAMLToJSON),
 	)
 
 	writer := cli.OutStream
@@ -278,6 +283,7 @@ func (cli Cli) Run(args []string) int {
 		trdsql.OutNoWrap(outNoWrap),
 		trdsql.OutNeedNULL(outNull.valid),
 		trdsql.OutNULL(outNull.str),
+		trdsql.OutJSONToYAML(OutJSONToYAML),
 		trdsql.OutStream(writer),
 		trdsql.ErrStream(cli.ErrStream),
 	)

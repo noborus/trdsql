@@ -56,6 +56,9 @@ type ReadOpts struct {
 	// IsTemporary is a flag whether to make temporary table.
 	// default is true.
 	IsTemporary bool
+
+	// InYAMLToJSON is true, convert YAML to JSON.
+	InYAMLToJSON bool
 }
 
 // NewReadOpts Returns ReadOpts.
@@ -141,6 +144,13 @@ func InNeedNULL(n bool) ReadOpt {
 func InNULL(s string) ReadOpt {
 	return func(args *ReadOpts) {
 		args.InNULL = s
+	}
+}
+
+// InYAMLToJSON is true, convert YAML to JSON.
+func InYAMLToJSON(t bool) ReadOpt {
+	return func(args *ReadOpts) {
+		args.InYAMLToJSON = t
 	}
 }
 
