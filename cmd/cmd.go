@@ -70,15 +70,14 @@ func (cli Cli) Run(args []string) int {
 		analyze   string
 		onlySQL   string
 
-		inFlag       inputFlag
-		inDelimiter  string
-		inHeader     bool
-		inSkip       int
-		inPreRead    int
-		inJQuery     string
-		inLimitRead  int
-		inNull       nilString
-		inYAMLToJSON bool
+		inFlag      inputFlag
+		inDelimiter string
+		inHeader    bool
+		inSkip      int
+		inPreRead   int
+		inJQuery    string
+		inLimitRead int
+		inNull      nilString
 
 		outFlag         outputFlag
 		outFile         string
@@ -120,7 +119,6 @@ func (cli Cli) Run(args []string) int {
 	flags.IntVar(&inLimitRead, "ilr", 0, "limited number of rows to read.")
 	flags.StringVar(&inJQuery, "ijq", "", "jq expression string for input(JSON/JSONL only).")
 	flags.Var(&inNull, "inull", "value(string) to convert to null on input.")
-	flags.BoolVar(&inYAMLToJSON, "iyaml2json", false, "convert YAML to JSON on input.")
 
 	flags.BoolVar(&inFlag.CSV, "icsv", false, "CSV format for input.")
 	flags.BoolVar(&inFlag.LTSV, "iltsv", false, "LTSV format for input.")
@@ -242,7 +240,6 @@ func (cli Cli) Run(args []string) int {
 		trdsql.InJQ(inJQuery),
 		trdsql.InNeedNULL(inNull.valid),
 		trdsql.InNULL(inNull.str),
-		trdsql.InYAMLToJSON(inYAMLToJSON),
 	)
 
 	writer := cli.OutStream

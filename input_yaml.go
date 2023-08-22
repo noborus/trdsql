@@ -13,16 +13,15 @@ import (
 
 // YAMLReader provides methods of the Reader interface.
 type YAMLReader struct {
-	reader     *yaml.Decoder
-	query      *gojq.Query
-	already    map[string]bool
-	inNULL     string
-	preRead    []map[string]interface{}
-	names      []string
-	types      []string
-	limitRead  bool
-	yAMLToJSON bool
-	needNULL   bool
+	reader    *yaml.Decoder
+	query     *gojq.Query
+	already   map[string]bool
+	inNULL    string
+	preRead   []map[string]interface{}
+	names     []string
+	types     []string
+	limitRead bool
+	needNULL  bool
 }
 
 // NewYAMLReader returns YAMLReader and error.
@@ -45,7 +44,6 @@ func NewYAMLReader(reader io.Reader, opts *ReadOpts) (*YAMLReader, error) {
 	r.limitRead = opts.InLimitRead
 	r.needNULL = opts.InNeedNULL
 	r.inNULL = opts.InNULL
-	r.yAMLToJSON = opts.InYAMLToJSON
 
 	for i := 0; i < opts.InPreRead; i++ {
 		if err := r.reader.Decode(&top); err != nil {
@@ -194,13 +192,13 @@ func (r *YAMLReader) rowParse(row []interface{}, YAMLRow interface{}) []interfac
 	switch m := YAMLRow.(type) {
 	case map[string]interface{}:
 		for i := range r.names {
-			row[i] = r.YAMLString(m[r.names[i]], r.yAMLToJSON)
+			row[i] = r.YAMLString(m[r.names[i]])
 		}
 	default:
 		for i := range r.names {
 			row[i] = nil
 		}
-		row[0] = r.YAMLString(YAMLRow, r.yAMLToJSON)
+		row[0] = r.YAMLString(YAMLRow)
 	}
 	return row
 }
@@ -213,7 +211,7 @@ func (r *YAMLReader) objectRow(obj map[string]interface{}) (map[string]interface
 		if v == nil {
 			row[k] = nil
 		} else {
-			row[k] = r.YAMLString(v, r.yAMLToJSON)
+			row[k] = r.YAMLString(v)
 		}
 	}
 	return row, names, nil
@@ -228,7 +226,7 @@ func (r *YAMLReader) objectMapRow(obj yaml.MapSlice) (map[string]interface{}, []
 		if item.Value == nil {
 			row[key] = nil
 		} else {
-			row[key] = r.YAMLString(item.Value, r.yAMLToJSON)
+			row[key] = r.YAMLString(item.Value)
 		}
 	}
 	return row, names, nil
@@ -239,11 +237,11 @@ func (r *YAMLReader) etcRow(val interface{}) (map[string]interface{}, []string, 
 	k := "c1"
 	names = append(names, k)
 	row := make(map[string]interface{})
-	row[k] = r.YAMLString(val, r.yAMLToJSON)
+	row[k] = r.YAMLString(val)
 	return row, names, nil
 }
 
-func (r *YAMLReader) YAMLString(val interface{}, yamlToJSON bool) interface{} {
+func (r *YAMLReader) YAMLString(val interface{}) interface{} {
 	var str string
 	switch t := val.(type) {
 	case nil:
@@ -253,11 +251,11 @@ func (r *YAMLReader) YAMLString(val interface{}, yamlToJSON bool) interface{} {
 		if err != nil {
 			log.Printf("ERROR: YAMLString:%s", err)
 		}
-		str = toString(b, yamlToJSON)
+		str = toString(b)
 	case []byte:
-		str = toString(t, yamlToJSON)
+		str = toString(t)
 	case string:
-		str = toString([]byte(t), yamlToJSON)
+		str = toString([]byte(t))
 	default:
 		str = ValString(t)
 	}
@@ -267,12 +265,7 @@ func (r *YAMLReader) YAMLString(val interface{}, yamlToJSON bool) interface{} {
 	return str
 }
 
-func toString(buf []byte, yamlToJSON bool) string {
-	/*
-		if !yamlToJSON {
-			return ValString(buf)
-		}
-	*/
+func toString(buf []byte) string {
 	if !bytes.Contains(buf, []byte("\n")) {
 		return ValString(buf)
 	}
