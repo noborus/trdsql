@@ -27,7 +27,6 @@ type YAMLReader struct {
 func NewYAMLReader(reader io.Reader, opts *ReadOpts) (*YAMLReader, error) {
 	r := &YAMLReader{}
 
-	var yamlOpts []yaml.DecodeOption
 	if opts.InJQuery != "" {
 		str := trimQuoteAll(opts.InJQuery)
 		query, err := gojq.Parse(str)
@@ -35,10 +34,9 @@ func NewYAMLReader(reader io.Reader, opts *ReadOpts) (*YAMLReader, error) {
 			return nil, fmt.Errorf("%w gojq:(%s)", err, opts.InJQuery)
 		}
 		r.query = query
-	} else {
-		yamlOpts = append(yamlOpts, yaml.UseOrderedMap())
 	}
-	r.reader = yaml.NewDecoder(reader, yamlOpts...)
+
+	r.reader = yaml.NewDecoder(reader)
 	r.already = make(map[string]bool)
 	var top interface{}
 
