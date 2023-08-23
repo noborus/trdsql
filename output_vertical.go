@@ -61,7 +61,7 @@ func (w *VFWriter) WriteRow(values []interface{}, columns []string) error {
 		if values[i] == nil && w.needNULL {
 			str = w.outNULL
 		} else {
-			str = ValString(values[i])
+			str = strings.TrimRight(ValString(values[i]), "\n")
 		}
 
 		_, err := fmt.Fprintf(w.writer,
