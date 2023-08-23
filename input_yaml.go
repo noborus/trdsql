@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"strings"
 
 	"github.com/goccy/go-yaml"
 	"github.com/itchyny/gojq"
@@ -259,6 +260,7 @@ func (r *YAMLReader) YAMLString(val interface{}) interface{} {
 	default:
 		str = ValString(t)
 	}
+	str = strings.TrimRight(str, "\n")
 	if r.needNULL {
 		return replaceNULL(r.inNULL, str)
 	}
