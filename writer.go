@@ -112,13 +112,6 @@ func OutNULL(s string) WriteOpt {
 	}
 }
 
-// JSONToYAML sets a flag to convert JSON to YAML
-func OutJSONToYAML(n bool) WriteOpt {
-	return func(args *WriteOpts) {
-		args.OutJSONToYAML = n
-	}
-}
-
 // OutStream sets the output destination.
 func OutStream(w io.Writer) WriteOpt {
 	return func(args *WriteOpts) {

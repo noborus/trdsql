@@ -251,11 +251,11 @@ func (r *YAMLReader) YAMLString(val interface{}) interface{} {
 		if err != nil {
 			log.Printf("ERROR: YAMLString:%s", err)
 		}
-		str = toString(b)
+		str = yamlString(b)
 	case []byte:
-		str = toString(t)
+		str = yamlString(t)
 	case string:
-		str = toString([]byte(t))
+		str = yamlString([]byte(t))
 	default:
 		str = ValString(t)
 	}
@@ -265,7 +265,7 @@ func (r *YAMLReader) YAMLString(val interface{}) interface{} {
 	return str
 }
 
-func toString(buf []byte) string {
+func yamlString(buf []byte) string {
 	if !bytes.Contains(buf, []byte("\n")) {
 		return ValString(buf)
 	}
