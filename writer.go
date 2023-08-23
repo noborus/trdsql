@@ -39,8 +39,11 @@ type WriteOpts struct {
 	// OutHeader is true if it outputs a header(Use only CSV and Raw).
 	OutHeader bool
 	// OutNoWrap is true, do not wrap long columns(Use only AT and MD).
-	OutNoWrap   bool
+	OutNoWrap bool
+	// OutNeedNULL is true, replace NULL with OutNULL.
 	OutNeedNULL bool
+	// OutJSONToYAML is true, convert JSON to YAML(Use only YAML).
+	OutJSONToYAML bool
 }
 
 // WriteOpt is a function to set WriteOpts.

@@ -1,9 +1,7 @@
 package trdsql
 
 import (
-	"bytes"
 	"encoding/hex"
-	"strings"
 	"unicode/utf8"
 
 	"github.com/goccy/go-yaml"
@@ -48,9 +46,6 @@ func compatibleYAML(v interface{}, needNULL bool, outNULL string) interface{} {
 	var yl interface{}
 	switch t := v.(type) {
 	case []byte:
-		if !bytes.Contains(t, []byte("\n")) {
-			return v
-		}
 		if err := yaml.Unmarshal(t, &yl); err == nil {
 			return yl
 		}
@@ -59,10 +54,8 @@ func compatibleYAML(v interface{}, needNULL bool, outNULL string) interface{} {
 		}
 		return `\x` + hex.EncodeToString(t)
 	case string:
-		if !strings.Contains(t, "\n") {
-			return v
-		}
-		if err := yaml.Unmarshal([]byte(t), &yl); err == nil {
+		y := []byte(t)
+		if err := yaml.Unmarshal(y, &yl); err == nil {
 			return yl
 		}
 		return v

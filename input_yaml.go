@@ -1,6 +1,7 @@
 package trdsql
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -127,7 +128,12 @@ func (r *YAMLReader) readAhead(top interface{}) error {
 		r.appendNames(names)
 		r.preRead = append(r.preRead, pre)
 	default:
-		return ErrInvalidYAML
+		pre, names, err := r.etcRow(m)
+		if err != nil {
+			return err
+		}
+		r.appendNames(names)
+		r.preRead = append(r.preRead, pre)
 	}
 	return nil
 }
@@ -237,7 +243,7 @@ func (r *YAMLReader) etcRow(val interface{}) (map[string]interface{}, []string, 
 
 func (r *YAMLReader) YAMLString(val interface{}) interface{} {
 	var str string
-	switch val.(type) {
+	switch t := val.(type) {
 	case nil:
 		return nil
 	case map[string]interface{}, []yaml.MapSlice, []interface{}:
@@ -245,12 +251,28 @@ func (r *YAMLReader) YAMLString(val interface{}) interface{} {
 		if err != nil {
 			log.Printf("ERROR: YAMLString:%s", err)
 		}
-		str = ValString(b)
+		str = yamlString(b)
+	case []byte:
+		str = yamlString(t)
+	case string:
+		str = yamlString([]byte(t))
 	default:
-		str = ValString(val)
+		str = ValString(t)
 	}
 	if r.needNULL {
 		return replaceNULL(r.inNULL, str)
 	}
 	return str
+}
+
+func yamlString(buf []byte) string {
+	if !bytes.Contains(buf, []byte("\n")) {
+		return ValString(buf)
+	}
+
+	j, err := yaml.YAMLToJSON(buf)
+	if err != nil {
+		return ValString(buf)
+	}
+	return ValString(j)
 }
