@@ -38,7 +38,9 @@ func NewYAMLReader(reader io.Reader, opts *ReadOpts) (*YAMLReader, error) {
 	r.reader = yaml.NewDecoder(reader)
 	r.already = make(map[string]bool)
 
-	r.yamlParse(opts)
+	if err := r.yamlParse(opts); err != nil {
+		return nil, err
+	}
 
 	return r, nil
 }
