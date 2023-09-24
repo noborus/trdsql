@@ -58,6 +58,17 @@ func jqParse(q string) (*gojq.Query, error) {
 	return query, nil
 }
 
+func (r *YAMLReader) wrapDecode(v interface{}) (err error) {
+	defer func() {
+		if rec := recover(); rec != nil {
+			err = fmt.Errorf("%s", rec)
+		}
+	}()
+
+	err = r.reader.Decode(v)
+	return
+}
+
 // yamlParse parses YAML and stores it in preRead.
 func (r *YAMLReader) yamlParse(opts *ReadOpts) error {
 	r.limitRead = opts.InLimitRead
@@ -66,9 +77,9 @@ func (r *YAMLReader) yamlParse(opts *ReadOpts) error {
 
 	var top interface{}
 	for i := 0; i < opts.InPreRead; i++ {
-		if err := r.reader.Decode(&top); err != nil {
+		if err := r.wrapDecode(&top); err != nil {
 			if !errors.Is(err, io.EOF) {
-				return err
+				return fmt.Errorf("%w: %s", ErrInvalidYAML, err)
 			}
 			debug.Printf(err.Error())
 			return nil
@@ -209,8 +220,8 @@ func (r *YAMLReader) ReadRow(row []interface{}) ([]interface{}, error) {
 	return v, nil
 }
 
-func (r *YAMLReader) rowParse(row []interface{}, YAMLRow interface{}) []interface{} {
-	switch m := YAMLRow.(type) {
+func (r *YAMLReader) rowParse(row []interface{}, yamlRow interface{}) []interface{} {
+	switch m := yamlRow.(type) {
 	case map[string]interface{}:
 		for i := range r.names {
 			row[i] = r.toString(m[r.names[i]])
@@ -219,7 +230,7 @@ func (r *YAMLReader) rowParse(row []interface{}, YAMLRow interface{}) []interfac
 		for i := range r.names {
 			row[i] = nil
 		}
-		row[0] = r.toString(YAMLRow)
+		row[0] = r.toString(yamlRow)
 	}
 	return row
 }
