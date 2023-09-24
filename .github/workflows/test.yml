@@ -21,6 +21,9 @@ jobs:
         - ubuntu-latest
         - macos-latest
         - windows-latest
+        exclude:
+          - go-version: "1.19"
+            platform: windows-latest
   dbtest:
     runs-on: ubuntu-latest
     services:
