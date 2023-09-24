@@ -54,14 +54,14 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 	for i := 0; i < opts.InPreRead; i++ {
 		if err := r.reader.Decode(&top); err != nil {
 			if !errors.Is(err, io.EOF) {
-				return r, err
+				return r, fmt.Errorf("%w: %s", ErrInvalidJSON, err)
 			}
 			debug.Printf(err.Error())
 			return r, nil
 		}
 
 		if r.query != nil {
-			if err := r.jquery(top); err != nil {
+			if err := r.jqueryRun(top); err != nil {
 				return nil, err
 			}
 			return r, nil
@@ -73,23 +73,6 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 	}
 
 	return r, nil
-}
-
-func (r *JSONReader) jquery(top interface{}) error {
-	iter := r.query.Run(top)
-	for {
-		v, ok := iter.Next()
-		if !ok {
-			break
-		}
-		if err, ok := v.(error); ok {
-			return fmt.Errorf("%w gojq:(%s) ", err, r.query)
-		}
-		if err := r.readAhead(v); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 // Names returns column names.
@@ -107,6 +90,7 @@ func (r *JSONReader) Types() ([]string, error) {
 	return r.types, nil
 }
 
+// readAhead parses the top level of the JSON and stores it in preRead.
 func (r *JSONReader) readAhead(top interface{}) error {
 	switch m := top.(type) {
 	case []interface{}:
@@ -161,7 +145,7 @@ func (r *JSONReader) topLevel(top interface{}) (map[string]interface{}, []string
 	}
 }
 
-// PreReadRow is returns only columns that store preread rows.
+// PreReadRow is returns only columns that store preRead rows.
 // One json (not jsonl) returns all rows with preRead.
 func (r *JSONReader) PreReadRow() [][]interface{} {
 	rows := make([][]interface{}, len(r.preRead))
@@ -190,26 +174,9 @@ func (r *JSONReader) ReadRow(row []interface{}) ([]interface{}, error) {
 	}
 
 	if r.query != nil {
-		// json query.
-		return r.queryRun(row, data)
+		return r.jqueryRunJsonl(row, data)
 	}
 	return r.rowParse(row, data), nil
-}
-
-func (r *JSONReader) queryRun(row []interface{}, jsonRow interface{}) ([]interface{}, error) {
-	iter := r.query.Run(jsonRow)
-	for {
-		v, ok := iter.Next()
-		if !ok {
-			break
-		}
-		if err, ok := v.(error); ok {
-			debug.Printf("query %s", err.Error())
-			continue
-		}
-		row = r.rowParse(row, v)
-	}
-	return row, nil
 }
 
 func (r *JSONReader) rowParse(row []interface{}, jsonRow interface{}) []interface{} {
@@ -254,6 +221,42 @@ func (r *JSONReader) etcRow(val interface{}) (map[string]interface{}, []string, 
 	return row, names, nil
 }
 
+// jqueryRun is a gojq.Run for json.
+func (r *JSONReader) jqueryRun(top interface{}) error {
+	iter := r.query.Run(top)
+	for {
+		v, ok := iter.Next()
+		if !ok {
+			break
+		}
+		if err, ok := v.(error); ok {
+			return fmt.Errorf("%w gojq:(%s) ", err, r.query)
+		}
+		if err := r.readAhead(v); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// jqueryRunJsonl jqueryRunJsonl gojq.Run for rows of jsonl.
+func (r *JSONReader) jqueryRunJsonl(row []interface{}, jsonRow interface{}) ([]interface{}, error) {
+	iter := r.query.Run(jsonRow)
+	for {
+		v, ok := iter.Next()
+		if !ok {
+			break
+		}
+		if err, ok := v.(error); ok {
+			debug.Printf("%s gojq: %s", err.Error(), r.query)
+			continue
+		}
+		row = r.rowParse(row, v)
+	}
+	return row, nil
+}
+
+// jsonString returns the string of the argument.
 func (r *JSONReader) jsonString(val interface{}) interface{} {
 	var str string
 	switch val.(type) {

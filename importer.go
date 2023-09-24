@@ -37,6 +37,8 @@ var (
 	ErrNoMatchFound = errors.New("no match found")
 	// ErrNonDefinition is returned when there is no definition.
 	ErrNonDefinition = errors.New("no definition")
+	// ErrInvalidJSON is returned when the JSON is invalid.
+	ErrInvalidJSON = errors.New("invalid JSON")
 	// ErrInvalidYAML is returned when the YAML is invalid.
 	ErrInvalidYAML = errors.New("invalid YAML")
 )

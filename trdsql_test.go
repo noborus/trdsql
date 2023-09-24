@@ -769,6 +769,7 @@ func BenchmarkOutput_TBLN(b *testing.B) {
 func BenchmarkOutput_JSON(b *testing.B) {
 	benchmarkFormat(b, JSON)
 }
+
 func BenchmarkOutput_YAML(b *testing.B) {
 	benchmarkFormat(b, YAML)
 }
