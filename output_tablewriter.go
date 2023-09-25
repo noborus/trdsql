@@ -1,6 +1,8 @@
 package trdsql
 
 import (
+	"strings"
+
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -10,6 +12,7 @@ type TWWriter struct {
 	outNULL  string
 	results  []string
 	needNULL bool
+	markdown bool
 }
 
 // NewTWWriter returns TWWriter.
@@ -24,6 +27,7 @@ func NewTWWriter(writeOpts *WriteOpts, markdown bool) *TWWriter {
 	}
 	w.needNULL = writeOpts.OutNeedNULL
 	w.outNULL = writeOpts.OutNULL
+	w.markdown = markdown
 	return w
 }
 
@@ -43,6 +47,9 @@ func (w *TWWriter) WriteRow(values []interface{}, columns []string) error {
 			str = w.outNULL
 		} else {
 			str = ValString(col)
+			if w.markdown {
+				str = strings.ReplaceAll(str, `|`, `\|`)
+			}
 		}
 		w.results[i] = str
 	}
