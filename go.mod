@@ -35,4 +35,4 @@ require (
 	gonum.org/v1/gonum v0.14.0 // indirect
 )
 
-go 1.18
+go 1.19
