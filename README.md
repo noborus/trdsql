@@ -88,7 +88,7 @@ $ make install
 
 ####  1.1.1. <a name='requirements'></a>Requirements
 
-go 1.18 or higher.
+go 1.19 or higher.
 
 ###  1.2. <a name='download-binary'></a>Download binary
 
