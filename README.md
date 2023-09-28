@@ -6,7 +6,7 @@
 [![GitHub Actions](https://github.com/noborus/trdsql/workflows/Go/badge.svg)](https://github.com/noborus/trdsql/actions)
 
 CLI tool that can execute SQL queries on [CSV](https://tools.ietf.org/html/rfc4180),
- [LTSV](http://ltsv.org/), [JSON](https://tools.ietf.org/html/rfc7159) and [TBLN](https://tbln.dev/).
+ [LTSV](http://ltsv.org/), [JSON](https://tools.ietf.org/html/rfc7159), [YAML](https://yaml.org/) and [TBLN](https://tbln.dev/).
 
 It is a tool like [q](https://github.com/harelba/q),
  [textql](https://github.com/dinedal/textql) and others.
