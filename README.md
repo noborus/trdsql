@@ -51,21 +51,23 @@ Please refer to [godoc](https://pkg.go.dev/github.com/noborus/trdsql)
   * 4.10. [JSON](#json)
     * 4.10.1. [jq expression](#jq-expression)
   * 4.11. [JSONL(NDJSON)](#jsonl(ndjson))
-  * 4.12. [TBLN](#tbln)
-  * 4.13. [WIDTH](#width)
-  * 4.14. [Raw output](#raw-output)
-  * 4.15. [ASCII Table & MarkDown output](#ascii-table-&-markdown-output)
-  * 4.16. [Vertical format output](#vertical-format-output)
-  * 4.17. [SQL function](#sql-function)
-  * 4.18. [JOIN](#join)
-  * 4.19. [PostgreSQL](#postgresql)
-    * 4.19.1. [Function](#function)
-    * 4.19.2. [Join table and CSV file is possible](#join-table-and-csv-file-is-possible)
-  * 4.20. [MySQL](#mysql)
-  * 4.21. [Analyze](#analyze)
-  * 4.22. [configuration](#configuration)
-* 5. [Library](#library)
-* 6. [License](#license)
+  * 4.12. [YAML](#yaml)
+  * 4.13. [TBLN](#tbln)
+  * 4.14. [WIDTH](#width)
+  * 4.15. [Raw output](#raw-output)
+  * 4.16. [ASCII Table & MarkDown output](#ascii-table-&-markdown-output)
+  * 4.17. [Vertical format output](#vertical-format-output)
+* 5. [SQL](#sql)
+  * 5.1. [SQL function](#sql-function)
+  * 5.2. [JOIN](#join)
+  * 5.3. [PostgreSQL](#postgresql)
+    * 5.3.1. [Function](#function)
+    * 5.3.2. [Join table and CSV file is possible](#join-table-and-csv-file-is-possible)
+  * 5.4. [MySQL](#mysql)
+  * 5.5. [Analyze](#analyze)
+  * 5.6. [configuration](#configuration)
+* 6. [Library](#library)
+* 7. [License](#license)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -165,6 +167,7 @@ trdsql [options] SQL
 * `-icsv` CSV format for input.
 * `-ijson` JSON format for input.
 * `-iltsv` LTSV format for input.
+* `-iyaml` YAML format for input.
 * `-itbln` TBLN format for input.
 * `-iwidth` width specification format for input.
 
@@ -189,6 +192,7 @@ trdsql [options] SQL
 * `-omd` Markdown format for output.
 * `-oraw` Raw format for output.
 * `-ovf` Vertical format for output.
+* `-oyaml` YAML format for output.
 * `-otbln` TBLN format for output.
 
 Or, [guess the output format by file name](#Guessbyoutputfilename).
@@ -595,7 +599,102 @@ $ trdsql -ojsonl "SELECT * FROM test.csv"
 {"c1":"3","c2":"Apple"}
 ```
 
-###  4.12. <a name='tbln'></a>TBLN
+###  4.12. <a name='yaml'></a>YAML
+
+`-iyaml` is input from YAML
+(Or if the extension is `yaml` or `yml`, it is considered a YAML file).
+
+sample.yaml
+
+```yaml
+- id: 1
+  name: Orange
+  price: 50
+- id: 2
+  name: Melon
+  price: 500
+- id: 3
+  name: Apple
+  price: 100
+```
+
+```console
+$ trdsql -iyaml -ocsv "SELECT * FROM sample.yaml"
+1,Orange,50
+2,Melon,500
+3,Apple,100
+```
+
+Since yaml is internally converted to JSON, it can be converted to json and output.
+
+sample2.yaml
+
+```yaml
+a: true
+b:
+  c: 2
+  d: [3, 4, 5]
+  e:
+    - name: fred
+      value: 3
+    - name: sam
+      value: 4%
+```
+
+```console
+$ trdsql -ojson "SELECT * FROM sample2.yaml"
+[
+  {
+    "a": "true",
+    "b": {
+      "c": 2,
+      "d": [
+        3,
+        4,
+        5
+      ],
+      "e": [
+        {
+          "name": "fred",
+          "value": 3
+        },
+        {
+          "name": "sam",
+          "value": "4%"
+        }
+      ]
+    }
+  }
+]
+```
+
+So in addition you can also use `jq` syntax.
+
+```console
+$ trdsql  -ojson "SELECT * FROM sample2.yaml::.b.e"
+[
+  {
+    "name": "fred",
+    "value": "3"
+  },
+  {
+    "name": "sam",
+    "value": "4%"
+  }
+]
+```
+
+json can be converted to yaml.
+
+```console
+$ trdsql  -ojson "SELECT * FROM sample2.yaml::.b.e"
+- name: fred
+  value: 3
+- name: sam
+  value: 4%
+```
+
+###  4.13. <a name='tbln'></a>TBLN
 
 `-itbln` is input from TBLN.
 
@@ -631,7 +730,7 @@ $ trdsql -otbln "SELECT c1::int as id, c2::text as name FROM test.csv"
 TBLN can contain column names and type definitions.
 Please refer to <https://tbln.dev/> for details of TBLN.
 
-###  4.13. <a name='width'></a>WIDTH
+###  4.14. <a name='width'></a>WIDTH
 
 `-iwidth` inputs the format specifying the width.
 This is used when the header column width represents the body column width.
@@ -650,7 +749,7 @@ But `-id " "` does not recognize spaces in columns very well.
 
 `-iwidth` recognizes column widths and space separators.
 
-###  4.14. <a name='raw-output'></a>Raw output
+###  4.15. <a name='raw-output'></a>Raw output
 
 `-oraw` is Raw Output.
 It is used when "escape processing is unnecessary" in CSV output.
@@ -675,7 +774,7 @@ $ trdsql -oraw -od "\t|\t" -db pdb "SELECT * FROM test.csv"
 3	|	Apple
 ```
 
-###  4.15. <a name='ascii-table-&-markdown-output'></a>ASCII Table & MarkDown output
+###  4.16. <a name='ascii-table-&-markdown-output'></a>ASCII Table & MarkDown output
 
 `-oat` is ASCII table output.
 
@@ -703,7 +802,7 @@ $ trdsql -omd "SELECT * FROM test.csv"
 
 The `-onowrap` option does not wrap long columns in `at` or `md` output.
 
-###  4.16. <a name='vertical-format-output'></a>Vertical format output
+###  4.17. <a name='vertical-format-output'></a>Vertical format output
 
 -ovf is Vertical format output("column name | value" vertically).
 
@@ -720,7 +819,9 @@ $ trdsql -ovf "SELECT * FROM test.csv"
   c2 | Apple
 ```
 
-###  4.17. <a name='sql-function'></a>SQL function
+##  5. <a name='sql'></a>SQL
+
+###  5.1. <a name='sql-function'></a>SQL function
 
 ```console
 $ trdsql "SELECT count(*) FROM test.csv"
@@ -738,7 +839,7 @@ Apple,3
 
 Note: the available functions and their syntax depend on the driver you have chosen (mysql or postgres or sqlite). The default one is sqlite.
 
-###  4.18. <a name='join'></a>JOIN
+###  5.2. <a name='join'></a>JOIN
 
 The SQL JOIN can be used.
 
@@ -764,7 +865,7 @@ $ trdsql "SELECT u.c1,u.c2,h.c2 FROM user.csv as u LEFT JOIN hist.csv as h ON(u.
 2,userB,2017-7-11
 ```
 
-###  4.19. <a name='postgresql'></a>PostgreSQL
+###  5.3. <a name='postgresql'></a>PostgreSQL
 
 When using PostgreSQL, specify postgres for driver
  and driver-specific data source name for dsn.
@@ -773,7 +874,7 @@ When using PostgreSQL, specify postgres for driver
 trdsql -driver postgres -dsn "dbname=test" "SELECT count(*) FROM test.csv "
 ```
 
-####  4.19.1. <a name='function'></a>Function
+####  5.3.1. <a name='function'></a>Function
 
 The PostgreSQL driver can use the window function.
 
@@ -793,7 +894,7 @@ $ trdsql -driver postgres -dsn "dbname=test" "SELECT generate_series(1,3);"
 3
 ```
 
-####  4.19.2. <a name='join-table-and-csv-file-is-possible'></a>Join table and CSV file is possible
+####  5.3.2. <a name='join-table-and-csv-file-is-possible'></a>Join table and CSV file is possible
 
 Test database has a colors table.
 
@@ -832,7 +933,7 @@ $ psql -c "SELECT * FROM fruits;"
 (3 rows)
 ```
 
-###  4.20. <a name='mysql'></a>MySQL
+###  5.4. <a name='mysql'></a>MySQL
 
 When using MySQL, specify mysql for driver and connection information for dsn.
 
@@ -850,7 +951,7 @@ $ trdsql -driver mysql -dsn "user:password@/test" "SELECT c1, SHA2(c2,224) FROM 
 
 MySQL can join tables and CSV files as well as PostgreSQL.
 
-###  4.21. <a name='analyze'></a>Analyze
+###  5.5. <a name='analyze'></a>Analyze
 
 The ***-a filename*** option parses the file and outputs table information and SQL examples.
 
@@ -897,7 +998,7 @@ trdsql -ih "SELECT id, count(id) FROM testdata/header.csv GROUP BY id"
 trdsql -ih "SELECT id, \`name\` FROM testdata/header.csv ORDER BY id LIMIT 10"
 ```
 
-###  4.22. <a name='configuration'></a>configuration
+###  5.6. <a name='configuration'></a>configuration
 
 You can specify driver and dsn in the configuration file.
 
@@ -956,7 +1057,7 @@ $ trdsql -debug -db pdb "SELECT * FROM test.csv"
 3,Apple
 ```
 
-##  5. <a name='library'></a>Library
+##  6. <a name='library'></a>Library
 
 Example of use as a library.
 
@@ -985,7 +1086,7 @@ Please refer to [godoc](https://pkg.go.dev/github.com/noborus/trdsql) and _examp
 
 See also [psutilsql](https://github.com/noborus/psutilsql), which uses trdsql as a library.
 
-##  6. <a name='license'></a>License
+##  7. <a name='license'></a>License
 
 MIT
 
