@@ -580,8 +580,8 @@ func Test_quoteOpts(t *testing.T) {
 		want   string
 	}{
 		{
-			name:   "testSQLIte3",
-			driver: "sqlite3",
+			name:   "testSQLite3",
+			driver: trdsql.DefaultDriver,
 			want:   "\\`",
 		},
 		{

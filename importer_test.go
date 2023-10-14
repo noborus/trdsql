@@ -81,7 +81,7 @@ func TestImporter_Import(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			db, err := Connect("sqlite3", "")
+			db, err := Connect(DefaultDriver, "")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -188,7 +188,7 @@ func Test_SQLFields(t *testing.T) {
 }
 
 func newDBTestSqlite3() *DB {
-	db, err := Connect("sqlite3", "")
+	db, err := Connect(DefaultDriver, "")
 	if err != nil {
 		return nil
 	}
