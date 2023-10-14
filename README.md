@@ -31,6 +31,7 @@ Please refer to [godoc](https://pkg.go.dev/github.com/noborus/trdsql)
   * 2.1. [Docker pull](#docker-pull)
   * 2.2. [image build](#image-build)
   * 2.3. [Docker Run](#docker-run)
+  * 2.4. [cgo free](#cgo-free)
 * 3. [Usage](#usage)
   * 3.1. [global options](#global-options)
   * 3.2. [Input formats](#input-formats)
@@ -140,6 +141,13 @@ Docker run.
 ```console
 docker run --rm -it -v $(pwd):/tmp trdsql [options and commands]
 ```
+
+###  2.4. <a name='cgo-free'></a>cgo free
+
+Normally you build using [go-sqlite3](https://github.com/mattn/go-sqlite3), but if you build with `CGO_ENABLED=0`,
+use [sqlite](https://gitlab.com/cznic/sqlite).
+
+Building with CGO Free reduced issues when cross-compiling, but it runs slower.
 
 ##  3. <a name='usage'></a>Usage
 
