@@ -210,7 +210,7 @@ func TestTRDSQL_ErrExec(t *testing.T) {
 			),
 			)
 			trd := NewTRDSQL(importer, exporter)
-			trd.Driver = "sqlite3"
+			trd.Driver = DefaultDriver
 			trd.Dsn = ""
 			if err := trd.Exec(tt.sql); (err != nil) != tt.wantErr {
 				t.Errorf("TRDSQL.Exec() error = %v, wantErr %v", err, tt.wantErr)
@@ -280,7 +280,7 @@ func TestTRDSQL_ErrWrite(t *testing.T) {
 			importer := NewImporter(InFormat(GUESS))
 			exporter := NewExporter(errorWriter{})
 			trd := NewTRDSQL(importer, exporter)
-			trd.Driver = "sqlite3"
+			trd.Driver = DefaultDriver
 			trd.Dsn = ""
 			if err := trd.Exec(tt.sql); (err != nil) != tt.wantErr {
 				t.Errorf("TRDSQL.Exec() error = %v, wantErr %v", err, tt.wantErr)
@@ -422,7 +422,7 @@ func setDefaultTRDSQL(outStream io.Writer) *TRDSQL {
 	importer := NewImporter(InFormat(GUESS))
 	exporter := NewExporter(NewWriter(OutStream(outStream)))
 	trd := NewTRDSQL(importer, exporter)
-	trd.Driver = "sqlite3"
+	trd.Driver = DefaultDriver
 	trd.Dsn = ""
 	return trd
 }
@@ -521,7 +521,7 @@ func setOutFormatTRDSQL(outFormat Format, outStream io.Writer) *TRDSQL {
 		OutStream(outStream),
 	))
 	trd := NewTRDSQL(importer, exporter)
-	trd.Driver = "sqlite3"
+	trd.Driver = DefaultDriver
 	trd.Dsn = ""
 	return trd
 }
@@ -596,7 +596,7 @@ func checkDBTest(driver string, dsn string) bool {
 
 func availableDB() [][]string {
 	database := [][]string{
-		{"sqlite3", ""},
+		{DefaultDriver, ""},
 		{"postgres", pgDsn()},
 		{"mysql", myDsn()},
 	}
@@ -743,7 +743,7 @@ func benchmarkFormat(b *testing.B, format Format) {
 		),
 	)
 	trd := NewTRDSQL(importer, exporter)
-	trd.Driver = "sqlite3"
+	trd.Driver = DefaultDriver
 	trd.Dsn = ""
 	if err := trd.Exec(sql); err != nil {
 		b.Fatal(err)

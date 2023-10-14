@@ -44,7 +44,7 @@ func TestWriteFormat_Export(t *testing.T) {
 	}{
 		{
 			name:    "testErr",
-			fields:  fields{driver: "sqlite3", dsn: ""},
+			fields:  fields{driver: DefaultDriver, dsn: ""},
 			args:    args{query: "SELECT 1 "},
 			wantErr: true,
 		},

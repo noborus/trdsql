@@ -31,7 +31,7 @@ type TRDSQL struct {
 // NewTRDSQL returns a new TRDSQL structure.
 func NewTRDSQL(im Importer, ex Exporter) *TRDSQL {
 	return &TRDSQL{
-		Driver:   "sqlite3",
+		Driver:   DefaultDriver,
 		Dsn:      "",
 		Importer: im,
 		Exporter: ex,

@@ -5,7 +5,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 func TestConnect(t *testing.T) {
@@ -20,7 +20,7 @@ func TestConnect(t *testing.T) {
 	}{
 		{
 			name:    "testSuccess",
-			args:    args{driver: "sqlite3", dsn: ""},
+			args:    args{driver: "sqlite", dsn: ""},
 			wantErr: false,
 		},
 		{
@@ -36,11 +36,6 @@ func TestConnect(t *testing.T) {
 		{
 			name:    "testMysql",
 			args:    args{driver: "mysql", dsn: myDsn()},
-			wantErr: false,
-		},
-		{
-			name:    "testSqlite3ext",
-			args:    args{driver: "sqlite3_ext", dsn: ""},
 			wantErr: false,
 		},
 	}
@@ -67,7 +62,7 @@ func TestDB_Disconnect(t *testing.T) {
 	}{
 		{
 			name:    "testSuccess",
-			args:    args{driver: "sqlite3", dsn: ""},
+			args:    args{driver: "sqlite", dsn: ""},
 			wantErr: false,
 		},
 	}
@@ -103,7 +98,7 @@ func TestDB_CreateTable(t *testing.T) {
 	}{
 		{
 			name:   "testSuccess",
-			fields: fields{driver: "sqlite3", dsn: ""},
+			fields: fields{driver: "sqlite", dsn: ""},
 			args: args{
 				tableName:   "test",
 				names:       []string{"a", "b"},
@@ -114,7 +109,7 @@ func TestDB_CreateTable(t *testing.T) {
 		},
 		{
 			name:   "testSuccess2",
-			fields: fields{driver: "sqlite3", dsn: ""},
+			fields: fields{driver: "sqlite", dsn: ""},
 			args: args{
 				tableName:   "test",
 				names:       []string{"c1"},
@@ -125,7 +120,7 @@ func TestDB_CreateTable(t *testing.T) {
 		},
 		{
 			name:   "testFail",
-			fields: fields{driver: "sqlite3", dsn: ""},
+			fields: fields{driver: "sqlite", dsn: ""},
 			args: args{
 				tableName:   "test",
 				names:       []string{},
@@ -136,7 +131,7 @@ func TestDB_CreateTable(t *testing.T) {
 		},
 		{
 			name:   "testFail2",
-			fields: fields{driver: "sqlite3", dsn: ""},
+			fields: fields{driver: "sqlite", dsn: ""},
 			args: args{
 				tableName:   "test",
 				names:       []string{"c1"},
@@ -147,7 +142,7 @@ func TestDB_CreateTable(t *testing.T) {
 		},
 		{
 			name:   "testFail3",
-			fields: fields{driver: "sqlite3", dsn: ""},
+			fields: fields{driver: "sqlite", dsn: ""},
 			args: args{
 				tableName:   "test",
 				names:       []string{"c1"},
@@ -196,13 +191,13 @@ func TestDB_Select(t *testing.T) {
 	}{
 		{
 			name:    "testErr",
-			fields:  fields{driver: "sqlite3", dsn: ""},
+			fields:  fields{driver: "sqlite", dsn: ""},
 			args:    args{query: ""},
 			wantErr: true,
 		},
 		{
 			name:    "testErr2",
-			fields:  fields{driver: "sqlite3", dsn: ""},
+			fields:  fields{driver: "sqlite", dsn: ""},
 			args:    args{query: "SELEC * FROM test"},
 			wantErr: true,
 		},
@@ -249,22 +244,16 @@ func TestDB_Func(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "testSqlite3Version",
-			fields:  fields{driver: "sqlite3", dsn: ""},
+			name:    "testsqliteVersion",
+			fields:  fields{driver: "sqlite", dsn: ""},
 			args:    args{query: "SELECT sqlite_version();"},
 			wantErr: false,
 		},
 		{
-			name:    "testSqlite3fail",
-			fields:  fields{driver: "sqlite3", dsn: ""},
+			name:    "testsqlitefail",
+			fields:  fields{driver: "sqlite", dsn: ""},
 			args:    args{query: "SELECT repeat('f', 5);"},
 			wantErr: true,
-		},
-		{
-			name:    "testSqlite3ext",
-			fields:  fields{driver: "sqlite3_ext", dsn: ""},
-			args:    args{query: "SELECT repeat('f', 5);"},
-			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -312,7 +301,7 @@ func TestDB_Import(t *testing.T) {
 	}{
 		{
 			name:   "testErr",
-			fields: fields{driver: "sqlite3", dsn: ""},
+			fields: fields{driver: "sqlite", dsn: ""},
 			args: args{
 				tableName:   "test",
 				columnNames: []string{"c1"},
