@@ -312,7 +312,7 @@ func (cli Cli) Run(args []string) int {
 // Usage is outputs usage information.
 func Usage(flags *flag.FlagSet) {
 	bold := gchalk.Bold
-	fmt.Fprintf(flags.Output(), "%s - Execute SQL queries on CSV, LTSV, JSON and TBLN.\n\n", trdsql.AppName)
+	fmt.Fprintf(flags.Output(), "%s - Execute SQL queries on CSV, LTSV, JSON, YAML and TBLN.\n\n", trdsql.AppName)
 	fmt.Fprintf(flags.Output(), "%s\n", bold("Usage"))
 	fmt.Fprintf(flags.Output(), "\t%s [OPTIONS] [SQL(SELECT...)]\n\n", trdsql.AppName)
 
