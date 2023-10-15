@@ -3,7 +3,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
     - name: Check out code into the Go module directory
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Install Go
       if: success()
       uses: actions/setup-go@v4
@@ -47,7 +47,7 @@ jobs:
         - 5432:5432
     steps:
     - name: Check out code into the Go module directory
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Install Go
       uses: actions/setup-go@v4
       if: success()
