@@ -27,11 +27,11 @@ Please refer to [godoc](https://pkg.go.dev/github.com/noborus/trdsql)
   * 1.3. [Homebrew](#homebrew)
   * 1.4. [MacPorts](#macports)
   * 1.5. [FreeBSD](#freebsd)
+  * 1.6. [cgo free](#cgo-free)
 * 2. [Docker](#docker)
   * 2.1. [Docker pull](#docker-pull)
   * 2.2. [image build](#image-build)
   * 2.3. [Docker Run](#docker-run)
-  * 2.4. [cgo free](#cgo-free)
 * 3. [Usage](#usage)
   * 3.1. [global options](#global-options)
   * 3.2. [Input formats](#input-formats)
@@ -81,10 +81,10 @@ Please refer to [godoc](https://pkg.go.dev/github.com/noborus/trdsql)
 ###  1.1. <a name='go-get'></a>go get
 
 ```console
-$ go get -d github.com/noborus/trdsql
-$ cd $GOPATH/src/github.com/noborus/trdsql
-$ make
-$ make install
+go get -d github.com/noborus/trdsql
+cd $GOPATH/src/github.com/noborus/trdsql
+make
+make install
 ```
 
 ####  1.1.1. <a name='requirements'></a>Requirements
@@ -116,6 +116,13 @@ sudo port install trdsql
 pkg install trdsql
 ```
 
+###  1.6. <a name='cgo-free'></a>cgo free
+
+Normally you build using [go-sqlite3](https://github.com/mattn/go-sqlite3), but if you build with `CGO_ENABLED=0`,
+use [sqlite](https://gitlab.com/cznic/sqlite).
+
+Building with CGO Free reduced issues when cross-compiling, but it runs slower.
+
 ##  2. <a name='docker'></a>Docker
 
 ###  2.1. <a name='docker-pull'></a>Docker pull
@@ -142,13 +149,6 @@ Docker run.
 docker run --rm -it -v $(pwd):/tmp trdsql [options and commands]
 ```
 
-###  2.4. <a name='cgo-free'></a>cgo free
-
-Normally you build using [go-sqlite3](https://github.com/mattn/go-sqlite3), but if you build with `CGO_ENABLED=0`,
-use [sqlite](https://gitlab.com/cznic/sqlite).
-
-Building with CGO Free reduced issues when cross-compiling, but it runs slower.
-
 ##  3. <a name='usage'></a>Usage
 
 ```console
@@ -162,7 +162,7 @@ trdsql [options] SQL
 * `-config` **filename** configuration file location.
 * `-db` **db name** specify db name of the setting.
 * `-dblist` display db list of configure.
-* `-driver` **string** database driver.  [ mysql | postgres | sqlite3 ]
+* `-driver` **string** database driver.  [ mysql | postgres | sqlite3 | sqlite(CGO Free) ] (default "sqlite3")
 * `-dsn` **string** database driver specific data source name.
 * `-debug` debug print.
 * `-help` display usage information.
@@ -182,7 +182,7 @@ trdsql [options] SQL
 ####  3.2.1. <a name='input-options'></a>Input options
 
 * `-ih` the first line is interpreted as column names(CSV only).
-* `-id` **character** field delimiter for input. (default ",")(CSV only)
+* `-id` **character** field delimiter for input(default ",")(CSV only).
 * `-ijq` **string** jq expression string for input(JSON/JSONL only).
 * `-ilr` **int** limited number of rows to read.
 * `-inull` **string** value(string) to convert to null on input.
@@ -213,7 +213,7 @@ Or, [guess the output format by file name](#Guessbyoutputfilename).
 * `-od` **character** field delimiter for output. (default ",")(CSV and RAW only).
 * `-oq` **character** quote character for output. (default "\"")(CSV only).
 * `-oaq` enclose all fields in quotes for output(CSV only).
-* `-ocrlf` use CRLF for output. End each output line with '\\r\\n' instead of '\\n'.")(CSV only).
+* `-ocrlf` use CRLF for output. End each output line with '\\r\\n' instead of '\\n'."(CSV only).
 * `-onowrap` do not wrap long columns(AT and MD only).
 * `-onull` value(string) to convert from null on output.
 
