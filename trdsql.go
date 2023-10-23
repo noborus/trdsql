@@ -149,8 +149,8 @@ func (trd *TRDSQL) ExecContext(ctx context.Context, sql string) error {
 	}
 
 	defer func() {
-		if deferr := db.Disconnect(); deferr != nil {
-			log.Printf("disconnect: %s", deferr)
+		if deferErr := db.Disconnect(); deferErr != nil {
+			log.Printf("disconnect: %s", deferErr)
 		}
 	}()
 

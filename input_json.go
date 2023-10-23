@@ -239,7 +239,7 @@ func (r *JSONReader) jqueryRun(top interface{}) error {
 	return nil
 }
 
-// jqueryRunJsonl jqueryRunJsonl gojq.Run for rows of jsonl.
+// jqueryRunJsonl gojq.Run for rows of jsonl.
 func (r *JSONReader) jqueryRunJsonl(row []interface{}, jsonRow interface{}) ([]interface{}, error) {
 	iter := r.query.Run(jsonRow)
 	for {

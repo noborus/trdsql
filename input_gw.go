@@ -1,6 +1,7 @@
 package trdsql
 
 import (
+	"errors"
 	"io"
 
 	"github.com/noborus/guesswidth"
@@ -35,14 +36,14 @@ func NewGWReader(reader io.Reader, opts *ReadOpts) (*GWReader, error) {
 	r.reader.Scan(r.scanNum)
 	for i := 0; i < opts.InSkip; i++ {
 		if _, err := r.reader.Read(); err != nil {
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				return r, nil
 			}
 		}
 	}
 	names, err := r.reader.Read()
 	if err != nil {
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			return r, nil
 		}
 		return nil, err
