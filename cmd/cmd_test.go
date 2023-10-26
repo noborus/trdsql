@@ -197,8 +197,9 @@ func Test_outputFormat(t *testing.T) {
 
 func Test_getQuery(t *testing.T) {
 	type argss struct {
-		args     []string
-		fileName string
+		args      []string
+		tableName string
+		queryFile string
 	}
 	tests := []struct {
 		name    string
@@ -209,8 +210,9 @@ func Test_getQuery(t *testing.T) {
 		{
 			name: "testARGS",
 			argss: argss{
-				[]string{"SELECT 1"},
-				"",
+				args:      []string{"SELECT 1"},
+				tableName: "",
+				queryFile: "",
 			},
 			want:    "SELECT 1",
 			wantErr: false,
@@ -218,8 +220,9 @@ func Test_getQuery(t *testing.T) {
 		{
 			name: "testARGS2",
 			argss: argss{
-				[]string{"SELECT", "1"},
-				"",
+				args:      []string{"SELECT", "1"},
+				tableName: "",
+				queryFile: "",
 			},
 			want:    "SELECT 1",
 			wantErr: false,
@@ -227,26 +230,39 @@ func Test_getQuery(t *testing.T) {
 		{
 			name: "testTrim",
 			argss: argss{
-				[]string{"SELECT * FROM test;   "},
-				"",
+				args:      []string{"SELECT * FROM test;   "},
+				tableName: "",
+				queryFile: "",
 			},
 			want:    "SELECT * FROM test",
 			wantErr: false,
 		},
 		{
-			name: "testFileErr",
+			name: "testTableName",
 			argss: argss{
-				[]string{},
-				filepath.Join("..", "testdata", "noFile.sql"),
+				args:      []string{},
+				tableName: filepath.Join("..", "testdata", "test.csv"),
+				queryFile: "",
+			},
+			want:    "SELECT * FROM ../testdata/test.csv",
+			wantErr: false,
+		},
+		{
+			name: "testQueryFileErr",
+			argss: argss{
+				args:      []string{},
+				tableName: "",
+				queryFile: filepath.Join("..", "testdata", "noFile.sql"),
 			},
 			want:    "",
 			wantErr: true,
 		},
 		{
-			name: "testFile",
+			name: "testQueryFile",
 			argss: argss{
-				[]string{},
-				filepath.Join("..", "testdata", "test.sql"),
+				args:      []string{},
+				tableName: "",
+				queryFile: filepath.Join("..", "testdata", "test.sql"),
 			},
 			want:    "SELECT * FROM testdata/test.csv",
 			wantErr: false,
@@ -254,7 +270,7 @@ func Test_getQuery(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getQuery(tt.argss.args, tt.argss.fileName)
+			got, err := getQuery(tt.argss.args, tt.argss.tableName, tt.argss.queryFile)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getQuery() error = %v, wantErr %v", err, tt.wantErr)
 				return
