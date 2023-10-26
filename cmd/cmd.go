@@ -21,6 +21,8 @@ import (
 	"github.com/ulikunitz/xz"
 )
 
+const TableQuery = "SELECT * FROM"
+
 // Cli wraps stdout and error output specification.
 type Cli struct {
 	// OutStream is the output destination.
@@ -69,6 +71,7 @@ func (cli Cli) Run(args []string) int {
 		queryFile string
 		analyze   string
 		onlySQL   string
+		tableName string
 
 		inFlag      inputFlag
 		inDelimiter string
@@ -107,6 +110,7 @@ func (cli Cli) Run(args []string) int {
 	flags.StringVar(&queryFile, "q", "", "read query from the specified file.")
 	flags.StringVar(&analyze, "a", "", "analyze the file and suggest SQL.")
 	flags.StringVar(&onlySQL, "A", "", "analyze the file but only suggest SQL.")
+	flags.StringVar(&tableName, "t", "", "read table name from the specified file.")
 	flags.BoolVar(&usage, "help", false, "display usage information.")
 	flags.BoolVar(&version, "version", false, "display version information.")
 	flags.BoolVar(&Debug, "debug", false, "debug print.")
@@ -204,7 +208,7 @@ func (cli Cli) Run(args []string) int {
 		return 0
 	}
 
-	query, err := getQuery(flags.Args(), queryFile)
+	query, err := getQuery(flags.Args(), tableName, queryFile)
 	if err != nil {
 		log.Printf("ERROR: %s", err)
 		return 1
@@ -424,12 +428,16 @@ func trimQuery(query string) string {
 	return strings.TrimRight(strings.TrimSpace(query), ";")
 }
 
-func getQuery(args []string, fileName string) (string, error) {
-	if fileName == "" {
+func getQuery(args []string, tableName string, queryFile string) (string, error) {
+	if tableName != "" {
+		return trimQuery(strings.Join([]string{TableQuery, tableName}, " ")), nil
+	}
+
+	if queryFile == "" {
 		return trimQuery(strings.Join(args, " ")), nil
 	}
 
-	sqlByte, err := os.ReadFile(fileName)
+	sqlByte, err := os.ReadFile(queryFile)
 	if err != nil {
 		return "", err
 	}
