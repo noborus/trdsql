@@ -244,7 +244,7 @@ func Test_getQuery(t *testing.T) {
 				tableName: filepath.Join("..", "testdata", "test.csv"),
 				queryFile: "",
 			},
-			want:    "SELECT * FROM ../testdata/test.csv",
+			want:    "SELECT * FROM " + filepath.Join("..", "testdata", "test.csv"),
 			wantErr: false,
 		},
 		{
