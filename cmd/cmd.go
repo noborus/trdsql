@@ -430,7 +430,11 @@ func trimQuery(query string) string {
 
 func getQuery(args []string, tableName string, queryFile string) (string, error) {
 	if tableName != "" {
-		return trimQuery(strings.Join([]string{TableQuery, tableName}, " ")), nil
+		var query strings.Builder
+		query.WriteString(TableQuery)
+		query.WriteString(" ")
+		query.WriteString(tableName)
+		return trimQuery(query.String()), nil
 	}
 
 	if queryFile == "" {
