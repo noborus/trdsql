@@ -303,23 +303,8 @@ func guessFormat(fileName string) Format {
 			return CSV
 		}
 		ext := strings.ToUpper(strings.TrimLeft(dotExt, "."))
-		switch ext {
-		case "CSV":
-			return CSV
-		case "TSV":
-			return TSV
-		case "PSV":
-			return PSV
-		case "LTSV":
-			return LTSV
-		case "JSON", "JSONL":
-			return JSON
-		case "YAML", "YML":
-			return YAML
-		case "TBLN":
-			return TBLN
-		case "WIDTH":
-			return WIDTH
+		if format, ok := extToFormat[ext]; ok {
+			return format
 		}
 		fileName = fileName[:len(fileName)-len(dotExt)]
 	}
