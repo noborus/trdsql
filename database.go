@@ -204,7 +204,11 @@ func (db *DB) insertImport(ctx context.Context, table *importTable, reader Reade
 	var stmt *sql.Stmt
 	defer db.stmtClose(stmt)
 
-	table.maxCap = (db.maxBulk / len(table.row)) * len(table.row)
+	if len(table.row) > db.maxBulk {
+		table.maxCap = len(table.row)
+	} else {
+		table.maxCap = (db.maxBulk / len(table.row)) * len(table.row)
+	}
 	bulk := make([]interface{}, 0, table.maxCap)
 
 	preRows := reader.PreReadRow()
