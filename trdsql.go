@@ -92,11 +92,11 @@ const (
 	YAML
 
 	// import
-	// Tab-Separated Values format.
+	// Tab-Separated Values format. Format using go standard CSV library.
 	TSV
 
 	// import
-	// Pipe-Separated Values format.
+	// Pipe-Separated Values format. Format using go standard CSV library.
 	PSV
 )
 

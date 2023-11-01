@@ -90,6 +90,16 @@ func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 	return r, nil
 }
 
+func NewTSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
+	opts.InDelimiter = "\t"
+	return NewCSVReader(reader, opts)
+}
+
+func NewPSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
+	opts.InDelimiter = "|"
+	return NewCSVReader(reader, opts)
+}
+
 func (r *CSVReader) setColumnType() {
 	if r.names == nil {
 		return
