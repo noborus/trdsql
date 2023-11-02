@@ -14,9 +14,9 @@ get_url_and_sha256() {
     echo "$url $sha256"
 }
 
-darwin_arm64=$(get_url_and_sha256 "dist/trdsql_${VERSION}_darwin_arm64.zip")
-darwin_arm64_url=$(echo "${darwin_arm64% *}" | sed 's/\//\\\//g')
-darwin_arm64_sha256=${darwin_arm64#* }
+#darwin_arm64=$(get_url_and_sha256 "dist/trdsql_${VERSION}_darwin_arm64.zip")
+#darwin_arm64_url=$(echo "${darwin_arm64% *}" | sed 's/\//\\\//g')
+#darwin_arm64_sha256=${darwin_arm64#* }
 
 darwin_amd64=$(get_url_and_sha256 "dist/trdsql_${VERSION}_darwin_amd64.zip")
 darwin_amd64_url=$(echo "${darwin_amd64% *}" | sed 's/\//\\\//g')

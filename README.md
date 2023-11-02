@@ -101,6 +101,8 @@ Download binary from the [releases](https://github.com/noborus/trdsql/releases) 
 brew install noborus/tap/trdsql
 ```
 
+**Note**: For ARM Macs, it is recommended to use [go get](#go-get) instead of Homebrew: [issue#197](https://github.com/noborus/trdsql/issues/197)
+
 ###  1.4. <a name='macports'></a>MacPorts
 
 ```console
