@@ -581,27 +581,9 @@ func outGuessFormat(fileName string) trdsql.Format {
 			return trdsql.CSV
 		}
 		ext := strings.ToUpper(strings.TrimLeft(dotExt, "."))
-		switch ext {
-		case "CSV":
-			return trdsql.CSV
-		case "LTSV":
-			return trdsql.LTSV
-		case "JSON":
-			return trdsql.JSON
-		case "TBLN":
-			return trdsql.TBLN
-		case "RAW":
-			return trdsql.RAW
-		case "MD":
-			return trdsql.MD
-		case "AT":
-			return trdsql.AT
-		case "VF":
-			return trdsql.VF
-		case "JSONL":
-			return trdsql.JSONL
-		case "YAML", "YML":
-			return trdsql.YAML
+		format := trdsql.OutputFormat(ext)
+		if format != trdsql.GUESS {
+			return format
 		}
 		fileName = fileName[0 : len(fileName)-len(dotExt)]
 	}

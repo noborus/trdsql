@@ -5,6 +5,21 @@ import (
 	"os"
 )
 
+// extToOutFormat is a map of file extensions to formats.
+var extToOutFormat = map[string]Format{
+	"CSV":   CSV,
+	"LTSV":  LTSV,
+	"JSON":  JSON,
+	"JSONL": JSONL,
+	"TBLN":  TBLN,
+	"RAW":   RAW,
+	"MD":    MD,
+	"AT":    AT,
+	"VF":    VF,
+	"YAML":  YAML,
+	"YML":   YAML,
+}
+
 // Writer is an interface that wraps the Write method that writes from the database to a file.
 // Writer is a group of methods called from Export.
 type Writer interface {
@@ -176,4 +191,12 @@ func NewWriter(options ...WriteOpt) Writer {
 	default:
 		return NewCSVWriter(writeOpts)
 	}
+}
+
+// OutputFormat returns the format from the extension.
+func OutputFormat(ext string) Format {
+	if format, ok := extToOutFormat[ext]; ok {
+		return format
+	}
+	return GUESS
 }
