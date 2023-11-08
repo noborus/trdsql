@@ -10,7 +10,7 @@ require (
 	github.com/klauspost/compress v1.17.2
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-runewidth v0.0.15
-	github.com/mattn/go-sqlite3 v1.14.17
+	github.com/mattn/go-sqlite3 v1.14.18
 	github.com/multiprocessio/go-sqlite3-stdlib v0.0.0-20220822170115-9f6825a1cd25
 	github.com/noborus/guesswidth v0.3.4
 	github.com/noborus/tbln v0.0.2
@@ -24,7 +24,7 @@ require (
 require (
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/fatih/color v1.15.0 // indirect
+	github.com/fatih/color v1.16.0 // indirect
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/google/uuid v1.4.0 // indirect
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
@@ -35,15 +35,15 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	golang.org/x/crypto v0.14.0 // indirect
-	golang.org/x/mod v0.13.0 // indirect
-	golang.org/x/sys v0.13.0 // indirect
+	golang.org/x/mod v0.14.0 // indirect
+	golang.org/x/sys v0.14.0 // indirect
 	golang.org/x/tools v0.14.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gonum.org/v1/gonum v0.14.0 // indirect
 	lukechampine.com/uint128 v1.3.0 // indirect
 	modernc.org/cc/v3 v3.41.0 // indirect
 	modernc.org/ccgo/v3 v3.16.15 // indirect
-	modernc.org/libc v1.29.0 // indirect
+	modernc.org/libc v1.30.0 // indirect
 	modernc.org/mathutil v1.6.0 // indirect
 	modernc.org/memory v1.7.2 // indirect
 	modernc.org/opt v0.1.3 // indirect
