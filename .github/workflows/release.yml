@@ -30,7 +30,7 @@ jobs:
       uses: goto-bus-stop/setup-zig@v2
     - name: make package
       run: |
-        export "CC=zip cc -target ${{ matrix.ZIG_TARGET }}"
+        export "CC=zig cc -target ${{ matrix.ZIG_TARGET }}"
         make pkg GOOS=${{ matrix.GOOS }} GOARCH=${{ matrix.GOARCH }}
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
