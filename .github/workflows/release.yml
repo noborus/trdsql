@@ -65,12 +65,7 @@ jobs:
     -  uses: actions/checkout@v4
 
     - { uses: actions/download-artifact@v3, with: { name: trdsql-linux-amd64,   path: dist/ } }
-    - { uses: actions/download-artifact@v3, with: { name: trdsql-linux-386,     path: dist/ } }
     - { uses: actions/download-artifact@v3, with: { name: trdsql-linux-arm64,   path: dist/ } }
-    - { uses: actions/download-artifact@v3, with: { name: trdsql-linux-arm,     path: dist/ } }
-    - { uses: actions/download-artifact@v3, with: { name: trdsql-linux-mips,    path: dist/ } }
-    - { uses: actions/download-artifact@v3, with: { name: trdsql-linux-mips64,  path: dist/ } }
-    - { uses: actions/download-artifact@v3, with: { name: trdsql-linux-mipsle,  path: dist/ } }
     - { uses: actions/download-artifact@v3, with: { name: trdsql-darwin-amd64,  path: dist/ } }
     - { uses: actions/download-artifact@v3, with: { name: trdsql-darwin-arm64,  path: dist/ } }
     - { uses: actions/download-artifact@v3, with: { name: trdsql-windows-amd64, path: dist/ } }
