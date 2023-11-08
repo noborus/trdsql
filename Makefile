@@ -23,12 +23,13 @@ else
   SUFFIX=
 
 endif
-DIST_BIN=dist/bin
-BUILD_DIR=$(DIST_BIN)/$(GOOS)-$(GOARCH)
+DIST_BIN=dist
+PKG_NAME=trdsql_$(VERSION)_$(GOOS)_$(GOARCH)
+BUILD_DIR=$(DIST_BIN)/$(PKG_NAME)
 
 BINARY_NAME := trdsql$(SUFFIX)
 SRCS := $(shell git ls-files '*.go')
-PKG_NAME=trdsql_$(VERSION)_$(GOOS)_$(GOARCH).zip
+ZIP_NAME=trdsql_$(VERSION)_$(GOOS)_$(GOARCH).zip
 
 all: test build
 
@@ -58,6 +59,6 @@ pkg:
 	$(DIST_DIRS) cp LICENSE $(BUILD_DIR) && \
 	$(DIST_DIRS) cp config.json.sample $(BUILD_DIR) && \
 	cd $(DIST_BIN) && \
-	$(DIST_DIRS) zip -r $(PKG_NAME) $(GOOS)-$(GOARCH) && \
-	cp $(PKG_NAME) ../ && \
+	$(DIST_DIRS) zip -r $(ZIP_NAME) $(PKG_NAME) && \
+	cp $(ZIP_NAME) ../ && \
 	cd ..
