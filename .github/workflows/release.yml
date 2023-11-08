@@ -13,7 +13,6 @@ jobs:
         include:
           - { GOOS: linux,   GOARCH: amd64,   ZIG_TARGET: x86_64-linux-gnu.2.18 }
           - { GOOS: linux,   GOARCH: arm64,   ZIG_TARGET: aarch64-linux-gnu }
-          - { GOOS: linux,   GOARCH: arm,     ZIG_TARGET: arm-linux-musleabi-gnu }
           - { GOOS: windows, GOARCH: amd64,   ZIG_TARGET: x86_64-windows }
     steps:
     - name: Check out code into the Go module directory
