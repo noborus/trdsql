@@ -8,15 +8,12 @@ jobs:
   package:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - { GOOS: linux,   GOARCH: amd64,   ZIG_TARGET: x86_64-linux }
-          - { GOOS: linux,   GOARCH: '386',   ZIG_TARGET: i386-linux }
           - { GOOS: linux,   GOARCH: arm64,   ZIG_TARGET: aarch64-linux }
           - { GOOS: linux,   GOARCH: arm,     ZIG_TARGET: arm-linux-musleabi }
-          - { GOOS: linux,   GOARCH: mips,    ZIG_TARGET: mips-linux }
-          - { GOOS: linux,   GOARCH: mips64,  ZIG_TARGET: mips64-linux }
-          - { GOOS: linux,   GOARCH: mipsle,  ZIG_TARGET: mipsle-linux }
           - { GOOS: windows, GOARCH: amd64,   ZIG_TARGET: x86_64-windows }
     steps:
     - name: Check out code into the Go module directory
