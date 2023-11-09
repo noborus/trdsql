@@ -74,16 +74,17 @@ pkg:
 	cp $(ZIP_NAME) ..
 
 ## XGO build
-.PHONY: dist-clean dist build-xgo dist-zip
+.PHONY: dist-clean dist build-xgo dist-zip dist-bin
 
-dist: dist-clean build-xgo $(BINARY_FILES) dist-zip 
+dist: dist-clean build-xgo dist-bin dist-zip
 
 XGOCMD=xgo -go $(GOVERSION) $(BUILDFLAG)
 XGO_TARGETS=linux/amd64,linux/386,linux/arm-5,linux/arm-6,linux/arm-7,linux/arm64,linux/mips,linux/mips64,linux/mipsle,windows/amd64,windows/386
-
 DIST_BIN=dist/bin
 BINARY_FILE := $(TARGET_NAME)
-BINARY_FILES := $(wildcard $(DIST_BIN)/$(BINARY_FILE)-*)
+
+dist-clean:
+	rm -Rf dist/trdsql_*
 
 build-xgo:
 	-mkdir dist
@@ -92,21 +93,18 @@ build-xgo:
 	$(XGOCMD) --targets=$(XGO_TARGETS) -dest dist/tmp github.com/noborus/trdsql/cmd/trdsql
 	find dist/tmp -type f -exec cp {} $(DIST_BIN) \;
 
-.PHONY: $(BINARY_FILES)
+dist-bin:
+	for file in $(wildcard $(DIST_BIN)/$(BINARY_FILE)-*); do \
+        OS_ARCH=`echo $$file | sed -e 's/.*-\(.*\)-\(.*\)/\1-\2/' -e 's/\.exe//'`; \
+        BINSUFFIX=`echo $$file | sed -n -e 's/.*\(\.exe\)$$/\1/p'`; \
+        OS=`echo $${OS_ARCH} | cut -d '-' -f 1`; \
+        ARCH=`echo $${OS_ARCH} | cut -d '-' -f 2`; \
+        DIST_DIR=dist/trdsql_$(VERSION)_$${OS}_$${ARCH}; \
+        mkdir -p $${DIST_DIR}; \
+        cp $$file $${DIST_DIR}/$(BINARY_FILE)$${BINSUFFIX}; \
+    done
 
-dist-clean:
-	rm -Rf dist/trdsql_*
-
-$(BINARY_FILES): 
-	@OS_ARCH=`echo $@ | sed -e 's/.*-\(.*\)-\(.*\)/\1-\2/' -e 's/\.exe//'`; \
-	BINSUFFIX=`echo $@ | sed -n -e 's/.*\(\.exe\)$$/\1/p'`; \
-	OS=`echo $$OS_ARCH | cut -d '-' -f 1`; \
-	ARCH=`echo $$OS_ARCH | cut -d '-' -f 2`; \
-	DIST_DIR=dist/trdsql_$(VERSION)_$${OS}_$${ARCH}; \
-	mkdir -p $$DIST_DIR; \
-	cp $@ $$DIST_DIR/$(BINARY_FILE)$${BINSUFFIX}; \
-
-dist-zip: $(BINARY_FILES)
+dist-zip: dist-bin
 	cd dist && \
 	$(DIST_ZIP_DIRS) cp ../README.md {} \; && \
 	$(DIST_ZIP_DIRS) cp ../LICENSE {} \; && \
