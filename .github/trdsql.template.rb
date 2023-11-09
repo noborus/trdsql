@@ -4,6 +4,13 @@ class Trdsql < Formula
   version  "{{ version }}"
 
   on_macos do
+    if Hardware::CPU.arm?
+      url "{{ DARWIN_ARM64_URL }}"
+      sha256 "{{ DARWIN_ARM64_SHA256 }}"
+      def install
+        bin.install "trdsql"
+      end
+    end
     if Hardware::CPU.intel?
       url "{{ DARWIN_AMD64_URL }}"
       sha256 "{{ DARWIN_AMD64_SHA256 }}"
