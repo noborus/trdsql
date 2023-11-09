@@ -81,14 +81,17 @@ dist: dist-clean build-xgo $(BINARY_FILES) dist-zip
 XGOCMD=xgo -go $(GOVERSION) $(BUILDFLAG)
 XGO_TARGETS=linux/amd64,linux/386,linux/arm-5,linux/arm-6,linux/arm-7,linux/arm64,linux/mips,linux/mips64,linux/mipsle,windows/amd64,windows/386
 
-build-xgo:
-	-mkdir dist
-	-mkdir dist/bin
-	$(XGOCMD) --targets=$(XGO_TARGETS) -dest $(DIST_BIN) github.com/noborus/trdsql/cmd/trdsql
-
 DIST_BIN=dist/bin
 BINARY_FILE := $(TARGET_NAME)
 BINARY_FILES := $(wildcard $(DIST_BIN)/$(BINARY_FILE)-*)
+
+build-xgo:
+	-mkdir dist
+	-mkdir dist/tmp
+	-mkdir dist/bin
+	$(XGOCMD) --targets=$(XGO_TARGETS) -dest dist/tmp github.com/noborus/trdsql/cmd/trdsql
+	find dist/tmp -type f -exec cp {} $(DIST_BIN) \;
+
 .PHONY: $(BINARY_FILES)
 
 dist-clean:
