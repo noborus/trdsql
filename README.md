@@ -1085,8 +1085,7 @@ func main() {
                 trdsql.NewImporter(trdsql.InDelimiter(":")),
                 trdsql.NewExporter(trdsql.NewWriter()),
         )
-        err := trd.Exec("SELECT c1 FROM /etc/passwd")
-        if err != nil {
+        if err := trd.Exec("SELECT c1 FROM /etc/passwd"); err != nil {
                 log.Fatal(err)
         }
 }

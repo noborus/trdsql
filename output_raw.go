@@ -17,13 +17,14 @@ type RAWWriter struct {
 
 // NewRAWWriter returns RAWWriter.
 func NewRAWWriter(writeOpts *WriteOpts) *RAWWriter {
-	var err error
-	w := &RAWWriter{}
-	w.writer = bufio.NewWriter(writeOpts.OutStream)
-	w.delimiter, err = strconv.Unquote(`"` + writeOpts.OutDelimiter + `"`)
+	delimiter, err := strconv.Unquote(`"` + writeOpts.OutDelimiter + `"`)
 	if err != nil {
 		debug.Printf("%s\n", err)
 	}
+
+	w := &RAWWriter{}
+	w.writer = bufio.NewWriter(writeOpts.OutStream)
+	w.delimiter = delimiter
 	w.outHeader = writeOpts.OutHeader
 	if writeOpts.OutUseCRLF {
 		w.endLine = "\r\n"

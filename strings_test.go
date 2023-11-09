@@ -8,7 +8,7 @@ import (
 
 func TestValString(t *testing.T) {
 	type args struct {
-		v interface{}
+		v any
 	}
 	tests := []struct {
 		name string
@@ -53,21 +53,21 @@ func TestValString(t *testing.T) {
 func Test_replaceNULL(t *testing.T) {
 	type args struct {
 		NULLString string
-		v          interface{}
+		v          any
 	}
 	tests := []struct {
 		name string
 		args args
-		want interface{}
+		want any
 	}{
 		{
 			name: "test1",
-			args: args{NULLString: "NULL", v: interface{}("N")},
+			args: args{NULLString: "NULL", v: any("N")},
 			want: "N",
 		},
 		{
 			name: "testMatch",
-			args: args{NULLString: "NULL", v: interface{}("NULL")},
+			args: args{NULLString: "NULL", v: any("NULL")},
 			want: nil,
 		},
 		{
