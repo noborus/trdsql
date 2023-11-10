@@ -51,8 +51,12 @@ var readerFuncs = map[Format]ReaderFunc{
 	},
 }
 
-var extFormat Format = 100
-var registerMux = &sync.Mutex{}
+var (
+	// extFormat is the next format number to be assigned.
+	extFormat Format = 100
+	// registerMux is a mutex to protect access to the register.
+	registerMux = &sync.Mutex{}
+)
 
 func RegisterReaderFunc(ext string, readerFunc ReaderFunc) {
 	registerMux.Lock()

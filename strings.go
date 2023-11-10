@@ -9,7 +9,7 @@ import (
 )
 
 // ValString converts database value to string.
-func ValString(v interface{}) string {
+func ValString(v any) string {
 	switch t := v.(type) {
 	case nil:
 		return ""
@@ -33,7 +33,7 @@ func ValString(v interface{}) string {
 	}
 }
 
-func replaceNULL(nullString string, v interface{}) interface{} {
+func replaceNULL(nullString string, v any) any {
 	switch t := v.(type) {
 	case nil:
 		return nil

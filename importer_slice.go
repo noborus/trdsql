@@ -36,5 +36,5 @@ func (i *SliceImporter) ImportContext(ctx context.Context, db *DB, query string)
 	if err := db.CreateTable(i.tableName, names, types, true); err != nil {
 		return query, err
 	}
-	return query, db.Import(i.tableName, names, i.SliceReader)
+	return query, db.ImportContext(ctx, i.tableName, names, i.SliceReader)
 }
