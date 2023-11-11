@@ -191,7 +191,6 @@ trdsql -o[output format] -t [input filename]
 * `-ijq` **string** jq expression string for input(JSON/JSONL only).
 * `-ilr` **int** limited number of rows to read.
 * `-inull` **string** value(string) to convert to null on input.
-
 * `-ir` **int** number of rows to preread. (default 1)
 * `-is` **int** skip header row.
 
