@@ -5,17 +5,13 @@
 [![Go Coverage](https://github.com/noborus/trdsql/wiki/coverage.svg)](https://raw.githack.com/wiki/noborus/trdsql/coverage.html)
 [![GitHub Actions](https://github.com/noborus/trdsql/workflows/Go/badge.svg)](https://github.com/noborus/trdsql/actions)
 
+trdsql is a CLI tool that enables the execution of SQL queries on
 CLI tool that can execute SQL queries on [CSV](https://tools.ietf.org/html/rfc4180),
- [LTSV](http://ltsv.org/), [JSON](https://tools.ietf.org/html/rfc7159), [YAML](https://yaml.org/) and [TBLN](https://tbln.dev/).
+ [LTSV](http://ltsv.org/), [JSON](https://tools.ietf.org/html/rfc7159), [YAML](https://yaml.org/) and [TBLN](https://tbln.dev/) files.
 
-It is a tool like [q](https://github.com/harelba/q),
- [textql](https://github.com/dinedal/textql) and others.
+This tool is similar to others such as [q](https://github.com/harelba/q) and [textql](https://github.com/dinedal/textql), with a key distinction: it allows the use of PostgreSQL or MySQL syntax.
 
-The difference from these tools is that the syntax of
- PostgreSQL or MySQL can be used.
-
-Please refer to [godoc](https://pkg.go.dev/github.com/noborus/trdsql)
- and _example for usage as a library.
+For usage as a library, please refer to the [godoc](https://pkg.go.dev/github.com/noborus/trdsql) and the provided examples.
 
 ![trdsql.gif](https://raw.githubusercontent.com/noborus/trdsql/master/doc/trdsql.gif)
 
@@ -101,8 +97,6 @@ Download binary from the [releases](https://github.com/noborus/trdsql/releases) 
 brew install noborus/tap/trdsql
 ```
 
-**Note**: For ARM Macs, it is recommended to use [go get](#go-get) instead of Homebrew: [issue#197](https://github.com/noborus/trdsql/issues/197)
-
 ###  1.4. <a name='macports'></a>MacPorts
 
 ```console
@@ -120,10 +114,10 @@ pkg install trdsql
 
 ###  1.6. <a name='cgo-free'></a>cgo free
 
-Normally you build using [go-sqlite3](https://github.com/mattn/go-sqlite3), but if you build with `CGO_ENABLED=0`,
-use [sqlite](https://gitlab.com/cznic/sqlite).
+Typically, [go-sqlite3](https://github.com/mattn/go-sqlite3) is used for building.
+However, if you're building with `CGO_ENABLED=0`, consider using [sqlite](https://gitlab.com/cznic/sqlite) instead.
 
-Building with CGO Free reduced issues when cross-compiling, but it runs slower.
+Building without CGO (CGO Free) can reduce issues related to cross-compiling, but it may result in slower execution times.
 
 ##  2. <a name='docker'></a>Docker
 
@@ -141,7 +135,7 @@ Or build it yourself.
 
 ```console
 docker build -t trdsql .
-````
+```
 
 ###  2.3. <a name='docker-run'></a>Docker Run
 
@@ -153,11 +147,19 @@ docker run --rm -it -v $(pwd):/tmp trdsql [options and commands]
 
 ##  3. <a name='usage'></a>Usage
 
+To use trdsql, you can either specify an SQL query or simply provide a file for conversion.
+
 ```console
 trdsql [options] SQL
 ```
 
-###  3.1. <a name='global-options'></a>global options
+For file conversion, this is equivalent to executing 'trdsql -o[output format] "SELECT * FROM filename"'.
+
+```console
+trdsql -o[output format] -t [input filename]
+```
+
+###  3.1. <a name='global-options'></a>Global options
 
 * `-a` **filename** analyze the file and suggest SQL.
 * `-A` **filename** analyze the file but only suggest SQL.
@@ -168,8 +170,9 @@ trdsql [options] SQL
 * `-dsn` **string** database driver specific data source name.
 * `-debug` debug print.
 * `-help` display usage information.
-* `-version` display version information.
 * `-q` **filename** read query from the specified file.
+* `-t` **filename** read table name from the specified file.
+* `-version` display version information.
 
 ###  3.2. <a name='input-formats'></a>Input formats
 
@@ -218,6 +221,7 @@ Or, [guess the output format by file name](#Guessbyoutputfilename).
 * `-ocrlf` use CRLF for output. End each output line with '\\r\\n' instead of '\\n'."(CSV only).
 * `-onowrap` do not wrap long columns(AT and MD only).
 * `-onull` value(string) to convert from null on output.
+* `-oz` **string** compression format for output. [ gzip | bz2 | zstd | lz4 | xz ]
 
 ###  3.4. <a name='handling-of-null'></a>Handling of NULL
 
