@@ -5,8 +5,7 @@
 [![Go Coverage](https://github.com/noborus/trdsql/wiki/coverage.svg)](https://raw.githack.com/wiki/noborus/trdsql/coverage.html)
 [![GitHub Actions](https://github.com/noborus/trdsql/workflows/Go/badge.svg)](https://github.com/noborus/trdsql/actions)
 
-trdsql is a CLI tool that enables the execution of SQL queries on
-CLI tool that can execute SQL queries on [CSV](https://tools.ietf.org/html/rfc4180),
+trdsql is a CLI tool that can execute SQL queries on [CSV](https://tools.ietf.org/html/rfc4180),
  [LTSV](http://ltsv.org/), [JSON](https://tools.ietf.org/html/rfc7159), [YAML](https://yaml.org/) and [TBLN](https://tbln.dev/) files.
 
 This tool is similar to others such as [q](https://github.com/harelba/q) and [textql](https://github.com/dinedal/textql), with a key distinction: it allows the use of PostgreSQL or MySQL syntax.
@@ -29,7 +28,7 @@ For usage as a library, please refer to the [godoc](https://pkg.go.dev/github.co
   * 2.2. [image build](#image-build)
   * 2.3. [Docker Run](#docker-run)
 * 3. [Usage](#usage)
-  * 3.1. [global options](#global-options)
+  * 3.1. [Global options](#global-options)
   * 3.2. [Input formats](#input-formats)
     * 3.2.1. [Input options](#input-options)
   * 3.3. [Output formats](#output-formats)
@@ -64,7 +63,8 @@ For usage as a library, please refer to the [godoc](https://pkg.go.dev/github.co
   * 5.5. [Analyze](#analyze)
   * 5.6. [configuration](#configuration)
 * 6. [Library](#library)
-* 7. [License](#license)
+* 7. [See also](#see-also)
+* 8. [License](#license)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -1096,9 +1096,13 @@ func main() {
 
 Please refer to [godoc](https://pkg.go.dev/github.com/noborus/trdsql) and _example for usage as a library.
 
-See also [psutilsql](https://github.com/noborus/psutilsql), which uses trdsql as a library.
+##  7. <a name='see-also'></a>See also
 
-##  7. <a name='license'></a>License
+* [psutilsql](https://github.com/noborus/psutilsql) - A tool for querying system status in SQL.
+* [mdtsql](https://github.com/noborus/mdtsql) - A tool for querying markdown tables in SQL.
+* [xlsxsql](https://github.com/noborus/xlsxsql) - A tool for querying Excel files in SQL.
+
+##  8. <a name='license'></a>License
 
 MIT
 
