@@ -302,7 +302,8 @@ $ trdsql -ih "SELECT * FROM tt*.csv"
 3,test3
 ```
 
-**Note:** It is not possible to mix different formats (ex: CSV and LTSV).
+> [!NOTE]
+> It is not possible to mix different formats (ex: CSV and LTSV).
 
 ###  4.3. <a name='compressed-files'></a>Compressed files
 
@@ -409,7 +410,8 @@ trdsql -iltsv "SELECT * FROM sample.ltsv"
 3,Apple,100
 ```
 
-**Note:** Only the columns in the first row are targeted.
+> [!NOTE]
+> Only the columns in the first row are targeted.
 
 `-oltsv` is LTSV(Labeled Tab-separated Values) output.
 
@@ -850,7 +852,8 @@ Melon,2
 Apple,3
 ```
 
-Note: the available functions and their syntax depend on the driver you have chosen (mysql or postgres or sqlite). The default one is sqlite.
+> [!NOTE]
+> the available functions and their syntax depend on the driver you have chosen (mysql or postgres or sqlite). The default one is sqlite.
 
 ###  5.2. <a name='join'></a>JOIN
 
