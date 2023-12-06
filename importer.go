@@ -137,7 +137,9 @@ func TableNames(parsedQuery []string) (map[string]string, []int) {
 			continue
 		case strings.EqualFold(w, "FROM"),
 			strings.EqualFold(w, "JOIN"),
-			strings.EqualFold(w, "TABLE"):
+			strings.EqualFold(w, "TABLE"),
+			strings.EqualFold(w, "INTO"),
+			strings.EqualFold(w, "UPDATE"):
 			tableFlag = true
 			frontFlag = true
 		case isSQLKeyWords(w):
