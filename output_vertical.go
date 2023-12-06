@@ -36,6 +36,7 @@ func NewVFWriter(writeOpts *WriteOpts) *VFWriter {
 
 // PreWrite is preparation.
 func (w *VFWriter) PreWrite(columns []string, types []string) error {
+	w.count = 0
 	w.header = make([]string, len(columns))
 	w.hSize = 0
 	for i, col := range columns {

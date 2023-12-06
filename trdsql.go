@@ -13,16 +13,27 @@ import (
 // AppName is used for command names.
 var AppName = "trdsql"
 
+// multiT is a flag for multiple queries.
+type multiT bool
+
+// multi is a flag for multiple queries.
+var multi = multiT(false)
+
+// EnableMultipleQueries enables multiple queries.
+func EnableMultipleQueries() {
+	multi = true
+}
+
 // TRDSQL represents DB definition and Importer/Exporter interface.
 type TRDSQL struct {
 	// Importer is interface of processing to
 	// import(create/insert) data.
 	Importer Importer
 	// Exporter is interface export to the process of
-	//  export(select) from the database.
+	// export(select) from the database.
 	Exporter Exporter
 
-	// Driver is database driver name(sqlite3/mysql/postgres).
+	// Driver is database driver name(sqlite3/sqlite/mysql/postgres).
 	Driver string
 	// Dsn is data source name.
 	Dsn string
@@ -100,6 +111,7 @@ const (
 	PSV
 )
 
+// String returns the string representation of the Format.
 func (f Format) String() string {
 	switch f {
 	case GUESS:

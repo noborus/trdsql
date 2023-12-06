@@ -3,13 +3,15 @@ package trdsql
 import (
 	"context"
 	"log"
+
+	"github.com/noborus/sqlss"
 )
 
 // Exporter is the interface for processing query results.
 // Exporter executes SQL and outputs to Writer.
 type Exporter interface {
-	Export(db *DB, query string) error
-	ExportContext(ctx context.Context, db *DB, query string) error
+	Export(db *DB, sql string) error
+	ExportContext(ctx context.Context, db *DB, sql string) error
 }
 
 // WriteFormat represents a structure that satisfies Exporter.
@@ -26,14 +28,27 @@ func NewExporter(writer Writer) *WriteFormat {
 
 // Export is execute SQL(Select) and the result is written out by the writer.
 // Export is called from Exec.
-func (e *WriteFormat) Export(db *DB, query string) error {
+func (e *WriteFormat) Export(db *DB, sql string) error {
 	ctx := context.Background()
-	return e.ExportContext(ctx, db, query)
+	return e.ExportContext(ctx, db, sql)
 }
 
 // ExportContext is execute SQL(Select) and the result is written out by the writer.
 // ExportContext is called from ExecContext.
-func (e *WriteFormat) ExportContext(ctx context.Context, db *DB, query string) error {
+func (e *WriteFormat) ExportContext(ctx context.Context, db *DB, sql string) error {
+	queries := sqlss.SplitQueries(sql)
+	if !multi || len(queries) == 1 {
+		return e.exportContext(ctx, db, false, sql)
+	}
+	for _, query := range queries {
+		if err := e.exportContext(ctx, db, true, query); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (e *WriteFormat) exportContext(ctx context.Context, db *DB, multi bool, query string) error {
 	rows, err := db.SelectContext(ctx, query)
 	if err != nil {
 		return err
@@ -50,6 +65,10 @@ func (e *WriteFormat) ExportContext(ctx context.Context, db *DB, query string) e
 		}
 	}()
 
+	// No data is not output for multiple queries.
+	if multi && len(columns) == 0 {
+		return nil
+	}
 	values := make([]interface{}, len(columns))
 	scanArgs := make([]interface{}, len(columns))
 	for i := range values {

@@ -166,6 +166,9 @@ func (cli Cli) Run(args []string) int {
 		trdsql.EnableDebug()
 	}
 
+	// MultipleQueries is enabled by default.
+	trdsql.EnableMultipleQueries()
+
 	cfgFile := configOpen(config)
 	cfg, err := loadConfig(cfgFile)
 	if err != nil && config != "" {
