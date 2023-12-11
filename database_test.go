@@ -192,7 +192,7 @@ func TestDB_Select(t *testing.T) {
 		{
 			name:    "testErr",
 			fields:  fields{driver: "sqlite", dsn: ""},
-			args:    args{query: ""},
+			args:    args{query: "ERR"},
 			wantErr: true,
 		},
 		{

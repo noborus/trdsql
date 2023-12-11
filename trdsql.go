@@ -154,7 +154,7 @@ func (trd *TRDSQL) Exec(sql string) error {
 }
 
 // ExecContext is actually executed.
-func (trd *TRDSQL) ExecContext(ctx context.Context, sql string) error {
+func (trd *TRDSQL) ExecContext(ctx context.Context, sqlQuery string) error {
 	db, err := Connect(trd.Driver, trd.Dsn)
 	if err != nil {
 		return fmt.Errorf("connect: %w", err)
@@ -172,14 +172,14 @@ func (trd *TRDSQL) ExecContext(ctx context.Context, sql string) error {
 	}
 
 	if trd.Importer != nil {
-		sql, err = trd.Importer.ImportContext(ctx, db, sql)
+		sqlQuery, err = trd.Importer.ImportContext(ctx, db, sqlQuery)
 		if err != nil {
 			return fmt.Errorf("import: %w", err)
 		}
 	}
 
 	if trd.Exporter != nil {
-		if err := trd.Exporter.ExportContext(ctx, db, sql); err != nil {
+		if err := trd.Exporter.ExportContext(ctx, db, sqlQuery); err != nil {
 			return fmt.Errorf("export: %w", err)
 		}
 	}

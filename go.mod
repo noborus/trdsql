@@ -13,7 +13,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.18
 	github.com/multiprocessio/go-sqlite3-stdlib v0.0.0-20220822170115-9f6825a1cd25
 	github.com/noborus/guesswidth v0.3.4
-	github.com/noborus/sqlss v0.0.0-20231204225649-d757e7878afc
+	github.com/noborus/sqlss v0.1.0
 	github.com/noborus/tbln v0.0.2
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pierrec/lz4 v2.6.1+incompatible
@@ -44,7 +44,7 @@ require (
 	lukechampine.com/uint128 v1.3.0 // indirect
 	modernc.org/cc/v3 v3.41.0 // indirect
 	modernc.org/ccgo/v3 v3.16.15 // indirect
-	modernc.org/libc v1.36.0 // indirect
+	modernc.org/libc v1.37.0 // indirect
 	modernc.org/mathutil v1.6.0 // indirect
 	modernc.org/memory v1.7.2 // indirect
 	modernc.org/opt v0.1.3 // indirect

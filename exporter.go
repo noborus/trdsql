@@ -3,6 +3,7 @@ package trdsql
 import (
 	"context"
 	"log"
+	"strings"
 
 	"github.com/noborus/sqlss"
 )
@@ -35,10 +36,10 @@ func (e *WriteFormat) Export(db *DB, sql string) error {
 
 // ExportContext is execute SQL(Select) and the result is written out by the writer.
 // ExportContext is called from ExecContext.
-func (e *WriteFormat) ExportContext(ctx context.Context, db *DB, sql string) error {
-	queries := sqlss.SplitQueries(sql)
+func (e *WriteFormat) ExportContext(ctx context.Context, db *DB, sqlQuery string) error {
+	queries := sqlss.SplitQueries(sqlQuery)
 	if !multi || len(queries) == 1 {
-		return e.exportContext(ctx, db, false, sql)
+		return e.exportContext(ctx, db, false, sqlQuery)
 	}
 	for _, query := range queries {
 		if err := e.exportContext(ctx, db, true, query); err != nil {
@@ -49,6 +50,20 @@ func (e *WriteFormat) ExportContext(ctx context.Context, db *DB, sql string) err
 }
 
 func (e *WriteFormat) exportContext(ctx context.Context, db *DB, multi bool, query string) error {
+	if db.Tx == nil {
+		return ErrNoTransaction
+	}
+
+	query = strings.TrimSpace(query)
+	if query == "" {
+		return ErrNoStatement
+	}
+	debug.Printf(query)
+
+	if db.isExecContext(query) {
+		return db.OtherExecContext(ctx, query)
+	}
+
 	rows, err := db.SelectContext(ctx, query)
 	if err != nil {
 		return err
@@ -107,4 +122,13 @@ func (e *WriteFormat) exportContext(ctx context.Context, db *DB, multi bool, que
 	}
 
 	return e.Writer.PostWrite()
+}
+
+// isExecContext returns true if the query is not a SELECT statement.
+// Queries that return no rows in SQlite should use ExecContext and therefore return true.
+func (db *DB) isExecContext(query string) bool {
+	if db.driver == "sqlite3" || db.driver == "sqlite" {
+		return !strings.HasPrefix(strings.ToUpper(query), "SELECT")
+	}
+	return false
 }
