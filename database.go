@@ -363,19 +363,17 @@ func (db *DB) Select(query string) (*sql.Rows, error) {
 // SelectContext is executes SQL select statements with context.
 // SelectContext is a wrapper for QueryContext.
 func (db *DB) SelectContext(ctx context.Context, query string) (*sql.Rows, error) {
-	if db.Tx == nil {
-		return nil, ErrNoTransaction
-	}
-
-	query = strings.TrimSpace(query)
-	if query == "" {
-		return nil, ErrNoStatement
-	}
-	debug.Printf(query)
-
 	rows, err := db.Tx.QueryContext(ctx, query)
 	if err != nil {
 		return rows, fmt.Errorf("%w [%s]", err, query)
 	}
 	return rows, nil
+}
+
+func (db *DB) OtherExecContext(ctx context.Context, query string) error {
+	_, err := db.Tx.ExecContext(ctx, query)
+	if err != nil {
+		return fmt.Errorf("%w [%s]", err, query)
+	}
+	return nil
 }
