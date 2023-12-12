@@ -28,6 +28,7 @@ type WriteFormat struct {
 func NewExporter(writer Writer) *WriteFormat {
 	return &WriteFormat{
 		Writer: writer,
+		multi:  false,
 	}
 }
 
@@ -42,11 +43,11 @@ func (e *WriteFormat) Export(db *DB, sql string) error {
 // ExportContext is called from ExecContext.
 func (e *WriteFormat) ExportContext(ctx context.Context, db *DB, sqlQuery string) error {
 	queries := sqlss.SplitQueries(sqlQuery)
-	e.multi = false
 	if !multi || len(queries) == 1 {
-		e.multi = true
 		return e.exportContext(ctx, db, sqlQuery)
 	}
+
+	e.multi = true
 	for _, query := range queries {
 		if err := e.exportContext(ctx, db, query); err != nil {
 			return err
