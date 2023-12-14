@@ -22,7 +22,7 @@ For usage as a library, please refer to the [godoc](https://pkg.go.dev/github.co
   * 1.3. [Homebrew](#homebrew)
   * 1.4. [MacPorts](#macports)
   * 1.5. [FreeBSD](#freebsd)
-  * 1.6. [cgo free](#cgo-free)
+  * 1.6. [Cgo free](#cgo-free)
 * 2. [Docker](#docker)
   * 2.1. [Docker pull](#docker-pull)
   * 2.2. [image build](#image-build)
@@ -34,6 +34,7 @@ For usage as a library, please refer to the [godoc](https://pkg.go.dev/github.co
   * 3.3. [Output formats](#output-formats)
     * 3.3.1. [Output options](#output-options)
   * 3.4. [Handling of NULL](#handling-of-null)
+  * 3.5. [Multiple queries (v0.20.0 or later)](#multiple-queries-(v0.20.0-or-later))
 * 4. [Example](#example)
   * 4.1. [STDIN input](#stdin-input)
   * 4.2. [Multiple files](#multiple-files)
@@ -61,7 +62,7 @@ For usage as a library, please refer to the [godoc](https://pkg.go.dev/github.co
     * 5.3.2. [Join table and CSV file is possible](#join-table-and-csv-file-is-possible)
   * 5.4. [MySQL](#mysql)
   * 5.5. [Analyze](#analyze)
-  * 5.6. [configuration](#configuration)
+  * 5.6. [Configuration](#configuration)
 * 6. [Library](#library)
 * 7. [See also](#see-also)
 * 8. [License](#license)
@@ -112,7 +113,7 @@ sudo port install trdsql
 pkg install trdsql
 ```
 
-###  1.6. <a name='cgo-free'></a>cgo free
+###  1.6. <a name='cgo-free'></a>Cgo free
 
 Typically, [go-sqlite3](https://github.com/mattn/go-sqlite3) is used for building.
 However, if you're building with `CGO_ENABLED=0`, consider using [sqlite](https://gitlab.com/cznic/sqlite) instead.
@@ -253,6 +254,32 @@ $ echo '[1,null,""]' | trdsql -inull "" -ojson -ijson "SELECT * FROM -"
     "c1": null
   }
 ]
+```
+
+###  3.5. <a name='multiple-queries-(v0.20.0-or-later)'></a>Multiple queries (v0.20.0 or later)
+
+Multiple queries can be executed by separating them with a semicolon.
+Update queries must be followed by a SELECT statement.
+
+```console
+$ trdsql "UPDATE SET c2='banana' WHERE c3='1';SELECT * FROM test.csv"
+1,Orange
+2,Melon
+3,banana
+```
+
+You can perform multiple SELECTs, but the output will be in one format.
+
+```console
+$ trdsql -oh "SELECT c1,c2 FROM test.csv;SELECT c2,c1 FROM test.csv"
+c1,c2
+1,Orange
+2,Melon
+3,Apple
+c2,c1
+Orange,1
+Melon,2
+Apple,3
 ```
 
 ##  4. <a name='example'></a>Example
@@ -1014,7 +1041,7 @@ trdsql -ih "SELECT id, count(id) FROM testdata/header.csv GROUP BY id"
 trdsql -ih "SELECT id, \`name\` FROM testdata/header.csv ORDER BY id LIMIT 10"
 ```
 
-###  5.6. <a name='configuration'></a>configuration
+###  5.6. <a name='configuration'></a>Configuration
 
 You can specify driver and dsn in the configuration file.
 
