@@ -38,7 +38,7 @@ func TestNewTBLNReader(t *testing.T) {
 				reader: strings.NewReader("| 1 | test |"),
 			},
 			want: &TBLNRead{
-				preRead: [][]interface{}{{"1", "test"}},
+				preRead: [][]any{{"1", "test"}},
 			},
 			wantNames: []string{"c1", "c2"},
 			wantTypes: []string{"text", "text"},
@@ -50,7 +50,7 @@ func TestNewTBLNReader(t *testing.T) {
 				reader: strings.NewReader("; type: | int | text |\n| 1 | test |"),
 			},
 			want: &TBLNRead{
-				preRead: [][]interface{}{{"1", "test"}},
+				preRead: [][]any{{"1", "test"}},
 			},
 			wantNames: []string{"c1", "c2"},
 			wantTypes: []string{"int", "text"},
@@ -62,7 +62,7 @@ func TestNewTBLNReader(t *testing.T) {
 				reader: strings.NewReader("; name: | id | name |\n| 1 | test |"),
 			},
 			want: &TBLNRead{
-				preRead: [][]interface{}{{"1", "test"}},
+				preRead: [][]any{{"1", "test"}},
 			},
 			wantNames: []string{"id", "name"},
 			wantTypes: []string{"text", "text"},
@@ -86,7 +86,7 @@ func TestNewTBLNReader(t *testing.T) {
 				reader: strings.NewReader("; name: | id | name |\n; type: | int | text |\n| 1 | test |"),
 			},
 			want: &TBLNRead{
-				preRead: [][]interface{}{{"1", "test"}},
+				preRead: [][]any{{"1", "test"}},
 			},
 			wantNames: []string{"id", "name"},
 			wantTypes: []string{"int", "text"},
@@ -141,7 +141,7 @@ func TestNewTBLNReaderFile(t *testing.T) {
 			fileName: "test.tbln",
 			opts:     NewReadOpts(),
 			want: &TBLNRead{
-				preRead: [][]interface{}{
+				preRead: [][]any{
 					{"1", "Bob"},
 				},
 			},
@@ -154,7 +154,7 @@ func TestNewTBLNReaderFile(t *testing.T) {
 				InPreRead(2),
 			),
 			want: &TBLNRead{
-				preRead: [][]interface{}{
+				preRead: [][]any{
 					{"1", "Bob"},
 					{"2", "Alice"},
 				},
@@ -168,7 +168,7 @@ func TestNewTBLNReaderFile(t *testing.T) {
 				InPreRead(100),
 			),
 			want: &TBLNRead{
-				preRead: [][]interface{}{
+				preRead: [][]any{
 					{"1", "Bob"},
 					{"2", "Alice"},
 				},
@@ -182,7 +182,7 @@ func TestNewTBLNReaderFile(t *testing.T) {
 				InPreRead(3),
 			),
 			want: &TBLNRead{
-				preRead: [][]interface{}{
+				preRead: [][]any{
 					{"1", "Bob"},
 					{"2", "Alice"},
 					{"3", "NULL"},
@@ -199,7 +199,7 @@ func TestNewTBLNReaderFile(t *testing.T) {
 				InNULL("NULL"),
 			),
 			want: &TBLNRead{
-				preRead: [][]interface{}{
+				preRead: [][]any{
 					{"1", "Bob"},
 					{"2", "Alice"},
 					{"3", nil},

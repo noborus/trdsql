@@ -75,14 +75,14 @@ func (r *GWReader) Types() ([]string, error) {
 }
 
 // PreReadRow is returns only columns that store preread rows.
-func (r *GWReader) PreReadRow() [][]interface{} {
-	rows := make([][]interface{}, r.preRead)
+func (r *GWReader) PreReadRow() [][]any {
+	rows := make([][]any, r.preRead)
 	for n := 0; n < r.preRead; n++ {
 		record, err := r.reader.Read()
 		if err != nil {
 			return rows
 		}
-		rows[n] = make([]interface{}, len(r.names))
+		rows[n] = make([]any, len(r.names))
 		for i := 0; i < len(r.names); i++ {
 			rows[n][i] = record[i]
 			if r.needNULL {
@@ -94,7 +94,7 @@ func (r *GWReader) PreReadRow() [][]interface{} {
 }
 
 // ReadRow is read the rest of the row.
-func (r *GWReader) ReadRow(row []interface{}) ([]interface{}, error) {
+func (r *GWReader) ReadRow(row []any) ([]any, error) {
 	if r.limitRead {
 		return nil, io.EOF
 	}

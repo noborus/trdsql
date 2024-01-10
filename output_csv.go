@@ -71,7 +71,7 @@ func (w *CSVWriter) PreWrite(columns []string, types []string) error {
 }
 
 // WriteRow is row write.
-func (w *CSVWriter) WriteRow(values []interface{}, _ []string) error {
+func (w *CSVWriter) WriteRow(values []any, _ []string) error {
 	for n, column := range values {
 		if n > 0 {
 			if _, err := w.writer.WriteRune(w.outDelimiter); err != nil {
@@ -86,7 +86,7 @@ func (w *CSVWriter) WriteRow(values []interface{}, _ []string) error {
 	return err
 }
 
-func (w *CSVWriter) writeColumn(column interface{}) error {
+func (w *CSVWriter) writeColumn(column any) error {
 	if column == nil {
 		var err error
 		if w.needNULL {

@@ -12,7 +12,7 @@ import (
 type TBLNRead struct {
 	reader    tbln.Reader
 	inNULL    string
-	preRead   [][]interface{}
+	preRead   [][]any
 	limitRead bool
 	needNULL  bool
 }
@@ -61,7 +61,7 @@ func NewTBLNReader(reader io.Reader, opts *ReadOpts) (*TBLNRead, error) {
 		}
 	}
 
-	r.preRead = make([][]interface{}, 0, opts.InPreRead)
+	r.preRead = make([][]any, 0, opts.InPreRead)
 	r.preRead = append(r.preRead, r.recToRow(rec))
 	for n := 1; n < opts.InPreRead; n++ {
 		rec, err := r.reader.ReadRow()
@@ -98,12 +98,12 @@ func (r *TBLNRead) Types() ([]string, error) {
 }
 
 // PreReadRow is returns only columns that store preread rows.
-func (r *TBLNRead) PreReadRow() [][]interface{} {
+func (r *TBLNRead) PreReadRow() [][]any {
 	return r.preRead
 }
 
 // ReadRow is read the rest of the row.
-func (r *TBLNRead) ReadRow(row []interface{}) ([]interface{}, error) {
+func (r *TBLNRead) ReadRow(row []any) ([]any, error) {
 	if r.limitRead {
 		return nil, io.EOF
 	}
@@ -116,8 +116,8 @@ func (r *TBLNRead) ReadRow(row []interface{}) ([]interface{}, error) {
 	return row, nil
 }
 
-func (r *TBLNRead) recToRow(rec []string) []interface{} {
-	row := make([]interface{}, len(rec))
+func (r *TBLNRead) recToRow(rec []string) []any {
+	row := make([]any, len(rec))
 	for i, c := range rec {
 		if c != "" {
 			row[i] = c

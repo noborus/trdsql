@@ -13,7 +13,7 @@ func EnableDebug() {
 	debug = true
 }
 
-func (d debugT) Printf(format string, args ...interface{}) {
+func (d debugT) Printf(format string, args ...any) {
 	if d {
 		log.Printf(format, args...)
 	}

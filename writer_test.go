@@ -11,7 +11,7 @@ func (e errorWriter) PreWrite([]string, []string) error {
 	return nil
 }
 
-func (e errorWriter) WriteRow([]interface{}, []string) error {
+func (e errorWriter) WriteRow([]any, []string) error {
 	return ErrTest
 }
 

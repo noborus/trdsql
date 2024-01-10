@@ -297,13 +297,13 @@ func TestCSVReader_PreReadRow(t *testing.T) {
 		name     string
 		fileName string
 		opts     *ReadOpts
-		want     [][]interface{}
+		want     [][]any
 	}{
 		{
 			name:     "testBlank",
 			fileName: "testnull.csv",
 			opts:     NewReadOpts(),
-			want: [][]interface{}{
+			want: [][]any{
 				{"1", ""},
 			},
 		},
@@ -314,7 +314,7 @@ func TestCSVReader_PreReadRow(t *testing.T) {
 				InNeedNULL(true),
 				InNULL(""),
 			),
-			want: [][]interface{}{
+			want: [][]any{
 				{"1", nil},
 			},
 		},
@@ -325,7 +325,7 @@ func TestCSVReader_PreReadRow(t *testing.T) {
 				InNeedNULL(true),
 				InNULL("1"),
 			),
-			want: [][]interface{}{
+			want: [][]any{
 				{nil, ""},
 			},
 		},
@@ -349,14 +349,14 @@ func TestCSVReader_PreReadRow(t *testing.T) {
 
 func TestCSVReader_ReadRow(t *testing.T) {
 	type args struct {
-		row []interface{}
+		row []any
 	}
 	tests := []struct {
 		name     string
 		fileName string
 		opts     *ReadOpts
 		args     args
-		want     []interface{}
+		want     []any
 		wantErr  bool
 	}{
 		{
@@ -364,11 +364,11 @@ func TestCSVReader_ReadRow(t *testing.T) {
 			fileName: "test.csv",
 			opts:     NewReadOpts(),
 			args: args{
-				[]interface{}{
+				[]any{
 					"", "",
 				},
 			},
-			want: []interface{}{
+			want: []any{
 				"2", "Melon",
 			},
 			wantErr: false,
@@ -378,11 +378,11 @@ func TestCSVReader_ReadRow(t *testing.T) {
 			fileName: "testnull2.csv",
 			opts:     NewReadOpts(),
 			args: args{
-				[]interface{}{
+				[]any{
 					"", "", "",
 				},
 			},
-			want: []interface{}{
+			want: []any{
 				"2", "", "g3",
 			},
 			wantErr: false,
@@ -395,11 +395,11 @@ func TestCSVReader_ReadRow(t *testing.T) {
 				InNULL(""),
 			),
 			args: args{
-				[]interface{}{
+				[]any{
 					"", "", "",
 				},
 			},
-			want: []interface{}{
+			want: []any{
 				"2", nil, "g3",
 			},
 			wantErr: false,
@@ -409,11 +409,11 @@ func TestCSVReader_ReadRow(t *testing.T) {
 			fileName: "test_indefinite2.csv",
 			opts:     NewReadOpts(),
 			args: args{
-				[]interface{}{
+				[]any{
 					"", "", "",
 				},
 			},
-			want: []interface{}{
+			want: []any{
 				"2", "Melon", nil,
 			},
 			wantErr: false,

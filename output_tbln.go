@@ -41,7 +41,7 @@ func (w *TBLNWriter) PreWrite(columns []string, types []string) error {
 }
 
 // WriteRow is row write.
-func (w *TBLNWriter) WriteRow(values []interface{}, columns []string) error {
+func (w *TBLNWriter) WriteRow(values []any, columns []string) error {
 	for i, col := range values {
 		str := ""
 		if col == nil && w.needNULL {

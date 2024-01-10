@@ -49,7 +49,7 @@ func (w *VFWriter) PreWrite(columns []string, types []string) error {
 }
 
 // WriteRow is Actual output.
-func (w *VFWriter) WriteRow(values []interface{}, columns []string) error {
+func (w *VFWriter) WriteRow(values []any, columns []string) error {
 	w.count++
 	_, err := fmt.Fprintf(w.writer,
 		"---[ %d]%s\n", w.count, strings.Repeat("-", (w.termWidth-16)))

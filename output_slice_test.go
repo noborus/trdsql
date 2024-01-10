@@ -26,7 +26,7 @@ func TestNewSliceWriter(t *testing.T) {
 
 func TestSliceWriter_PreWrite(t *testing.T) {
 	type fields struct {
-		Table [][]interface{}
+		Table [][]any
 	}
 	type args struct {
 		columns []string
@@ -41,7 +41,7 @@ func TestSliceWriter_PreWrite(t *testing.T) {
 		{
 			name: "test1",
 			fields: fields{
-				Table: [][]interface{}{
+				Table: [][]any{
 					{"1", "one"},
 					{"2", "two"},
 					{"3", "three"},
@@ -65,10 +65,10 @@ func TestSliceWriter_PreWrite(t *testing.T) {
 
 func TestSliceWriter_WriteRow(t *testing.T) {
 	type fields struct {
-		Table [][]interface{}
+		Table [][]any
 	}
 	type args struct {
-		values  []interface{}
+		values  []any
 		columns []string
 	}
 	tests := []struct {
@@ -80,14 +80,14 @@ func TestSliceWriter_WriteRow(t *testing.T) {
 		{
 			name: "test1",
 			fields: fields{
-				Table: [][]interface{}{
+				Table: [][]any{
 					{"1", "one"},
 					{"2", "two"},
 					{"3", "three"},
 				},
 			},
 			args: args{
-				values: []interface{}{
+				values: []any{
 					"", "",
 				},
 				columns: []string{"id", "name"},

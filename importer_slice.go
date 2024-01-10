@@ -11,7 +11,7 @@ type SliceImporter struct {
 }
 
 // NewSliceImporter returns trdsql SliceImporter.
-func NewSliceImporter(tableName string, data interface{}) *SliceImporter {
+func NewSliceImporter(tableName string, data any) *SliceImporter {
 	return &SliceImporter{
 		SliceReader: NewSliceReader(tableName, data),
 	}

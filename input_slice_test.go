@@ -8,7 +8,7 @@ import (
 func TestNewSliceReader(t *testing.T) {
 	type args struct {
 		tableName string
-		args      interface{}
+		args      any
 	}
 	tests := []struct {
 		name string
@@ -25,7 +25,7 @@ func TestNewSliceReader(t *testing.T) {
 				tableName: "one",
 				names:     []string{"c1"},
 				types:     []string{"text"},
-				data:      [][]interface{}{{"one"}},
+				data:      [][]any{{"one"}},
 			},
 		},
 		{
@@ -38,40 +38,40 @@ func TestNewSliceReader(t *testing.T) {
 				tableName: "one",
 				names:     []string{"c1"},
 				types:     []string{"int"},
-				data:      [][]interface{}{{1}},
+				data:      [][]any{{1}},
 			},
 		},
 		{
 			name: "single",
 			args: args{
 				tableName: "single",
-				args:      []interface{}{"a", "b"},
+				args:      []any{"a", "b"},
 			},
 			want: &SliceReader{
 				tableName: "single",
 				names:     []string{"c1"},
 				types:     []string{"text"},
-				data:      [][]interface{}{{"a"}, {"b"}},
+				data:      [][]any{{"a"}, {"b"}},
 			},
 		},
 		{
 			name: "singleInt",
 			args: args{
 				tableName: "singleInt",
-				args:      []interface{}{1, 2, 3},
+				args:      []any{1, 2, 3},
 			},
 			want: &SliceReader{
 				tableName: "singleInt",
 				names:     []string{"c1"},
 				types:     []string{"int"},
-				data:      [][]interface{}{{1}, {2}, {3}},
+				data:      [][]any{{1}, {2}, {3}},
 			},
 		},
 		{
 			name: "slice",
 			args: args{
 				tableName: "slice",
-				args: [][]interface{}{
+				args: [][]any{
 					{1, "one"},
 					{2, "two"},
 					{3, "three"},
@@ -81,7 +81,7 @@ func TestNewSliceReader(t *testing.T) {
 				tableName: "slice",
 				names:     []string{"c1", "c2"},
 				types:     []string{"int", "text"},
-				data: [][]interface{}{
+				data: [][]any{
 					{1, "one"},
 					{2, "two"},
 					{3, "three"},
@@ -103,7 +103,7 @@ func TestNewSliceReader(t *testing.T) {
 				tableName: "struct",
 				names:     []string{"id", "name"},
 				types:     []string{"int", "text"},
-				data: [][]interface{}{
+				data: [][]any{
 					{"1", "one"},
 				},
 			},
@@ -125,7 +125,7 @@ func TestNewSliceReader(t *testing.T) {
 				tableName: "struct",
 				names:     []string{"id", "name"},
 				types:     []string{"int", "text"},
-				data: [][]interface{}{
+				data: [][]any{
 					{"1", "one"},
 					{"2", "two"},
 					{"3", "three"},
@@ -145,7 +145,7 @@ func TestNewSliceReader(t *testing.T) {
 func TestNewMapSliceReader(t *testing.T) {
 	type args struct {
 		tableName string
-		args      interface{}
+		args      any
 	}
 	tests := []struct {
 		name string
@@ -166,7 +166,7 @@ func TestNewMapSliceReader(t *testing.T) {
 				tableName: "map",
 				names:     []string{"c1", "c2"},
 				types:     []string{"text", "text"},
-				data: [][]interface{}{
+				data: [][]any{
 					{"1", "one"},
 					{"2", "two"},
 					{"3", "three"},
@@ -188,12 +188,12 @@ func TestSliceReader_PreReadRow(t *testing.T) {
 		tableName string
 		names     []string
 		types     []string
-		data      [][]interface{}
+		data      [][]any
 	}
 	tests := []struct {
 		name   string
 		fields fields
-		want   [][]interface{}
+		want   [][]any
 	}{
 		{
 			name: "struct",
@@ -201,13 +201,13 @@ func TestSliceReader_PreReadRow(t *testing.T) {
 				tableName: "struct",
 				names:     []string{"id", "name"},
 				types:     []string{"text", "text"},
-				data: [][]interface{}{
+				data: [][]any{
 					{"1", "one"},
 					{"2", "two"},
 					{"3", "three"},
 				},
 			},
-			want: [][]interface{}{
+			want: [][]any{
 				{"1", "one"},
 				{"2", "two"},
 				{"3", "three"},

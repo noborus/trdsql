@@ -33,7 +33,7 @@ func (w *JSONWriter) PreWrite(columns []string, types []string) error {
 }
 
 // WriteRow is Addition to array.
-func (w *JSONWriter) WriteRow(values []interface{}, columns []string) error {
+func (w *JSONWriter) WriteRow(values []any, columns []string) error {
 	m := orderedmap.New()
 	for i, col := range values {
 		m.Set(columns[i], compatibleJSON(col, w.needNULL, w.outNULL))
@@ -43,7 +43,7 @@ func (w *JSONWriter) WriteRow(values []interface{}, columns []string) error {
 }
 
 // CompatibleJSON converts the value to a JSON-compatible value.
-func compatibleJSON(v interface{}, needNULL bool, outNULL string) interface{} {
+func compatibleJSON(v any, needNULL bool, outNULL string) any {
 	switch t := v.(type) {
 	case []byte:
 		if isJSON(t) {
@@ -77,7 +77,7 @@ func isJSON(s []byte) bool {
 		return false
 	}
 
-	var js interface{}
+	var js any
 	err := json.Unmarshal(s, &js)
 	return err == nil
 }

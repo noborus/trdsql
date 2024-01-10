@@ -56,7 +56,7 @@ func (w *RAWWriter) PreWrite(columns []string, types []string) error {
 }
 
 // WriteRow is row write.
-func (w *RAWWriter) WriteRow(values []interface{}, _ []string) error {
+func (w *RAWWriter) WriteRow(values []any, _ []string) error {
 	for n, col := range values {
 		if n > 0 {
 			if _, err := w.writer.WriteString(w.delimiter); err != nil {

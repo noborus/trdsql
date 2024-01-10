@@ -18,7 +18,7 @@ type YAMLReader struct {
 	query     *gojq.Query
 	already   map[string]bool
 	inNULL    string
-	preRead   []map[string]interface{}
+	preRead   []map[string]any
 	names     []string
 	types     []string
 	limitRead bool
@@ -58,7 +58,7 @@ func jqParse(q string) (*gojq.Query, error) {
 	return query, nil
 }
 
-func (r *YAMLReader) wrapDecode(v interface{}) (err error) {
+func (r *YAMLReader) wrapDecode(v any) (err error) {
 	defer func() {
 		if rec := recover(); rec != nil {
 			err = fmt.Errorf("%s", rec)
@@ -75,7 +75,7 @@ func (r *YAMLReader) yamlParse(opts *ReadOpts) error {
 	r.needNULL = opts.InNeedNULL
 	r.inNULL = opts.InNULL
 
-	var top interface{}
+	var top any
 	for i := 0; i < opts.InPreRead; i++ {
 		if err := r.wrapDecode(&top); err != nil {
 			if !errors.Is(err, io.EOF) {
@@ -100,7 +100,7 @@ func (r *YAMLReader) yamlParse(opts *ReadOpts) error {
 }
 
 // jquery parses the top level of the YAML and stores it in preRead.
-func (r *YAMLReader) jquery(top interface{}) error {
+func (r *YAMLReader) jquery(top any) error {
 	iter := r.query.Run(top)
 	for {
 		v, ok := iter.Next()
@@ -134,9 +134,9 @@ func (r *YAMLReader) Types() ([]string, error) {
 }
 
 // readAhead parses the top level of the YAML and stores it in preRead.
-func (r *YAMLReader) readAhead(top interface{}) error {
+func (r *YAMLReader) readAhead(top any) error {
 	switch m := top.(type) {
-	case []interface{}: // YAML array (-).
+	case []any:
 		for _, v := range m {
 			pre, names, err := r.topLevel(v)
 			if err != nil {
@@ -145,7 +145,7 @@ func (r *YAMLReader) readAhead(top interface{}) error {
 			r.appendNames(names)
 			r.preRead = append(r.preRead, pre)
 		}
-	case map[string]interface{}: // YAML object (key: value).
+	case map[string]any:
 		pre, names, err := r.topLevel(m)
 		if err != nil {
 			return err
@@ -180,9 +180,9 @@ func (r *YAMLReader) appendNames(names []string) {
 	}
 }
 
-func (r *YAMLReader) topLevel(top interface{}) (map[string]interface{}, []string, error) {
+func (r *YAMLReader) topLevel(top any) (map[string]any, []string, error) {
 	switch obj := top.(type) {
-	case map[string]interface{}:
+	case map[string]any:
 		return r.objectRow(obj)
 	case yaml.MapSlice:
 		return r.objectMapSlice(obj)
@@ -193,10 +193,10 @@ func (r *YAMLReader) topLevel(top interface{}) (map[string]interface{}, []string
 
 // PreReadRow is returns only columns that store preRead rows.
 // One YAML (not YAMLl) returns all rows with preRead.
-func (r *YAMLReader) PreReadRow() [][]interface{} {
-	rows := make([][]interface{}, len(r.preRead))
+func (r *YAMLReader) PreReadRow() [][]any {
+	rows := make([][]any, len(r.preRead))
 	for n, v := range r.preRead {
-		rows[n] = make([]interface{}, len(r.names))
+		rows[n] = make([]any, len(r.names))
 		for i := range r.names {
 			rows[n][i] = v[r.names[i]]
 		}
@@ -207,12 +207,12 @@ func (r *YAMLReader) PreReadRow() [][]interface{} {
 
 // ReadRow is read the rest of the row.
 // Only YAMLl requires ReadRow in YAML.
-func (r *YAMLReader) ReadRow(row []interface{}) ([]interface{}, error) {
+func (r *YAMLReader) ReadRow(row []any) ([]any, error) {
 	if r.limitRead {
 		return nil, io.EOF
 	}
 
-	var data interface{}
+	var data any
 	if err := r.reader.Decode(&data); err != nil {
 		return nil, err
 	}
@@ -220,9 +220,9 @@ func (r *YAMLReader) ReadRow(row []interface{}) ([]interface{}, error) {
 	return v, nil
 }
 
-func (r *YAMLReader) rowParse(row []interface{}, yamlRow interface{}) []interface{} {
+func (r *YAMLReader) rowParse(row []any, yamlRow any) []any {
 	switch m := yamlRow.(type) {
-	case map[string]interface{}:
+	case map[string]any:
 		for i := range r.names {
 			row[i] = r.toString(m[r.names[i]])
 		}
@@ -236,9 +236,9 @@ func (r *YAMLReader) rowParse(row []interface{}, yamlRow interface{}) []interfac
 }
 
 // objectRow returns a map of the YAML object and the column names.
-func (r *YAMLReader) objectRow(obj map[string]interface{}) (map[string]interface{}, []string, error) {
+func (r *YAMLReader) objectRow(obj map[string]any) (map[string]any, []string, error) {
 	names := make([]string, 0, len(obj))
-	row := make(map[string]interface{})
+	row := make(map[string]any)
 	for k, v := range obj {
 		names = append(names, k)
 		if v == nil {
@@ -251,9 +251,9 @@ func (r *YAMLReader) objectRow(obj map[string]interface{}) (map[string]interface
 }
 
 // objectMapSlice returns a yaml.MapSlice of the YAML object and the column names.
-func (r *YAMLReader) objectMapSlice(obj yaml.MapSlice) (map[string]interface{}, []string, error) {
+func (r *YAMLReader) objectMapSlice(obj yaml.MapSlice) (map[string]any, []string, error) {
 	names := make([]string, 0, len(obj))
-	row := make(map[string]interface{})
+	row := make(map[string]any)
 	for _, item := range obj {
 		key := item.Key.(string)
 		names = append(names, key)
@@ -267,23 +267,23 @@ func (r *YAMLReader) objectMapSlice(obj yaml.MapSlice) (map[string]interface{}, 
 }
 
 // etcRow returns 1 element with column name c1.
-func (r *YAMLReader) etcRow(val interface{}) (map[string]interface{}, []string, error) {
+func (r *YAMLReader) etcRow(val any) (map[string]any, []string, error) {
 	var names []string
 	k := "c1"
 	names = append(names, k)
-	row := make(map[string]interface{})
+	row := make(map[string]any)
 	row[k] = r.toString(val)
 	return row, names, nil
 }
 
 // toString returns a string representation of val.
 // It will be YAML if val is a struct or map, otherwise it will be a string representation of val.
-func (r *YAMLReader) toString(val interface{}) interface{} {
+func (r *YAMLReader) toString(val any) any {
 	var str string
 	switch t := val.(type) {
 	case nil:
 		return nil
-	case map[string]interface{}, []yaml.MapSlice, []interface{}:
+	case map[string]any, []yaml.MapSlice, []any:
 		b, err := yaml.Marshal(val)
 		if err != nil {
 			log.Printf("ERROR: YAMLString:%s", err)
