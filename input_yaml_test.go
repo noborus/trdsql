@@ -38,7 +38,7 @@ func TestNewYAMLReader(t *testing.T) {
 			},
 			want: &YAMLReader{
 				names:   []string{"a", "b"},
-				preRead: []map[string]interface{}{{"a": "1", "b": "test"}},
+				preRead: []map[string]any{{"a": "1", "b": "test"}},
 			},
 			wantErr: false,
 		},
@@ -57,7 +57,7 @@ func TestNewYAMLReader(t *testing.T) {
 			},
 			want: &YAMLReader{
 				names:   []string{"c1", "c2"},
-				preRead: []map[string]interface{}{{"c1": "1", "c2": "Orange"}, {"c1": "2", "c2": "Melon"}, {"c1": "3", "c2": "Apple"}},
+				preRead: []map[string]any{{"c1": "1", "c2": "Orange"}, {"c1": "2", "c2": "Melon"}, {"c1": "3", "c2": "Apple"}},
 			},
 			wantErr: false,
 		},
@@ -73,7 +73,7 @@ func TestNewYAMLReader(t *testing.T) {
 			},
 			want: &YAMLReader{
 				names:   []string{"c1"},
-				preRead: []map[string]interface{}{{"c1": "a"}, {"c1": "b"}, {"c1": "c"}},
+				preRead: []map[string]any{{"c1": "a"}, {"c1": "b"}, {"c1": "c"}},
 			},
 			wantErr: false,
 		},
@@ -92,7 +92,7 @@ func TestNewYAMLReader(t *testing.T) {
 			},
 			want: &YAMLReader{
 				names:   []string{"c1", "c2"},
-				preRead: []map[string]interface{}{{"c1": "1", "c2": "Orange"}},
+				preRead: []map[string]any{{"c1": "1", "c2": "Orange"}},
 			},
 			wantErr: false,
 		},

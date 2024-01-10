@@ -69,7 +69,7 @@ func TestNewJSONReader(t *testing.T) {
 			},
 			want: &JSONReader{
 				names:   nil,
-				preRead: []map[string]interface{}{{}},
+				preRead: []map[string]any{{}},
 			},
 			wantErr: false,
 		},
@@ -81,7 +81,7 @@ func TestNewJSONReader(t *testing.T) {
 			},
 			want: &JSONReader{
 				names:   []string{"c1", "c2"},
-				preRead: []map[string]interface{}{{"c1": "1", "c2": "Orange"}, {"c1": "2", "c2": "Melon"}, {"c1": "3", "c2": "Apple"}},
+				preRead: []map[string]any{{"c1": "1", "c2": "Orange"}, {"c1": "2", "c2": "Melon"}, {"c1": "3", "c2": "Apple"}},
 			},
 			wantErr: false,
 		},
@@ -96,7 +96,7 @@ func TestNewJSONReader(t *testing.T) {
 			},
 			want: &JSONReader{
 				names:   []string{"c1", "c2"},
-				preRead: []map[string]interface{}{{"c1": "1", "c2": "Orange"}},
+				preRead: []map[string]any{{"c1": "1", "c2": "Orange"}},
 			},
 			wantErr: false,
 		},
@@ -108,7 +108,7 @@ func TestNewJSONReader(t *testing.T) {
 			},
 			want: &JSONReader{
 				names:   []string{"c1"},
-				preRead: []map[string]interface{}{{"c1": "[\"a\"]"}, {"c1": "[\"b\"]"}},
+				preRead: []map[string]any{{"c1": "[\"a\"]"}, {"c1": "[\"b\"]"}},
 			},
 			wantErr: false,
 		},
@@ -120,7 +120,7 @@ func TestNewJSONReader(t *testing.T) {
 			},
 			want: &JSONReader{
 				names:   []string{"c1"},
-				preRead: []map[string]interface{}{{"c1": "[\"a\",\"b\"]"}, {"c1": "[\"c\",\"d\"]"}},
+				preRead: []map[string]any{{"c1": "[\"a\",\"b\"]"}, {"c1": "[\"c\",\"d\"]"}},
 			},
 			wantErr: false,
 		},
@@ -132,7 +132,7 @@ func TestNewJSONReader(t *testing.T) {
 			},
 			want: &JSONReader{
 				names:   []string{"c1"},
-				preRead: []map[string]interface{}{{"c1": "a"}, {"c1": "b"}},
+				preRead: []map[string]any{{"c1": "a"}, {"c1": "b"}},
 			},
 			wantErr: false,
 		},
@@ -144,7 +144,7 @@ func TestNewJSONReader(t *testing.T) {
 			},
 			want: &JSONReader{
 				names:   []string{"a"},
-				preRead: []map[string]interface{}{{"a": "b"}},
+				preRead: []map[string]any{{"a": "b"}},
 			},
 			wantErr: false,
 		},
@@ -160,7 +160,7 @@ func TestNewJSONReader(t *testing.T) {
 			},
 			want: &JSONReader{
 				names:   []string{"id", "name"},
-				preRead: []map[string]interface{}{{"id": "1", "name": "Orange"}},
+				preRead: []map[string]any{{"id": "1", "name": "Orange"}},
 			},
 			wantErr: false,
 		},
@@ -176,7 +176,7 @@ func TestNewJSONReader(t *testing.T) {
 			},
 			want: &JSONReader{
 				names: []string{"id", "name", "color"},
-				preRead: []map[string]interface{}{
+				preRead: []map[string]any{
 					{"id": "1", "name": "Orange"},
 					{"id": "2", "name": "Melon"},
 					{"id": "3", "name": "Apple"},
@@ -193,7 +193,7 @@ func TestNewJSONReader(t *testing.T) {
 			},
 			want: &JSONReader{
 				names:   []string{"c1", "c2"},
-				preRead: []map[string]interface{}{{"c1": "1", "c2": "Orange"}},
+				preRead: []map[string]any{{"c1": "1", "c2": "Orange"}},
 			},
 			wantErr: false,
 		},
@@ -209,7 +209,7 @@ func TestNewJSONReader(t *testing.T) {
 			},
 			want: &JSONReader{
 				names: []string{"name", "email"},
-				preRead: []map[string]interface{}{
+				preRead: []map[string]any{
 					{"name": "Shyam", "email": "shyamjaiswal@gmail.com"},
 					{"name": "Bob", "email": "bob32@gmail.com"},
 					{"name": "Jai", "email": "jai87@gmail.com"},
@@ -235,7 +235,7 @@ func TestNewJSONReader(t *testing.T) {
 			},
 			want: &JSONReader{
 				names: []string{"value", "onclick"},
-				preRead: []map[string]interface{}{
+				preRead: []map[string]any{
 					{"value": "New", "onclick": "CreateDoc()"},
 					{"value": "Open", "onclick": "OpenDoc()"},
 					{"value": "Save", "onclick": "SaveDoc()"},
@@ -252,7 +252,7 @@ func TestNewJSONReader(t *testing.T) {
 			},
 			want: &JSONReader{
 				names: []string{"id"},
-				preRead: []map[string]interface{}{
+				preRead: []map[string]any{
 					{"id": "1"},
 					{"id": "2"},
 					{"id": "3"},
@@ -297,7 +297,7 @@ func TestNewJSONReaderWithNULL(t *testing.T) {
 			},
 			want: &JSONReader{
 				names: []string{"id"},
-				preRead: []map[string]interface{}{
+				preRead: []map[string]any{
 					{"id": "1"},
 					{"id": nil},
 					{"id": "3"},
@@ -316,7 +316,7 @@ func TestNewJSONReaderWithNULL(t *testing.T) {
 			},
 			want: &JSONReader{
 				names: []string{"id"},
-				preRead: []map[string]interface{}{
+				preRead: []map[string]any{
 					{"id": "1"},
 					{"id": nil},
 					{"id": "3"},
@@ -335,7 +335,7 @@ func TestNewJSONReaderWithNULL(t *testing.T) {
 			},
 			want: &JSONReader{
 				names:   []string{"c1", "c2"},
-				preRead: []map[string]interface{}{{"c1": "1", "c2": nil}, {"c1": "2", "c2": nil}, {"c1": "3", "c2": "Apple"}},
+				preRead: []map[string]any{{"c1": "1", "c2": nil}, {"c1": "2", "c2": nil}, {"c1": "3", "c2": "Apple"}},
 			},
 			wantErr: false,
 		},

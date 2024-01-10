@@ -81,11 +81,11 @@ func (r *LTSVReader) Types() ([]string, error) {
 }
 
 // PreReadRow is returns only columns that store preread rows.
-func (r *LTSVReader) PreReadRow() [][]interface{} {
+func (r *LTSVReader) PreReadRow() [][]any {
 	rowNum := len(r.preRead)
-	rows := make([][]interface{}, rowNum)
+	rows := make([][]any, rowNum)
 	for n := 0; n < rowNum; n++ {
-		rows[n] = make([]interface{}, len(r.names))
+		rows[n] = make([]any, len(r.names))
 		for i := range r.names {
 			rows[n][i] = r.preRead[n][r.names[i]]
 			if r.needNULL {
@@ -97,7 +97,7 @@ func (r *LTSVReader) PreReadRow() [][]interface{} {
 }
 
 // ReadRow is read the rest of the row.
-func (r *LTSVReader) ReadRow(row []interface{}) ([]interface{}, error) {
+func (r *LTSVReader) ReadRow(row []any) ([]any, error) {
 	if r.limitRead {
 		return nil, io.EOF
 	}

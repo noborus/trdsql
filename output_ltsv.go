@@ -30,7 +30,7 @@ func (w *LTSVWriter) PreWrite(columns []string, types []string) error {
 }
 
 // WriteRow is row write.
-func (w *LTSVWriter) WriteRow(values []interface{}, labels []string) error {
+func (w *LTSVWriter) WriteRow(values []any, labels []string) error {
 	for n, col := range values {
 		if n > 0 {
 			if _, err := w.writer.WriteRune(w.delimiter); err != nil {

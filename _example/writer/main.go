@@ -23,7 +23,7 @@ func (w *Write) PreWrite(columns []string, types []string) error {
 	return nil
 }
 
-func (w *Write) WriteRow(values []interface{}, columns []string) error {
+func (w *Write) WriteRow(values []any, columns []string) error {
 	for i, v := range values {
 		if i > 0 {
 			if _, err := w.writer.Write([]byte(",")); err != nil {

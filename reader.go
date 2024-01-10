@@ -74,9 +74,9 @@ type Reader interface {
 	// Types returns column types.
 	Types() ([]string, error)
 	// PreReadRow is returns only columns that store preRead rows.
-	PreReadRow() [][]interface{}
+	PreReadRow() [][]any
 	// ReadRow is read the rest of the row.
-	ReadRow(row []interface{}) ([]interface{}, error)
+	ReadRow(row []any) ([]any, error)
 }
 
 // ReadOpts represents options that determine the behavior of the reader.
@@ -227,7 +227,7 @@ func NewReader(reader io.Reader, readOpts *ReadOpts) (Reader, error) {
 }
 
 func skipRead(r Reader, skipNum int) {
-	skip := make([]interface{}, 1)
+	skip := make([]any, 1)
 	for i := 0; i < skipNum; i++ {
 		row, err := r.ReadRow(skip)
 		if err != nil {

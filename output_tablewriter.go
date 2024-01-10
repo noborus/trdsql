@@ -42,7 +42,7 @@ func (w *TWWriter) PreWrite(columns []string, types []string) error {
 }
 
 // WriteRow is Addition to array.
-func (w *TWWriter) WriteRow(values []interface{}, columns []string) error {
+func (w *TWWriter) WriteRow(values []any, columns []string) error {
 	for i, col := range values {
 		str := ""
 		if col == nil && w.needNULL {

@@ -2,7 +2,7 @@ package trdsql
 
 // SliceWriter is a structure to receive the result in slice.
 type SliceWriter struct {
-	Table [][]interface{}
+	Table [][]any
 }
 
 // NewSliceWriter return SliceWriter.
@@ -12,13 +12,13 @@ func NewSliceWriter() *SliceWriter {
 
 // PreWrite prepares the area.
 func (w *SliceWriter) PreWrite(columns []string, types []string) error {
-	w.Table = make([][]interface{}, 0)
+	w.Table = make([][]any, 0)
 	return nil
 }
 
 // WriteRow stores the result in Table.
-func (w *SliceWriter) WriteRow(values []interface{}, columns []string) error {
-	row := make([]interface{}, len(values))
+func (w *SliceWriter) WriteRow(values []any, columns []string) error {
+	row := make([]any, len(values))
 	copy(row, values)
 	w.Table = append(w.Table, row)
 	return nil

@@ -8,7 +8,7 @@ import (
 func TestNewSliceImporter(t *testing.T) {
 	type args struct {
 		tableName string
-		data      interface{}
+		data      any
 	}
 	tests := []struct {
 		name string
@@ -19,7 +19,7 @@ func TestNewSliceImporter(t *testing.T) {
 			name: "test1",
 			args: args{
 				tableName: "test",
-				data: [][]interface{}{
+				data: [][]any{
 					{1, "one"},
 					{2, "two"},
 					{3, "three"},
@@ -40,7 +40,7 @@ func TestNewSliceImporter(t *testing.T) {
 func TestSliceImporter_Import(t *testing.T) {
 	type fields struct {
 		tableName string
-		data      interface{}
+		data      any
 	}
 	tests := []struct {
 		name    string
@@ -53,7 +53,7 @@ func TestSliceImporter_Import(t *testing.T) {
 			name: "testErr",
 			fields: fields{
 				tableName: "",
-				data: [][]interface{}{
+				data: [][]any{
 					{1, "one"},
 					{2, "two"},
 					{3, "three"},
@@ -67,7 +67,7 @@ func TestSliceImporter_Import(t *testing.T) {
 			name: "test1",
 			fields: fields{
 				tableName: "test",
-				data: [][]interface{}{
+				data: [][]any{
 					{1, "one"},
 					{2, "two"},
 					{3, "three"},

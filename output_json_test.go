@@ -7,14 +7,14 @@ import (
 
 func Test_compatibleJSON(t *testing.T) {
 	type args struct {
-		v        interface{}
+		v        any
 		needNULL bool
 		outNULL  string
 	}
 	tests := []struct {
 		name string
 		args args
-		want interface{}
+		want any
 	}{
 		{
 			name: "testText",

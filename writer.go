@@ -27,7 +27,7 @@ type Writer interface {
 	// The arguments are a list of column names and a list of type names.
 	PreWrite(columns []string, types []string) error
 	// WriteRow is row write.
-	WriteRow(row []interface{}, columns []string) error
+	WriteRow(row []any, columns []string) error
 	// PostWrite is called last in the write.
 	PostWrite() error
 }

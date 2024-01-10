@@ -205,7 +205,7 @@ func TestLTSVReader_PreReadRow(t *testing.T) {
 		name     string
 		fileName string
 		opts     *ReadOpts
-		want     [][]interface{}
+		want     [][]any
 	}{
 		{
 			name:     "test1",
@@ -213,7 +213,7 @@ func TestLTSVReader_PreReadRow(t *testing.T) {
 			opts: NewReadOpts(
 				InPreRead(100),
 			),
-			want: [][]interface{}{
+			want: [][]any{
 				{"1", "Orange", "50", "", ""},
 				{"2", "Melon", "500", "ibaraki", ""},
 				{"3", "Apple", "100", "aomori", "red"},
@@ -227,7 +227,7 @@ func TestLTSVReader_PreReadRow(t *testing.T) {
 				InNeedNULL(true),
 				InNULL(""),
 			),
-			want: [][]interface{}{
+			want: [][]any{
 				{"1", "Orange", "50", nil, nil},
 				{"2", "Melon", "500", "ibaraki", nil},
 				{"3", "Apple", "100", "aomori", "red"},
@@ -253,14 +253,14 @@ func TestLTSVReader_PreReadRow(t *testing.T) {
 
 func TestLTSVReader_ReadRow(t *testing.T) {
 	type args struct {
-		row []interface{}
+		row []any
 	}
 	tests := []struct {
 		name     string
 		fileName string
 		opts     *ReadOpts
 		args     args
-		want     []interface{}
+		want     []any
 		wantErr  bool
 	}{
 		{
@@ -268,11 +268,11 @@ func TestLTSVReader_ReadRow(t *testing.T) {
 			fileName: "test_indefinite.ltsv",
 			opts:     NewReadOpts(),
 			args: args{
-				[]interface{}{
+				[]any{
 					"", "", "",
 				},
 			},
-			want: []interface{}{
+			want: []any{
 				"2", "Melon", "500",
 			},
 			wantErr: false,
@@ -285,11 +285,11 @@ func TestLTSVReader_ReadRow(t *testing.T) {
 				InNULL(""),
 			),
 			args: args{
-				[]interface{}{
+				[]any{
 					"", "", "",
 				},
 			},
-			want: []interface{}{
+			want: []any{
 				"2", nil, "500",
 			},
 			wantErr: false,

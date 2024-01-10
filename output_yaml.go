@@ -31,7 +31,7 @@ func (w *YAMLWriter) PreWrite(columns []string, types []string) error {
 }
 
 // WriteRow is Addition to array.
-func (w *YAMLWriter) WriteRow(values []interface{}, columns []string) error {
+func (w *YAMLWriter) WriteRow(values []any, columns []string) error {
 	m := make(yaml.MapSlice, len(values))
 	for i, col := range values {
 		m[i].Key = columns[i]
@@ -42,8 +42,8 @@ func (w *YAMLWriter) WriteRow(values []interface{}, columns []string) error {
 }
 
 // CompatibleYAML converts the value to a YAML-compatible value.
-func compatibleYAML(v interface{}, needNULL bool, outNULL string) interface{} {
-	var yl interface{}
+func compatibleYAML(v any, needNULL bool, outNULL string) any {
+	var yl any
 	switch t := v.(type) {
 	case []byte:
 		if err := yaml.Unmarshal(t, &yl); err == nil {

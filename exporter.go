@@ -107,8 +107,8 @@ func (e *WriteFormat) exportContext(ctx context.Context, db *DB, query string) e
 }
 
 func (e *WriteFormat) write(ctx context.Context, rows *sql.Rows) error {
-	values := make([]interface{}, len(e.columns))
-	scanArgs := make([]interface{}, len(e.columns))
+	values := make([]any, len(e.columns))
+	scanArgs := make([]any, len(e.columns))
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}

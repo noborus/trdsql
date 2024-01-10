@@ -140,11 +140,11 @@ func (r *CSVReader) Types() ([]string, error) {
 }
 
 // PreReadRow is returns only columns that store preread rows.
-func (r *CSVReader) PreReadRow() [][]interface{} {
+func (r *CSVReader) PreReadRow() [][]any {
 	rowNum := len(r.preRead)
-	rows := make([][]interface{}, rowNum)
+	rows := make([][]any, rowNum)
 	for n := 0; n < rowNum; n++ {
-		rows[n] = make([]interface{}, len(r.names))
+		rows[n] = make([]any, len(r.names))
 		for i, f := range r.preRead[n] {
 			rows[n][i] = f
 			if r.needNULL {
@@ -156,7 +156,7 @@ func (r *CSVReader) PreReadRow() [][]interface{} {
 }
 
 // ReadRow is read the rest of the row.
-func (r *CSVReader) ReadRow(row []interface{}) ([]interface{}, error) {
+func (r *CSVReader) ReadRow(row []any) ([]any, error) {
 	if r.limitRead {
 		return nil, io.EOF
 	}
