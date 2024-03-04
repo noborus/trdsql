@@ -14,7 +14,6 @@ import (
 	"os/user"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/klauspost/compress/zstd"
@@ -136,6 +135,7 @@ func TableNames(parsedQuery []string) (map[string]string, []int) {
 		case strings.Contains(" \t\r\n;=", w): // nolint // Because each character is parsed by SQLFields.
 			continue
 		case strings.EqualFold(w, "FROM"),
+			strings.EqualFold(w, "*FROM"),
 			strings.EqualFold(w, "JOIN"),
 			strings.EqualFold(w, "TABLE"),
 			strings.EqualFold(w, "INTO"),
@@ -165,20 +165,20 @@ func TableNames(parsedQuery []string) (map[string]string, []int) {
 // SQLFields returns an array of string fields
 // (interpreting quotes) from the argument query.
 func SQLFields(query string) []string {
-	parsed := []string{}
-	buf := ""
+	parsed := make([]string, 0, len(query)/2)
+	buf := new(bytes.Buffer)
 	var singleQuoted, doubleQuoted, backQuote bool
 	for _, r := range query {
 		switch r {
 		case ' ', '\t', '\r', '\n', ',', ';', '=', '(', ')':
 			if !singleQuoted && !doubleQuoted && !backQuote {
-				if buf != "" {
-					parsed = append(parsed, buf)
-					buf = ""
+				if buf.Len() != 0 {
+					parsed = append(parsed, buf.String())
+					buf.Reset()
 				}
 				parsed = append(parsed, string(r))
 			} else {
-				buf += string(r)
+				buf.WriteRune(r)
 			}
 			continue
 		case '\'':
@@ -193,11 +193,19 @@ func SQLFields(query string) []string {
 			if !singleQuoted && !doubleQuoted {
 				backQuote = !backQuote
 			}
+		case '*':
+			str := buf.String()
+			if strings.ToUpper(str) == "SELECT" { // `SELECT*` to `SELECT *`
+				parsed = append(parsed, str)
+				parsed = append(parsed, string(r))
+				buf.Reset()
+				continue
+			}
 		}
-		buf += string(r)
+		buf.WriteRune(r)
 	}
-	if len(buf) > 0 {
-		parsed = append(parsed, buf)
+	if buf.Len() > 0 {
+		parsed = append(parsed, buf.String())
 	}
 	return parsed
 }
@@ -243,10 +251,11 @@ func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *R
 		return "", err
 	}
 
-	tableName := db.QuotedName(fileName)
+	tableName := fileName
 	if opts.InJQuery != "" {
-		tableName = db.QuotedName(fileName + "::" + "jq" + strconv.Itoa(db.importCount))
+		tableName = fmt.Sprintf("%s::jq%d", fileName, db.importCount)
 	}
+	tableName = db.QuotedName(tableName)
 
 	columnNames, err := reader.Names()
 	if err != nil {
