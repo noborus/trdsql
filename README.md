@@ -65,7 +65,8 @@ For usage as a library, please refer to the [godoc](https://pkg.go.dev/github.co
   * 5.6. [Configuration](#configuration)
 * 6. [Library](#library)
 * 7. [See also](#see-also)
-* 8. [License](#license)
+* 8. [Learn More](#learn-more)
+* 9. [License](#license)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -1132,7 +1133,13 @@ Please refer to [godoc](https://pkg.go.dev/github.com/noborus/trdsql) and _examp
 * [mdtsql](https://github.com/noborus/mdtsql) - A tool for querying markdown tables in SQL.
 * [xlsxsql](https://github.com/noborus/xlsxsql) - A tool for querying Excel files in SQL.
 
-##  8. <a name='license'></a>License
+##  8. <a name='learn-more'></a>Learn More
+
+* https://noborus.github.io/trdsql/index.html
+* https://cn.x-cmd.com/pkg/trdsql#trdsql
+* https://x-cmd.com/1min/trdsql#trdsql
+
+##  9. <a name='license'></a>License
 
 MIT
 
