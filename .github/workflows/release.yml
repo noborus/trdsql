@@ -25,7 +25,7 @@ jobs:
         echo "GOPATH=${{ runner.workspace }}" >> $GITHUB_ENV
         echo "${{ runner.workspace }}/bin" >> $GITHUB_PATH
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: xgo-build-zip
         path: dist/*.zip
@@ -52,7 +52,7 @@ jobs:
         export "CC=zig cc -target ${{ matrix.ZIG_TARGET }}"
         make pkg GOOS=${{ matrix.GOOS }} GOARCH=${{ matrix.GOARCH }} ZIPOS=${{ matrix.ZIPOS }}
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: trdsql-${{ matrix.GOOS }}-${{ matrix.GOARCH }}
         path: dist/*.zip
@@ -76,7 +76,7 @@ jobs:
     - name:  make package
       run: make pkg GOOS=${{ matrix.GOOS }} GOARCH=${{ matrix.GOARCH }}
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: trdsql-${{ matrix.GOOS }}-${{ matrix.GOARCH }}
         path: dist/*.zip
@@ -93,7 +93,7 @@ jobs:
     - { uses: actions/download-artifact@v3, with: { name: trdsql-darwin-arm64,  path: dist/ } }
 
     - name: Upload Asset to Release with a wildcard
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: dist/*.zip
