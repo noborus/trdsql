@@ -87,10 +87,10 @@ jobs:
     steps:
     -  uses: actions/checkout@v4
 
-    - { uses: actions/download-artifact@v3, with: { name: xgo-build-zip,        path: dist/ } }
-    - { uses: actions/download-artifact@v3, with: { name: trdsql-linux-amd64,   path: dist/ } }
-    - { uses: actions/download-artifact@v3, with: { name: trdsql-darwin-amd64,  path: dist/ } }
-    - { uses: actions/download-artifact@v3, with: { name: trdsql-darwin-arm64,  path: dist/ } }
+    - { uses: actions/download-artifact@v4, with: { name: xgo-build-zip,        path: dist/ } }
+    - { uses: actions/download-artifact@v4, with: { name: trdsql-linux-amd64,   path: dist/ } }
+    - { uses: actions/download-artifact@v4, with: { name: trdsql-darwin-amd64,  path: dist/ } }
+    - { uses: actions/download-artifact@v4, with: { name: trdsql-darwin-arm64,  path: dist/ } }
 
     - name: Upload Asset to Release with a wildcard
       uses: softprops/action-gh-release@v2
