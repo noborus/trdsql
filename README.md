@@ -34,7 +34,7 @@ For usage as a library, please refer to the [godoc](https://pkg.go.dev/github.co
   * 3.3. [Output formats](#output-formats)
     * 3.3.1. [Output options](#output-options)
   * 3.4. [Handling of NULL](#handling-of-null)
-  * 3.5. [Multiple queries (v0.20.0 or later)](#multiple-queries-(v0.20.0-or-later))
+  * 3.5. [Multiple queries](#multiple-queries)
 * 4. [Example](#example)
   * 4.1. [STDIN input](#stdin-input)
   * 4.2. [Multiple files](#multiple-files)
@@ -257,7 +257,7 @@ $ echo '[1,null,""]' | trdsql -inull "" -ojson -ijson "SELECT * FROM -"
 ]
 ```
 
-###  3.5. <a name='multiple-queries-(v0.20.0-or-later)'></a>Multiple queries (v0.20.0 or later)
+###  3.5. <a name='multiple-queries'></a>Multiple queries
 
 Multiple queries can be executed by separating them with a semicolon.
 Update queries must be followed by a SELECT statement.
@@ -1061,7 +1061,7 @@ C:\Users\{"User"}\AppData\Roaming\trdsql\config.json
 Or use the -config file option.
 
 ```console
-$ trdsql -config config.json "SELECT * FROM test.csv"
+trdsql -config config.json "SELECT * FROM test.csv"
 ```
 
  sample: [config.json](config.json.sample)
