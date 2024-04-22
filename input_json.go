@@ -200,11 +200,7 @@ func (r *JSONReader) objectRow(obj map[string]any) (map[string]any, []string, er
 	row := make(map[string]any)
 	for k, v := range obj {
 		names = append(names, k)
-		if v == nil {
-			row[k] = nil
-		} else {
-			row[k] = r.jsonString(v)
-		}
+		row[k] = r.jsonString(v)
 	}
 	return row, names, nil
 }

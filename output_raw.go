@@ -26,10 +26,9 @@ func NewRAWWriter(writeOpts *WriteOpts) *RAWWriter {
 	w.writer = bufio.NewWriter(writeOpts.OutStream)
 	w.delimiter = delimiter
 	w.outHeader = writeOpts.OutHeader
+	w.endLine = "\n"
 	if writeOpts.OutUseCRLF {
 		w.endLine = "\r\n"
-	} else {
-		w.endLine = "\n"
 	}
 	w.needNULL = writeOpts.OutNeedNULL
 	w.outNULL = writeOpts.OutNULL
@@ -63,11 +62,9 @@ func (w *RAWWriter) WriteRow(values []any, _ []string) error {
 				return err
 			}
 		}
-		str := ""
+		str := ValString(col)
 		if col == nil && w.needNULL {
 			str = w.outNULL
-		} else {
-			str = ValString(col)
 		}
 		if _, err := w.writer.WriteString(str); err != nil {
 			return err
