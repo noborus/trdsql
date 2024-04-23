@@ -21,6 +21,7 @@ import (
 	"github.com/ulikunitz/xz"
 )
 
+// TableQuery is a query to use instead of TABLE.
 const TableQuery = "SELECT * FROM"
 
 // Cli wraps stdout and error output specification.

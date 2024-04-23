@@ -67,7 +67,7 @@ func compatibleYAML(v any, needNULL bool, outNULL string) any {
 	}
 }
 
-// PostWrite is Actual output.
+// PostWrite is actual output.
 func (w *YAMLWriter) PostWrite() error {
 	return w.writer.Encode(w.results)
 }

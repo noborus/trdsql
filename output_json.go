@@ -82,7 +82,7 @@ func isJSON(s []byte) bool {
 	return err == nil
 }
 
-// PostWrite is Actual output.
+// PostWrite is actual output.
 func (w *JSONWriter) PostWrite() error {
 	return w.writer.Encode(w.results)
 }

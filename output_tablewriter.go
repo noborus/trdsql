@@ -44,14 +44,12 @@ func (w *TWWriter) PreWrite(columns []string, types []string) error {
 // WriteRow is Addition to array.
 func (w *TWWriter) WriteRow(values []any, columns []string) error {
 	for i, col := range values {
-		str := ""
+		str := ValString(col)
+		if w.markdown {
+			str = strings.ReplaceAll(str, `|`, `\|`)
+		}
 		if col == nil && w.needNULL {
 			str = w.outNULL
-		} else {
-			str = ValString(col)
-			if w.markdown {
-				str = strings.ReplaceAll(str, `|`, `\|`)
-			}
 		}
 		w.results[i] = str
 	}
@@ -59,7 +57,7 @@ func (w *TWWriter) WriteRow(values []any, columns []string) error {
 	return nil
 }
 
-// PostWrite is Actual output.
+// PostWrite is actual output.
 func (w *TWWriter) PostWrite() error {
 	w.writer.Render()
 	return nil

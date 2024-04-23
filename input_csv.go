@@ -56,10 +56,9 @@ func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 		}
 		r.names = make([]string, len(row))
 		for i, col := range row {
+			r.names[i] = col
 			if col == "" {
 				r.names[i] = "c" + strconv.Itoa(i+1)
-			} else {
-				r.names[i] = col
 			}
 		}
 		preReadN--

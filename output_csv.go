@@ -32,19 +32,17 @@ func NewCSVWriter(writeOpts *WriteOpts) *CSVWriter {
 	}
 	w.outDelimiter = d
 
+	w.outQuote = 0
 	if len(writeOpts.OutQuote) > 0 {
 		w.outQuote = ([]rune(writeOpts.OutQuote))[0]
-	} else {
-		w.outQuote = 0
 	}
 	w.outAllQuote = writeOpts.OutAllQuotes
 	w.outUseCRLF = writeOpts.OutUseCRLF
 	w.outHeader = writeOpts.OutHeader
 	w.needQuotes = string(w.outDelimiter) + string(w.outQuote) + "\r\n"
+	w.endLine = "\n"
 	if writeOpts.OutUseCRLF {
 		w.endLine = "\r\n"
-	} else {
-		w.endLine = "\n"
 	}
 	w.needNULL = writeOpts.OutNeedNULL
 	w.outNULL = writeOpts.OutNULL

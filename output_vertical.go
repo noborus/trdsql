@@ -48,7 +48,7 @@ func (w *VFWriter) PreWrite(columns []string, types []string) error {
 	return nil
 }
 
-// WriteRow is Actual output.
+// WriteRow is actual output.
 func (w *VFWriter) WriteRow(values []any, columns []string) error {
 	w.count++
 	_, err := fmt.Fprintf(w.writer,
@@ -58,11 +58,9 @@ func (w *VFWriter) WriteRow(values []any, columns []string) error {
 	}
 	for i, col := range w.header {
 		v := w.hSize - runewidth.StringWidth(col)
-		str := ""
+		str := ValString(values[i])
 		if values[i] == nil && w.needNULL {
 			str = w.outNULL
-		} else {
-			str = ValString(values[i])
 		}
 
 		_, err := fmt.Fprintf(w.writer,
