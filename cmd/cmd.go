@@ -21,6 +21,7 @@ import (
 	"github.com/ulikunitz/xz"
 )
 
+// TableQuery is a query to use instead of TABLE.
 const TableQuery = "SELECT * FROM"
 
 // Cli wraps stdout and error output specification.
@@ -35,30 +36,9 @@ type Cli struct {
 // Debug represents a flag for detailed output.
 var Debug bool
 
-// The nilString structure represents a string
-// that distinguishes between empty strings and nil.
-type nilString struct {
-	str   string
-	valid bool
-}
-
-// String returns a string.
-// nilString fills the flag#value interface.
-func (v *nilString) String() string {
-	return v.str
-}
-
-// Set sets the string with the valid flag set to true.
-// nilString fills the flag#value interface.
-func (v *nilString) Set(s string) error {
-	v.str = s
-	v.valid = true
-	return nil
-}
-
 // Run executes the main routine.
 // The return value is the exit code.
-func (cli Cli) Run(args []string) int {
+func (cli Cli) runOld(args []string) int {
 	var (
 		usage     bool
 		version   bool
@@ -94,13 +74,12 @@ func (cli Cli) Run(args []string) int {
 		outNoWrap       bool
 		outNull         nilString
 	)
-
 	flags := flag.NewFlagSet(trdsql.AppName, flag.ExitOnError)
 
 	flags.SetOutput(cli.ErrStream)
 	log.SetOutput(cli.ErrStream)
 
-	flags.Usage = func() { Usage(flags) }
+	flags.Usage = func() { usageOld(flags) }
 	flags.StringVar(&config, "config", config, "configuration file location.")
 	flags.StringVar(&cDB, "db", "", "specify db name of the setting.")
 	flags.BoolVar(&dbList, "dblist", false, "display db information.")
@@ -121,7 +100,7 @@ func (cli Cli) Run(args []string) int {
 	flags.IntVar(&inPreRead, "ir", 1, "number of rows to preread.")
 	flags.IntVar(&inLimitRead, "ilr", 0, "limited number of rows to read.")
 	flags.StringVar(&inJQuery, "ijq", "", "jq expression string for input(JSON/JSONL only).")
-	flags.Var(&inNull, "inull", "value(string) to convert to null on input.")
+	flags.Var(&inNull, "null", "value(string) to convert to null on input.")
 
 	flags.BoolVar(&inFlag.CSV, "icsv", false, "CSV format for input.")
 	flags.BoolVar(&inFlag.LTSV, "iltsv", false, "LTSV format for input.")
@@ -218,7 +197,7 @@ func (cli Cli) Run(args []string) int {
 	}
 
 	if usage || (len(query) == 0) {
-		Usage(flags)
+		usageOld(flags)
 		return 2
 	}
 
@@ -317,7 +296,7 @@ func (cli Cli) Run(args []string) int {
 }
 
 // Usage is outputs usage information.
-func Usage(flags *flag.FlagSet) {
+func usageOld(flags *flag.FlagSet) {
 	bold := gchalk.Bold
 	fmt.Fprintf(flags.Output(), "%s - Execute SQL queries on CSV, LTSV, JSON, YAML and TBLN.\n\n", trdsql.AppName)
 	fmt.Fprintf(flags.Output(), "%s\n", bold("Usage"))
@@ -410,7 +389,7 @@ func optsCommand(opts *trdsql.AnalyzeOpts, args []string) *trdsql.AnalyzeOpts {
 			omitFlag = false
 			continue
 		}
-		if arg == "-a" || arg == "-A" {
+		if arg == "-a" || arg == "-A" || arg == "--analyze" || arg == "--analyze-sql" {
 			omitFlag = true
 			continue
 		}
