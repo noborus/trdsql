@@ -67,14 +67,33 @@ var rootCmd = &cobra.Command{
 			Completion(cmd, completion)
 		}
 
+		if Debug {
+			trdsql.EnableDebug()
+		}
+
+		// MultipleQueries is enabled by default.
+		trdsql.EnableMultipleQueries()
+
+		cfgF := configOpen(cfgFile)
+		cfg, err := loadConfig(cfgF)
+		if err != nil && cfgFile != "" {
+			log.Printf("ERROR: [%s]%s", cfgFile, err)
+			return
+		}
+
+		if dbList {
+			printDBList(os.Stdout, cfg)
+			return
+		}
+
 		if analyze != "" || onlySQL != "" {
-			if err := analyzeSQL(analyze, onlySQL); err != nil {
+			if err := analyzeSQL(cfg, analyze, onlySQL); err != nil {
 				log.Println(err)
 				return
 			}
 		}
 
-		if err := run(args); err != nil {
+		if err := run(cfg, args); err != nil {
 			log.Println(err)
 		}
 	},
@@ -95,9 +114,8 @@ func Completion(cmd *cobra.Command, shell string) {
 	}
 }
 
-func run(args []string) error {
-	driver := cDriver
-	dsn := cDSN
+func run(cfg *config, args []string) error {
+	driver, dsn := getDB(cfg, cDB, cDriver, cDSN)
 	importer := trdsql.NewImporter(
 		trdsql.InFormat(strToFormat(inFlag)),
 		trdsql.InHeader(inHeader),
@@ -229,10 +247,13 @@ func (v *nilString) Type() string {
 	return "string"
 }
 
-func analyzeSQL(table string, onlySQL string) error {
+func analyzeSQL(cfg *config, table string, onlySQL string) error {
 	opts := trdsql.NewAnalyzeOpts()
 	opts.OutStream = os.Stdout
-	opts = quoteOpts(opts, cDriver)
+
+	driver, _ := getDB(cfg, cDB, cDriver, cDSN)
+
+	opts = quoteOpts(opts, driver)
 	if onlySQL != "" {
 		table = onlySQL
 		opts.Detail = false
