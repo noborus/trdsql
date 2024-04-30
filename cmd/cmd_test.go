@@ -67,7 +67,7 @@ func Test_inputFormat(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := inputFormat(tt.args.i); !reflect.DeepEqual(got, tt.want) {
+			if got := inputFormatOld(tt.args.i); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("inputFormat() = %v, want %v", got, tt.want)
 			}
 		})
@@ -187,7 +187,7 @@ func Test_outputFormat(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := outputFormat(tt.args.o); !reflect.DeepEqual(got, tt.want) {
+			if got := outputFormatOld(tt.args.o); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("outputFormat() = %v, want %v", got, tt.want)
 			}
 		})
@@ -283,7 +283,7 @@ func Test_getQuery(t *testing.T) {
 
 func Test_getDB(t *testing.T) {
 	type argss struct {
-		cfg     *config
+		cfg     *DBConfig
 		cDB     string
 		cDriver string
 		cDSN    string
@@ -297,7 +297,7 @@ func Test_getDB(t *testing.T) {
 		{
 			name: "testNoConfig",
 			argss: argss{
-				cfg:     &config{},
+				cfg:     &DBConfig{},
 				cDB:     "",
 				cDriver: "postgres",
 				cDSN:    "dbname=test",
@@ -308,7 +308,7 @@ func Test_getDB(t *testing.T) {
 		{
 			name: "testNoConfigDB",
 			argss: argss{
-				cfg:     &config{},
+				cfg:     &DBConfig{},
 				cDB:     "test",
 				cDriver: "postgres",
 				cDSN:    "dbname=\"test\"",
@@ -319,7 +319,7 @@ func Test_getDB(t *testing.T) {
 		{
 			name: "testDSN",
 			argss: argss{
-				cfg:     &config{},
+				cfg:     &DBConfig{},
 				cDB:     "",
 				cDriver: "",
 				cDSN:    "dbname=\"test\"",
@@ -330,7 +330,7 @@ func Test_getDB(t *testing.T) {
 		{
 			name: "testConfig",
 			argss: argss{
-				cfg: &config{
+				cfg: &DBConfig{
 					Db: "",
 					Database: map[string]database{
 						"pdb": {
@@ -349,7 +349,7 @@ func Test_getDB(t *testing.T) {
 		{
 			name: "testConfigErr",
 			argss: argss{
-				cfg: &config{
+				cfg: &DBConfig{
 					Db: "",
 					Database: map[string]database{
 						"pdb": {
@@ -437,11 +437,11 @@ func Test_optsCommand(t *testing.T) {
 func Test_printDBList(t *testing.T) {
 	tests := []struct {
 		name string
-		cfg  *config
+		cfg  *DBConfig
 	}{
 		{
 			name: "test",
-			cfg: &config{
+			cfg: &DBConfig{
 				Db: "",
 				Database: map[string]database{
 					"pdb": {Driver: "postgres", Dsn: "dbname=test"},

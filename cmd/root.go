@@ -1,16 +1,23 @@
 package cmd
 
 import (
+	"compress/gzip"
 	"context"
 	"database/sql"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"path/filepath"
+	"regexp"
 	"strings"
 
+	"github.com/dsnet/compress/bzip2"
+	"github.com/klauspost/compress/zstd"
 	"github.com/noborus/trdsql"
+	"github.com/pierrec/lz4"
 	"github.com/spf13/cobra"
+	"github.com/ulikunitz/xz"
 
 	"github.com/spf13/viper"
 )
@@ -52,6 +59,24 @@ var (
 	outNull         nilString
 )
 
+type database struct {
+	Driver string `json:"driver"`
+	Dsn    string `json:"dsn"`
+}
+
+type DBConfig struct {
+	Db       string              `json:"db"`
+	Database map[string]database `json:"database"`
+}
+
+var dbCfg *DBConfig
+
+// TableQuery is a query to use instead of TABLE.
+const TableQuery = "SELECT * FROM"
+
+// Debug represents a flag for detailed output.
+var Debug bool
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "trdsql",
@@ -59,12 +84,13 @@ var rootCmd = &cobra.Command{
 	Long:  fmt.Sprintf("%s - Execute SQL queries on CSV, LTSV, JSON, YAML and TBLN.", trdsql.AppName),
 
 	Run: func(cmd *cobra.Command, args []string) {
+		var writer io.Writer = os.Stdout
 		if version {
-			fmt.Fprintf(os.Stdout, "%s version %s\n", trdsql.AppName, trdsql.Version)
+			fmt.Fprintf(writer, "%s version %s\n", trdsql.AppName, trdsql.Version)
 			return
 		}
 		if completion != "" {
-			Completion(cmd, completion)
+			Completion(writer, cmd, completion)
 		}
 
 		if Debug {
@@ -74,48 +100,41 @@ var rootCmd = &cobra.Command{
 		// MultipleQueries is enabled by default.
 		trdsql.EnableMultipleQueries()
 
-		cfgF := configOpen(cfgFile)
-		cfg, err := loadConfig(cfgF)
-		if err != nil && cfgFile != "" {
-			log.Printf("ERROR: [%s]%s", cfgFile, err)
-			return
-		}
-
 		if dbList {
-			printDBList(os.Stdout, cfg)
+			printDBList(writer, dbCfg)
 			return
 		}
 
 		if analyze != "" || onlySQL != "" {
-			if err := analyzeSQL(cfg, analyze, onlySQL); err != nil {
+			if err := analyzeSQL(writer, dbCfg, analyze, onlySQL); err != nil {
 				log.Println(err)
 				return
 			}
 		}
 
-		if err := run(cfg, args); err != nil {
+		if err := run(writer, dbCfg, args); err != nil {
 			log.Println(err)
 		}
 	},
 }
 
-func Completion(cmd *cobra.Command, shell string) {
+func Completion(writer io.Writer, cmd *cobra.Command, shell string) {
 	switch completion {
 	case "bash":
-		cmd.GenBashCompletion(os.Stdout)
+		cmd.GenBashCompletion(writer)
 	case "zsh":
-		cmd.GenZshCompletion(os.Stdout)
+		cmd.GenZshCompletion(writer)
 	case "fish":
-		cmd.GenFishCompletion(os.Stdout, true)
+		cmd.GenFishCompletion(writer, true)
 	case "powershell":
-		cmd.GenPowerShellCompletion(os.Stdout)
+		cmd.GenPowerShellCompletion(writer)
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown completion: %s\n", completion)
 	}
 }
 
-func run(cfg *config, args []string) error {
-	driver, dsn := getDB(cfg, cDB, cDriver, cDSN)
+func run(writer io.Writer, dbConfig *DBConfig, args []string) error {
+	driver, dsn := getDB(dbConfig, cDB, cDriver, cDSN)
 	importer := trdsql.NewImporter(
 		trdsql.InFormat(strToFormat(inFlag)),
 		trdsql.InHeader(inHeader),
@@ -125,8 +144,6 @@ func run(cfg *config, args []string) error {
 		trdsql.InNULL(inNull.str),
 	)
 
-	var writer io.Writer
-	writer = os.Stdout
 	if outFile != "" {
 		w, err := os.Create(outFile)
 		if err != nil {
@@ -247,11 +264,11 @@ func (v *nilString) Type() string {
 	return "string"
 }
 
-func analyzeSQL(cfg *config, table string, onlySQL string) error {
+func analyzeSQL(writer io.Writer, dbConfig *DBConfig, table string, onlySQL string) error {
 	opts := trdsql.NewAnalyzeOpts()
-	opts.OutStream = os.Stdout
+	opts.OutStream = writer
 
-	driver, _ := getDB(cfg, cDB, cDriver, cDSN)
+	driver, _ := getDB(dbConfig, cDB, cDriver, cDSN)
 
 	opts = quoteOpts(opts, driver)
 	if onlySQL != "" {
@@ -286,7 +303,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.trdsql.yaml)")
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is XDG_CONFIG_HOME/trdsql/config.json)")
 	rootCmd.PersistentFlags().BoolVarP(&version, "version", "v", false, "display version information.")
 	rootCmd.PersistentFlags().BoolVarP(&usage, "help", "h", false, "display usage information.")
 	rootCmd.PersistentFlags().BoolVar(&Debug, "debug", false, "debug print.")
@@ -299,7 +316,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cDB, "db", "", "specify db name of the setting.")
 	rootCmd.PersistentFlags().BoolVar(&dbList, "db-list", false, "display db information.")
-	rootCmd.PersistentFlags().StringVar(&cDriver, "driver", "", "database driver.  [ "+strings.Join(sql.Drivers(), " | ")+" ]")
+	rootCmd.PersistentFlags().StringVar(&cDriver, "driver", "", "database driver.  ["+strings.Join(sql.Drivers(), "|")+"]")
 	rootCmd.PersistentFlags().StringVar(&cDSN, "dsn", "", "database driver specific data source name.")
 
 	rootCmd.PersistentFlags().StringVar(&inDelimiter, "delimiter", ",", "Input delimiter")
@@ -310,8 +327,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&inJQuery, "jq", "", "jq expression string for input(JSON/JSONL only).")
 	rootCmd.PersistentFlags().Var(&inNull, "null", "value(string) to convert to null on input.")
 
-	rootCmd.PersistentFlags().StringVarP(&inFlag, "in", "i", "CSV", "format for input.")
-
+	rootCmd.PersistentFlags().StringVarP(&inFlag, "in", "i", "CSV", "format for input. [CSV|LTSV|JSON|YAML|TBLN|WIDTH]")
 	rootCmd.PersistentFlags().StringVar(&outDelimiter, "out-delimiter", ",", "field delimiter for output.")
 	rootCmd.PersistentFlags().StringVar(&outFile, "out-file", "", "output file name.")
 	rootCmd.PersistentFlags().BoolVar(&outWithoutGuess, "out-without-guess", false, "output without guessing (when using -out).")
@@ -320,12 +336,14 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&outUseCRLF, "out-crlf", false, "use CRLF for output. End each output line with '\\r\\n' instead of '\\n'.")
 	rootCmd.PersistentFlags().BoolVar(&outNoWrap, "out-nowrap", false, "do not wrap long lines(at/md only).")
 	rootCmd.PersistentFlags().BoolVar(&outHeader, "out-header", false, "output column name as header.")
-	rootCmd.PersistentFlags().StringVar(&outCompression, "out-compression", "", "output compression format. [ gz | bz2 | zstd | lz4 | xz ]")
+	rootCmd.PersistentFlags().StringVar(&outCompression, "out-compression", "", "output compression format. [gz|bz2|zstd|lz4|xz]")
 	rootCmd.PersistentFlags().Var(&outNull, "out-null", "value(string) to convert from null on output.")
 
-	rootCmd.PersistentFlags().StringVarP(&outFlag, "out", "o", "", "format for output.")
+	rootCmd.PersistentFlags().StringVarP(&outFlag, "out", "o", "", "format for output. [CSV|LTSV|JSON|JSONL|RAW|MD|AT|YAML|TBLN]")
 
 	rootCmd.PersistentFlags().StringVarP(&completion, "completion", "", "", "generate completion script [bash|zsh|fish|powershell]")
+
+	_ = viper.BindPFlag("database", rootCmd.PersistentFlags().Lookup("database"))
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -337,16 +355,176 @@ func initConfig() {
 		// Find home directory.
 		home, err := os.UserHomeDir()
 		cobra.CheckErr(err)
-
-		// Search config in home directory with name ".trdsql" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".trdsql")
+		xdgConfigHome := os.Getenv("XDG_CONFIG_HOME")
+		// `$HOME/.config/trdsql`.
+		defaultConfigPath := filepath.Join(home, ".config", "trdsql")
+		if xdgConfigHome != "" {
+			// `$XDG_CONFIG_HOME/trdsql`.
+			defaultConfigPath = filepath.Join(xdgConfigHome, "trdsql")
+		}
+		viper.AddConfigPath(defaultConfigPath)
+		viper.SetConfigName("config")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+		// fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+	}
+	if err := viper.Unmarshal(&dbCfg); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func printDBList(w io.Writer, cfg *DBConfig) {
+	for od, odb := range cfg.Database {
+		fmt.Fprintf(w, "%s:%s\n", od, odb.Driver)
+	}
+}
+
+func quoteOpts(opts *trdsql.AnalyzeOpts, driver string) *trdsql.AnalyzeOpts {
+	if driver == "postgres" {
+		opts.Quote = `\"`
+	}
+	return opts
+}
+
+func optsCommand(opts *trdsql.AnalyzeOpts, args []string) *trdsql.AnalyzeOpts {
+	command := args[0]
+	omitFlag := false
+	for _, arg := range args[1:] {
+		if omitFlag {
+			omitFlag = false
+			continue
+		}
+		if arg == "-a" || arg == "-A" || arg == "--analyze" || arg == "--analyze-sql" {
+			omitFlag = true
+			continue
+		}
+		if arg == "-ijq" {
+			omitFlag = true
+			continue
+		}
+		if len(arg) <= 1 || arg[0] != '-' {
+			arg = quotedArg(arg)
+		}
+		command += " " + arg
+	}
+	opts.Command = command
+	return opts
+}
+
+func getQuery(args []string, tableName string, queryFile string) (string, error) {
+	if tableName != "" {
+		var query strings.Builder
+		query.WriteString(TableQuery)
+		query.WriteString(" ")
+		query.WriteString(tableName)
+		return trimQuery(query.String()), nil
+	}
+
+	if queryFile == "" {
+		return trimQuery(strings.Join(args, " ")), nil
+	}
+
+	sqlByte, err := os.ReadFile(queryFile)
+	if err != nil {
+		return "", err
+	}
+	return trimQuery(string(sqlByte)), nil
+}
+
+func getDB(cfg *DBConfig, cDB string, cDriver string, cDSN string) (string, string) {
+	if cDB == "" {
+		cDB = cfg.Db
+	}
+	if Debug {
+		for od, odb := range cfg.Database {
+			if cDB == od {
+				log.Printf(">[driver: %s:%s:%s]", od, odb.Driver, odb.Dsn)
+			} else {
+				log.Printf(" [driver: %s:%s:%s]", od, odb.Driver, odb.Dsn)
+			}
+		}
+	}
+	if cDriver != "" {
+		return cDriver, cDSN
+	}
+	if cDSN != "" {
+		return "", cDSN
+	}
+	if cDB != "" {
+		if cfg.Database[cDB].Driver == "" {
+			log.Printf("ERROR: db[%s] does not found", cDB)
+		} else {
+			return cfg.Database[cDB].Driver, cfg.Database[cDB].Dsn
+		}
+	}
+	return "", ""
+}
+
+func trimQuery(query string) string {
+	return strings.TrimRight(strings.TrimSpace(query), ";")
+}
+
+var argQuote = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
+
+func quotedArg(arg string) string {
+	if argQuote.MatchString(arg) {
+		return arg
+	}
+	return `"` + arg + `"`
+}
+
+func outGuessFormat(fileName string) trdsql.Format {
+	for {
+		dotExt := filepath.Ext(fileName)
+		if dotExt == "" {
+			return trdsql.CSV
+		}
+		ext := strings.ToUpper(strings.TrimLeft(dotExt, "."))
+		format := trdsql.OutputFormat(ext)
+		if format != trdsql.GUESS {
+			return format
+		}
+		fileName = fileName[0 : len(fileName)-len(dotExt)]
+	}
+}
+
+func outGuessCompression(fileName string) string {
+	dotExt := filepath.Ext(fileName)
+	ext := strings.ToLower(strings.TrimLeft(dotExt, "."))
+	switch ext {
+	case "gz":
+		return "gzip"
+	case "bz2":
+		return "bzip2"
+	case "zst":
+		return "zstd"
+	case "lz4":
+		return "lz4"
+	case "xz":
+		return "xz"
+	default:
+		return ""
+	}
+}
+
+func compressionWriter(w io.Writer, compression string) (io.Writer, error) {
+	switch strings.ToLower(compression) {
+	case "gz", "gzip":
+		return gzip.NewWriter(w), nil
+	case "bz2", "bzip2":
+		return bzip2.NewWriter(w, &bzip2.WriterConfig{})
+	case "zst", "zstd":
+		return zstd.NewWriter(w)
+	case "lz4":
+		return lz4.NewWriter(w), nil
+	case "xz":
+		return xz.NewWriter(w)
+	default:
+		return w, nil
 	}
 }

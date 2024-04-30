@@ -31,7 +31,7 @@ func Test_configOpen(t *testing.T) {
 	for _, tt := range tests {
 		trdsql.AppName = tt.appName
 		t.Run(tt.name, func(t *testing.T) {
-			if got := configOpen(tt.args); !((got == nil) == tt.want) {
+			if got := configOpenOld(tt.args); !((got == nil) == tt.want) {
 				t.Errorf("configOpen() = %v, want %v", got, tt.want)
 			}
 		})
@@ -75,7 +75,7 @@ func Test_loadConfig(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := loadConfig(tt.args)
+			got, err := loadConfigOld(tt.args)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("loadConfig() error = %v, wantErr %v", err, tt.wantErr)
 				return

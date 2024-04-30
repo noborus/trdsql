@@ -16,17 +16,7 @@ import (
 // ErrNoFile is returned when there is no file.
 var ErrNoFile = errors.New("no file")
 
-type database struct {
-	Driver string `json:"driver"`
-	Dsn    string `json:"dsn"`
-}
-
-type config struct {
-	Db       string              `json:"db"`
-	Database map[string]database `json:"database"`
-}
-
-func configOpen(config string) io.Reader {
+func configOpenOld(config string) io.Reader {
 	var fileName string
 	switch {
 	case config != "":
@@ -49,8 +39,8 @@ func configOpen(config string) io.Reader {
 	return cfg
 }
 
-func loadConfig(conf io.Reader) (*config, error) {
-	var cfg config
+func loadConfigOld(conf io.Reader) (*DBConfig, error) {
+	var cfg DBConfig
 	if conf == nil {
 		return &cfg, ErrNoFile
 	}

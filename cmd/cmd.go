@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"compress/gzip"
 	"context"
 	"database/sql"
 	"flag"
@@ -9,20 +8,11 @@ import (
 	"io"
 	"log"
 	"os"
-	"path/filepath"
-	"regexp"
 	"strings"
 
-	"github.com/dsnet/compress/bzip2"
 	"github.com/jwalton/gchalk"
-	"github.com/klauspost/compress/zstd"
 	"github.com/noborus/trdsql"
-	"github.com/pierrec/lz4"
-	"github.com/ulikunitz/xz"
 )
-
-// TableQuery is a query to use instead of TABLE.
-const TableQuery = "SELECT * FROM"
 
 // Cli wraps stdout and error output specification.
 type Cli struct {
@@ -32,9 +22,6 @@ type Cli struct {
 	// ErrStream is the error output destination.
 	ErrStream io.Writer
 }
-
-// Debug represents a flag for detailed output.
-var Debug bool
 
 // Run executes the main routine.
 // The return value is the exit code.
@@ -148,8 +135,8 @@ func (cli Cli) runOld(args []string) int {
 	// MultipleQueries is enabled by default.
 	trdsql.EnableMultipleQueries()
 
-	cfgFile := configOpen(config)
-	cfg, err := loadConfig(cfgFile)
+	cfgFile := configOpenOld(config)
+	cfg, err := loadConfigOld(cfgFile)
 	if err != nil && config != "" {
 		log.Printf("ERROR: [%s]%s", config, err)
 		return 1
@@ -175,7 +162,7 @@ func (cli Cli) runOld(args []string) int {
 			inPreRead = 2
 		}
 		readOpts := trdsql.NewReadOpts(
-			trdsql.InFormat(inputFormat(inFlag)),
+			trdsql.InFormat(inputFormatOld(inFlag)),
 			trdsql.InDelimiter(inDelimiter),
 			trdsql.InHeader(inHeader),
 			trdsql.InSkip(inSkip),
@@ -215,7 +202,7 @@ func (cli Cli) runOld(args []string) int {
 	}
 
 	importer := trdsql.NewImporter(
-		trdsql.InFormat(inputFormat(inFlag)),
+		trdsql.InFormat(inputFormatOld(inFlag)),
 		trdsql.InDelimiter(inDelimiter),
 		trdsql.InHeader(inHeader),
 		trdsql.InSkip(inSkip),
@@ -235,7 +222,7 @@ func (cli Cli) runOld(args []string) int {
 		}
 	}
 
-	outFormat := outputFormat(outFlag)
+	outFormat := outputFormatOld(outFlag)
 	if outFormat == trdsql.GUESS {
 		if outWithoutGuess {
 			outFormat = trdsql.CSV
@@ -368,106 +355,6 @@ func usageFlag(f *flag.Flag) string {
 	return s
 }
 
-func printDBList(w io.Writer, cfg *config) {
-	for od, odb := range cfg.Database {
-		fmt.Fprintf(w, "%s:%s\n", od, odb.Driver)
-	}
-}
-
-func quoteOpts(opts *trdsql.AnalyzeOpts, driver string) *trdsql.AnalyzeOpts {
-	if driver == "postgres" {
-		opts.Quote = `\"`
-	}
-	return opts
-}
-
-func optsCommand(opts *trdsql.AnalyzeOpts, args []string) *trdsql.AnalyzeOpts {
-	command := args[0]
-	omitFlag := false
-	for _, arg := range args[1:] {
-		if omitFlag {
-			omitFlag = false
-			continue
-		}
-		if arg == "-a" || arg == "-A" || arg == "--analyze" || arg == "--analyze-sql" {
-			omitFlag = true
-			continue
-		}
-		if arg == "-ijq" {
-			omitFlag = true
-			continue
-		}
-		if len(arg) <= 1 || arg[0] != '-' {
-			arg = quotedArg(arg)
-		}
-		command += " " + arg
-	}
-	opts.Command = command
-	return opts
-}
-
-func trimQuery(query string) string {
-	return strings.TrimRight(strings.TrimSpace(query), ";")
-}
-
-func getQuery(args []string, tableName string, queryFile string) (string, error) {
-	if tableName != "" {
-		var query strings.Builder
-		query.WriteString(TableQuery)
-		query.WriteString(" ")
-		query.WriteString(tableName)
-		return trimQuery(query.String()), nil
-	}
-
-	if queryFile == "" {
-		return trimQuery(strings.Join(args, " ")), nil
-	}
-
-	sqlByte, err := os.ReadFile(queryFile)
-	if err != nil {
-		return "", err
-	}
-	return trimQuery(string(sqlByte)), nil
-}
-
-func getDB(cfg *config, cDB string, cDriver string, cDSN string) (string, string) {
-	if cDB == "" {
-		cDB = cfg.Db
-	}
-	if Debug {
-		for od, odb := range cfg.Database {
-			if cDB == od {
-				log.Printf(">[driver: %s:%s:%s]", od, odb.Driver, odb.Dsn)
-			} else {
-				log.Printf(" [driver: %s:%s:%s]", od, odb.Driver, odb.Dsn)
-			}
-		}
-	}
-	if cDriver != "" {
-		return cDriver, cDSN
-	}
-	if cDSN != "" {
-		return "", cDSN
-	}
-	if cDB != "" {
-		if cfg.Database[cDB].Driver == "" {
-			log.Printf("ERROR: db[%s] does not found", cDB)
-		} else {
-			return cfg.Database[cDB].Driver, cfg.Database[cDB].Dsn
-		}
-	}
-	return "", ""
-}
-
-var argQuote = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
-
-func quotedArg(arg string) string {
-	if argQuote.MatchString(arg) {
-		return arg
-	}
-	return `"` + arg + `"`
-}
-
 // inputFlag represents the format of the input.
 type inputFlag struct {
 	CSV   bool
@@ -478,8 +365,8 @@ type inputFlag struct {
 	WIDTH bool
 }
 
-// inputFormat returns format from flag.
-func inputFormat(i inputFlag) trdsql.Format {
+// inputFormatOld returns format from flag.
+func inputFormatOld(i inputFlag) trdsql.Format {
 	switch {
 	case i.CSV:
 		return trdsql.CSV
@@ -521,7 +408,7 @@ type outputFlag struct {
 }
 
 // outFormat returns format from flag.
-func outputFormat(o outputFlag) trdsql.Format {
+func outputFormatOld(o outputFlag) trdsql.Format {
 	switch {
 	case o.LTSV:
 		return trdsql.LTSV
@@ -554,55 +441,4 @@ func isOutFormat(name string) bool {
 		return true
 	}
 	return false
-}
-
-func outGuessFormat(fileName string) trdsql.Format {
-	for {
-		dotExt := filepath.Ext(fileName)
-		if dotExt == "" {
-			return trdsql.CSV
-		}
-		ext := strings.ToUpper(strings.TrimLeft(dotExt, "."))
-		format := trdsql.OutputFormat(ext)
-		if format != trdsql.GUESS {
-			return format
-		}
-		fileName = fileName[0 : len(fileName)-len(dotExt)]
-	}
-}
-
-func outGuessCompression(fileName string) string {
-	dotExt := filepath.Ext(fileName)
-	ext := strings.ToLower(strings.TrimLeft(dotExt, "."))
-	switch ext {
-	case "gz":
-		return "gzip"
-	case "bz2":
-		return "bzip2"
-	case "zst":
-		return "zstd"
-	case "lz4":
-		return "lz4"
-	case "xz":
-		return "xz"
-	default:
-		return ""
-	}
-}
-
-func compressionWriter(w io.Writer, compression string) (io.Writer, error) {
-	switch strings.ToLower(compression) {
-	case "gz", "gzip":
-		return gzip.NewWriter(w), nil
-	case "bz2", "bzip2":
-		return bzip2.NewWriter(w, &bzip2.WriterConfig{})
-	case "zst", "zstd":
-		return zstd.NewWriter(w)
-	case "lz4":
-		return lz4.NewWriter(w), nil
-	case "xz":
-		return xz.NewWriter(w)
-	default:
-		return w, nil
-	}
 }
