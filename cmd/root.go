@@ -27,17 +27,18 @@ var (
 	version    bool
 	cfgFile    string
 	completion string
-	dbList     bool
-	cDB        string
-	cDriver    string
-	cDSN       string
-	guess      bool
-	queryFile  string
-	analyze    string
-	onlySQL    string
-	tableName  string
 
-	inFlag      string
+	dbList    bool
+	cDB       string
+	cDriver   string
+	cDSN      string
+	guess     bool
+	queryFile string
+	analyze   string
+	onlySQL   string
+	tableName string
+
+	inFormat    string
 	inDelimiter string
 	inHeader    bool
 	inSkip      int
@@ -46,7 +47,7 @@ var (
 	inLimitRead int
 	inNull      nilString
 
-	outFlag         string
+	outFormat       string
 	outFile         string
 	outWithoutGuess bool
 	outDelimiter    string
@@ -59,17 +60,19 @@ var (
 	outNull         nilString
 )
 
-type database struct {
+// connection is a driver and dsn connection configuration.
+type connection struct {
 	Driver string `json:"driver"`
 	Dsn    string `json:"dsn"`
 }
 
-type DBConfig struct {
-	Db       string              `json:"db"`
-	Database map[string]database `json:"database"`
+// dbConfig is a configuration for the database.
+type dbConfig struct {
+	Db       string                `json:"db"`
+	Database map[string]connection `json:"database"`
 }
 
-var dbCfg *DBConfig
+var dbCfg *dbConfig
 
 // TableQuery is a query to use instead of TABLE.
 const TableQuery = "SELECT * FROM"
@@ -133,10 +136,10 @@ func Completion(writer io.Writer, cmd *cobra.Command, shell string) {
 	}
 }
 
-func run(writer io.Writer, dbConfig *DBConfig, args []string) error {
-	driver, dsn := getDB(dbConfig, cDB, cDriver, cDSN)
+func run(writer io.Writer, cfg *dbConfig, args []string) error {
+	driver, dsn := getDB(cfg, cDB, cDriver, cDSN)
 	importer := trdsql.NewImporter(
-		trdsql.InFormat(strToFormat(inFlag)),
+		trdsql.InFormat(strToFormat(inFormat)),
 		trdsql.InHeader(inHeader),
 		trdsql.InSkip(inSkip),
 		trdsql.InJQ(inJQuery),
@@ -152,7 +155,7 @@ func run(writer io.Writer, dbConfig *DBConfig, args []string) error {
 		writer = w
 	}
 
-	outFormat := strToFormat(outFlag)
+	outFormat := strToFormat(outFormat)
 	if outFormat == trdsql.GUESS {
 		if outWithoutGuess {
 			outFormat = trdsql.CSV
@@ -264,11 +267,11 @@ func (v *nilString) Type() string {
 	return "string"
 }
 
-func analyzeSQL(writer io.Writer, dbConfig *DBConfig, table string, onlySQL string) error {
+func analyzeSQL(writer io.Writer, cfg *dbConfig, table string, onlySQL string) error {
 	opts := trdsql.NewAnalyzeOpts()
 	opts.OutStream = writer
 
-	driver, _ := getDB(dbConfig, cDB, cDriver, cDSN)
+	driver, _ := getDB(cfg, cDB, cDriver, cDSN)
 
 	opts = quoteOpts(opts, driver)
 	if onlySQL != "" {
@@ -281,7 +284,7 @@ func analyzeSQL(writer io.Writer, dbConfig *DBConfig, table string, onlySQL stri
 		inPreRead = 2
 	}
 	readOpts := trdsql.NewReadOpts(
-		trdsql.InFormat(strToFormat(inFlag)),
+		trdsql.InFormat(strToFormat(inFormat)),
 		trdsql.InDelimiter(inDelimiter),
 		trdsql.InHeader(inHeader),
 		trdsql.InSkip(inSkip),
@@ -327,7 +330,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&inJQuery, "jq", "", "jq expression string for input(JSON/JSONL only).")
 	rootCmd.PersistentFlags().Var(&inNull, "null", "value(string) to convert to null on input.")
 
-	rootCmd.PersistentFlags().StringVarP(&inFlag, "in", "i", "CSV", "format for input. [CSV|LTSV|JSON|YAML|TBLN|WIDTH]")
+	rootCmd.PersistentFlags().StringVarP(&inFormat, "in", "i", "GUESS", "format for input. [CSV|LTSV|JSON|YAML|TBLN|WIDTH]")
 	rootCmd.PersistentFlags().StringVar(&outDelimiter, "out-delimiter", ",", "field delimiter for output.")
 	rootCmd.PersistentFlags().StringVar(&outFile, "out-file", "", "output file name.")
 	rootCmd.PersistentFlags().BoolVar(&outWithoutGuess, "out-without-guess", false, "output without guessing (when using -out).")
@@ -339,7 +342,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&outCompression, "out-compression", "", "output compression format. [gz|bz2|zstd|lz4|xz]")
 	rootCmd.PersistentFlags().Var(&outNull, "out-null", "value(string) to convert from null on output.")
 
-	rootCmd.PersistentFlags().StringVarP(&outFlag, "out", "o", "", "format for output. [CSV|LTSV|JSON|JSONL|RAW|MD|AT|YAML|TBLN]")
+	rootCmd.PersistentFlags().StringVarP(&outFormat, "out", "o", "GUESS", "format for output. [CSV|LTSV|JSON|JSONL|RAW|MD|AT|YAML|TBLN]")
 
 	rootCmd.PersistentFlags().StringVarP(&completion, "completion", "", "", "generate completion script [bash|zsh|fish|powershell]")
 
@@ -378,7 +381,7 @@ func initConfig() {
 	}
 }
 
-func printDBList(w io.Writer, cfg *DBConfig) {
+func printDBList(w io.Writer, cfg *dbConfig) {
 	for od, odb := range cfg.Database {
 		fmt.Fprintf(w, "%s:%s\n", od, odb.Driver)
 	}
@@ -436,7 +439,7 @@ func getQuery(args []string, tableName string, queryFile string) (string, error)
 	return trimQuery(string(sqlByte)), nil
 }
 
-func getDB(cfg *DBConfig, cDB string, cDriver string, cDSN string) (string, string) {
+func getDB(cfg *dbConfig, cDB string, cDriver string, cDSN string) (string, string) {
 	if cDB == "" {
 		cDB = cfg.Db
 	}
