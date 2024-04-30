@@ -14,9 +14,8 @@ jobs:
     strategy:
       matrix:
         go-version:
-        - "1.20"
-        - "1.21"
-        - "1.22"
+        - oldstable
+        - stable
         platform:
         - ubuntu-latest
         - macos-latest
