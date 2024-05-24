@@ -41,10 +41,10 @@ var readerFuncs = map[Format]ReaderFunc{
 		return NewTBLNReader(reader, opts)
 	},
 	TSV: func(reader io.Reader, opts *ReadOpts) (Reader, error) {
-		return NewCSVReader(reader, opts)
+		return NewTSVReader(reader, opts)
 	},
 	PSV: func(reader io.Reader, opts *ReadOpts) (Reader, error) {
-		return NewCSVReader(reader, opts)
+		return NewPSVReader(reader, opts)
 	},
 	WIDTH: func(reader io.Reader, opts *ReadOpts) (Reader, error) {
 		return NewGWReader(reader, opts)
