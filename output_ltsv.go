@@ -29,7 +29,7 @@ func (w *LTSVWriter) PreWrite(columns []string, types []string) error {
 	return nil
 }
 
-// WriteRow is row write.
+// WriteRow is row write to LTSV.
 func (w *LTSVWriter) WriteRow(values []any, labels []string) error {
 	for n, col := range values {
 		if n > 0 {
@@ -44,11 +44,9 @@ func (w *LTSVWriter) WriteRow(values []any, labels []string) error {
 			return err
 		}
 
-		str := ""
+		str := ValString(col)
 		if col == nil && w.needNULL {
 			str = w.outNULL
-		} else {
-			str = ValString(col)
 		}
 		if _, err := w.writer.WriteString(str); err != nil {
 			return err

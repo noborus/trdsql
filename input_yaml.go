@@ -241,11 +241,7 @@ func (r *YAMLReader) objectRow(obj map[string]any) (map[string]any, []string, er
 	row := make(map[string]any)
 	for k, v := range obj {
 		names = append(names, k)
-		if v == nil {
-			row[k] = nil
-		} else {
-			row[k] = r.toString(v)
-		}
+		row[k] = r.toString(v)
 	}
 	return row, names, nil
 }
@@ -257,11 +253,7 @@ func (r *YAMLReader) objectMapSlice(obj yaml.MapSlice) (map[string]any, []string
 	for _, item := range obj {
 		key := item.Key.(string)
 		names = append(names, key)
-		if item.Value == nil {
-			row[key] = nil
-		} else {
-			row[key] = r.toString(item.Value)
-		}
+		row[key] = r.toString(item.Value)
 	}
 	return row, names, nil
 }
