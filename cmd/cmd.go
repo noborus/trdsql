@@ -17,7 +17,7 @@ import (
 	"github.com/jwalton/gchalk"
 	"github.com/klauspost/compress/zstd"
 	"github.com/noborus/trdsql"
-	"github.com/pierrec/lz4"
+	"github.com/pierrec/lz4/v4"
 	"github.com/ulikunitz/xz"
 )
 
