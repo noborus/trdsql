@@ -15,7 +15,7 @@ import (
 	"github.com/dsnet/compress/bzip2"
 	"github.com/klauspost/compress/zstd"
 	"github.com/noborus/trdsql"
-	"github.com/pierrec/lz4"
+	"github.com/pierrec/lz4/v4"
 	"github.com/spf13/cobra"
 	"github.com/ulikunitz/xz"
 
