@@ -84,7 +84,10 @@ var Debug bool
 var rootCmd = &cobra.Command{
 	Use:   "trdsql",
 	Short: fmt.Sprintf("%s - Execute SQL queries on CSV, LTSV, JSON, YAML and TBLN.", trdsql.AppName),
-	Long:  fmt.Sprintf("%s - Execute SQL queries on CSV, LTSV, JSON, YAML and TBLN.", trdsql.AppName),
+	Long: fmt.Sprintf(`%s - Execute SQL queries on CSV, LTSV, JSON, YAML and TBLN.
+Can output to various formats.
+Supports multiple databases(%s).
+`, trdsql.AppName, strings.Join(sql.Drivers(), "|")),
 
 	Run: func(cmd *cobra.Command, args []string) {
 		var writer io.Writer = os.Stdout
@@ -201,6 +204,9 @@ func run(writer io.Writer, cfg *dbConfig, args []string) error {
 	if err != nil {
 		return err
 	}
+	if query == "" {
+		return fmt.Errorf("no query")
+	}
 	if err := trd.ExecContext(ctx, query); err != nil {
 		return err
 	}
@@ -211,6 +217,7 @@ func run(writer io.Writer, cfg *dbConfig, args []string) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
