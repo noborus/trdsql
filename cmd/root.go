@@ -60,6 +60,31 @@ var (
 	outNull         nilString
 )
 
+// The nilString structure represents a string
+// that distinguishes between empty strings and nil.
+type nilString struct {
+	str   string
+	valid bool
+}
+
+// String returns a string.
+// nilString fills the flag#value interface.
+func (v *nilString) String() string {
+	return v.str
+}
+
+// Set sets the string with the valid flag set to true.
+// nilString fills the flag#value interface.
+func (v *nilString) Set(s string) error {
+	v.str = s
+	v.valid = true
+	return nil
+}
+
+func (v *nilString) Type() string {
+	return "string"
+}
+
 // connection is a driver and dsn connection configuration.
 type connection struct {
 	Driver string `json:"driver"`
@@ -80,7 +105,7 @@ const TableQuery = "SELECT * FROM"
 // Debug represents a flag for detailed output.
 var Debug bool
 
-// rootCmd represents the base command when called without any subcommands
+// rootCmd represents the base command when called without any subcommands.
 var rootCmd = &cobra.Command{
 	Use:   "trdsql",
 	Short: fmt.Sprintf("%s - Execute SQL queries on CSV, LTSV, JSON, YAML and TBLN.", trdsql.AppName),
@@ -97,6 +122,7 @@ Supports multiple databases(%s).
 		}
 		if completion != "" {
 			Completion(writer, cmd, completion)
+			return
 		}
 
 		if Debug {
@@ -114,8 +140,8 @@ Supports multiple databases(%s).
 		if analyze != "" || onlySQL != "" {
 			if err := analyzeSQL(writer, dbCfg, analyze, onlySQL); err != nil {
 				log.Println(err)
-				return
 			}
+			return
 		}
 
 		if err := run(writer, dbCfg, args); err != nil {
@@ -125,20 +151,25 @@ Supports multiple databases(%s).
 }
 
 func Completion(writer io.Writer, cmd *cobra.Command, shell string) {
+	var err error
 	switch completion {
 	case "bash":
-		cmd.GenBashCompletion(writer)
+		err = cmd.GenBashCompletion(writer)
 	case "zsh":
-		cmd.GenZshCompletion(writer)
+		err = cmd.GenZshCompletion(writer)
 	case "fish":
-		cmd.GenFishCompletion(writer, true)
+		err = cmd.GenFishCompletion(writer, true)
 	case "powershell":
-		cmd.GenPowerShellCompletion(writer)
+		err = cmd.GenPowerShellCompletion(writer)
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown completion: %s\n", completion)
 	}
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
+	}
 }
 
+// run executes the main process.
 func run(writer io.Writer, cfg *dbConfig, args []string) error {
 	driver, dsn := getDB(cfg, cDB, cDriver, cDSN)
 	importer := trdsql.NewImporter(
@@ -189,6 +220,7 @@ func run(writer io.Writer, cfg *dbConfig, args []string) error {
 		trdsql.OutStream(writer),
 	)
 	exporter := trdsql.NewExporter(w)
+
 	trd := trdsql.NewTRDSQL(importer, exporter)
 
 	if driver != "" {
@@ -198,8 +230,6 @@ func run(writer io.Writer, cfg *dbConfig, args []string) error {
 		trd.Dsn = dsn
 	}
 
-	ctx := context.Background()
-
 	query, err := getQuery(args, tableName, queryFile)
 	if err != nil {
 		return err
@@ -207,6 +237,9 @@ func run(writer io.Writer, cfg *dbConfig, args []string) error {
 	if query == "" {
 		return fmt.Errorf("no query")
 	}
+
+	ctx := context.Background()
+
 	if err := trd.ExecContext(ctx, query); err != nil {
 		return err
 	}
@@ -247,31 +280,6 @@ func strToFormat(format string) trdsql.Format {
 	default:
 		return trdsql.GUESS
 	}
-}
-
-// The nilString structure represents a string
-// that distinguishes between empty strings and nil.
-type nilString struct {
-	str   string
-	valid bool
-}
-
-// String returns a string.
-// nilString fills the flag#value interface.
-func (v *nilString) String() string {
-	return v.str
-}
-
-// Set sets the string with the valid flag set to true.
-// nilString fills the flag#value interface.
-func (v *nilString) Set(s string) error {
-	v.str = s
-	v.valid = true
-	return nil
-}
-
-func (v *nilString) Type() string {
-	return "string"
 }
 
 func analyzeSQL(writer io.Writer, cfg *dbConfig, table string, onlySQL string) error {
@@ -380,7 +388,9 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		// fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+		if Debug {
+			fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+		}
 	}
 	if err := viper.Unmarshal(&dbCfg); err != nil {
 		fmt.Println(err)
