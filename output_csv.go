@@ -54,11 +54,16 @@ func (w *CSVWriter) PreWrite(columns []string, types []string) error {
 	if !w.outHeader {
 		return nil
 	}
-	for n, column := range columns {
-		if n > 0 {
-			if _, err := w.writer.WriteRune(w.outDelimiter); err != nil {
-				return err
-			}
+	if len(columns) == 0 {
+		return nil
+	}
+	if err := w.writeColumnString(columns[0]); err != nil {
+		return err
+	}
+
+	for _, column := range columns[1:] {
+		if _, err := w.writer.WriteRune(w.outDelimiter); err != nil {
+			return err
 		}
 		if err := w.writeColumnString(column); err != nil {
 			return err
@@ -70,11 +75,17 @@ func (w *CSVWriter) PreWrite(columns []string, types []string) error {
 
 // WriteRow is row write.
 func (w *CSVWriter) WriteRow(values []any, _ []string) error {
-	for n, column := range values {
-		if n > 0 {
-			if _, err := w.writer.WriteRune(w.outDelimiter); err != nil {
-				return err
-			}
+	if len(values) == 0 {
+		_, err := w.writer.WriteString(w.endLine)
+		return err
+	}
+
+	if err := w.writeColumn(values[0]); err != nil {
+		return err
+	}
+	for _, column := range values[1:] {
+		if _, err := w.writer.WriteRune(w.outDelimiter); err != nil {
+			return err
 		}
 		if err := w.writeColumn(column); err != nil {
 			return err

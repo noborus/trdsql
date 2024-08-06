@@ -31,28 +31,39 @@ func (w *LTSVWriter) PreWrite(columns []string, types []string) error {
 
 // WriteRow is row write to LTSV.
 func (w *LTSVWriter) WriteRow(values []any, labels []string) error {
-	for n, col := range values {
-		if n > 0 {
-			if _, err := w.writer.WriteRune(w.delimiter); err != nil {
-				return err
-			}
-		}
-		if _, err := w.writer.WriteString(labels[n]); err != nil {
+	if len(values) == 0 {
+		return nil
+	}
+	if err := w.writeColumn(labels[0], values[0]); err != nil {
+		return err
+	}
+	for n, col := range values[1:] {
+		if _, err := w.writer.WriteRune(w.delimiter); err != nil {
 			return err
 		}
-		if err := w.writer.WriteByte(':'); err != nil {
-			return err
-		}
-
-		str := ValString(col)
-		if col == nil && w.needNULL {
-			str = w.outNULL
-		}
-		if _, err := w.writer.WriteString(str); err != nil {
+		if err := w.writeColumn(labels[n+1], col); err != nil {
 			return err
 		}
 	}
 	return w.writer.WriteByte('\n')
+}
+
+func (w *LTSVWriter) writeColumn(label string, value any) error {
+	if _, err := w.writer.WriteString(label); err != nil {
+		return err
+	}
+	if err := w.writer.WriteByte(':'); err != nil {
+		return err
+	}
+
+	str := ValString(value)
+	if value == nil && w.needNULL {
+		str = w.outNULL
+	}
+	if _, err := w.writer.WriteString(str); err != nil {
+		return err
+	}
+	return nil
 }
 
 // PostWrite is flush.

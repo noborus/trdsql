@@ -40,13 +40,17 @@ func (w *RAWWriter) PreWrite(columns []string, types []string) error {
 	if !w.outHeader {
 		return nil
 	}
-	for n, col := range columns {
-		if n > 0 {
-			if _, err := w.writer.WriteString(w.delimiter); err != nil {
-				return err
-			}
+	if len(columns) == 0 {
+		return nil
+	}
+	if err := w.writeColumn(columns[0]); err != nil {
+		return err
+	}
+	for _, col := range columns[1:] {
+		if _, err := w.writer.WriteString(w.delimiter); err != nil {
+			return err
 		}
-		if _, err := w.writer.WriteString(col); err != nil {
+		if err := w.writeColumn(col); err != nil {
 			return err
 		}
 	}
@@ -56,21 +60,33 @@ func (w *RAWWriter) PreWrite(columns []string, types []string) error {
 
 // WriteRow is row write.
 func (w *RAWWriter) WriteRow(values []any, _ []string) error {
-	for n, col := range values {
-		if n > 0 {
-			if _, err := w.writer.WriteString(w.delimiter); err != nil {
-				return err
-			}
+	if len(values) == 0 {
+		return nil
+	}
+	if err := w.writeColumn(values[0]); err != nil {
+		return err
+	}
+	for _, col := range values[1:] {
+		if _, err := w.writer.WriteString(w.delimiter); err != nil {
+			return err
 		}
-		str := ValString(col)
-		if col == nil && w.needNULL {
-			str = w.outNULL
-		}
-		if _, err := w.writer.WriteString(str); err != nil {
+
+		if err := w.writeColumn(col); err != nil {
 			return err
 		}
 	}
 	return w.writer.WriteByte('\n')
+}
+
+func (w *RAWWriter) writeColumn(value any) error {
+	str := ValString(value)
+	if value == nil && w.needNULL {
+		str = w.outNULL
+	}
+	if _, err := w.writer.WriteString(str); err != nil {
+		return err
+	}
+	return nil
 }
 
 // PostWrite is flush.
