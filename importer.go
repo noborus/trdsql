@@ -46,8 +46,7 @@ var (
 // Importer parses sql query to decide which file to Import.
 // Therefore, the reader does not receive it directly.
 type Importer interface {
-	Import(db *DB, query string) (string, error)
-	ImportContext(ctx context.Context, db *DB, query string) (string, error)
+	Import(ctx context.Context, db *DB, query string) (string, error)
 }
 
 // ReadFormat represents a structure that satisfies the Importer.
@@ -76,19 +75,10 @@ func NewImporter(options ...ReadOpt) *ReadFormat {
 const DefaultDBType = "text"
 
 // Import is parses the SQL statement and imports one or more tables.
-// Import is called from Exec.
+// Import is called from ExecContext.
 // Return the rewritten SQL and error.
 // No error is returned if there is no table to import.
-func (i *ReadFormat) Import(db *DB, query string) (string, error) {
-	ctx := context.Background()
-	return i.ImportContext(ctx, db, query)
-}
-
-// ImportContext is parses the SQL statement and imports one or more tables.
-// ImportContext is called from ExecContext.
-// Return the rewritten SQL and error.
-// No error is returned if there is no table to import.
-func (i *ReadFormat) ImportContext(ctx context.Context, db *DB, query string) (string, error) {
+func (i *ReadFormat) Import(ctx context.Context, db *DB, query string) (string, error) {
 	parsedQuery := SQLFields(query)
 	tables, tableIdx := TableNames(parsedQuery)
 	if len(tables) == 0 {
@@ -98,9 +88,11 @@ func (i *ReadFormat) ImportContext(ctx context.Context, db *DB, query string) (s
 	}
 
 	for fileName := range tables {
-		tableName, err := ImportFileContext(ctx, db, fileName, i.ReadOpts)
+		tableName, err := ImportFile(ctx, db, fileName, i.ReadOpts)
 		if err != nil {
-			return query, err
+			if !errors.Is(err, ErrNoMatchFound) {
+				return query, err
+			}
 		}
 		if len(tableName) > 0 {
 			tables[fileName] = tableName
@@ -223,21 +215,13 @@ func isSQLKeyWords(str string) bool {
 // Return the quoted table name and error.
 // Do not import if file not found (no error).
 // Wildcards can be passed as fileName.
-func ImportFile(db *DB, fileName string, readOpts *ReadOpts) (string, error) {
-	return ImportFileContext(context.Background(), db, fileName, readOpts)
-}
-
-// ImportFileContext is imports a file.
-// Return the quoted table name and error.
-// Do not import if file not found (no error).
-// Wildcards can be passed as fileName.
-func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *ReadOpts) (string, error) {
+func ImportFile(ctx context.Context, db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 	opts, fileName := GuessOpts(readOpts, fileName)
 	db.importCount++
 	file, err := importFileOpen(fileName)
 	if err != nil {
 		debug.Printf("%s\n", err)
-		return "", nil
+		return "", ErrNoMatchFound
 	}
 
 	defer func() {
@@ -274,11 +258,11 @@ func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *R
 	debug.Printf("Column Names: [%v]", strings.Join(columnNames, ","))
 	debug.Printf("Column Types: [%v]", strings.Join(columnTypes, ","))
 
-	if err := db.CreateTableContext(ctx, tableName, columnNames, columnTypes, opts.IsTemporary); err != nil {
+	if err := db.CreateTable(ctx, tableName, columnNames, columnTypes, opts.IsTemporary); err != nil {
 		return tableName, err
 	}
 
-	return tableName, db.ImportContext(ctx, tableName, columnNames, reader)
+	return tableName, db.Import(ctx, tableName, columnNames, reader)
 }
 
 // GuessOpts guesses ReadOpts from the file name and sets it.

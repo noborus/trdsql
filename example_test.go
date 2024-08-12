@@ -2,6 +2,7 @@ package trdsql_test
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -22,7 +23,7 @@ Ken,Thompson,ken
 	defer func() {
 		defer os.Remove(tmpfile.Name())
 	}()
-
+	ctx := context.Background()
 	if _, err := tmpfile.Write(in); err != nil {
 		log.Print(err)
 		return
@@ -33,7 +34,7 @@ Ken,Thompson,ken
 	)
 	// #nosec G201
 	query := fmt.Sprintf("SELECT c1 FROM %s ORDER BY c1", tmpfile.Name())
-	if err := trd.Exec(query); err != nil {
+	if err := trd.Exec(ctx, query); err != nil {
 		log.Print(err)
 		return
 	}
@@ -62,7 +63,7 @@ Ken,Thompson,ken
 		log.Print(err)
 		return
 	}
-
+	ctx := context.Background()
 	// NewImporter
 	importer := trdsql.NewImporter(
 		trdsql.InFormat(trdsql.CSV),
@@ -78,7 +79,7 @@ Ken,Thompson,ken
 	trd := trdsql.NewTRDSQL(importer, exporter)
 	// #nosec G201
 	query := fmt.Sprintf("SELECT * FROM %s ORDER BY username", tmpfile.Name())
-	err = trd.Exec(query)
+	err = trd.Exec(ctx, query)
 	if err != nil {
 		log.Print(err)
 		return
@@ -115,8 +116,9 @@ func ExampleSliceImporter() {
 	tableName := "slice"
 	importer := trdsql.NewSliceImporter(tableName, data)
 	trd := trdsql.NewTRDSQL(importer, trdsql.NewExporter(trdsql.NewWriter()))
+	ctx := context.Background()
 
-	err := trd.Exec("SELECT name,id FROM slice ORDER BY id DESC")
+	err := trd.Exec(ctx, "SELECT name,id FROM slice ORDER BY id DESC")
 	if err != nil {
 		log.Print(err)
 		return
@@ -140,8 +142,9 @@ func ExampleSliceWriter() {
 	importer := trdsql.NewSliceImporter(tableName, data)
 	writer := trdsql.NewSliceWriter()
 	trd := trdsql.NewTRDSQL(importer, trdsql.NewExporter(writer))
+	ctx := context.Background()
 
-	err := trd.Exec("SELECT name,id FROM slice ORDER BY id DESC")
+	err := trd.Exec(ctx, "SELECT name,id FROM slice ORDER BY id DESC")
 	if err != nil {
 		log.Print(err)
 		return
@@ -202,6 +205,7 @@ func ExampleBufferImporter() {
 		}
 	  ]
 `
+	ctx := context.Background()
 	r := bytes.NewBufferString(jsonString)
 	importer, err := trdsql.NewBufferImporter("test", r, trdsql.InFormat(trdsql.JSON))
 	if err != nil {
@@ -213,7 +217,7 @@ func ExampleBufferImporter() {
 		trdsql.OutDelimiter("\t"),
 	)
 	trd := trdsql.NewTRDSQL(importer, trdsql.NewExporter(writer))
-	err = trd.Exec("SELECT name,gender,company FROM test")
+	err = trd.Exec(ctx, "SELECT name,gender,company FROM test")
 	if err != nil {
 		log.Print(err)
 		return

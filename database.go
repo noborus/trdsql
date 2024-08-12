@@ -51,13 +51,7 @@ func (db *DB) Disconnect() error {
 
 // CreateTable is create a (temporary) table in the database.
 // The arguments are the table name, column name, column type, and temporary flag.
-func (db *DB) CreateTable(tableName string, columnNames []string, columnTypes []string, isTemporary bool) error {
-	return db.CreateTableContext(context.Background(), tableName, columnNames, columnTypes, isTemporary)
-}
-
-// CreateTableContext is create a (temporary) table in the database.
-// The arguments are the table name, column name, column type, and temporary flag.
-func (db *DB) CreateTableContext(ctx context.Context, tableName string, columnNames []string, columnTypes []string, isTemporary bool) error {
+func (db *DB) CreateTable(ctx context.Context, tableName string, columnNames []string, columnTypes []string, isTemporary bool) error {
 	if db.Tx == nil {
 		return ErrNoTransaction
 	}
@@ -107,12 +101,7 @@ type importTable struct {
 }
 
 // Import is imports data into a table.
-func (db *DB) Import(tableName string, columnNames []string, reader Reader) error {
-	return db.ImportContext(context.Background(), tableName, columnNames, reader)
-}
-
-// ImportContext is imports data into a table.
-func (db *DB) ImportContext(ctx context.Context, tableName string, columnNames []string, reader Reader) error {
+func (db *DB) Import(ctx context.Context, tableName string, columnNames []string, reader Reader) error {
 	if db.Tx == nil {
 		return ErrNoTransaction
 	}
@@ -355,14 +344,9 @@ func (db *DB) QuotedName(orgName string) string {
 	return buf.String()
 }
 
-// Select is executes SQL select statements.
-func (db *DB) Select(query string) (*sql.Rows, error) {
-	return db.SelectContext(context.Background(), query)
-}
-
-// SelectContext is executes SQL select statements with context.
-// SelectContext is a wrapper for QueryContext.
-func (db *DB) SelectContext(ctx context.Context, query string) (*sql.Rows, error) {
+// Select is executes SQL select statements with context.
+// Select is a wrapper for QueryContext.
+func (db *DB) Select(ctx context.Context, query string) (*sql.Rows, error) {
 	rows, err := db.Tx.QueryContext(ctx, query)
 	if err != nil {
 		return rows, fmt.Errorf("%w [%s]", err, query)
@@ -370,7 +354,7 @@ func (db *DB) SelectContext(ctx context.Context, query string) (*sql.Rows, error
 	return rows, nil
 }
 
-func (db *DB) OtherExecContext(ctx context.Context, query string) error {
+func (db *DB) OtherExec(ctx context.Context, query string) error {
 	_, err := db.Tx.ExecContext(ctx, query)
 	if err != nil {
 		return fmt.Errorf("%w [%s]", err, query)

@@ -2,6 +2,7 @@ package trdsql
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"reflect"
 	"testing"
@@ -97,7 +98,8 @@ func TestBufferImporter_Import(t *testing.T) {
 				tableName: tt.fields.tableName,
 				Reader:    reader,
 			}
-			got, err := i.Import(db, tt.query)
+			ctx := context.Background()
+			got, err := i.Import(ctx, db, tt.query)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("BufferImporter.Import() error = %v, wantErr %v", err, tt.wantErr)
 				return

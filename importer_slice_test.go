@@ -1,6 +1,7 @@
 package trdsql
 
 import (
+	"context"
 	"reflect"
 	"testing"
 )
@@ -99,7 +100,8 @@ func TestSliceImporter_Import(t *testing.T) {
 				t.Fatal(err)
 			}
 			i := NewSliceImporter(tt.fields.tableName, tt.fields.data)
-			got, err := i.Import(db, tt.query)
+			ctx := context.Background()
+			got, err := i.Import(ctx, db, tt.query)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SliceImporter.Import() error = %v, wantErr %v", err, tt.wantErr)
 				return

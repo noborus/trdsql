@@ -1,6 +1,7 @@
 package trdsql
 
 import (
+	"context"
 	"testing"
 )
 
@@ -55,8 +56,9 @@ func TestWriteFormat_Export(t *testing.T) {
 			if err != nil {
 				t.Fatal("Connect error")
 			}
+			ctx := context.Background()
 			e := NewExporter(nil)
-			if err := e.Export(db, tt.args.query); (err != nil) != tt.wantErr {
+			if err := e.Export(ctx, db, tt.args.query); (err != nil) != tt.wantErr {
 				t.Errorf("WriteFormat.Export() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

@@ -2,6 +2,7 @@ package trdsql
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"os"
 	"path/filepath"
@@ -57,10 +58,11 @@ func TestWildCard_Exec(t *testing.T) {
 		for _, d := range available {
 			t.Run(tt.name, func(t *testing.T) {
 				outStream := new(bytes.Buffer)
+				ctx := context.Background()
 				trd := setDefaultTRDSQL(outStream)
 				trd.Driver = d[0]
 				trd.Dsn = d[1]
-				if err := trd.Exec(tt.sqlQuery); (err != nil) != tt.wantErr {
+				if err := trd.Exec(ctx, tt.sqlQuery); (err != nil) != tt.wantErr {
 					t.Errorf("TRDSQL.Exec() error = %v, wantErr %v", err, tt.wantErr)
 				}
 				got := outStream.String()
@@ -160,9 +162,10 @@ func TestTRDSQL_Exec(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 			outStream := new(bytes.Buffer)
 			trd := setDefaultTRDSQL(outStream)
-			if err := trd.Exec(tt.sqlQuery); (err != nil) != tt.wantErr {
+			if err := trd.Exec(ctx, tt.sqlQuery); (err != nil) != tt.wantErr {
 				t.Errorf("TRDSQL.Exec() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			got := outStream.String()
@@ -201,9 +204,10 @@ func TestTRDSQL_Exec2(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 			outStream := new(bytes.Buffer)
 			trd := setDefaultTRDSQL(outStream)
-			if err := trd.Exec(tt.sqlQuery); (err != nil) != tt.wantErr {
+			if err := trd.Exec(ctx, tt.sqlQuery); (err != nil) != tt.wantErr {
 				t.Errorf("TRDSQL.Exec() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			got := outStream.String()
@@ -242,6 +246,7 @@ func TestTRDSQL_ErrExec(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 			outStream := new(bytes.Buffer)
 			errStream := new(bytes.Buffer)
 			importer := NewImporter(InFormat(GUESS))
@@ -253,7 +258,7 @@ func TestTRDSQL_ErrExec(t *testing.T) {
 			trd := NewTRDSQL(importer, exporter)
 			trd.Driver = DefaultDriver
 			trd.Dsn = ""
-			if err := trd.Exec(tt.sqlQuery); (err != nil) != tt.wantErr {
+			if err := trd.Exec(ctx, tt.sqlQuery); (err != nil) != tt.wantErr {
 				t.Errorf("TRDSQL.Exec() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			got := outStream.String()
@@ -284,6 +289,7 @@ func TestTRDSQL_ErrDBExec(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 			outStream := new(bytes.Buffer)
 			errStream := new(bytes.Buffer)
 			importer := NewImporter(InFormat(GUESS))
@@ -295,7 +301,7 @@ func TestTRDSQL_ErrDBExec(t *testing.T) {
 			trd := NewTRDSQL(importer, exporter)
 			trd.Driver = tt.driver
 			trd.Dsn = tt.dsn
-			if err := trd.Exec("SELECT * FROM " + filepath.Join(dataDir, "test.csv")); (err != nil) != tt.wantErr {
+			if err := trd.Exec(ctx, "SELECT * FROM "+filepath.Join(dataDir, "test.csv")); (err != nil) != tt.wantErr {
 				t.Errorf("TRDSQL.Exec() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -318,12 +324,13 @@ func TestTRDSQL_ErrWrite(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 			importer := NewImporter(InFormat(GUESS))
 			exporter := NewExporter(errorWriter{})
 			trd := NewTRDSQL(importer, exporter)
 			trd.Driver = DefaultDriver
 			trd.Dsn = ""
-			if err := trd.Exec(tt.sqlQuery); (err != nil) != tt.wantErr {
+			if err := trd.Exec(ctx, tt.sqlQuery); (err != nil) != tt.wantErr {
 				t.Errorf("TRDSQL.Exec() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -376,11 +383,12 @@ func TestTRDSQL_ReadOpts(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 			outStream := new(bytes.Buffer)
 			exporter := NewExporter(NewWriter(OutStream(outStream)))
 			importer := NewImporter(tt.opts)
 			trd := NewTRDSQL(importer, exporter)
-			if err := trd.Exec(tt.sqlQuery); (err != nil) != tt.wantErr {
+			if err := trd.Exec(ctx, tt.sqlQuery); (err != nil) != tt.wantErr {
 				t.Errorf("TRDSQL.Exec() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			got := outStream.String()
@@ -444,11 +452,12 @@ func TestTRDSQL_WriteOpts(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 			outStream := new(bytes.Buffer)
 			exporter := NewExporter(NewWriter(OutStream(outStream), tt.opts))
 			importer := NewImporter()
 			trd := NewTRDSQL(importer, exporter)
-			if err := trd.Exec(tt.sqlQuery); (err != nil) != tt.wantErr {
+			if err := trd.Exec(ctx, tt.sqlQuery); (err != nil) != tt.wantErr {
 				t.Errorf("TRDSQL.Exec() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			got := outStream.String()
@@ -470,6 +479,7 @@ func setDefaultTRDSQL(outStream io.Writer) *TRDSQL {
 }
 
 func TestCSVRun(t *testing.T) {
+	ctx := context.Background()
 	testCSV := [][]string{
 		{"test.csv", "1,Orange\n2,Melon\n3,Apple\n"},
 		{"testcsv", "aaaaaaaa\nbbbbbbbb\ncccccccc\n"},
@@ -482,7 +492,7 @@ func TestCSVRun(t *testing.T) {
 	trd := setDefaultTRDSQL(outStream)
 	for _, c := range testCSV {
 		sqlQuery := "SELECT * FROM " + filepath.Join(dataDir, c[0])
-		err := trd.Exec(sqlQuery)
+		err := trd.Exec(ctx, sqlQuery)
 		if err != nil {
 			t.Errorf("trdsql error. %s", err)
 		}
@@ -494,6 +504,7 @@ func TestCSVRun(t *testing.T) {
 }
 
 func TestLTSVRun(t *testing.T) {
+	ctx := context.Background()
 	testLTSV := [][]string{
 		{"test.ltsv", "1,Orange,50\n2,Melon,500\n3,Apple,100\n"},
 		{"apache.ltsv", "[28/Feb/2013:12:00:00 +0900],192.168.0.1,GET /list HTTP/1.1,200,5316,-,Mozilla/5.0,9789,1,-,-,-\n[28/Feb/2013:12:00:00 +0900],172.16.0.12,GET /list HTTP/1.1,200,5316,-,Mozilla/5.0,9789,1,-,-,-\n"},
@@ -502,7 +513,7 @@ func TestLTSVRun(t *testing.T) {
 	trd := setDefaultTRDSQL(outStream)
 	for _, c := range testLTSV {
 		sqlQuery := "SELECT * FROM " + filepath.Join(dataDir, c[0])
-		err := trd.Exec(sqlQuery)
+		err := trd.Exec(ctx, sqlQuery)
 		if err != nil {
 			t.Errorf("trdsql error. %s", err)
 		}
@@ -514,6 +525,7 @@ func TestLTSVRun(t *testing.T) {
 }
 
 func TestJSONRun(t *testing.T) {
+	ctx := context.Background()
 	testJSON := [][]string{
 		{"test.json", "1,Orange\n2,Melon\n3,Apple\n"},
 		{"test2.json", "1,Orange\n2,Melon\n3,Apple\n"},
@@ -523,7 +535,7 @@ func TestJSONRun(t *testing.T) {
 	for _, c := range testJSON {
 		// The order of JSON import is undefined
 		sqlQuery := "SELECT c1,c2 FROM " + filepath.Join(dataDir, c[0])
-		err := trd.Exec(sqlQuery)
+		err := trd.Exec(ctx, sqlQuery)
 		if err != nil {
 			t.Errorf("trdsql error. %s", err)
 		}
@@ -535,6 +547,7 @@ func TestJSONRun(t *testing.T) {
 }
 
 func TestTBLNRun(t *testing.T) {
+	ctx := context.Background()
 	testTBLN := [][]string{
 		{"test.tbln", "1,Bob\n2,Alice\n"},
 		{"test2.tbln", "1,Orange\n2,Melon\n3,Apple\n"},
@@ -543,7 +556,7 @@ func TestTBLNRun(t *testing.T) {
 	trd := setDefaultTRDSQL(outStream)
 	for _, c := range testTBLN {
 		sqlQuery := "SELECT * FROM " + filepath.Join(dataDir, c[0])
-		err := trd.Exec(sqlQuery)
+		err := trd.Exec(ctx, sqlQuery)
 		if err != nil {
 			t.Errorf("trdsql error. %s", err)
 		}
@@ -587,10 +600,11 @@ func TestOutFormatRun(t *testing.T) {
 	}
 	sqlQuery := "SELECT * FROM " + filepath.Join(dataDir, "test.csv")
 	for _, c := range testFormat {
+		ctx := context.Background()
 		outFormat := c.format
 		outStream := new(bytes.Buffer)
 		trd := setOutFormatTRDSQL(outFormat, outStream)
-		err := trd.Exec(sqlQuery)
+		err := trd.Exec(ctx, sqlQuery)
 		if err != nil {
 			t.Errorf("trdsql error. %s", err)
 		}
@@ -679,6 +693,7 @@ func TestTRDSQL_FileExec(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.fileName, func(t *testing.T) {
+			ctx := context.Background()
 			available := availableDB()
 			sqlQuery := "SELECT count(*) FROM " + filepath.Join(dataDir, tt.fileName)
 			for _, d := range available {
@@ -686,7 +701,7 @@ func TestTRDSQL_FileExec(t *testing.T) {
 				trd := setDefaultTRDSQL(outStream)
 				trd.Driver = d[0]
 				trd.Dsn = d[1]
-				if err := trd.Exec(sqlQuery); (err != nil) != tt.wantErr {
+				if err := trd.Exec(ctx, sqlQuery); (err != nil) != tt.wantErr {
 					t.Errorf("TRDSQL.Exec() error = %v, wantErr %v", err, tt.wantErr)
 				}
 				got := outStream.String()
@@ -775,6 +790,7 @@ func TestFormat_String(t *testing.T) {
 
 func benchmarkFormat(b *testing.B, format Format) {
 	b.Helper()
+	ctx := context.Background()
 	sqlQuery := "SELECT * FROM " + filepath.Join(dataDir, "KEN_ALL.CSV")
 	outStream := new(bytes.Buffer)
 	importer := NewImporter(InFormat(GUESS))
@@ -787,7 +803,7 @@ func benchmarkFormat(b *testing.B, format Format) {
 	trd := NewTRDSQL(importer, exporter)
 	trd.Driver = DefaultDriver
 	trd.Dsn = ""
-	if err := trd.Exec(sqlQuery); err != nil {
+	if err := trd.Exec(ctx, sqlQuery); err != nil {
 		b.Fatal(err)
 	}
 }

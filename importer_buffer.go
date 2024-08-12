@@ -25,14 +25,8 @@ func NewBufferImporter(tableName string, r io.Reader, options ...ReadOpt) (*Buff
 	}, nil
 }
 
-// Import is a method to import from Reader in BufferImporter.
-func (i *BufferImporter) Import(db *DB, query string) (string, error) {
-	ctx := context.Background()
-	return i.ImportContext(ctx, db, query)
-}
-
 // ImportContext is a method to import from Reader in BufferImporter.
-func (i *BufferImporter) ImportContext(ctx context.Context, db *DB, query string) (string, error) {
+func (i *BufferImporter) Import(ctx context.Context, db *DB, query string) (string, error) {
 	names, err := i.Names()
 	if err != nil {
 		return query, err
@@ -41,8 +35,8 @@ func (i *BufferImporter) ImportContext(ctx context.Context, db *DB, query string
 	if err != nil {
 		return query, err
 	}
-	if err := db.CreateTable(i.tableName, names, types, true); err != nil {
+	if err := db.CreateTable(ctx, i.tableName, names, types, true); err != nil {
 		return query, err
 	}
-	return query, db.ImportContext(ctx, i.tableName, names, i.Reader)
+	return query, db.Import(ctx, i.tableName, names, i.Reader)
 }

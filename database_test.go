@@ -1,6 +1,7 @@
 package trdsql
 
 import (
+	"context"
 	"testing"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -154,6 +155,7 @@ func TestDB_CreateTable(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 			db, err := Connect(tt.fields.driver, tt.fields.dsn)
 			if err != nil {
 				t.Fatal(err)
@@ -162,7 +164,7 @@ func TestDB_CreateTable(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if err := db.CreateTable(tt.args.tableName, tt.args.names, tt.args.types, tt.args.isTemporary); (err != nil) != tt.wantErr {
+			if err := db.CreateTable(ctx, tt.args.tableName, tt.args.names, tt.args.types, tt.args.isTemporary); (err != nil) != tt.wantErr {
 				t.Errorf("DB.CreateTable() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if err := db.Tx.Commit(); err != nil {
@@ -204,6 +206,7 @@ func TestDB_Select(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 			db, err := Connect(tt.fields.driver, tt.fields.dsn)
 			if err != nil {
 				t.Fatal(err)
@@ -212,7 +215,7 @@ func TestDB_Select(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			_, err = db.Select(tt.args.query)
+			_, err = db.Select(ctx, tt.args.query)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DB.Select() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -258,6 +261,7 @@ func TestDB_Func(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 			db, err := Connect(tt.fields.driver, tt.fields.dsn)
 			if err != nil {
 				t.Fatal(err)
@@ -266,7 +270,7 @@ func TestDB_Func(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			_, err = db.Select(tt.args.query)
+			_, err = db.Select(ctx, tt.args.query)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DB.Select() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -320,7 +324,8 @@ func TestDB_Import(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if err := db.Import(tt.args.tableName, tt.args.columnNames, tt.args.reader); (err != nil) != tt.wantErr {
+			ctx := context.Background()
+			if err := db.Import(ctx, tt.args.tableName, tt.args.columnNames, tt.args.reader); (err != nil) != tt.wantErr {
 				t.Errorf("DB.Import() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if err := db.Tx.Commit(); err != nil {
