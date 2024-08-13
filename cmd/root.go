@@ -191,9 +191,8 @@ func run(writer io.Writer, cfg *dbConfig, args []string) error {
 
 	outFormat := strToFormat(outFormat)
 	if outFormat == trdsql.GUESS {
-		if outWithoutGuess {
-			outFormat = trdsql.CSV
-		} else {
+		outFormat = trdsql.CSV
+		if !outWithoutGuess {
 			outFormat = outGuessFormat(outFile)
 		}
 	}
@@ -207,6 +206,7 @@ func run(writer io.Writer, cfg *dbConfig, args []string) error {
 	} else {
 		writer = cWriter
 	}
+
 	w := trdsql.NewWriter(
 		trdsql.OutDelimiter(outDelimiter),
 		trdsql.OutFormat(outFormat),
@@ -240,13 +240,12 @@ func run(writer io.Writer, cfg *dbConfig, args []string) error {
 
 	ctx := context.Background()
 
-	if err := trd.ExecContext(ctx, query); err != nil {
+	if err := trd.Exec(ctx, query); err != nil {
 		return err
 	}
 
 	if wc, ok := writer.(io.Closer); ok {
-		err := wc.Close()
-		if err != nil {
+		if err := wc.Close(); err != nil {
 			return err
 		}
 	}

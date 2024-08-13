@@ -1,6 +1,7 @@
 package trdsql
 
 import (
+	"context"
 	"io"
 	"os"
 	"path/filepath"
@@ -92,7 +93,8 @@ func TestImporter_Import(t *testing.T) {
 			i := &ReadFormat{
 				ReadOpts: tt.fields.ReadOpts,
 			}
-			got, err := i.Import(db, tt.query)
+			ctx := context.Background()
+			got, err := i.Import(ctx, db, tt.query)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Importer.Import() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -243,7 +245,7 @@ func TestImportFile(t *testing.T) {
 				opts:     NewReadOpts(),
 			},
 			want:    "",
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name: "testGlobFile",
@@ -263,7 +265,7 @@ func TestImportFile(t *testing.T) {
 				opts:     NewReadOpts(),
 			},
 			want:    "",
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name: "testCSV",
@@ -308,6 +310,7 @@ func TestImportFile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 			if tt.args.db == nil {
 				t.SkipNow()
 			}
@@ -316,7 +319,7 @@ func TestImportFile(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			got, err := ImportFile(tt.args.db, tt.args.fileName, tt.args.opts)
+			got, err := ImportFile(ctx, tt.args.db, tt.args.fileName, tt.args.opts)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ImportFile() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -12,8 +12,7 @@ import (
 // Exporter is the interface for processing query results.
 // Exporter executes SQL and outputs to Writer.
 type Exporter interface {
-	Export(db *DB, sql string) error
-	ExportContext(ctx context.Context, db *DB, sql string) error
+	Export(ctx context.Context, db *DB, sql string) error
 }
 
 // WriteFormat represents a structure that satisfies Exporter.
@@ -33,30 +32,23 @@ func NewExporter(writer Writer) *WriteFormat {
 }
 
 // Export is execute SQL(Select) and the result is written out by the writer.
-// Export is called from Exec.
-func (e *WriteFormat) Export(db *DB, sql string) error {
-	ctx := context.Background()
-	return e.ExportContext(ctx, db, sql)
-}
-
-// ExportContext is execute SQL(Select) and the result is written out by the writer.
-// ExportContext is called from ExecContext.
-func (e *WriteFormat) ExportContext(ctx context.Context, db *DB, sqlQuery string) error {
+// Export is called from ExecContext.
+func (e *WriteFormat) Export(ctx context.Context, db *DB, sqlQuery string) error {
 	queries := sqlss.SplitQueries(sqlQuery)
 	if !multi || len(queries) == 1 {
-		return e.exportContext(ctx, db, sqlQuery)
+		return e.export(ctx, db, sqlQuery)
 	}
 
 	e.multi = true
 	for _, query := range queries {
-		if err := e.exportContext(ctx, db, query); err != nil {
+		if err := e.export(ctx, db, query); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (e *WriteFormat) exportContext(ctx context.Context, db *DB, query string) error {
+func (e *WriteFormat) export(ctx context.Context, db *DB, query string) error {
 	if db.Tx == nil {
 		return ErrNoTransaction
 	}
@@ -67,11 +59,11 @@ func (e *WriteFormat) exportContext(ctx context.Context, db *DB, query string) e
 	}
 	debug.Printf(query)
 
-	if db.isExecContext(query) {
-		return db.OtherExecContext(ctx, query)
+	if db.isExec(query) {
+		return db.OtherExec(ctx, query)
 	}
 
-	rows, err := db.SelectContext(ctx, query)
+	rows, err := db.Select(ctx, query)
 	if err != nil {
 		return err
 	}
@@ -138,9 +130,9 @@ func (e *WriteFormat) write(ctx context.Context, rows *sql.Rows) error {
 	return e.Writer.PostWrite()
 }
 
-// isExecContext returns true if the query is not a SELECT statement.
+// isExec returns true if the query is not a SELECT statement.
 // Queries that return no rows in SQlite should use ExecContext and therefore return true.
-func (db *DB) isExecContext(query string) bool {
+func (db *DB) isExec(query string) bool {
 	if db.driver == "sqlite3" || db.driver == "sqlite" {
 		return !strings.HasPrefix(strings.ToUpper(query), "SELECT")
 	}
