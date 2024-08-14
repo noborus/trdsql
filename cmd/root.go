@@ -38,14 +38,15 @@ var (
 	onlySQL   string
 	tableName string
 
-	inFormat    string
-	inDelimiter string
-	inHeader    bool
-	inSkip      int
-	inPreRead   int
-	inJQuery    string
-	inLimitRead int
-	inNull      nilString
+	inFormat     string
+	inDelimiter  string
+	inHeader     bool
+	inSkip       int
+	inPreRead    int
+	inJQuery     string
+	inLimitReadF bool
+	inLimitRead  int
+	inNull       nilString
 
 	outFormat       string
 	outFile         string
@@ -137,6 +138,17 @@ Supports multiple databases(%s).
 			return
 		}
 
+		if inLimitRead > 0 {
+			inLimitReadF = true
+			inPreRead = inLimitRead
+			if inSkip > 0 {
+				inPreRead += inSkip
+			}
+			if inHeader {
+				inPreRead++
+			}
+		}
+
 		if analyze != "" || onlySQL != "" {
 			if err := analyzeSQL(writer, dbCfg, analyze, onlySQL); err != nil {
 				log.Println(err)
@@ -174,9 +186,11 @@ func run(writer io.Writer, cfg *dbConfig, args []string) error {
 	driver, dsn := getDB(cfg, cDB, cDriver, cDSN)
 	importer := trdsql.NewImporter(
 		trdsql.InFormat(strToFormat(inFormat)),
+		trdsql.InDelimiter(inDelimiter),
 		trdsql.InHeader(inHeader),
 		trdsql.InSkip(inSkip),
 		trdsql.InJQ(inJQuery),
+		trdsql.InLimitRead(inLimitReadF),
 		trdsql.InNeedNULL(inNull.valid),
 		trdsql.InNULL(inNull.str),
 	)
@@ -320,7 +334,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is XDG_CONFIG_HOME/trdsql/config.json)")
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $XDG_CONFIG_HOME/trdsql/config.json)")
 	rootCmd.PersistentFlags().BoolVarP(&version, "version", "v", false, "display version information.")
 	rootCmd.PersistentFlags().BoolVarP(&usage, "help", "h", false, "display usage information.")
 	rootCmd.PersistentFlags().BoolVar(&Debug, "debug", false, "debug print.")
@@ -345,6 +359,9 @@ func init() {
 	rootCmd.PersistentFlags().Var(&inNull, "null", "value(string) to convert to null on input.")
 
 	rootCmd.PersistentFlags().StringVarP(&inFormat, "in", "i", "GUESS", "format for input. [CSV|LTSV|JSON|YAML|TBLN|WIDTH]")
+	rootCmd.RegisterFlagCompletionFunc("in", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"CSV", "LTSV", "JSON", "YAML", "TBLN", "WIDTH"}, cobra.ShellCompDirectiveDefault
+	})
 	rootCmd.PersistentFlags().StringVar(&outDelimiter, "out-delimiter", ",", "field delimiter for output.")
 	rootCmd.PersistentFlags().StringVar(&outFile, "out-file", "", "output file name.")
 	rootCmd.PersistentFlags().BoolVar(&outWithoutGuess, "out-without-guess", false, "output without guessing (when using -out).")
@@ -357,7 +374,9 @@ func init() {
 	rootCmd.PersistentFlags().Var(&outNull, "out-null", "value(string) to convert from null on output.")
 
 	rootCmd.PersistentFlags().StringVarP(&outFormat, "out", "o", "GUESS", "format for output. [CSV|LTSV|JSON|JSONL|RAW|MD|AT|YAML|TBLN]")
-
+	rootCmd.RegisterFlagCompletionFunc("out", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"CSV", "LTSV", "JSON", "JSONL", "RAW", "MD", "AT", "YAML", "TBLN"}, cobra.ShellCompDirectiveDefault
+	})
 	rootCmd.PersistentFlags().StringVarP(&completion, "completion", "", "", "generate completion script [bash|zsh|fish|powershell]")
 
 	_ = viper.BindPFlag("database", rootCmd.PersistentFlags().Lookup("database"))
