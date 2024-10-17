@@ -117,6 +117,9 @@ type ReadOpts struct {
 	// IsTemporary is a flag whether to make temporary table.
 	// default is true.
 	IsTemporary bool
+
+	// InRowNumber is a flag whether to add row number.
+	InRowNumber bool
 }
 
 // NewReadOpts Returns ReadOpts.
@@ -132,6 +135,7 @@ func NewReadOpts(options ...ReadOpt) *ReadOpts {
 		InJQuery:    "",
 		InNeedNULL:  false,
 		InNULL:      "",
+		InRowNumber: false,
 	}
 	for _, option := range options {
 		option(readOpts)
@@ -209,6 +213,13 @@ func InNULL(s string) ReadOpt {
 func IsTemporary(t bool) ReadOpt {
 	return func(args *ReadOpts) {
 		args.IsTemporary = t
+	}
+}
+
+// InRowNumber is a flag whether to add line number.
+func InRowNumber(t bool) ReadOpt {
+	return func(args *ReadOpts) {
+		args.InRowNumber = t
 	}
 }
 

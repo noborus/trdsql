@@ -235,6 +235,10 @@ func ImportFile(ctx context.Context, db *DB, fileName string, readOpts *ReadOpts
 		return "", err
 	}
 
+	if readOpts.InRowNumber {
+		reader = newRowNumberReader(reader)
+	}
+
 	tableName := fileName
 	if opts.InJQuery != "" {
 		tableName = fmt.Sprintf("%s::jq%d", fileName, db.importCount)
