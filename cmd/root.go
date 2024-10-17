@@ -47,6 +47,7 @@ var (
 	inLimitReadF bool
 	inLimitRead  int
 	inNull       nilString
+	inRowNumber  bool
 
 	outFormat       string
 	outFile         string
@@ -193,6 +194,7 @@ func run(writer io.Writer, cfg *dbConfig, args []string) error {
 		trdsql.InLimitRead(inLimitReadF),
 		trdsql.InNeedNULL(inNull.valid),
 		trdsql.InNULL(inNull.str),
+		trdsql.InRowNumber(inRowNumber),
 	)
 
 	if outFile != "" {
@@ -357,6 +359,7 @@ func init() {
 	rootCmd.PersistentFlags().IntVar(&inLimitRead, "limit", 0, "limited number of rows to read.")
 	rootCmd.PersistentFlags().StringVar(&inJQuery, "jq", "", "jq expression string for input(JSON/JSONL only).")
 	rootCmd.PersistentFlags().Var(&inNull, "null", "value(string) to convert to null on input.")
+	rootCmd.PersistentFlags().BoolVarP(&inRowNumber, "row-number", "n", false, "add row number.")
 
 	rootCmd.PersistentFlags().StringVarP(&inFormat, "in", "i", "GUESS", "format for input. [CSV|LTSV|JSON|YAML|TBLN|WIDTH]")
 	rootCmd.RegisterFlagCompletionFunc("in", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
