@@ -117,6 +117,9 @@ type ReadOpts struct {
 	// IsTemporary is a flag whether to make temporary table.
 	// default is true.
 	IsTemporary bool
+
+	// InRowNumber is row number.
+	InRowNumber bool
 }
 
 // NewReadOpts Returns ReadOpts.
@@ -209,6 +212,12 @@ func InNULL(s string) ReadOpt {
 func IsTemporary(t bool) ReadOpt {
 	return func(args *ReadOpts) {
 		args.IsTemporary = t
+	}
+}
+
+func InRowNumber(t bool) ReadOpt {
+	return func(args *ReadOpts) {
+		args.InRowNumber = t
 	}
 }
 

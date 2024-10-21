@@ -257,6 +257,10 @@ func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *R
 	}
 	tableName = db.QuotedName(tableName)
 
+	if opts.InRowNumber {
+		reader = newRowNumberReader(reader)
+	}
+
 	columnNames, err := reader.Names()
 	if err != nil {
 		if !errors.Is(err, io.EOF) {
