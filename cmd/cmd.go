@@ -82,6 +82,7 @@ func (cli Cli) Run(args []string) int {
 		inJQuery    string
 		inLimitRead int
 		inNull      nilString
+		inRowNumber bool
 
 		outFlag         outputFlag
 		outFile         string
@@ -130,6 +131,7 @@ func (cli Cli) Run(args []string) int {
 	flags.BoolVar(&inFlag.YAML, "iyaml", false, "YAML format for input.")
 	flags.BoolVar(&inFlag.TBLN, "itbln", false, "TBLN format for input.")
 	flags.BoolVar(&inFlag.WIDTH, "iwidth", false, "width specification format for input.")
+	flags.BoolVar(&inRowNumber, "inum", false, "add row number column.")
 
 	flags.StringVar(&outFile, "out", "", "output file name.")
 	flags.BoolVar(&outWithoutGuess, "out-without-guess", false, "output without guessing (when using -out).")
@@ -246,6 +248,7 @@ func (cli Cli) Run(args []string) int {
 		trdsql.InJQ(inJQuery),
 		trdsql.InNeedNULL(inNull.valid),
 		trdsql.InNULL(inNull.str),
+		trdsql.InRowNumber(inRowNumber),
 	)
 
 	writer := cli.OutStream
