@@ -124,6 +124,7 @@ func (cli Cli) Run(args []string) int {
 	flags.IntVar(&inLimitRead, "ilr", 0, "limited number of rows to read.")
 	flags.StringVar(&inJQuery, "ijq", "", "jq expression string for input(JSON/JSONL only).")
 	flags.Var(&inNull, "inull", "value(string) to convert to null on input.")
+	flags.BoolVar(&inRowNumber, "inum", false, "add row number column.")
 
 	flags.BoolVar(&inFlag.CSV, "icsv", false, "CSV format for input.")
 	flags.BoolVar(&inFlag.LTSV, "iltsv", false, "LTSV format for input.")
@@ -131,7 +132,7 @@ func (cli Cli) Run(args []string) int {
 	flags.BoolVar(&inFlag.YAML, "iyaml", false, "YAML format for input.")
 	flags.BoolVar(&inFlag.TBLN, "itbln", false, "TBLN format for input.")
 	flags.BoolVar(&inFlag.WIDTH, "iwidth", false, "width specification format for input.")
-	flags.BoolVar(&inRowNumber, "inum", false, "add row number column.")
+	flags.BoolVar(&inFlag.TEXT, "itext", false, "text format for input.")
 
 	flags.StringVar(&outFile, "out", "", "output file name.")
 	flags.BoolVar(&outWithoutGuess, "out-without-guess", false, "output without guessing (when using -out).")
@@ -501,6 +502,7 @@ type inputFlag struct {
 	YAML  bool
 	TBLN  bool
 	WIDTH bool
+	TEXT  bool
 }
 
 // inputFormat returns format from flag.
@@ -518,6 +520,8 @@ func inputFormat(i inputFlag) trdsql.Format {
 		return trdsql.TBLN
 	case i.WIDTH:
 		return trdsql.WIDTH
+	case i.TEXT:
+		return trdsql.TEXT
 	default:
 		return trdsql.GUESS
 	}
@@ -525,7 +529,7 @@ func inputFormat(i inputFlag) trdsql.Format {
 
 func isInFormat(name string) bool {
 	switch name {
-	case "ig", "icsv", "iltsv", "ijson", "iyaml", "itbln", "iwidth":
+	case "ig", "icsv", "iltsv", "ijson", "iyaml", "itbln", "iwidth", "itext":
 		return true
 	}
 	return false

@@ -77,6 +77,9 @@ const (
 	// Format using guesswidth library.
 	WIDTH
 
+	// import
+	TEXT
+
 	// export
 	// Output as it is.
 	// Multiple characters can be selected as delimiter.

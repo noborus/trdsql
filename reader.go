@@ -49,6 +49,9 @@ var readerFuncs = map[Format]ReaderFunc{
 	WIDTH: func(reader io.Reader, opts *ReadOpts) (Reader, error) {
 		return NewGWReader(reader, opts)
 	},
+	TEXT: func(reader io.Reader, opts *ReadOpts) (Reader, error) {
+		return NewTextReader(reader, opts)
+	},
 }
 
 var (
