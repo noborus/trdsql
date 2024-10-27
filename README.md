@@ -185,6 +185,7 @@ trdsql -o[output format] -t [input filename]
 * `-iyaml` YAML format for input.
 * `-itbln` TBLN format for input.
 * `-iwidth` width specification format for input.
+* `-itext` text format for input.
 
 ####  3.2.1. <a name='input-options'></a>Input options
 
@@ -193,6 +194,7 @@ trdsql -o[output format] -t [input filename]
 * `-ijq` **string** jq expression string for input(JSON/JSONL only).
 * `-ilr` **int** limited number of rows to read.
 * `-inull` **string** value(string) to convert to null on input.
+* `-inum` add row number column.
 * `-ir` **int** number of rows to preread. (default 1)
 * `-is` **int** skip header row.
 
@@ -791,6 +793,39 @@ PID,TTY,TIME,CMD
 But `-id " "` does not recognize spaces in columns very well.
 
 `-iwidth` recognizes column widths and space separators.
+
+### TEXT
+
+The `-itext` option or files with “.text”extension are in text format.
+
+This is a one line to one column format.
+A blank line is also a line, unlike the `CSV` format.
+
+```console
+$ cat test.text
+a
+
+b
+
+c
+$ trdsql -itext "SELECT * FROM test.text"
+a
+
+b
+
+c
+```
+
+It is useful in conjunction with the -inum option.
+
+```console
+$ trdsql -inum "SELECT * FROM test.text"
+1,a
+2,
+3,b
+4,
+5,c
+```
 
 ###  4.15. <a name='raw-output'></a>Raw output
 
