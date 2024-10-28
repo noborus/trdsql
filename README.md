@@ -51,9 +51,10 @@ For usage as a library, please refer to the [godoc](https://pkg.go.dev/github.co
   * 4.12. [YAML](#yaml)
   * 4.13. [TBLN](#tbln)
   * 4.14. [WIDTH](#width)
-  * 4.15. [Raw output](#raw-output)
-  * 4.16. [ASCII Table & MarkDown output](#ascii-table-&-markdown-output)
-  * 4.17. [Vertical format output](#vertical-format-output)
+  * 4.15. [TEXT](#text)
+  * 4.16. [Raw output](#raw-output)
+  * 4.17. [ASCII Table & MarkDown output](#ascii-table-&-markdown-output)
+  * 4.18. [Vertical format output](#vertical-format-output)
 * 5. [SQL](#sql)
   * 5.1. [SQL function](#sql-function)
   * 5.2. [JOIN](#join)
@@ -185,6 +186,7 @@ trdsql -o[output format] -t [input filename]
 * `-iyaml` YAML format for input.
 * `-itbln` TBLN format for input.
 * `-iwidth` width specification format for input.
+* `-itext` text format for input.
 
 ####  3.2.1. <a name='input-options'></a>Input options
 
@@ -193,6 +195,7 @@ trdsql -o[output format] -t [input filename]
 * `-ijq` **string** jq expression string for input(JSON/JSONL only).
 * `-ilr` **int** limited number of rows to read.
 * `-inull` **string** value(string) to convert to null on input.
+* `-inum` add row number column.
 * `-ir` **int** number of rows to preread. (default 1)
 * `-is` **int** skip header row.
 
@@ -792,7 +795,40 @@ But `-id " "` does not recognize spaces in columns very well.
 
 `-iwidth` recognizes column widths and space separators.
 
-###  4.15. <a name='raw-output'></a>Raw output
+###  4.15. <a name='text'></a>TEXT
+
+The `-itext` option or files with “.text”extension are in text format.
+
+This is a one line to one column format.
+A blank line is also a line, unlike the `CSV` format.
+
+```console
+$ cat test.text
+a
+
+b
+
+c
+$ trdsql -itext "SELECT * FROM test.text"
+a
+
+b
+
+c
+```
+
+It is useful in conjunction with the -inum option.
+
+```console
+$ trdsql -inum "SELECT * FROM test.text"
+1,a
+2,
+3,b
+4,
+5,c
+```
+
+###  4.16. <a name='raw-output'></a>Raw output
 
 `-oraw` is Raw Output.
 It is used when "escape processing is unnecessary" in CSV output.
@@ -817,7 +853,7 @@ $ trdsql -oraw -od "\t|\t" -db pdb "SELECT * FROM test.csv"
 3	|	Apple
 ```
 
-###  4.16. <a name='ascii-table-&-markdown-output'></a>ASCII Table & MarkDown output
+###  4.17. <a name='ascii-table-&-markdown-output'></a>ASCII Table & MarkDown output
 
 `-oat` is ASCII table output.
 
@@ -845,7 +881,7 @@ $ trdsql -omd "SELECT * FROM test.csv"
 
 The `-onowrap` option does not wrap long columns in `at` or `md` output.
 
-###  4.17. <a name='vertical-format-output'></a>Vertical format output
+###  4.18. <a name='vertical-format-output'></a>Vertical format output
 
 -ovf is Vertical format output("column name | value" vertically).
 

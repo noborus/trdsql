@@ -18,6 +18,7 @@ var extToFormat map[string]Format = map[string]Format{
 	"TSV":   TSV,
 	"PSV":   PSV,
 	"WIDTH": WIDTH,
+	"TEXT":  TEXT,
 }
 
 // ReaderFunc is a function that creates a new Reader.
