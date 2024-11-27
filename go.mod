@@ -3,7 +3,7 @@ module github.com/noborus/trdsql
 require (
 	github.com/dsnet/compress v0.0.1
 	github.com/go-sql-driver/mysql v1.8.1
-	github.com/goccy/go-yaml v1.15.0
+	github.com/goccy/go-yaml v1.15.1
 	github.com/iancoleman/orderedmap v0.3.0
 	github.com/itchyny/gojq v0.12.16
 	github.com/jwalton/gchalk v1.3.0
