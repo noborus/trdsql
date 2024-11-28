@@ -292,6 +292,8 @@ func strToFormat(format string) trdsql.Format {
 		return trdsql.TBLN
 	case "width":
 		return trdsql.WIDTH
+	case "text":
+		return trdsql.TEXT
 	default:
 		return trdsql.GUESS
 	}
@@ -361,9 +363,9 @@ func init() {
 	rootCmd.PersistentFlags().Var(&inNull, "null", "value(string) to convert to null on input.")
 	rootCmd.PersistentFlags().BoolVarP(&inRowNumber, "row-number", "n", false, "add row number.")
 
-	rootCmd.PersistentFlags().StringVarP(&inFormat, "in", "i", "GUESS", "format for input. [CSV|LTSV|JSON|YAML|TBLN|WIDTH]")
+	rootCmd.PersistentFlags().StringVarP(&inFormat, "in", "i", "GUESS", "format for input. [CSV|LTSV|JSON|YAML|TBLN|WIDTH|TEXT]")
 	rootCmd.RegisterFlagCompletionFunc("in", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{"CSV", "LTSV", "JSON", "YAML", "TBLN", "WIDTH"}, cobra.ShellCompDirectiveDefault
+		return []string{"CSV", "LTSV", "JSON", "YAML", "TBLN", "WIDTH", "TEXT"}, cobra.ShellCompDirectiveDefault
 	})
 	rootCmd.PersistentFlags().StringVar(&outDelimiter, "out-delimiter", ",", "field delimiter for output.")
 	rootCmd.PersistentFlags().StringVar(&outFile, "out-file", "", "output file name.")

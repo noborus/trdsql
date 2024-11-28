@@ -567,6 +567,35 @@ func TestTBLNRun(t *testing.T) {
 	}
 }
 
+func TestTextRun(t *testing.T) {
+	ctx := context.Background()
+	testText := [][]string{
+		{"test.csv", `1,"1,Orange"
+2,"2,Melon"
+3,"3,Apple"
+`},
+		{"aiu.csv", "1,あ\n2,い\n3,う\n"},
+	}
+	outStream := new(bytes.Buffer)
+	importer := NewImporter(
+		InFormat(TEXT),
+		InRowNumber(true),
+	)
+	exporter := NewExporter(NewWriter(OutStream(outStream)))
+	trd := NewTRDSQL(importer, exporter)
+	for _, c := range testText {
+		sqlQuery := "SELECT * FROM " + filepath.Join(dataDir, c[0])
+		err := trd.Exec(ctx, sqlQuery)
+		if err != nil {
+			t.Errorf("trdsql error %s", err)
+		}
+		if outStream.String() != c[1] {
+			t.Fatalf("trdsql error %s:%s:%s", c[0], c[1], outStream)
+		}
+		outStream.Reset()
+	}
+}
+
 func setOutFormatTRDSQL(outFormat Format, outStream io.Writer) *TRDSQL {
 	importer := NewImporter(
 		InFormat(GUESS),

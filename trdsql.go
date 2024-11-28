@@ -77,6 +77,9 @@ const (
 	// Format using guesswidth library.
 	WIDTH
 
+	// import
+	TEXT
+
 	// export
 	// Output as it is.
 	// Multiple characters can be selected as delimiter.
@@ -142,6 +145,8 @@ func (f Format) String() string {
 		return "PSV"
 	case YAML:
 		return "YAML"
+	case TEXT:
+		return "TEXT"
 	default:
 		return "Unknown"
 	}
