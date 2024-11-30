@@ -18,6 +18,7 @@ var extToFormat map[string]Format = map[string]Format{
 	"TSV":   TSV,
 	"PSV":   PSV,
 	"WIDTH": WIDTH,
+	"TEXT":  TEXT,
 }
 
 // ReaderFunc is a function that creates a new Reader.
@@ -48,6 +49,9 @@ var readerFuncs = map[Format]ReaderFunc{
 	},
 	WIDTH: func(reader io.Reader, opts *ReadOpts) (Reader, error) {
 		return NewGWReader(reader, opts)
+	},
+	TEXT: func(reader io.Reader, opts *ReadOpts) (Reader, error) {
+		return NewTextReader(reader, opts)
 	},
 }
 
