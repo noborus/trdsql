@@ -50,12 +50,11 @@ For usage as a library, please refer to the [godoc](https://pkg.go.dev/github.co
   * 4.11. [JSONL(NDJSON)](#jsonl(ndjson))
   * 4.12. [YAML](#yaml)
   * 4.13. [TBLN](#tbln)
-  * 4.14. [TEXT](#text)
-  * 4.15. [WIDTH](#width)
-  * 4.16. [TEXT](#text-1)
-  * 4.17. [Raw output](#raw-output)
-  * 4.18. [ASCII Table & MarkDown output](#ascii-table-&-markdown-output)
-  * 4.19. [Vertical format output](#vertical-format-output)
+  * 4.14. [WIDTH](#width)
+  * 4.15. [TEXT](#text)
+  * 4.16. [Raw output](#raw-output)
+  * 4.17. [ASCII Table & MarkDown output](#ascii-table-&-markdown-output)
+  * 4.18. [Vertical format output](#vertical-format-output)
 * 5. [SQL](#sql)
   * 5.1. [SQL function](#sql-function)
   * 5.2. [JOIN](#join)
@@ -89,7 +88,7 @@ make install
 
 ####  1.1.1. <a name='requirements'></a>Requirements
 
-go 1.22 or higher.
+go 1.21 or higher.
 
 ###  1.2. <a name='download-binary'></a>Download binary
 
@@ -734,7 +733,7 @@ $ trdsql  -ojson "SELECT * FROM sample2.yaml::.b.e"
 json can be converted to yaml.
 
 ```console
-$ trdsql  -ojson "SELECT * FROM sample2.yaml::.b.e"
+$ trdsql -ojson "SELECT * FROM sample2.yaml::.b.e"
 - name: fred
   value: 3
 - name: sam
@@ -777,27 +776,7 @@ $ trdsql -otbln "SELECT c1::int as id, c2::text as name FROM test.csv"
 TBLN can contain column names and type definitions.
 Please refer to <https://tbln.dev/> for details of TBLN.
 
-###  4.14. <a name='text'></a>TEXT
-
-`-itext` is input from TEXT.
-
-`-itext` treats the text up to the end of the line as a single column. When combined with `-inum`, it can be used as a table with line numbers and text.
-
-```console
-$ cat sample.txt
-This is a sample text.
-Another line of text.
-Yet another line.
-```
-
-```console
-$ trdsql -itext -inum "SELECT * FROM sample.txt"
-1,This is a sample text.
-2,Another line of text.
-3,Yet another line.
-```
-
-###  4.15. <a name='width'></a>WIDTH
+###  4.14. <a name='width'></a>WIDTH
 
 `-iwidth` inputs the format specifying the width.
 This is used when the header column width represents the body column width.
@@ -816,7 +795,7 @@ But `-id " "` does not recognize spaces in columns very well.
 
 `-iwidth` recognizes column widths and space separators.
 
-###  4.16. <a name='text-1'></a>TEXT
+###  4.15. <a name='text'></a>TEXT
 
 The `-itext` option or files with “.text”extension are in text format.
 
@@ -838,7 +817,7 @@ b
 c
 ```
 
-It is useful in conjunction with the -inum option.
+It is useful in conjunction with the `-inum` option.
 
 ```console
 $ trdsql -inum "SELECT * FROM test.text"
@@ -849,7 +828,7 @@ $ trdsql -inum "SELECT * FROM test.text"
 5,c
 ```
 
-###  4.17. <a name='raw-output'></a>Raw output
+###  4.16. <a name='raw-output'></a>Raw output
 
 `-oraw` is Raw Output.
 It is used when "escape processing is unnecessary" in CSV output.
@@ -874,7 +853,7 @@ $ trdsql -oraw -od "\t|\t" -db pdb "SELECT * FROM test.csv"
 3	|	Apple
 ```
 
-###  4.18. <a name='ascii-table-&-markdown-output'></a>ASCII Table & MarkDown output
+###  4.17. <a name='ascii-table-&-markdown-output'></a>ASCII Table & MarkDown output
 
 `-oat` is ASCII table output.
 
@@ -902,9 +881,9 @@ $ trdsql -omd "SELECT * FROM test.csv"
 
 The `-onowrap` option does not wrap long columns in `at` or `md` output.
 
-###  4.19. <a name='vertical-format-output'></a>Vertical format output
+###  4.18. <a name='vertical-format-output'></a>Vertical format output
 
--ovf is Vertical format output("column name | value" vertically).
+`-ovf` is Vertical format output("column name | value" vertically).
 
 ```console
 $ trdsql -ovf "SELECT * FROM test.csv"
