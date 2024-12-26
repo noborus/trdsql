@@ -17,6 +17,7 @@ type GWReader struct {
 	types     []string
 	limitRead bool
 	needNULL  bool
+	columnNum int
 }
 
 // NewGWReader returns GWReader and error.
@@ -50,6 +51,7 @@ func NewGWReader(reader io.Reader, opts *ReadOpts) (*GWReader, error) {
 	}
 	r.names = names
 	r.setColumnType()
+	r.columnNum = len(r.names)
 	return r, nil
 }
 
@@ -94,11 +96,12 @@ func (r *GWReader) PreReadRow() [][]any {
 }
 
 // ReadRow is read the rest of the row.
-func (r *GWReader) ReadRow(row []any) ([]any, error) {
+func (r *GWReader) ReadRow() ([]any, error) {
 	if r.limitRead {
 		return nil, io.EOF
 	}
 
+	row := make([]any, r.columnNum)
 	record, err := r.reader.Read()
 	if err != nil {
 		return row, err

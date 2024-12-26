@@ -45,7 +45,7 @@ func (r *TextReader) PreReadRow() [][]any {
 }
 
 // ReadRow reads a row.
-func (r *TextReader) ReadRow([]any) ([]any, error) {
+func (r *TextReader) ReadRow() ([]any, error) {
 	var builder strings.Builder
 	for {
 		if r.maxNum > 0 && r.num >= r.maxNum {

@@ -17,6 +17,7 @@ type LTSVReader struct {
 	types     []string
 	limitRead bool
 	needNULL  bool
+	columnNum int
 }
 
 // NewLTSVReader returns LTSVReader and error.
@@ -56,6 +57,7 @@ func NewLTSVReader(reader io.Reader, opts *ReadOpts) (*LTSVReader, error) {
 		r.preRead = append(r.preRead, row)
 	}
 	r.setColumnType()
+	r.columnNum = len(r.names)
 	return r, nil
 }
 
@@ -97,11 +99,12 @@ func (r *LTSVReader) PreReadRow() [][]any {
 }
 
 // ReadRow is read the rest of the row.
-func (r *LTSVReader) ReadRow(row []any) ([]any, error) {
+func (r *LTSVReader) ReadRow() ([]any, error) {
 	if r.limitRead {
 		return nil, io.EOF
 	}
 
+	row := make([]any, r.columnNum)
 	record, _, err := r.read()
 	if err != nil {
 		return row, err

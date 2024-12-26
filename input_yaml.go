@@ -23,6 +23,7 @@ type YAMLReader struct {
 	types     []string
 	limitRead bool
 	needNULL  bool
+	columnNum int
 }
 
 // NewYAMLReader returns YAMLReader and error.
@@ -183,10 +184,11 @@ func (r *YAMLReader) topLevel(top any) (map[string]any, []string, error) {
 // PreReadRow is returns only columns that store preRead rows.
 // One YAML (not YAMLl) returns all rows with preRead.
 func (r *YAMLReader) PreReadRow() [][]any {
+	r.columnNum = len(r.names)
 	rows := make([][]any, len(r.preRead))
 	for n, v := range r.preRead {
-		rows[n] = make([]any, len(r.names))
-		for i := range r.names {
+		rows[n] = make([]any, r.columnNum)
+		for i := 0; i < r.columnNum; i++ {
 			rows[n][i] = v[r.names[i]]
 		}
 
@@ -196,11 +198,11 @@ func (r *YAMLReader) PreReadRow() [][]any {
 
 // ReadRow is read the rest of the row.
 // Only YAMLl requires ReadRow in YAML.
-func (r *YAMLReader) ReadRow(row []any) ([]any, error) {
+func (r *YAMLReader) ReadRow() ([]any, error) {
 	if r.limitRead {
 		return nil, io.EOF
 	}
-
+	row := make([]any, r.columnNum)
 	var data any
 	if err := r.reader.Decode(&data); err != nil {
 		return nil, err

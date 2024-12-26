@@ -65,26 +65,18 @@ func TestNewGWReader(t *testing.T) {
 }
 
 func TestGWReader_ReadRow(t *testing.T) {
-	type args struct {
-		row []any
-	}
 	tests := []struct {
 		name     string
 		fileName string
 		opts     *ReadOpts
-		args     args
-		want     []any
-		wantErr  bool
+
+		want    []any
+		wantErr bool
 	}{
 		{
 			name:     "ps",
 			fileName: "ps.txt",
 			opts:     NewReadOpts(),
-			args: args{
-				[]any{
-					"", "", "", "", "", "", "", "", "", "", "",
-				},
-			},
 			want: []any{
 				"root", "1", "0.0", "0.0", "168720", "13812", "?", "Ss", "Mar11", "1:11", "/sbin/init splash",
 			},
@@ -96,11 +88,6 @@ func TestGWReader_ReadRow(t *testing.T) {
 			opts: NewReadOpts(
 				InSkip(3),
 			),
-			args: args{
-				[]any{
-					"", "", "", "", "",
-				},
-			},
 			want: []any{
 				"ii", "accountsservice", "22.07.5-2ubuntu1.3", "amd64", "query and manipulate user account information",
 			},
@@ -117,7 +104,7 @@ func TestGWReader_ReadRow(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			got, err := r.ReadRow(tt.args.row)
+			got, err := r.ReadRow()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GWReader.ReadRow() error = %v, wantErr %v", err, tt.wantErr)
 				return

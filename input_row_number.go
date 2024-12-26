@@ -68,10 +68,10 @@ func (r *rowNumberReader) PreReadRow() [][]any {
 }
 
 // ReadRow reads the rest of the row with an additional row number column.
-func (r *rowNumberReader) ReadRow(row []any) ([]any, error) {
+func (r *rowNumberReader) ReadRow() ([]any, error) {
 	var err error
 	r.lineCount++
-	r.originRow, err = r.reader.ReadRow(r.originRow)
+	r.originRow, err = r.reader.ReadRow()
 	if err != nil {
 		return nil, err
 	}

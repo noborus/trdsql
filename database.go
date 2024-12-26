@@ -151,7 +151,7 @@ func (db *DB) copyImport(ctx context.Context, table *importTable, reader Reader)
 	}
 
 	for {
-		table.row, err = reader.ReadRow(table.row)
+		table.row, err = reader.ReadRow()
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				break
@@ -253,7 +253,7 @@ func (db *DB) stmtClose(stmt *sql.Stmt) {
 
 func bulkPush(ctx context.Context, table *importTable, input Reader, bulk []any) ([]any, error) {
 	for (table.count * len(table.row)) < table.maxCap {
-		row, err := input.ReadRow(table.row)
+		row, err := input.ReadRow()
 		if err != nil {
 			return bulk, err
 		}

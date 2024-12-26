@@ -88,7 +88,7 @@ func TestTextReaderFile(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			got, err := r.ReadRow(nil)
+			got, err := r.ReadRow()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("TextReader.ReadRow() error = %v, wantErr %v", err, tt.wantErr)
 				return

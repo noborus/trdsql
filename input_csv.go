@@ -17,6 +17,7 @@ type CSVReader struct {
 	preRead   [][]string
 	limitRead bool
 	needNULL  bool
+	columnNum int
 }
 
 // NewCSVReader returns CSVReader and error.
@@ -86,6 +87,7 @@ func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 		r.preRead = append(r.preRead, rows)
 	}
 	r.setColumnType()
+	r.columnNum = len(r.names)
 	return r, nil
 }
 
@@ -155,10 +157,11 @@ func (r *CSVReader) PreReadRow() [][]any {
 }
 
 // ReadRow is read the rest of the row.
-func (r *CSVReader) ReadRow(row []any) ([]any, error) {
+func (r *CSVReader) ReadRow() ([]any, error) {
 	if r.limitRead {
 		return nil, io.EOF
 	}
+	row := make([]any, r.columnNum)
 	record, err := r.reader.Read()
 	if err != nil {
 		return row, err

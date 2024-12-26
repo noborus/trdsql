@@ -28,6 +28,7 @@ type JSONReader struct {
 	types     []string
 	limitRead bool
 	needNULL  bool
+	columnNum int
 }
 
 // NewJSONReader returns JSONReader and error.
@@ -148,10 +149,11 @@ func (r *JSONReader) topLevel(top any) (map[string]any, []string, error) {
 // PreReadRow is returns only columns that store preRead rows.
 // One json (not jsonl) returns all rows with preRead.
 func (r *JSONReader) PreReadRow() [][]any {
+	r.columnNum = len(r.names)
 	rows := make([][]any, len(r.preRead))
 	for n, v := range r.preRead {
-		rows[n] = make([]any, len(r.names))
-		for i := range r.names {
+		rows[n] = make([]any, r.columnNum)
+		for i := 0; i < r.columnNum; i++ {
 			rows[n][i] = v[r.names[i]]
 			if r.needNULL {
 				rows[n][i] = replaceNULL(r.inNULL, rows[n][i])
@@ -163,7 +165,7 @@ func (r *JSONReader) PreReadRow() [][]any {
 
 // ReadRow is read the rest of the row.
 // Only jsonl requires ReadRow in json.
-func (r *JSONReader) ReadRow(row []any) ([]any, error) {
+func (r *JSONReader) ReadRow() ([]any, error) {
 	if r.limitRead {
 		return nil, io.EOF
 	}
@@ -173,6 +175,7 @@ func (r *JSONReader) ReadRow(row []any) ([]any, error) {
 		return nil, err
 	}
 
+	row := make([]any, r.columnNum)
 	if r.query != nil {
 		return r.jqueryRunJsonl(row, data)
 	}

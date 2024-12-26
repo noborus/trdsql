@@ -429,7 +429,7 @@ func TestCSVReader_ReadRow(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			got, err := r.ReadRow(tt.args.row)
+			got, err := r.ReadRow()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CSVReader.ReadRow() error = %v, wantErr %v", err, tt.wantErr)
 				return

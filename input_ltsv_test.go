@@ -252,14 +252,10 @@ func TestLTSVReader_PreReadRow(t *testing.T) {
 }
 
 func TestLTSVReader_ReadRow(t *testing.T) {
-	type args struct {
-		row []any
-	}
 	tests := []struct {
 		name     string
 		fileName string
 		opts     *ReadOpts
-		args     args
 		want     []any
 		wantErr  bool
 	}{
@@ -267,11 +263,6 @@ func TestLTSVReader_ReadRow(t *testing.T) {
 			name:     "test1",
 			fileName: "test_indefinite.ltsv",
 			opts:     NewReadOpts(),
-			args: args{
-				[]any{
-					"", "", "",
-				},
-			},
 			want: []any{
 				"2", "Melon", "500",
 			},
@@ -284,11 +275,6 @@ func TestLTSVReader_ReadRow(t *testing.T) {
 				InNeedNULL(true),
 				InNULL(""),
 			),
-			args: args{
-				[]any{
-					"", "", "",
-				},
-			},
 			want: []any{
 				"2", nil, "500",
 			},
@@ -305,7 +291,7 @@ func TestLTSVReader_ReadRow(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			got, err := r.ReadRow(tt.args.row)
+			got, err := r.ReadRow()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("LTSVReader.ReadRow() error = %v, wantErr %v", err, tt.wantErr)
 			}

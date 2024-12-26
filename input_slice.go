@@ -219,6 +219,6 @@ func (r *SliceReader) PreReadRow() [][]any {
 }
 
 // ReadRow only returns EOF.
-func (r *SliceReader) ReadRow(row []any) ([]any, error) {
+func (r *SliceReader) ReadRow() ([]any, error) {
 	return nil, io.EOF
 }

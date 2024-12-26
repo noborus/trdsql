@@ -15,6 +15,7 @@ type TBLNRead struct {
 	preRead   [][]any
 	limitRead bool
 	needNULL  bool
+	columnNum int
 }
 
 // NewTBLNReader returns TBLNRead and error.
@@ -99,15 +100,17 @@ func (r *TBLNRead) Types() ([]string, error) {
 
 // PreReadRow is returns only columns that store preread rows.
 func (r *TBLNRead) PreReadRow() [][]any {
+	r.columnNum = len(r.preRead[0])
 	return r.preRead
 }
 
 // ReadRow is read the rest of the row.
-func (r *TBLNRead) ReadRow(row []any) ([]any, error) {
+func (r *TBLNRead) ReadRow() ([]any, error) {
 	if r.limitRead {
 		return nil, io.EOF
 	}
 
+	row := make([]any, r.columnNum)
 	rec, err := r.reader.ReadRow()
 	if err != nil {
 		return row, err
