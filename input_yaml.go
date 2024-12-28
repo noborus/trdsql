@@ -58,17 +58,6 @@ func jqParse(q string) (*gojq.Query, error) {
 	return query, nil
 }
 
-func (r *YAMLReader) wrapDecode(v any) (err error) {
-	defer func() {
-		if rec := recover(); rec != nil {
-			err = fmt.Errorf("%s", rec)
-		}
-	}()
-
-	err = r.reader.Decode(v)
-	return
-}
-
 // yamlParse parses YAML and stores it in preRead.
 func (r *YAMLReader) yamlParse(opts *ReadOpts) error {
 	r.limitRead = opts.InLimitRead
@@ -77,7 +66,7 @@ func (r *YAMLReader) yamlParse(opts *ReadOpts) error {
 
 	var top any
 	for i := 0; i < opts.InPreRead; i++ {
-		if err := r.wrapDecode(&top); err != nil {
+		if err := r.reader.Decode(&top); err != nil {
 			if !errors.Is(err, io.EOF) {
 				return fmt.Errorf("%w: %s", ErrInvalidYAML, err)
 			}
