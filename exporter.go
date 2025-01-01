@@ -65,7 +65,7 @@ func (e *WriteFormat) exportContext(ctx context.Context, db *DB, query string) e
 	if query == "" {
 		return ErrNoStatement
 	}
-	debug.Printf(query)
+	debug.Print(query)
 
 	if db.isExecContext(query) {
 		return db.OtherExecContext(ctx, query)

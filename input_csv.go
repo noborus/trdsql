@@ -72,7 +72,7 @@ func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 				return r, err
 			}
 			r.setColumnType()
-			debug.Printf(err.Error())
+			debug.Print(err.Error())
 			return r, nil
 		}
 		rows := make([]string, len(row))
