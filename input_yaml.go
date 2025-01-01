@@ -70,7 +70,7 @@ func (r *YAMLReader) yamlParse(opts *ReadOpts) error {
 			if !errors.Is(err, io.EOF) {
 				return fmt.Errorf("%w: %s", ErrInvalidYAML, err)
 			}
-			debug.Printf(err.Error())
+			debug.Print(err.Error())
 			return nil
 		}
 

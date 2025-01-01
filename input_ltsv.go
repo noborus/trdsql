@@ -42,7 +42,7 @@ func NewLTSVReader(reader io.Reader, opts *ReadOpts) (*LTSVReader, error) {
 				return r, err
 			}
 			r.setColumnType()
-			debug.Printf(err.Error())
+			debug.Print(err.Error())
 			return r, nil
 		}
 

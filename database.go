@@ -69,7 +69,7 @@ func (db *DB) CreateTableContext(ctx context.Context, tableName string, columnNa
 	}
 
 	query := db.queryCreateTable(tableName, columnNames, columnTypes, isTemporary)
-	debug.Printf(query)
+	debug.Print(query)
 	_, err := db.Tx.ExecContext(ctx, query)
 	return err
 }
@@ -143,7 +143,7 @@ func (db *DB) ImportContext(ctx context.Context, tableName string, columnNames [
 // copyImport adds rows to a table with the COPY clause (PostgreSQL only).
 func (db *DB) copyImport(ctx context.Context, table *importTable, reader Reader) error {
 	query := queryCopy(table)
-	debug.Printf(query)
+	debug.Print(query)
 
 	stmt, err := db.Tx.PrepareContext(ctx, query)
 	if err != nil {
@@ -299,7 +299,7 @@ func (db *DB) bulkStmtOpen(ctx context.Context, table *importTable, stmt *sql.St
 
 func (db *DB) insertPrepare(ctx context.Context, table *importTable) (*sql.Stmt, error) {
 	query := queryInsert(table)
-	debug.Printf(query)
+	debug.Print(query)
 
 	stmt, err := db.Tx.PrepareContext(ctx, query)
 	if err != nil {

@@ -18,3 +18,9 @@ func (d debugT) Printf(format string, args ...any) {
 		log.Printf(format, args...)
 	}
 }
+
+func (d debugT) Print(args ...any) {
+	if d {
+		log.Print(args...)
+	}
+}
