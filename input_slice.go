@@ -75,7 +75,7 @@ func structReader(tableName string, val reflect.Value) *SliceReader {
 	columnNum := t.NumField()
 	names := make([]string, columnNum)
 	types := make([]string, columnNum)
-	for i := 0; i < columnNum; i++ {
+	for i := range columnNum {
 		f := t.Field(i)
 		names[i] = f.Name
 		types[i] = typeToDBType(f.Type.Kind())

@@ -215,13 +215,13 @@ func (r *YAMLReader) rowParse(row []any, yamlRow any) []any {
 	switch m := yamlRow.(type) {
 	case map[string]any:
 		for i := range r.names {
-			row[i] = r.toString(m[r.names[i]])
+			row[i] = r.colValue(m[r.names[i]])
 		}
 	default:
 		for i := range r.names {
 			row[i] = nil
 		}
-		row[0] = r.toString(yamlRow)
+		row[0] = r.colValue(yamlRow)
 	}
 	return row
 }
@@ -232,7 +232,7 @@ func (r *YAMLReader) objectRow(obj map[string]any) (map[string]any, []string, er
 	row := make(map[string]any)
 	for k, v := range obj {
 		names = append(names, k)
-		row[k] = r.toString(v)
+		row[k] = r.colValue(v)
 	}
 	return row, names, nil
 }
@@ -244,7 +244,7 @@ func (r *YAMLReader) objectMapSlice(obj yaml.MapSlice) (map[string]any, []string
 	for _, item := range obj {
 		key := item.Key.(string)
 		names = append(names, key)
-		row[key] = r.toString(item.Value)
+		row[key] = r.colValue(item.Value)
 	}
 	return row, names, nil
 }
@@ -255,13 +255,13 @@ func (r *YAMLReader) etcRow(val any) (map[string]any, []string, error) {
 	k := "c1"
 	names = append(names, k)
 	row := make(map[string]any)
-	row[k] = r.toString(val)
+	row[k] = r.colValue(val)
 	return row, names, nil
 }
 
-// toString returns a string representation of val.
+// colValue returns a string representation of val.
 // It will be YAML if val is a struct or map, otherwise it will be a string representation of val.
-func (r *YAMLReader) toString(val any) any {
+func (r *YAMLReader) colValue(val any) any {
 	var str string
 	switch t := val.(type) {
 	case nil:
@@ -281,10 +281,7 @@ func (r *YAMLReader) toString(val any) any {
 	}
 	// Remove the last newline.
 	str = strings.TrimRight(str, "\n")
-	if r.needNULL {
-		return replaceNULL(r.inNULL, str)
-	}
-	return str
+	return colValue(str, r.needNULL, r.inNULL)
 }
 
 // yamlToStr converts marshalled YAML to string.

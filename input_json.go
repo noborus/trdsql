@@ -153,11 +153,8 @@ func (r *JSONReader) PreReadRow() [][]any {
 	rows := make([][]any, len(r.preRead))
 	for n, v := range r.preRead {
 		rows[n] = make([]any, r.columnNum)
-		for i := 0; i < r.columnNum; i++ {
-			rows[n][i] = v[r.names[i]]
-			if r.needNULL {
-				rows[n][i] = replaceNULL(r.inNULL, rows[n][i])
-			}
+		for i := range r.columnNum {
+			rows[n][i] = colValue(v[r.names[i]], r.needNULL, r.inNULL)
 		}
 	}
 	return rows
@@ -270,8 +267,5 @@ func (r *JSONReader) jsonString(val any) any {
 	default:
 		str = ValString(val)
 	}
-	if r.needNULL {
-		return replaceNULL(r.inNULL, str)
-	}
-	return str
+	return colValue(str, r.needNULL, r.inNULL)
 }

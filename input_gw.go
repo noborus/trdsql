@@ -35,7 +35,7 @@ func NewGWReader(reader io.Reader, opts *ReadOpts) (*GWReader, error) {
 		r.scanNum = r.preRead
 	}
 	r.reader.Scan(r.scanNum)
-	for i := 0; i < opts.InSkip; i++ {
+	for range opts.InSkip {
 		if _, err := r.reader.Read(); err != nil {
 			if errors.Is(err, io.EOF) {
 				return r, nil
@@ -60,7 +60,7 @@ func (r *GWReader) setColumnType() {
 		return
 	}
 	r.types = make([]string, len(r.names))
-	for i := 0; i < len(r.names); i++ {
+	for i := range r.names {
 		r.types[i] = DefaultDBType
 	}
 }
@@ -85,11 +85,8 @@ func (r *GWReader) PreReadRow() [][]any {
 			return rows
 		}
 		rows[n] = make([]any, len(r.names))
-		for i := 0; i < len(r.names); i++ {
-			rows[n][i] = record[i]
-			if r.needNULL {
-				rows[n][i] = replaceNULL(r.inNULL, rows[n][i])
-			}
+		for i := range r.names {
+			rows[n][i] = colValue(record[i], r.needNULL, r.inNULL)
 		}
 	}
 	return rows
@@ -106,11 +103,8 @@ func (r *GWReader) ReadRow() ([]any, error) {
 	if err != nil {
 		return row, err
 	}
-	for i := 0; i < len(row); i++ {
-		row[i] = record[i]
-		if r.needNULL {
-			row[i] = replaceNULL(r.inNULL, row[i])
-		}
+	for i := range row {
+		row[i] = colValue(record[i], r.needNULL, r.inNULL)
 	}
 	return row, nil
 }
