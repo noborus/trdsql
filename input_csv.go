@@ -91,11 +91,17 @@ func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 	return r, nil
 }
 
+// NewTSVReader returns TSVReader and error.
+// TSVReader is a type of CSVReader.
+// It is a tab-separated value reader.
 func NewTSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 	opts.InDelimiter = "\t"
 	return NewCSVReader(reader, opts)
 }
 
+// NewPSVReader returns PSVReader and error.
+// PSVReader is a type of CSVReader.
+// It is a pipe-separated value reader.
 func NewPSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 	opts.InDelimiter = "|"
 	return NewCSVReader(reader, opts)
@@ -146,11 +152,8 @@ func (r *CSVReader) PreReadRow() [][]any {
 	rows := make([][]any, rowNum)
 	for n := 0; n < rowNum; n++ {
 		rows[n] = make([]any, len(r.names))
-		for i, f := range r.preRead[n] {
-			rows[n][i] = f
-			if r.needNULL {
-				rows[n][i] = replaceNULL(r.inNULL, rows[n][i])
-			}
+		for i, field := range r.preRead[n] {
+			rows[n][i] = colValue(field, r.needNULL, r.inNULL)
 		}
 	}
 	return rows
@@ -166,15 +169,17 @@ func (r *CSVReader) ReadRow() ([]any, error) {
 	if err != nil {
 		return row, err
 	}
-	for i := 0; len(row) > i; i++ {
-		if len(record) > i {
-			row[i] = record[i]
-			if r.needNULL {
-				row[i] = replaceNULL(r.inNULL, row[i])
-			}
-		} else {
-			row[i] = nil
-		}
+	for i := range row {
+		row[i] = r.processRecordField(record, i)
 	}
 	return row, nil
+}
+
+func (r *CSVReader) processRecordField(record []string, i int) any {
+	if i >= len(record) {
+		// Log a warning if the record has fewer elements than expected
+		debug.Printf("Warning: record has fewer elements (%d) than expected columns (%d)", len(record), r.columnNum)
+		return nil
+	}
+	return colValue(record[i], r.needNULL, r.inNULL)
 }

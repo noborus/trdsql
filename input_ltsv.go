@@ -36,7 +36,7 @@ func NewLTSVReader(reader io.Reader, opts *ReadOpts) (*LTSVReader, error) {
 	r.inNULL = opts.InNULL
 
 	names := map[string]bool{}
-	for i := 0; i < opts.InPreRead; i++ {
+	for range opts.InPreRead {
 		row, keys, err := r.read()
 		if err != nil {
 			if !errors.Is(err, io.EOF) {
@@ -48,7 +48,7 @@ func NewLTSVReader(reader io.Reader, opts *ReadOpts) (*LTSVReader, error) {
 		}
 
 		// Add only unique column names.
-		for k := 0; k < len(keys); k++ {
+		for k := range keys {
 			if !names[keys[k]] {
 				names[keys[k]] = true
 				r.names = append(r.names, keys[k])
@@ -89,10 +89,8 @@ func (r *LTSVReader) PreReadRow() [][]any {
 	for n := 0; n < rowNum; n++ {
 		rows[n] = make([]any, len(r.names))
 		for i := range r.names {
-			rows[n][i] = r.preRead[n][r.names[i]]
-			if r.needNULL {
-				rows[n][i] = replaceNULL(r.inNULL, rows[n][i])
-			}
+			f := r.preRead[n][r.names[i]]
+			rows[n][i] = colValue(f, r.needNULL, r.inNULL)
 		}
 	}
 	return rows
@@ -110,10 +108,7 @@ func (r *LTSVReader) ReadRow() ([]any, error) {
 		return row, err
 	}
 	for i, name := range r.names {
-		row[i] = record[name]
-		if r.needNULL {
-			row[i] = replaceNULL(r.inNULL, row[i])
-		}
+		row[i] = colValue(record[name], r.needNULL, r.inNULL)
 	}
 	return row, nil
 }

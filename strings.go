@@ -33,8 +33,11 @@ func ValString(v any) string {
 	}
 }
 
-func replaceNULL(nullString string, v any) any {
-	switch t := v.(type) {
+func colValue(value any, replace bool, nullString string) any {
+	if !replace {
+		return value
+	}
+	switch t := value.(type) {
 	case nil:
 		return nil
 	case string:
@@ -46,5 +49,5 @@ func replaceNULL(nullString string, v any) any {
 			return nil
 		}
 	}
-	return v
+	return value
 }
