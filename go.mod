@@ -2,15 +2,15 @@ module github.com/noborus/trdsql
 
 require (
 	github.com/dsnet/compress v0.0.1
-	github.com/go-sql-driver/mysql v1.9.1
-	github.com/goccy/go-yaml v1.16.0
+	github.com/go-sql-driver/mysql v1.9.2
+	github.com/goccy/go-yaml v1.17.1
 	github.com/iancoleman/orderedmap v0.3.0
 	github.com/itchyny/gojq v0.12.17
 	github.com/jwalton/gchalk v1.3.0
 	github.com/klauspost/compress v1.18.0
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-runewidth v0.0.16
-	github.com/mattn/go-sqlite3 v1.14.24
+	github.com/mattn/go-sqlite3 v1.14.28
 	github.com/multiprocessio/go-sqlite3-stdlib v0.0.0-20220822170115-9f6825a1cd25
 	github.com/noborus/guesswidth v0.4.0
 	github.com/noborus/sqlss v0.1.0
@@ -20,7 +20,7 @@ require (
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.18.2
 	github.com/ulikunitz/xz v0.5.12
-	golang.org/x/term v0.30.0
+	golang.org/x/term v0.31.0
 	modernc.org/sqlite v1.37.0
 )
 
@@ -50,16 +50,16 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
-	golang.org/x/crypto v0.36.0 // indirect
-	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
-	golang.org/x/sys v0.31.0 // indirect
-	golang.org/x/text v0.23.0 // indirect
+	golang.org/x/crypto v0.37.0 // indirect
+	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 // indirect
+	golang.org/x/sys v0.32.0 // indirect
+	golang.org/x/text v0.24.0 // indirect
 	gonum.org/v1/gonum v0.16.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	modernc.org/libc v1.62.1 // indirect
+	modernc.org/libc v1.63.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
-	modernc.org/memory v1.9.1 // indirect
+	modernc.org/memory v1.10.0 // indirect
 )
 
 go 1.23.0

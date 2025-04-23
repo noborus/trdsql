@@ -66,7 +66,7 @@ func (r *YAMLReader) yamlParse(opts *ReadOpts) error {
 	r.inNULL = opts.InNULL
 
 	var top any
-	for i := 0; i < opts.InPreRead; i++ {
+	for range opts.InPreRead {
 		if err := r.reader.Decode(&top); err != nil {
 			if !errors.Is(err, io.EOF) {
 				return fmt.Errorf("%w: %s", ErrInvalidYAML, err)
@@ -117,7 +117,7 @@ func (r *YAMLReader) Names() ([]string, error) {
 // All YAML types return the DefaultDBType.
 func (r *YAMLReader) Types() ([]string, error) {
 	r.types = make([]string, len(r.names))
-	for i := 0; i < len(r.names); i++ {
+	for i := range r.names {
 		r.types[i] = DefaultDBType
 	}
 	return r.types, nil
@@ -188,7 +188,7 @@ func (r *YAMLReader) PreReadRow() [][]any {
 	rows := make([][]any, len(r.preRead))
 	for n, v := range r.preRead {
 		rows[n] = make([]any, r.columnNum)
-		for i := 0; i < r.columnNum; i++ {
+		for i := range r.columnNum {
 			rows[n][i] = v[r.names[i]]
 		}
 

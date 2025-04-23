@@ -66,7 +66,7 @@ func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 	}
 
 	// Pre-read and stored in slices.
-	for n := 0; n < preReadN; n++ {
+	for range preReadN {
 		row, err := r.reader.Read()
 		if err != nil {
 			if !errors.Is(err, io.EOF) {
@@ -112,7 +112,7 @@ func (r *CSVReader) setColumnType() {
 		return
 	}
 	r.types = make([]string, len(r.names))
-	for i := 0; i < len(r.names); i++ {
+	for i := range r.names {
 		r.types[i] = DefaultDBType
 	}
 }
@@ -150,7 +150,7 @@ func (r *CSVReader) Types() ([]string, error) {
 func (r *CSVReader) PreReadRow() [][]any {
 	rowNum := len(r.preRead)
 	rows := make([][]any, rowNum)
-	for n := 0; n < rowNum; n++ {
+	for n := range rowNum {
 		rows[n] = make([]any, len(r.names))
 		for i, field := range r.preRead[n] {
 			rows[n][i] = colValue(field, r.needNULL, r.inNULL)

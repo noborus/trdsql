@@ -66,7 +66,7 @@ func (r *LTSVReader) setColumnType() {
 		return
 	}
 	r.types = make([]string, len(r.names))
-	for i := 0; i < len(r.names); i++ {
+	for i := range r.names {
 		r.types[i] = DefaultDBType
 	}
 }
@@ -86,7 +86,7 @@ func (r *LTSVReader) Types() ([]string, error) {
 func (r *LTSVReader) PreReadRow() [][]any {
 	rowNum := len(r.preRead)
 	rows := make([][]any, rowNum)
-	for n := 0; n < rowNum; n++ {
+	for n := range rowNum {
 		rows[n] = make([]any, len(r.names))
 		for i := range r.names {
 			f := r.preRead[n][r.names[i]]

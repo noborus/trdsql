@@ -52,7 +52,7 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 	r.needNULL = opts.InNeedNULL
 	r.inNULL = opts.InNULL
 
-	for i := 0; i < opts.InPreRead; i++ {
+	for range opts.InPreRead {
 		if err := r.reader.Decode(&top); err != nil {
 			if !errors.Is(err, io.EOF) {
 				return r, fmt.Errorf("%w: %s", ErrInvalidJSON, err)
@@ -85,7 +85,7 @@ func (r *JSONReader) Names() ([]string, error) {
 // All JSON types return the DefaultDBType.
 func (r *JSONReader) Types() ([]string, error) {
 	r.types = make([]string, len(r.names))
-	for i := 0; i < len(r.names); i++ {
+	for i := range r.names {
 		r.types[i] = DefaultDBType
 	}
 	return r.types, nil
