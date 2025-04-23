@@ -22,8 +22,8 @@ jobs:
     - name: Set environment variables
       shell: bash
       run: |
-        echo "GOPATH=${{ runner.workspace }}" >> $GITHUB_ENV
-        echo "${{ runner.workspace }}/bin" >> $GITHUB_PATH
+        echo "GOPATH=${{ github.workspace }}" >> $GITHUB_ENV
+        echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
