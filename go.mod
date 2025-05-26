@@ -15,7 +15,7 @@ require (
 	github.com/noborus/guesswidth v0.4.0
 	github.com/noborus/sqlss v0.1.0
 	github.com/noborus/tbln v0.0.2
-	github.com/olekukonko/tablewriter v1.0.6
+	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pierrec/lz4/v4 v4.1.22
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.18.2
@@ -28,7 +28,6 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/fatih/color v1.18.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
@@ -36,12 +35,9 @@ require (
 	github.com/itchyny/timefmt-go v0.1.6 // indirect
 	github.com/jwalton/go-supportscolor v1.2.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
-	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/ncruces/go-strftime v0.1.9 // indirect
-	github.com/olekukonko/errors v1.1.0 // indirect
-	github.com/olekukonko/ll v0.0.8 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
