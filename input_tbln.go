@@ -32,7 +32,7 @@ func NewTBLNReader(reader io.Reader, opts *ReadOpts) (*TBLNRead, error) {
 		if !errors.Is(err, io.EOF) {
 			return r, err
 		}
-		debug.Printf(err.Error())
+		debug.Printf("%s", err.Error())
 		return r, nil
 	}
 
@@ -70,7 +70,7 @@ func NewTBLNReader(reader io.Reader, opts *ReadOpts) (*TBLNRead, error) {
 			if !errors.Is(err, io.EOF) {
 				return r, err
 			}
-			debug.Printf(err.Error())
+			debug.Printf("%s", err.Error())
 			return r, nil
 		}
 		r.preRead = append(r.preRead, r.recToRow(rec))

@@ -57,7 +57,7 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 			if !errors.Is(err, io.EOF) {
 				return r, fmt.Errorf("%w: %s", ErrInvalidJSON, err)
 			}
-			debug.Printf(err.Error())
+			debug.Printf("%s", err.Error())
 			return r, nil
 		}
 
