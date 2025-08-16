@@ -59,6 +59,7 @@ var (
 	outUseCRLF      bool
 	outHeader       bool
 	outNoWrap       bool
+	outNoAlign      bool
 	outNull         nilString
 )
 
@@ -233,6 +234,7 @@ func run(writer io.Writer, cfg *dbConfig, args []string) error {
 		trdsql.OutNoWrap(outNoWrap),
 		trdsql.OutNeedNULL(outNull.valid),
 		trdsql.OutNULL(outNull.str),
+		trdsql.OutNoAlign(outNoAlign),
 		trdsql.OutStream(writer),
 	)
 	exporter := trdsql.NewExporter(w)
@@ -375,6 +377,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&outUseCRLF, "out-crlf", false, "use CRLF for output. End each output line with '\\r\\n' instead of '\\n'.")
 	rootCmd.PersistentFlags().BoolVar(&outNoWrap, "out-nowrap", false, "do not wrap long lines(at/md only).")
 	rootCmd.PersistentFlags().BoolVar(&outHeader, "out-header", false, "output column name as header.")
+	rootCmd.PersistentFlags().BoolVar(&outNoAlign, "out-no-align", false, "do not align(at/md only).")
 	rootCmd.PersistentFlags().StringVar(&outCompression, "out-compression", "", "output compression format. [gz|bz2|zstd|lz4|xz]")
 	rootCmd.PersistentFlags().Var(&outNull, "out-null", "value(string) to convert from null on output.")
 

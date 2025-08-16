@@ -59,6 +59,8 @@ type WriteOpts struct {
 	OutNeedNULL bool
 	// OutJSONToYAML is true, convert JSON to YAML(Use only YAML).
 	OutJSONToYAML bool
+	// OutNoAlign is true, do not align the output (Use only AT and MD).
+	OutNoAlign bool
 }
 
 // WriteOpt is a function to set WriteOpts.
@@ -124,6 +126,14 @@ func OutNeedNULL(n bool) WriteOpt {
 func OutNULL(s string) WriteOpt {
 	return func(args *WriteOpts) {
 		args.OutNULL = s
+	}
+}
+
+// OutNoAlign sets the output alignment.
+// If true, the output is not aligned (Use only AT and MD).
+func OutNoAlign(n bool) WriteOpt {
+	return func(args *WriteOpts) {
+		args.OutNoAlign = n
 	}
 }
 
