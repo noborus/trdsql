@@ -57,7 +57,7 @@ func (e *WriteFormat) export(ctx context.Context, db *DB, query string) error {
 	if query == "" {
 		return ErrNoStatement
 	}
-	debug.Printf(query)
+	debug.Printf("%s", query)
 
 	if db.isExec(query) {
 		return db.OtherExec(ctx, query)
