@@ -3,13 +3,13 @@ package trdsql
 import (
 	"strings"
 
-	"github.com/olekukonko/tablewriter"
+	"github.com/noborus/termhyo"
 )
 
 // TWWriter provides methods of the Writer interface.
 type TWWriter struct {
 	writeOpts *WriteOpts
-	writer    *tablewriter.Table
+	writer    *termhyo.Table
 	outNULL   string
 	results   []string
 	needNULL  bool
@@ -28,14 +28,27 @@ func NewTWWriter(writeOpts *WriteOpts, markdown bool) *TWWriter {
 
 // PreWrite is preparation.
 func (w *TWWriter) PreWrite(columns []string, types []string) error {
-	w.writer = tablewriter.NewWriter(w.writeOpts.OutStream)
-	w.writer.SetAutoFormatHeaders(false)
-	w.writer.SetAutoWrapText(!w.writeOpts.OutNoWrap)
-	if w.markdown {
-		w.writer.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
-		w.writer.SetCenterSeparator("|")
+	cols := make([]termhyo.Column, len(columns))
+
+	for i, name := range columns {
+		cols[i] = termhyo.Column{
+			Title: name,
+			Width: 0,
+			Align: "left",
+		}
 	}
-	w.writer.SetHeader(columns)
+	if w.markdown {
+		w.writer = termhyo.NewTable(w.writeOpts.OutStream, cols, termhyo.Border(termhyo.MarkdownStyle))
+		if w.writeOpts.OutNoAlign {
+			w.writer.SetAutoAlign(false)
+		}
+	} else {
+		w.writer = termhyo.NewTable(w.writeOpts.OutStream, cols, termhyo.Border(termhyo.ASCIIStyle))
+		if w.writeOpts.OutNoAlign {
+			w.writer.SetHeaderStyleWithoutBorders(termhyo.DefaultHeaderStyle())
+			w.writer.SetAutoAlign(false)
+		}
+	}
 	w.results = make([]string, len(columns))
 
 	return nil
@@ -53,7 +66,7 @@ func (w *TWWriter) WriteRow(values []any, columns []string) error {
 		}
 		w.results[i] = str
 	}
-	w.writer.Append(w.results)
+	w.writer.AddRow(w.results...)
 	return nil
 }
 

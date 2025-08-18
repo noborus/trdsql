@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/jwalton/gchalk"
-	"github.com/olekukonko/tablewriter"
+	"github.com/noborus/termhyo"
 )
 
 // AnalyzeOpts represents the options for the operation of Analyze.
@@ -106,21 +106,25 @@ func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
 }
 
 func typeTableRender(w io.Writer, names []string, columnTypes []string) {
-	typeTable := tablewriter.NewWriter(w)
-	typeTable.SetAutoFormatHeaders(false)
-	typeTable.SetHeader([]string{"column name", "type"})
+	columns := []termhyo.Column{
+		{Title: "column name"},
+		{Title: "type"},
+	}
+	typeTable := termhyo.NewTable(w, columns, termhyo.Border(termhyo.ASCIIStyle))
 	for i := range names {
-		typeTable.Append([]string{names[i], columnTypes[i]})
+		typeTable.AddRow(names[i], columnTypes[i])
 	}
 	typeTable.Render()
 }
 
 func sampleTableRender(w io.Writer, names []string, results [][]string) {
-	sampleTable := tablewriter.NewWriter(w)
-	sampleTable.SetAutoFormatHeaders(false)
-	sampleTable.SetHeader(names)
+	columns := make([]termhyo.Column, len(names))
+	for i, name := range names {
+		columns[i] = termhyo.Column{Title: name, Width: 0, Align: "left"}
+	}
+	sampleTable := termhyo.NewTable(w, columns, termhyo.Border(termhyo.ASCIIStyle))
 	for _, row := range results {
-		sampleTable.Append(row)
+		sampleTable.AddRow(row...)
 	}
 	sampleTable.Render()
 }
