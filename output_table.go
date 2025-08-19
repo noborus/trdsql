@@ -31,10 +31,15 @@ func (w *TWWriter) PreWrite(columns []string, types []string) error {
 	cols := make([]termhyo.Column, len(columns))
 
 	for i, name := range columns {
+		align := termhyo.Left
+		typ := strings.ToUpper(types[i])
+		if isNumericType(typ) {
+			align = termhyo.Right
+		}
 		cols[i] = termhyo.Column{
 			Title: name,
 			Width: 0,
-			Align: "left",
+			Align: align,
 		}
 	}
 	if w.markdown {
@@ -74,4 +79,14 @@ func (w *TWWriter) WriteRow(values []any, columns []string) error {
 func (w *TWWriter) PostWrite() error {
 	w.writer.Render()
 	return nil
+}
+
+// isNumericType returns true if the type string represents a numeric type.
+func isNumericType(typ string) bool {
+	switch strings.ToUpper(typ) {
+	case "INT", "INT2", "INT4", "INT8", "INTEGER", "BIGINT", "SMALLINT", "TINYINT", "MEDIUMINT",
+		"DECIMAL", "NUMERIC", "FLOAT", "FLOAT4", "FLOAT8", "DOUBLE", "REAL", "NUMBER":
+		return true
+	}
+	return false
 }
