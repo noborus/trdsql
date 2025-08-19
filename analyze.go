@@ -110,7 +110,7 @@ func typeTableRender(w io.Writer, names []string, columnTypes []string) {
 		{Title: "column name"},
 		{Title: "type"},
 	}
-	typeTable := termhyo.NewTable(w, columns, termhyo.Border(termhyo.ASCIIStyle))
+	typeTable := termhyo.NewTable(w, columns)
 	for i := range names {
 		typeTable.AddRow(names[i], columnTypes[i])
 	}
@@ -122,7 +122,7 @@ func sampleTableRender(w io.Writer, names []string, results [][]string) {
 	for i, name := range names {
 		columns[i] = termhyo.Column{Title: name, Width: 0, Align: "left"}
 	}
-	sampleTable := termhyo.NewTable(w, columns, termhyo.Border(termhyo.ASCIIStyle))
+	sampleTable := termhyo.NewTable(w, columns)
 	for _, row := range results {
 		sampleTable.AddRow(row...)
 	}
