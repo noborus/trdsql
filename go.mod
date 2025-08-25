@@ -15,11 +15,11 @@ require (
 	github.com/noborus/guesswidth v0.4.0
 	github.com/noborus/sqlss v0.1.0
 	github.com/noborus/tbln v0.0.2
-	github.com/noborus/termhyo v0.1.0
+	github.com/noborus/termhyo v0.2.0
 	github.com/pierrec/lz4/v4 v4.1.22
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.18.2
-	github.com/ulikunitz/xz v0.5.12
+	github.com/ulikunitz/xz v0.5.13
 	golang.org/x/term v0.34.0
 	modernc.org/sqlite v1.38.2
 )
@@ -51,7 +51,7 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/crypto v0.41.0 // indirect
-	golang.org/x/exp v0.0.0-20250813145105-42675adae3e6 // indirect
+	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b // indirect
 	golang.org/x/sys v0.35.0 // indirect
 	golang.org/x/text v0.28.0 // indirect
 	gonum.org/v1/gonum v0.16.0 // indirect
