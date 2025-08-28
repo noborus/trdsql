@@ -220,7 +220,6 @@ Or, [guess the output format by file name](#Guessbyoutputfilename).
 * `-oq` **character** quote character for output. (default "\"")(CSV only).
 * `-oaq` enclose all fields in quotes for output(CSV only).
 * `-ocrlf` use CRLF for output. End each output line with '\\r\\n' instead of '\\n'."(CSV only).
-* `-onowrap` do not wrap long columns(AT and MD only).
 * `-onull` value(string) to convert from null on output.
 * `-oz` **string** compression format for output. [ gzip | bz2 | zstd | lz4 | xz ]
 
@@ -842,8 +841,6 @@ $ trdsql -omd "SELECT * FROM test.csv"
 |  2 | Melon  |
 |  3 | Apple  |
 ```
-
-The `-onowrap` option does not wrap long columns in `at` or `md` output.
 
 ###  4.17. <a name='vertical-format-output'></a>Vertical format output
 

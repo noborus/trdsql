@@ -58,7 +58,6 @@ var (
 	outAllQuotes    bool
 	outUseCRLF      bool
 	outHeader       bool
-	outNoWrap       bool
 	outNoAlign      bool
 	outNull         nilString
 )
@@ -231,7 +230,6 @@ func run(writer io.Writer, cfg *dbConfig, args []string) error {
 		trdsql.OutAllQuotes(outAllQuotes),
 		trdsql.OutUseCRLF(outUseCRLF),
 		trdsql.OutHeader(outHeader),
-		trdsql.OutNoWrap(outNoWrap),
 		trdsql.OutNeedNULL(outNull.valid),
 		trdsql.OutNULL(outNull.str),
 		trdsql.OutNoAlign(outNoAlign),
@@ -375,7 +373,6 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&outQuote, "out-quote", "\"", "quote character for output.")
 	rootCmd.PersistentFlags().BoolVar(&outAllQuotes, "out-all-quotes", false, "enclose all fields in quotes for output.")
 	rootCmd.PersistentFlags().BoolVar(&outUseCRLF, "out-crlf", false, "use CRLF for output. End each output line with '\\r\\n' instead of '\\n'.")
-	rootCmd.PersistentFlags().BoolVar(&outNoWrap, "out-nowrap", false, "do not wrap long lines(at/md only).")
 	rootCmd.PersistentFlags().BoolVar(&outHeader, "out-header", false, "output column name as header.")
 	rootCmd.PersistentFlags().BoolVar(&outNoAlign, "out-no-align", false, "do not align(at/md only).")
 	rootCmd.PersistentFlags().StringVar(&outCompression, "out-compression", "", "output compression format. [gz|bz2|zstd|lz4|xz]")
