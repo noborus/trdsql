@@ -3,10 +3,10 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
     - name: Check out code into the Go module directory
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Install Go
       if: success()
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v6
       with:
         go-version: ${{ matrix.go-version }}
     - name: Run tests
@@ -14,8 +14,8 @@ jobs:
     strategy:
       matrix:
         go-version:
-        - "1.23"
-        - "1.24"
+        - "oldstable"
+        - "stable"
         platform:
         - ubuntu-latest
         - macos-latest
@@ -27,7 +27,7 @@ jobs:
         env:
           MYSQL_DATABASE: trdsql_test
           MYSQL_ROOT_PASSWORD: root
-        image: mysql:8.0
+        image: mysql:9.5
         ports:
         - 3307:3306
       postgres:
@@ -43,9 +43,9 @@ jobs:
         - 5432:5432
     steps:
     - name: Check out code into the Go module directory
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Install Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v6
       if: success()
       with:
         go-version-file: go.mod
@@ -56,7 +56,7 @@ jobs:
       name: Run tests
       run: make test
     - name: Update coverage report
-      uses: ncruces/go-coverage-report@main
+      uses: ncruces/go-coverage-report@v0
       if: github.event_name == 'push'
       continue-on-error: true
 name: Go
