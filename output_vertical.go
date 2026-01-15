@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	runewidth "github.com/mattn/go-runewidth"
+	"github.com/rivo/uniseg"
 	"golang.org/x/term"
 )
 
@@ -40,8 +40,8 @@ func (w *VFWriter) PreWrite(columns []string, types []string) error {
 	w.header = make([]string, len(columns))
 	w.hSize = 0
 	for i, col := range columns {
-		if w.hSize < runewidth.StringWidth(col) {
-			w.hSize = runewidth.StringWidth(col)
+		if w.hSize < uniseg.StringWidth(col) {
+			w.hSize = uniseg.StringWidth(col)
 		}
 		w.header[i] = col
 	}
@@ -57,7 +57,7 @@ func (w *VFWriter) WriteRow(values []any, columns []string) error {
 		debug.Printf("%s\n", err)
 	}
 	for i, col := range w.header {
-		v := w.hSize - runewidth.StringWidth(col)
+		v := w.hSize - uniseg.StringWidth(col)
 		str := ValString(values[i])
 		if values[i] == nil && w.needNULL {
 			str = w.outNULL
