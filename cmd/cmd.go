@@ -155,6 +155,7 @@ func (cli Cli) Run(args []string) int {
 	flags.BoolVar(&outFlag.TBLN, "otbln", false, "TBLN format for output.")
 	flags.BoolVar(&outFlag.JSONL, "ojsonl", false, "JSON lines format for output.")
 	flags.BoolVar(&outFlag.YAML, "oyaml", false, "YAML format for output.")
+	flags.BoolVar(&outFlag.TSV, "otsv", false, "TSV format for output.")
 
 	if err := flags.Parse(args[1:]); err != nil {
 		log.Printf("ERROR: %s", err)
@@ -547,6 +548,7 @@ type outputFlag struct {
 	MD    bool
 	VF    bool
 	RAW   bool
+	TSV   bool
 }
 
 // outFormat returns format from flag.
@@ -558,6 +560,8 @@ func outputFormat(o outputFlag) trdsql.Format {
 		return trdsql.JSON
 	case o.RAW:
 		return trdsql.RAW
+	case o.TSV:
+		return trdsql.TSV
 	case o.MD:
 		return trdsql.MD
 	case o.AT:
@@ -579,7 +583,7 @@ func outputFormat(o outputFlag) trdsql.Format {
 
 func isOutFormat(name string) bool {
 	switch name {
-	case "ocsv", "oltsv", "ojson", "ojsonl", "oyaml", "otbln", "oat", "omd", "ovf", "oraw":
+	case "ocsv", "oltsv", "ojson", "ojsonl", "oyaml", "otbln", "oat", "omd", "ovf", "oraw", "otsv":
 		return true
 	}
 	return false

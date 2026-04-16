@@ -13,6 +13,7 @@ var extToOutFormat = map[string]Format{
 	"JSONL": JSONL,
 	"TBLN":  TBLN,
 	"RAW":   RAW,
+	"TSV":   TSV,
 	"MD":    MD,
 	"AT":    AT,
 	"VF":    VF,
@@ -186,6 +187,8 @@ func NewWriter(options ...WriteOpt) Writer {
 		return NewTBLNWriter(writeOpts)
 	case JSONL:
 		return NewJSONLWriter(writeOpts)
+	case TSV:
+		return NewTSVWriter(writeOpts)
 	case CSV:
 		return NewCSVWriter(writeOpts)
 	default:
