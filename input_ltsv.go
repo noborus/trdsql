@@ -47,7 +47,7 @@ func NewLTSVReader(reader io.Reader, opts *ReadOpts) (*LTSVReader, error) {
 		}
 
 		// Add only unique column names.
-		for k := 0; k < len(keys); k++ {
+		for k := range keys {
 			if !names[keys[k]] {
 				names[keys[k]] = true
 				r.names = append(r.names, keys[k])
@@ -84,7 +84,7 @@ func (r *LTSVReader) Types() ([]string, error) {
 func (r *LTSVReader) PreReadRow() [][]any {
 	rowNum := len(r.preRead)
 	rows := make([][]any, rowNum)
-	for n := 0; n < rowNum; n++ {
+	for n := range rowNum {
 		rows[n] = make([]any, len(r.names))
 		for i := range r.names {
 			rows[n][i] = r.preRead[n][r.names[i]]

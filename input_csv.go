@@ -142,7 +142,7 @@ func (r *CSVReader) Types() ([]string, error) {
 func (r *CSVReader) PreReadRow() [][]any {
 	rowNum := len(r.preRead)
 	rows := make([][]any, rowNum)
-	for n := 0; n < rowNum; n++ {
+	for n := range rowNum {
 		rows[n] = make([]any, len(r.names))
 		for i, f := range r.preRead[n] {
 			rows[n][i] = f

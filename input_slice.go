@@ -75,7 +75,7 @@ func structReader(tableName string, val reflect.Value) *SliceReader {
 	columnNum := t.NumField()
 	names := make([]string, columnNum)
 	types := make([]string, columnNum)
-	for i := 0; i < columnNum; i++ {
+	for i := range columnNum {
 		f := t.Field(i)
 		names[i] = f.Name
 		types[i] = typeToDBType(f.Type.Kind())
@@ -124,13 +124,13 @@ func structSliceReader(tableName string, val reflect.Value) *SliceReader {
 	columnNum := t.NumField()
 	names := make([]string, columnNum)
 	types := make([]string, columnNum)
-	for i := 0; i < columnNum; i++ {
+	for i := range columnNum {
 		f := t.Field(i)
 		names[i] = f.Name
 		types[i] = typeToDBType(f.Type.Kind())
 	}
 	data := make([][]any, 0)
-	for i := 0; i < length; i++ {
+	for i := range length {
 		rows := val.Index(i)
 		r := make([]any, rows.NumField())
 		for j := 0; j < rows.NumField(); j++ {
@@ -152,14 +152,14 @@ func sliceSliceReader(tableName string, val reflect.Value) *SliceReader {
 	columnNum := col.Len()
 	names := make([]string, columnNum)
 	types := make([]string, columnNum)
-	for i := 0; i < columnNum; i++ {
+	for i := range columnNum {
 		names[i] = fmt.Sprintf("c%d", i+1)
 		colType := reflect.ValueOf(col.Index(i).Interface()).Kind()
 		types[i] = typeToDBType(colType)
 	}
 
 	data := make([][]any, 0)
-	for i := 0; i < length; i++ {
+	for i := range length {
 		data = append(data, val.Index(i).Interface().([]any))
 	}
 	return &SliceReader{
@@ -177,7 +177,7 @@ func interfaceSliceReader(tableName string, val reflect.Value) *SliceReader {
 	names := []string{"c1"}
 	types := []string{typeToDBType(t.Kind())}
 	data := make([][]any, length)
-	for i := 0; i < length; i++ {
+	for i := range length {
 		data[i] = []any{val.Index(i).Interface()}
 	}
 	return &SliceReader{

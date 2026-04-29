@@ -241,7 +241,7 @@ func NewReader(reader io.Reader, readOpts *ReadOpts) (Reader, error) {
 
 func skipRead(r Reader, skipNum int) {
 	skip := make([]any, 1)
-	for i := 0; i < skipNum; i++ {
+	for range skipNum {
 		row, err := r.ReadRow(skip)
 		if err != nil {
 			log.Printf("ERROR: skip error %s", err)

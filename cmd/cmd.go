@@ -409,7 +409,8 @@ func quoteOpts(opts *trdsql.AnalyzeOpts, driver string) *trdsql.AnalyzeOpts {
 }
 
 func optsCommand(opts *trdsql.AnalyzeOpts, args []string) *trdsql.AnalyzeOpts {
-	command := args[0]
+	var command strings.Builder
+	command.WriteString(args[0])
 	omitFlag := false
 	for _, arg := range args[1:] {
 		if omitFlag {
@@ -427,9 +428,9 @@ func optsCommand(opts *trdsql.AnalyzeOpts, args []string) *trdsql.AnalyzeOpts {
 		if len(arg) <= 1 || arg[0] != '-' {
 			arg = quotedArg(arg)
 		}
-		command += " " + arg
+		command.WriteString(" " + arg)
 	}
-	opts.Command = command
+	opts.Command = command.String()
 	return opts
 }
 
