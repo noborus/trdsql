@@ -103,7 +103,7 @@ func (r *GWReader) ReadRow(row []any) ([]any, error) {
 	if err != nil {
 		return row, err
 	}
-	for i := 0; i < len(row); i++ {
+	for i := range row {
 		row[i] = record[i]
 		if r.needNULL {
 			row[i] = replaceNULL(r.inNULL, row[i])
