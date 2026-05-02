@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
+	"github.com/olekukonko/tablewriter/tw"
 )
 
 // TWWriter provides methods of the Writer interface.
@@ -27,15 +28,46 @@ func NewTWWriter(writeOpts *WriteOpts, markdown bool) *TWWriter {
 }
 
 // PreWrite is preparation.
-func (w *TWWriter) PreWrite(columns []string, types []string) error {
-	w.writer = tablewriter.NewWriter(w.writeOpts.OutStream)
-	w.writer.SetAutoFormatHeaders(false)
-	w.writer.SetAutoWrapText(!w.writeOpts.OutNoWrap)
-	if w.markdown {
-		w.writer.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
-		w.writer.SetCenterSeparator("|")
+func (w *TWWriter) PreWrite(columns, types []string) error {
+	var opts []tablewriter.Option
+	opts = append(opts, tablewriter.WithHeaderAutoFormat(tw.Off))
+
+	if !w.writeOpts.OutNoWrap {
+		opts = append(opts, tablewriter.WithRowAutoWrap(tw.WrapNormal))
+	} else {
+		opts = append(opts, tablewriter.WithRowAutoWrap(tw.WrapNone))
 	}
-	w.writer.SetHeader(columns)
+
+	aligns := make([]tw.Align, len(types))
+	for i, t := range types {
+		t = strings.ToLower(t)
+		if strings.Contains(t, "int") || strings.Contains(t, "float") || strings.Contains(t, "numeric") || strings.Contains(t, "decimal") || strings.Contains(t, "double") || strings.Contains(t, "real") {
+			aligns[i] = tw.AlignRight
+		} else {
+			aligns[i] = tw.AlignLeft
+		}
+	}
+	opts = append(opts, tablewriter.WithRowAlignmentConfig(tw.CellAlignment{PerColumn: aligns}))
+
+	if w.markdown {
+		opts = append(opts, tablewriter.WithRendition(tw.Rendition{
+			Borders: tw.Border{Left: tw.On, Top: tw.Off, Right: tw.On, Bottom: tw.Off},
+			Symbols: tw.NewSymbols(tw.StyleMarkdown),
+		}))
+	} else {
+		opts = append(opts, tablewriter.WithRendition(tw.Rendition{
+			Symbols: tw.NewSymbols(tw.StyleASCII),
+		}))
+	}
+
+	w.writer = tablewriter.NewTable(w.writeOpts.OutStream, opts...)
+
+	headerArgs := make([]any, len(columns))
+	for i, col := range columns {
+		headerArgs[i] = col
+	}
+	w.writer.Header(headerArgs...)
+
 	w.results = make([]string, len(columns))
 
 	return nil
@@ -53,12 +85,17 @@ func (w *TWWriter) WriteRow(values []any, columns []string) error {
 		}
 		w.results[i] = str
 	}
-	w.writer.Append(w.results)
+
+	rowArgs := make([]any, len(w.results))
+	for i, res := range w.results {
+		rowArgs[i] = res
+	}
+	_ = w.writer.Append(rowArgs...)
 	return nil
 }
 
 // PostWrite is actual output.
 func (w *TWWriter) PostWrite() error {
-	w.writer.Render()
+	_ = w.writer.Render()
 	return nil
 }

@@ -35,7 +35,7 @@ func NewVFWriter(writeOpts *WriteOpts) *VFWriter {
 }
 
 // PreWrite is preparation.
-func (w *VFWriter) PreWrite(columns []string, types []string) error {
+func (w *VFWriter) PreWrite(columns, types []string) error {
 	w.count = 0
 	w.header = make([]string, len(columns))
 	w.hSize = 0
@@ -52,7 +52,7 @@ func (w *VFWriter) PreWrite(columns []string, types []string) error {
 func (w *VFWriter) WriteRow(values []any, columns []string) error {
 	w.count++
 	_, err := fmt.Fprintf(w.writer,
-		"---[ %d]%s\n", w.count, strings.Repeat("-", (w.termWidth-16)))
+		"---[ %d]%s\n", w.count, strings.Repeat("-", (w.termWidth-16))) //nolint:mnd
 	if err != nil {
 		debug.Printf("%s\n", err)
 	}
@@ -65,7 +65,7 @@ func (w *VFWriter) WriteRow(values []any, columns []string) error {
 
 		_, err := fmt.Fprintf(w.writer,
 			"%s%s | %-s\n",
-			strings.Repeat(" ", v+2),
+			strings.Repeat(" ", v+2), //nolint:mnd
 			col,
 			str)
 		if err != nil {

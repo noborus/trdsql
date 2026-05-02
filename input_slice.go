@@ -1,3 +1,4 @@
+//nolint:goconst
 package trdsql
 
 import (
@@ -24,7 +25,7 @@ type SliceReader struct {
 // and an array of structures.
 func NewSliceReader(tableName string, args any) *SliceReader {
 	val := reflect.ValueOf(args)
-	if val.Kind() == reflect.Ptr {
+	if val.Kind() == reflect.Pointer {
 		val = reflect.Indirect(val)
 	}
 
@@ -101,7 +102,7 @@ func sliceReader(tableName string, val reflect.Value) *SliceReader {
 		return &SliceReader{
 			tableName: tableName,
 			names:     []string{"c1"},
-			types:     []string{"text"},
+			types:     []string{"text"}, //nolint:goconst
 			data:      nil,
 		}
 	}
@@ -192,7 +193,7 @@ func interfaceSliceReader(tableName string, val reflect.Value) *SliceReader {
 func typeToDBType(t reflect.Kind) string {
 	switch t {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return "int"
+		return "int" //nolint:goconst
 	default:
 		return DefaultDBType
 	}

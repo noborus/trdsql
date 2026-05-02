@@ -165,7 +165,7 @@ func TableNames(parsedQuery []string) (map[string]string, []int) {
 // SQLFields returns an array of string fields
 // (interpreting quotes) from the argument query.
 func SQLFields(query string) []string {
-	parsed := make([]string, 0, len(query)/2)
+	parsed := make([]string, 0, len(query)/2) //nolint:mnd
 	buf := new(bytes.Buffer)
 	var singleQuoted, doubleQuoted, backQuote bool
 	for _, r := range query {
@@ -195,7 +195,7 @@ func SQLFields(query string) []string {
 			}
 		case '*':
 			str := buf.String()
-			if strings.ToUpper(str) == "SELECT" { // `SELECT*` to `SELECT *`
+			if strings.ToUpper(str) == "SELECT" { //nolint:goconst // `SELECT*` to `SELECT *`
 				parsed = append(parsed, str)
 				parsed = append(parsed, string(r))
 				buf.Reset()
@@ -378,7 +378,7 @@ func singleFileOpen(fileName string) (io.ReadCloser, error) {
 		return uncompressedReader(bufio.NewReader(os.Stdin)), nil
 	}
 	fileName = expandTilde(trimQuote(fileName))
-	file, err := os.Open(fileName)
+	file, err := os.Open(filepath.Clean(fileName))
 	if err != nil {
 		return nil, err
 	}
@@ -416,7 +416,7 @@ func globFileOpen(globName string) (*io.PipeReader, error) {
 // copyFileOpen opens the file and copies it to the writer.
 func copyFileOpen(writer io.Writer, fileName string) error {
 	debug.Printf("Open: [%s]", fileName)
-	file, err := os.Open(fileName)
+	file, err := os.Open(filepath.Clean(fileName))
 	if err != nil {
 		return err
 	}
@@ -459,7 +459,7 @@ func trimQuote(str string) string {
 }
 
 func trimQuoteAll(str string) string {
-	if len(str) < 2 {
+	if len(str) < 2 { //nolint:mnd
 		return str
 	}
 	if str[0] == '\'' && str[len(str)-1] == '\'' {

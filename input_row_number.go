@@ -1,3 +1,4 @@
+//nolint:goconst
 package trdsql
 
 import (
@@ -28,7 +29,7 @@ func newRowNumberReader(r Reader) *rowNumberReader {
 
 // Names returns column names with an additional row number column.
 func (r *rowNumberReader) Names() ([]string, error) {
-	number := "num"
+	number := "num" //nolint:goconst
 	names, err := r.reader.Names()
 	if err != nil {
 		return nil, err
@@ -54,7 +55,7 @@ func (r *rowNumberReader) Types() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return append([]string{"int"}, types...), nil
+	return append([]string{"int"}, types...), nil //nolint:goconst
 }
 
 // PreReadRow returns pre-read rows with an additional row number column.

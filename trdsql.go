@@ -2,6 +2,8 @@
 //
 // trdsql imports tabular data into a database,
 // executes SQL queries, and executes exports.
+//
+//nolint:goconst
 package trdsql
 
 import (

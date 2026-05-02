@@ -8,7 +8,7 @@ import (
 	"github.com/noborus/trdsql"
 )
 
-func sliceQuery(slice any, tableName string, query string) ([][]any, error) {
+func sliceQuery(slice any, tableName, query string) ([][]any, error) {
 	// trdsql.EnableDebug()
 	importer := trdsql.NewSliceImporter(tableName, slice)
 	writer := trdsql.NewSliceWriter()

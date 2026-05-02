@@ -1,3 +1,4 @@
+//nolint:goconst
 package trdsql
 
 import (
@@ -113,7 +114,7 @@ func (e *WriteFormat) write(ctx context.Context, rows *sql.Rows) error {
 		scanArgs[i] = &values[i]
 	}
 
-	if err := e.Writer.PreWrite(e.columns, e.types); err != nil {
+	if err := e.PreWrite(e.columns, e.types); err != nil {
 		return err
 	}
 
@@ -127,7 +128,7 @@ func (e *WriteFormat) write(ctx context.Context, rows *sql.Rows) error {
 		if err := rows.Scan(scanArgs...); err != nil {
 			return err
 		}
-		if err := e.Writer.WriteRow(values, e.columns); err != nil {
+		if err := e.WriteRow(values, e.columns); err != nil {
 			return err
 		}
 	}
@@ -135,13 +136,13 @@ func (e *WriteFormat) write(ctx context.Context, rows *sql.Rows) error {
 		return err
 	}
 
-	return e.Writer.PostWrite()
+	return e.PostWrite()
 }
 
 // isExecContext returns true if the query is not a SELECT statement.
 // Queries that return no rows in SQlite should use ExecContext and therefore return true.
 func (db *DB) isExecContext(query string) bool {
-	if db.driver == "sqlite3" || db.driver == "sqlite" {
+	if db.driver == "sqlite3" || db.driver == "sqlite" { //nolint:goconst
 		return !strings.HasPrefix(strings.ToUpper(query), "SELECT")
 	}
 	return false

@@ -48,7 +48,7 @@ func NewYAMLReader(reader io.Reader, opts *ReadOpts) (*YAMLReader, error) {
 // jqParse parses a string and returns a *gojq.Query.
 func jqParse(q string) (*gojq.Query, error) {
 	if q == "" {
-		return nil, nil
+		return nil, nil //nolint:nilnil
 	}
 	str := trimQuoteAll(q)
 	query, err := gojq.Parse(str)

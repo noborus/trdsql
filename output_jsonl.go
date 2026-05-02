@@ -23,7 +23,7 @@ func NewJSONLWriter(writeOpts *WriteOpts) *JSONLWriter {
 }
 
 // PreWrite does nothing.
-func (w *JSONLWriter) PreWrite(columns []string, types []string) error {
+func (w *JSONLWriter) PreWrite(columns, types []string) error {
 	return nil
 }
 

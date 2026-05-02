@@ -1,3 +1,4 @@
+//nolint:goconst
 package trdsql
 
 import (
@@ -24,7 +25,7 @@ func NewTBLNWriter(writeOpts *WriteOpts) *TBLNWriter {
 }
 
 // PreWrite is prepare tbln definition body.
-func (w *TBLNWriter) PreWrite(columns []string, types []string) error {
+func (w *TBLNWriter) PreWrite(columns, types []string) error {
 	d := tbln.NewDefinition()
 
 	if err := d.SetNames(columns); err != nil {
@@ -70,15 +71,15 @@ func convertType(dbType string) string {
 	switch strings.ToLower(dbType) {
 	case "smallint", "integer", "int", "int2", "int4", "smallserial", "serial":
 		return "int"
-	case "bigint", "int8", "bigserial":
+	case "bigint", "int8", "bigserial": //nolint:goconst
 		return "bigint"
-	case "float", "decimal", "numeric", "real", "double precision":
+	case "float", "decimal", "numeric", "real", "double precision": //nolint:goconst
 		return "numeric"
-	case "bool":
+	case "bool": //nolint:goconst
 		return "bool"
-	case "timestamp", "timestamptz", "date", "time":
+	case "timestamp", "timestamptz", "date", "time": //nolint:goconst
 		return "timestamp"
-	case "string", "text", "char", "varchar":
+	case "string", "text", "char", "varchar": //nolint:goconst
 		return "text"
 	default:
 		return "text"

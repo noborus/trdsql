@@ -24,7 +24,7 @@ func NewLTSVWriter(writeOpts *WriteOpts) *LTSVWriter {
 }
 
 // PreWrite is area preparation.
-func (w *LTSVWriter) PreWrite(columns []string, types []string) error {
+func (w *LTSVWriter) PreWrite(columns, types []string) error {
 	w.results = make([]string, len(columns))
 	return nil
 }

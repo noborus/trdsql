@@ -124,8 +124,8 @@ func (r *LTSVReader) read() (map[string]string, []string, error) {
 	lvs := make(map[string]string)
 	keys := make([]string, 0, len(columns))
 	for _, column := range columns {
-		kv := strings.SplitN(column, ":", 2)
-		if len(kv) != 2 {
+		kv := strings.SplitN(column, ":", 2) //nolint:mnd
+		if len(kv) != 2 {                    //nolint:mnd
 			return nil, nil, ErrInvalidColumn
 		}
 		lvs[kv[0]] = kv[1]
