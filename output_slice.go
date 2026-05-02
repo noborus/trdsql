@@ -11,7 +11,7 @@ func NewSliceWriter() *SliceWriter {
 }
 
 // PreWrite prepares the area.
-func (w *SliceWriter) PreWrite(columns []string, types []string) error {
+func (w *SliceWriter) PreWrite(columns, types []string) error {
 	w.Table = make([][]any, 0)
 	return nil
 }

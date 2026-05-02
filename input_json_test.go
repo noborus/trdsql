@@ -1,3 +1,4 @@
+//nolint:goconst
 package trdsql
 
 import (
@@ -8,7 +9,7 @@ import (
 	"testing"
 )
 
-func arraySortEqual(t *testing.T, a []string, b []string) bool {
+func arraySortEqual(t *testing.T, a, b []string) bool {
 	t.Helper()
 	if len(a) != len(b) {
 		return false

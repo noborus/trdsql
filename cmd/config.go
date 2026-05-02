@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/noborus/trdsql"
 )
@@ -36,15 +37,19 @@ func configOpen(config string) io.Reader {
 	default:
 		fileName = filepath.Join(os.Getenv("HOME"), ".config", trdsql.AppName, "config.json")
 	}
-	cfg, err := os.Open(fileName)
+	cfg, err := os.Open(filepath.Clean(fileName))
 	if err != nil {
 		if Debug {
-			log.Printf("configOpen: %s", err.Error())
+			safeErr := strings.ReplaceAll(err.Error(), "\n", "")
+			safeErr = strings.ReplaceAll(safeErr, "\r", "")
+			log.Printf("configOpen: %q", safeErr)
 		}
 		return nil
 	}
 	if Debug {
-		log.Printf("config found: %s", fileName)
+		safeFileName := strings.ReplaceAll(fileName, "\n", "")
+		safeFileName = strings.ReplaceAll(safeFileName, "\r", "")
+		log.Printf("config found: %q", safeFileName)
 	}
 	return cfg
 }

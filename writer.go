@@ -1,3 +1,4 @@
+//nolint:goconst
 package trdsql
 
 import (
@@ -26,7 +27,7 @@ var extToOutFormat = map[string]Format{
 type Writer interface {
 	// PreWrite is called first to write.
 	// The arguments are a list of column names and a list of type names.
-	PreWrite(columns []string, types []string) error
+	PreWrite(columns, types []string) error
 	// WriteRow is row write.
 	WriteRow(row []any, columns []string) error
 	// PostWrite is called last in the write.

@@ -1,3 +1,4 @@
+//nolint:goconst
 //go:build cgo
 
 package trdsql
@@ -42,13 +43,13 @@ func Connect(driver, dsn string) (*DB, error) {
 	debug.Printf("driver: %s, dsn: %s", driver, dsn)
 
 	switch driver {
-	case "sqlite3", "sqlite3_ext", "sqlite":
+	case "sqlite3", "sqlite3_ext", "sqlite": //nolint:goconst
 		db.quote = "`"
 		db.maxBulk = 1000
-	case "mysql":
+	case "mysql": //nolint:goconst
 		db.quote = "`"
 		db.maxBulk = 1000
-	case "postgres":
+	case "postgres": //nolint:goconst
 		db.quote = "\""
 	default:
 		db.quote = "\""

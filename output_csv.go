@@ -50,7 +50,7 @@ func NewCSVWriter(writeOpts *WriteOpts) *CSVWriter {
 }
 
 // PreWrite is output of header and preparation.
-func (w *CSVWriter) PreWrite(columns []string, types []string) error {
+func (w *CSVWriter) PreWrite(columns, types []string) error {
 	if !w.outHeader {
 		return nil
 	}

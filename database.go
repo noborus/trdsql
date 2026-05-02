@@ -1,3 +1,4 @@
+//nolint:goconst
 package trdsql
 
 import (
@@ -51,13 +52,13 @@ func (db *DB) Disconnect() error {
 
 // CreateTable is create a (temporary) table in the database.
 // The arguments are the table name, column name, column type, and temporary flag.
-func (db *DB) CreateTable(tableName string, columnNames []string, columnTypes []string, isTemporary bool) error {
+func (db *DB) CreateTable(tableName string, columnNames, columnTypes []string, isTemporary bool) error {
 	return db.CreateTableContext(context.Background(), tableName, columnNames, columnTypes, isTemporary)
 }
 
 // CreateTableContext is create a (temporary) table in the database.
 // The arguments are the table name, column name, column type, and temporary flag.
-func (db *DB) CreateTableContext(ctx context.Context, tableName string, columnNames []string, columnTypes []string, isTemporary bool) error {
+func (db *DB) CreateTableContext(ctx context.Context, tableName string, columnNames, columnTypes []string, isTemporary bool) error {
 	if db.Tx == nil {
 		return ErrNoTransaction
 	}
@@ -74,7 +75,7 @@ func (db *DB) CreateTableContext(ctx context.Context, tableName string, columnNa
 	return err
 }
 
-func (db *DB) queryCreateTable(tableName string, columnNames []string, columnTypes []string, isTemporary bool) string {
+func (db *DB) queryCreateTable(tableName string, columnNames, columnTypes []string, isTemporary bool) string {
 	var buf strings.Builder
 	if isTemporary {
 		buf.WriteString("CREATE TEMPORARY TABLE ")
@@ -134,7 +135,7 @@ func (db *DB) ImportContext(ctx context.Context, tableName string, columnNames [
 		count:     0,
 	}
 
-	if db.driver == "postgres" {
+	if db.driver == "postgres" { //nolint:goconst
 		return db.copyImport(ctx, table, reader)
 	}
 	return db.insertImport(ctx, table, reader)

@@ -1,3 +1,4 @@
+//nolint:goconst
 package trdsql
 
 import (
@@ -651,7 +652,7 @@ func myDsn() string {
 	return myDsn
 }
 
-func checkDBTest(driver string, dsn string) bool {
+func checkDBTest(driver, dsn string) bool {
 	db, err := Connect(driver, dsn)
 	if err != nil {
 		return false

@@ -1,3 +1,4 @@
+//nolint:goconst
 package trdsql_test
 
 import (
@@ -20,7 +21,7 @@ Ken,Thompson,ken
 		return
 	}
 	defer func() {
-		defer os.Remove(tmpfile.Name())
+		_ = os.Remove(tmpfile.Name())
 	}()
 
 	if _, err := tmpfile.Write(in); err != nil {
@@ -55,7 +56,7 @@ Ken,Thompson,ken
 		return
 	}
 	defer func() {
-		defer os.Remove(tmpfile.Name())
+		_ = os.Remove(tmpfile.Name())
 	}()
 	_, err = tmpfile.Write(in)
 	if err != nil {

@@ -1,3 +1,4 @@
+//nolint:goconst
 package trdsql
 
 var keywords = map[string]bool{
@@ -63,14 +64,14 @@ var keywords = map[string]bool{
 	"begin_partition":                  true,
 	"bernoulli":                        true,
 	"between":                          true,
-	"bigint":                           true,
+	"bigint":                           true, //nolint:goconst
 	"binary":                           true,
 	"binlog":                           true,
 	"bit":                              true,
 	"bit_length":                       true,
 	"blob":                             true,
 	"block":                            true,
-	"bool":                             true,
+	"bool":                             true, //nolint:goconst
 	"boolean":                          true,
 	"both":                             true,
 	"breadth":                          true,
@@ -261,7 +262,7 @@ var keywords = map[string]bool{
 	"element":                          true,
 	"else":                             true,
 	"elseif":                           true,
-	"empty":                            true,
+	"empty":                            true, //nolint:goconst
 	"enable":                           true,
 	"enclosed":                         true,
 	"encoding":                         true,
@@ -329,7 +330,7 @@ var keywords = map[string]bool{
 	"first":                            true,
 	"first_value":                      true,
 	"fixed":                            true,
-	"float":                            true,
+	"float":                            true, //nolint:goconst
 	"float4":                           true,
 	"float8":                           true,
 	"floor":                            true,
@@ -380,7 +381,7 @@ var keywords = map[string]bool{
 	"handler":                          true,
 	"hash":                             true,
 	"having":                           true,
-	"header":                           true,
+	"header":                           true, //nolint:goconst
 	"help":                             true,
 	"high_priority":                    true,
 	"histogram":                        true,
@@ -429,7 +430,7 @@ var keywords = map[string]bool{
 	"install":                          true,
 	"instance":                         true,
 	"instead":                          true,
-	"int":                              true,
+	"int":                              true, //nolint:goconst
 	"int1":                             true,
 	"int2":                             true,
 	"int3":                             true,
@@ -591,7 +592,7 @@ var keywords = map[string]bool{
 	"multiset":                         true,
 	"mutex":                            true,
 	"mysql_errno":                      true,
-	"name":                             true,
+	"name":                             true, //nolint:goconst
 	"names":                            true,
 	"national":                         true,
 	"natural":                          true,
@@ -627,7 +628,7 @@ var keywords = map[string]bool{
 	"nullif":                           true,
 	"nulls":                            true,
 	"number":                           true,
-	"numeric":                          true,
+	"numeric":                          true, //nolint:goconst
 	"nvarchar":                         true,
 	"object":                           true,
 	"objects":                          true,
@@ -642,7 +643,7 @@ var keywords = map[string]bool{
 	"old_password":                     true,
 	"omit":                             true,
 	"on":                               true,
-	"one":                              true,
+	"one":                              true, //nolint:goconst
 	"one_shot":                         true,
 	"only":                             true,
 	"open":                             true,
@@ -973,7 +974,7 @@ var keywords = map[string]bool{
 	"stream":                           true,
 	"strict":                           true,
 	"strict_load":                      true,
-	"string":                           true,
+	"string":                           true, //nolint:goconst
 	"strip":                            true,
 	"subclass_origin":                  true,
 	"subject":                          true,
@@ -1010,13 +1011,13 @@ var keywords = map[string]bool{
 	"temporary":                        true,
 	"temptable":                        true,
 	"terminated":                       true,
-	"text":                             true,
+	"text":                             true, //nolint:goconst
 	"than":                             true,
 	"then":                             true,
 	"thread_priority":                  true,
 	"ties":                             true,
 	"time":                             true,
-	"timestamp":                        true,
+	"timestamp":                        true, //nolint:goconst
 	"timestampadd":                     true,
 	"timestampdiff":                    true,
 	"timezone_hour":                    true,
@@ -1083,7 +1084,7 @@ var keywords = map[string]bool{
 	"validate":                         true,
 	"validation":                       true,
 	"validator":                        true,
-	"value":                            true,
+	"value":                            true, //nolint:goconst
 	"value_of":                         true,
 	"values":                           true,
 	"var_pop":                          true,

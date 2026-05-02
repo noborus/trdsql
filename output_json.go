@@ -27,7 +27,7 @@ func NewJSONWriter(writeOpts *WriteOpts) *JSONWriter {
 }
 
 // PreWrite is area preparation.
-func (w *JSONWriter) PreWrite(columns []string, types []string) error {
+func (w *JSONWriter) PreWrite(columns, types []string) error {
 	w.results = make([]*orderedmap.OrderedMap, 0)
 	return nil
 }

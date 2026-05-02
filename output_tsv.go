@@ -33,7 +33,7 @@ func NewTSVWriter(writeOpts *WriteOpts) *TSVWriter {
 }
 
 // PreWrite is output of header and preparation.
-func (w *TSVWriter) PreWrite(columns []string, types []string) error {
+func (w *TSVWriter) PreWrite(columns, types []string) error {
 	if !w.outHeader {
 		return nil
 	}

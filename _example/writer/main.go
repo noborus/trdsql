@@ -19,7 +19,7 @@ func NewWriter(f io.Writer) *Write {
 	}
 }
 
-func (w *Write) PreWrite(columns []string, types []string) error {
+func (w *Write) PreWrite(columns, types []string) error {
 	return nil
 }
 

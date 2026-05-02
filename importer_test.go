@@ -1,3 +1,4 @@
+//nolint:goconst
 package trdsql
 
 import (
@@ -25,7 +26,7 @@ func TestNewImporter(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewImporter(InFormat(CSV)); !reflect.DeepEqual(got.ReadOpts.InFormat, tt.want) {
+			if got := NewImporter(InFormat(CSV)); !reflect.DeepEqual(got.InFormat, tt.want) {
 				t.Errorf("NewImporter() = %v, want %v", got, tt.want)
 			}
 		})

@@ -59,6 +59,8 @@ func (v *nilString) Set(s string) error {
 
 // Run executes the main routine.
 // The return value is the exit code.
+//
+//nolint:gocyclo
 func (cli Cli) Run(args []string) int {
 	var (
 		usage     bool
@@ -163,7 +165,7 @@ func (cli Cli) Run(args []string) int {
 	}
 
 	if version {
-		fmt.Fprintf(cli.OutStream, "%s version %s\n", trdsql.AppName, trdsql.Version)
+		_, _ = fmt.Fprintf(cli.OutStream, "%s version %s\n", trdsql.AppName, trdsql.Version)
 		return 0
 	}
 
@@ -224,7 +226,7 @@ func (cli Cli) Run(args []string) int {
 
 	if usage || (len(query) == 0) {
 		Usage(flags)
-		return 2
+		return 2 //nolint:mnd
 	}
 
 	preRead := inPreRead
@@ -255,7 +257,7 @@ func (cli Cli) Run(args []string) int {
 
 	writer := cli.OutStream
 	if outFile != "" {
-		writer, err = os.Create(outFile)
+		writer, err = os.Create(filepath.Clean(outFile))
 		if err != nil {
 			log.Printf("%s", err)
 			return 1
@@ -325,9 +327,9 @@ func (cli Cli) Run(args []string) int {
 // Usage is outputs usage information.
 func Usage(flags *flag.FlagSet) {
 	bold := gchalk.Bold
-	fmt.Fprintf(flags.Output(), "%s - Execute SQL queries on CSV, LTSV, JSON, YAML and TBLN.\n\n", trdsql.AppName)
-	fmt.Fprintf(flags.Output(), "%s\n", bold("Usage"))
-	fmt.Fprintf(flags.Output(), "\t%s [OPTIONS] [SQL(SELECT...)]\n\n", trdsql.AppName)
+	_, _ = fmt.Fprintf(flags.Output(), "%s - Execute SQL queries on CSV, LTSV, JSON, YAML and TBLN.\n\n", trdsql.AppName)
+	_, _ = fmt.Fprintf(flags.Output(), "%s\n", bold("Usage"))
+	_, _ = fmt.Fprintf(flags.Output(), "\t%s [OPTIONS] [SQL(SELECT...)]\n\n", trdsql.AppName)
 
 	global := []string{}
 	input := []string{}
@@ -352,32 +354,32 @@ func Usage(flags *flag.FlagSet) {
 			global = append(global, usageFlag(flag))
 		}
 	})
-	fmt.Fprintf(flags.Output(), "%s\n", bold("Options:"))
+	_, _ = fmt.Fprintf(flags.Output(), "%s\n", bold("Options:"))
 	for _, u := range global {
-		fmt.Fprint(flags.Output(), u, "\n")
+		_, _ = fmt.Fprint(flags.Output(), u, "\n")
 	}
 
-	fmt.Fprintf(flags.Output(), "\n%s\n", bold("Input Formats:"))
+	_, _ = fmt.Fprintf(flags.Output(), "\n%s\n", bold("Input Formats:"))
 	for _, u := range inputF {
-		fmt.Fprint(flags.Output(), u, "\n")
+		_, _ = fmt.Fprint(flags.Output(), u, "\n")
 	}
-	fmt.Fprintf(flags.Output(), "\n%s\n", bold("Input options:"))
+	_, _ = fmt.Fprintf(flags.Output(), "\n%s\n", bold("Input options:"))
 	for _, u := range input {
-		fmt.Fprint(flags.Output(), u, "\n")
+		_, _ = fmt.Fprint(flags.Output(), u, "\n")
 	}
 
-	fmt.Fprintf(flags.Output(), "\n%s\n", bold("Output Formats:"))
+	_, _ = fmt.Fprintf(flags.Output(), "\n%s\n", bold("Output Formats:"))
 	for _, u := range outputF {
-		fmt.Fprint(flags.Output(), u, "\n")
+		_, _ = fmt.Fprint(flags.Output(), u, "\n")
 	}
-	fmt.Fprintf(flags.Output(), "\n%s\n", bold("Output options:"))
+	_, _ = fmt.Fprintf(flags.Output(), "\n%s\n", bold("Output options:"))
 	for _, u := range output {
-		fmt.Fprint(flags.Output(), u, "\n")
+		_, _ = fmt.Fprint(flags.Output(), u, "\n")
 	}
-	fmt.Fprintf(flags.Output(), "\n%s\n", bold("Examples:"))
-	fmt.Fprintf(flags.Output(), "  $ trdsql \"SELECT c1,c2 FROM test.csv\"\n")
-	fmt.Fprintf(flags.Output(), "  $ trdsql -oltsv \"SELECT c1,c2 FROM test.json::.items\"\n")
-	fmt.Fprintf(flags.Output(), "  $ cat test.csv | trdsql -icsv -oltsv \"SELECT c1,c2 FROM -\"\n")
+	_, _ = fmt.Fprintf(flags.Output(), "\n%s\n", bold("Examples:"))
+	_, _ = fmt.Fprintf(flags.Output(), "  $ trdsql \"SELECT c1,c2 FROM test.csv\"\n")
+	_, _ = fmt.Fprintf(flags.Output(), "  $ trdsql -oltsv \"SELECT c1,c2 FROM test.json::.items\"\n")
+	_, _ = fmt.Fprintf(flags.Output(), "  $ cat test.csv | trdsql -icsv -oltsv \"SELECT c1,c2 FROM -\"\n")
 }
 
 func usageFlag(f *flag.Flag) string {
@@ -397,12 +399,12 @@ func usageFlag(f *flag.Flag) string {
 
 func printDBList(w io.Writer, cfg *config) {
 	for od, odb := range cfg.Database {
-		fmt.Fprintf(w, "%s:%s\n", od, odb.Driver)
+		_, _ = fmt.Fprintf(w, "%s:%s\n", od, odb.Driver)
 	}
 }
 
 func quoteOpts(opts *trdsql.AnalyzeOpts, driver string) *trdsql.AnalyzeOpts {
-	if driver == "postgres" {
+	if driver == "postgres" { //nolint:goconst
 		opts.Quote = `\"`
 	}
 	return opts
@@ -438,7 +440,7 @@ func trimQuery(query string) string {
 	return strings.TrimRight(strings.TrimSpace(query), ";")
 }
 
-func getQuery(args []string, tableName string, queryFile string) (string, error) {
+func getQuery(args []string, tableName, queryFile string) (string, error) {
 	if tableName != "" {
 		var query strings.Builder
 		query.WriteString(TableQuery)
@@ -451,14 +453,14 @@ func getQuery(args []string, tableName string, queryFile string) (string, error)
 		return trimQuery(strings.Join(args, " ")), nil
 	}
 
-	sqlByte, err := os.ReadFile(queryFile)
+	sqlByte, err := os.ReadFile(filepath.Clean(queryFile))
 	if err != nil {
 		return "", err
 	}
 	return trimQuery(string(sqlByte)), nil
 }
 
-func getDB(cfg *config, cDB string, cDriver string, cDSN string) (string, string) {
+func getDB(cfg *config, cDB, cDriver, cDSN string) (string, string) {
 	if cDB == "" {
 		cDB = cfg.Db
 	}
@@ -610,12 +612,12 @@ func outGuessCompression(fileName string) string {
 	ext := strings.ToLower(strings.TrimLeft(dotExt, "."))
 	switch ext {
 	case "gz":
-		return "gzip"
-	case "bz2":
-		return "bzip2"
+		return "gzip" //nolint:goconst
+	case "bz2": //nolint:goconst
+		return "bzip2" //nolint:goconst
 	case "zst":
-		return "zstd"
-	case "lz4":
+		return "zstd" //nolint:goconst
+	case "lz4": //nolint:goconst
 		return "lz4"
 	case "xz":
 		return "xz"

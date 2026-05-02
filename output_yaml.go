@@ -25,7 +25,7 @@ func NewYAMLWriter(writeOpts *WriteOpts) *YAMLWriter {
 }
 
 // PreWrite is area preparation.
-func (w *YAMLWriter) PreWrite(columns []string, types []string) error {
+func (w *YAMLWriter) PreWrite(columns, types []string) error {
 	w.results = make([]yaml.MapSlice, 0)
 	return nil
 }

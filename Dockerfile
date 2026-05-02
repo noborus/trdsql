@@ -23,4 +23,5 @@ RUN set -ex; \
 FROM alpine:latest
 COPY --from=build-dev /usr/local/bin/trdsql /usr/local/bin/trdsql
 
+USER non-root
 ENTRYPOINT ["trdsql"]

@@ -1,3 +1,4 @@
+//nolint:goconst
 package cmd
 
 import (
@@ -31,7 +32,7 @@ func Test_configOpen(t *testing.T) {
 	for _, tt := range tests {
 		trdsql.AppName = tt.appName
 		t.Run(tt.name, func(t *testing.T) {
-			if got := configOpen(tt.args); !((got == nil) == tt.want) {
+			if got := configOpen(tt.args); (got == nil) != tt.want {
 				t.Errorf("configOpen() = %v, want %v", got, tt.want)
 			}
 		})
