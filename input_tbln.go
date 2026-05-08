@@ -8,7 +8,7 @@ import (
 	"github.com/noborus/tbln"
 )
 
-// TBLNRead provides methods of the Reader interface.
+// TBLNRead reads TBLN format input with a definition header and provides methods of the Reader interface.
 type TBLNRead struct {
 	reader    tbln.Reader
 	inNULL    string
@@ -17,7 +17,7 @@ type TBLNRead struct {
 	needNULL  bool
 }
 
-// NewTBLNReader returns TBLNRead and error.
+// NewTBLNReader returns a TBLNRead configured with input options.
 func NewTBLNReader(reader io.Reader, opts *ReadOpts) (*TBLNRead, error) {
 	r := &TBLNRead{}
 	r.reader = tbln.NewReader(reader)

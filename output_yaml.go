@@ -7,7 +7,7 @@ import (
 	"github.com/goccy/go-yaml"
 )
 
-// YAMLWriter provides methods of the Writer interface.
+// YAMLWriter writes result rows as a YAML sequence of objects.
 type YAMLWriter struct {
 	writer   *yaml.Encoder
 	outNULL  string
@@ -15,7 +15,7 @@ type YAMLWriter struct {
 	needNULL bool
 }
 
-// NewYAMLWriter returns YAMLWriter.
+// NewYAMLWriter returns a YAMLWriter configured with output options.
 func NewYAMLWriter(writeOpts *WriteOpts) *YAMLWriter {
 	w := &YAMLWriter{}
 	w.writer = yaml.NewEncoder(writeOpts.OutStream)

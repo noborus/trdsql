@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// LTSVReader provides methods of the Reader interface.
+// LTSVReader parses LTSV (tab-separated key:value pairs).
 type LTSVReader struct {
 	reader    *bufio.Reader
 	delimiter string
@@ -19,7 +19,7 @@ type LTSVReader struct {
 	needNULL  bool
 }
 
-// NewLTSVReader returns LTSVReader and error.
+// NewLTSVReader returns an LTSVReader configured with input options.
 func NewLTSVReader(reader io.Reader, opts *ReadOpts) (*LTSVReader, error) {
 	r := &LTSVReader{}
 	r.reader = bufio.NewReader(reader)

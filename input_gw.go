@@ -7,7 +7,8 @@ import (
 	"github.com/noborus/guesswidth"
 )
 
-// GWReader provides methods of the Reader interface.
+// GWReader is a fixed-width style reader backed by guesswidth.
+// It guesses widths from input and splits each line by those widths.
 type GWReader struct {
 	reader    *guesswidth.GuessWidth
 	scanNum   int
@@ -19,7 +20,7 @@ type GWReader struct {
 	needNULL  bool
 }
 
-// NewGWReader returns GWReader and error.
+// NewGWReader returns a GWReader initialized with guessed column widths.
 func NewGWReader(reader io.Reader, opts *ReadOpts) (*GWReader, error) {
 	r := &GWReader{}
 	r.reader = guesswidth.NewReader(reader)
