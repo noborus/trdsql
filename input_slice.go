@@ -24,7 +24,7 @@ type SliceReader struct {
 // and an array of structures.
 func NewSliceReader(tableName string, args any) *SliceReader {
 	val := reflect.ValueOf(args)
-	if val.Kind() == reflect.Ptr {
+	if val.Kind() == reflect.Pointer {
 		val = reflect.Indirect(val)
 	}
 

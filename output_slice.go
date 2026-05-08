@@ -5,7 +5,7 @@ type SliceWriter struct {
 	Table [][]any
 }
 
-// NewSliceWriter return SliceWriter.
+// NewSliceWriter returns a SliceWriter.
 func NewSliceWriter() *SliceWriter {
 	return &SliceWriter{}
 }

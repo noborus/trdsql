@@ -6,7 +6,7 @@ import (
 	"github.com/noborus/tbln"
 )
 
-// TBLNWriter provides methods of the Writer interface.
+// TBLNWriter writes rows in TBLN format with a definition header.
 type TBLNWriter struct {
 	writer   *tbln.Writer
 	outNULL  string
@@ -14,7 +14,7 @@ type TBLNWriter struct {
 	needNULL bool
 }
 
-// NewTBLNWriter returns TBLNWriter.
+// NewTBLNWriter returns a TBLNWriter configured with output options.
 func NewTBLNWriter(writeOpts *WriteOpts) *TBLNWriter {
 	w := &TBLNWriter{}
 	w.writer = tbln.NewWriter(writeOpts.OutStream)

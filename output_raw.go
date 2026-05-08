@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-// RAWWriter provides methods of the Writer interface.
+// RAWWriter writes rows as plain delimited text without escaping.
 type RAWWriter struct {
 	writer    *bufio.Writer
 	delimiter string
@@ -15,7 +15,7 @@ type RAWWriter struct {
 	needNULL  bool
 }
 
-// NewRAWWriter returns RAWWriter.
+// NewRAWWriter returns a RAWWriter configured with output options.
 func NewRAWWriter(writeOpts *WriteOpts) *RAWWriter {
 	delimiter, err := strconv.Unquote(`"` + writeOpts.OutDelimiter + `"`)
 	if err != nil {

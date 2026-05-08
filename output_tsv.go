@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// TSVWriter provides methods of the Writer interface.
+// TSVWriter writes rows as tab-separated values.
 // TSV (IANA text/tab-separated-values) has no quoting or escaping.
 // Fields containing tab or newline characters have those replaced with spaces.
 type TSVWriter struct {
@@ -17,7 +17,7 @@ type TSVWriter struct {
 	needNULL  bool
 }
 
-// NewTSVWriter returns TSVWriter.
+// NewTSVWriter returns a TSVWriter configured with output options.
 func NewTSVWriter(writeOpts *WriteOpts) *TSVWriter {
 	w := &TSVWriter{}
 	w.writer = bufio.NewWriter(writeOpts.OutStream)
