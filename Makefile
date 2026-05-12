@@ -10,7 +10,7 @@ ifeq ($(strip $(VERSION)),)
 else
   LDFLAGS="-X github.com/noborus/$(TARGET_NAME).Version=$(VERSION)"
 endif
-GOVERSION ?= "1.21.x"
+GOVERSION ?= "1.26.x"
 BUILDFLAG=-tags $(TAGS) -ldflags=$(LDFLAGS)
 GOBUILD=$(GOCMD) build $(BUILDFLAG)
 GOTEST=$(GOCMD) test -tags $(TAGS) ./...

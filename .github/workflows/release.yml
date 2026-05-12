@@ -46,13 +46,13 @@ jobs:
       with:
         go-version: 'stable'
     - name: Setup Zig
-      uses: goto-bus-stop/setup-zig@v2
+      uses: mlugg/setup-zig@v2
     - name: make package
       run: |
         export "CC=zig cc -target ${{ matrix.ZIG_TARGET }}"
         make pkg GOOS=${{ matrix.GOOS }} GOARCH=${{ matrix.GOARCH }} ZIPOS=${{ matrix.ZIPOS }}
     - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: trdsql-${{ matrix.GOOS }}-${{ matrix.GOARCH }}
         path: dist/*.zip
@@ -76,7 +76,7 @@ jobs:
     - name:  make package
       run: make pkg GOOS=${{ matrix.GOOS }} GOARCH=${{ matrix.GOARCH }}
     - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: trdsql-${{ matrix.GOOS }}-${{ matrix.GOARCH }}
         path: dist/*.zip
