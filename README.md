@@ -99,7 +99,7 @@ Download binary from the [releases](https://github.com/noborus/trdsql/releases) 
 ###  1.3. <a name='homebrew'></a>Homebrew
 
 ```console
-brew install noborus/tap/trdsql
+brew install trdsql
 ```
 
 ###  1.4. <a name='macports'></a>MacPorts
