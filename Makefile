@@ -10,7 +10,7 @@ ifeq ($(strip $(VERSION)),)
 else
   LDFLAGS="-X github.com/noborus/$(TARGET_NAME).Version=$(VERSION)"
 endif
-GOVERSION ?= "1.26.x"
+GOVERSION ?= "1.25.x"
 BUILDFLAG=-tags $(TAGS) -ldflags=$(LDFLAGS)
 GOBUILD=$(GOCMD) build $(BUILDFLAG)
 GOTEST=$(GOCMD) test -tags $(TAGS) ./...
@@ -87,10 +87,8 @@ dist-clean:
 	rm -Rf dist/trdsql_*
 
 build-xgo:
-	-mkdir dist
-	-mkdir dist/tmp
-	-mkdir dist/bin
-	$(XGOCMD) --targets=$(XGO_TARGETS) -dest dist/tmp github.com/noborus/trdsql/cmd/trdsql
+	mkdir -p dist dist/tmp dist/bin
+	$(XGOCMD) --targets=$(XGO_TARGETS) -dest dist/tmp -pkg cmd/$(TARGET_NAME) .
 	find dist/tmp -type f -exec cp {} $(DIST_BIN) \;
 
 dist-bin:
