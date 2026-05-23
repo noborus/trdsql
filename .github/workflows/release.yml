@@ -1,5 +1,7 @@
 name: Release upload
-"on":
+permissions:
+  contents: write
+on:
   release:
     types:
     - published
@@ -11,7 +13,6 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v6
     - name: Install Go
-      if: success()
       uses: actions/setup-go@v6
       with:
         go-version: 'stable'
@@ -25,7 +26,7 @@ jobs:
         echo "GOPATH=${{ github.workspace }}" >> $GITHUB_ENV
         echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
     - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: xgo-build-zip
         path: dist/*.zip
@@ -41,7 +42,6 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v6
     - name: Install Go
-      if: success()
       uses: actions/setup-go@v6
       with:
         go-version: 'stable'
@@ -69,7 +69,6 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v6
     - name: Install Go
-      if: success()
       uses: actions/setup-go@v6
       with:
         go-version: 'stable'
