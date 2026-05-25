@@ -36,7 +36,7 @@ jobs:
         env:
           MYSQL_DATABASE: trdsql_test
           MYSQL_ROOT_PASSWORD: root
-        image: mysql
+        image: mysql:latest
         ports:
         - 3307:3306
       postgres:
@@ -45,7 +45,7 @@ jobs:
           POSTGRES_INITDB_ARGS: --encoding=UTF-8 --locale=C
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
-        image: postgres
+        image: postgres:latest
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s
           --health-retries 5
         ports:
