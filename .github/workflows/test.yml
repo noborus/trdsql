@@ -2,7 +2,11 @@ name: Test
 permissions:
   contents: read
 on:
-- push
+  push:
+    branches:
+    - master
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -32,7 +36,7 @@ jobs:
         env:
           MYSQL_DATABASE: trdsql_test
           MYSQL_ROOT_PASSWORD: root
-        image: mysql:9.5
+        image: mysql
         ports:
         - 3307:3306
       postgres:
