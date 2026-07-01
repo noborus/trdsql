@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
+	"github.com/olekukonko/tablewriter/tw"
 )
 
 // TWWriter renders rows as an ASCII/Markdown table.
@@ -11,7 +12,6 @@ type TWWriter struct {
 	writeOpts *WriteOpts
 	writer    *tablewriter.Table
 	outNULL   string
-	results   []string
 	needNULL  bool
 	markdown  bool
 }
@@ -26,23 +26,35 @@ func NewTWWriter(writeOpts *WriteOpts, markdown bool) *TWWriter {
 	return w
 }
 
+func toRowAutoWrap(noWrap bool) int {
+	if noWrap {
+		return tw.WrapNone
+	}
+	return tw.WrapNormal
+}
+
 // PreWrite is preparation.
 func (w *TWWriter) PreWrite(columns []string, types []string) error {
-	w.writer = tablewriter.NewWriter(w.writeOpts.OutStream)
-	w.writer.SetAutoFormatHeaders(false)
-	w.writer.SetAutoWrapText(!w.writeOpts.OutNoWrap)
+	w.writer = tablewriter.NewTable(w.writeOpts.OutStream,
+		tablewriter.WithHeaderAutoFormat(tw.Off),
+		tablewriter.WithHeader(columns),
+		tablewriter.WithRowAutoWrap(toRowAutoWrap(w.writeOpts.OutNoWrap)),
+		tablewriter.WithRendition(tw.Rendition{
+			Symbols: tw.NewSymbols(tw.StyleASCII),
+		}),
+	)
 	if w.markdown {
-		w.writer.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
-		w.writer.SetCenterSeparator("|")
+		w.writer.Options(tablewriter.WithRendition(tw.Rendition{
+			Borders: tw.Border{Top: tw.Off, Bottom: tw.Off},
+			Symbols: tw.NewSymbols(tw.StyleMarkdown),
+		}))
 	}
-	w.writer.SetHeader(columns)
-	w.results = make([]string, len(columns))
-
 	return nil
 }
 
 // WriteRow is Addition to array.
 func (w *TWWriter) WriteRow(values []any, columns []string) error {
+	results := make([]string, len(values))
 	for i, col := range values {
 		str := ValString(col)
 		if w.markdown {
@@ -51,9 +63,9 @@ func (w *TWWriter) WriteRow(values []any, columns []string) error {
 		if col == nil && w.needNULL {
 			str = w.outNULL
 		}
-		w.results[i] = str
+		results[i] = str
 	}
-	w.writer.Append(w.results)
+	w.writer.Append(results)
 	return nil
 }
 

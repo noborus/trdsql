@@ -10,6 +10,7 @@ import (
 
 	"github.com/jwalton/gchalk"
 	"github.com/olekukonko/tablewriter"
+	"github.com/olekukonko/tablewriter/tw"
 )
 
 // AnalyzeOpts represents the options for the operation of Analyze.
@@ -106,9 +107,10 @@ func Analyze(fileName string, opts *AnalyzeOpts, readOpts *ReadOpts) error {
 }
 
 func typeTableRender(w io.Writer, names []string, columnTypes []string) {
-	typeTable := tablewriter.NewWriter(w)
-	typeTable.SetAutoFormatHeaders(false)
-	typeTable.SetHeader([]string{"column name", "type"})
+	typeTable := tablewriter.NewTable(w,
+		tablewriter.WithHeaderAutoFormat(tw.Off),
+		tablewriter.WithHeader([]string{"column name", "type"}),
+	)
 	for i := range names {
 		typeTable.Append([]string{names[i], columnTypes[i]})
 	}
@@ -116,9 +118,10 @@ func typeTableRender(w io.Writer, names []string, columnTypes []string) {
 }
 
 func sampleTableRender(w io.Writer, names []string, results [][]string) {
-	sampleTable := tablewriter.NewWriter(w)
-	sampleTable.SetAutoFormatHeaders(false)
-	sampleTable.SetHeader(names)
+	sampleTable := tablewriter.NewTable(w,
+		tablewriter.WithHeaderAutoFormat(tw.Off),
+		tablewriter.WithHeader(names),
+	)
 	for _, row := range results {
 		sampleTable.Append(row)
 	}
