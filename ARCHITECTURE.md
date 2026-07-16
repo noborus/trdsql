@@ -266,7 +266,7 @@ This section outlines the specific differences, design justifications, and secur
 * **Improvements:** Auto-aligns numerical content to the right side of columns based on standard database types (`int`, `float`, `decimal`) dynamically parsed during the schema scan phase, improving console presentation.
 
 ### 2. Log Injection and Output Sanitization (Security Hardening)
-* **Divergence:** Your repository introduces logging filters that replace carriage returns (`\r`) and newline (`\n`) characters in raw strings and path values prior to outputting to standard streams:
+* **Divergence:** The repository introduces logging filters that replace carriage returns (`\r`) and newline (`\n`) characters in raw strings and path values prior to outputting to standard streams:
   ```go
   safeErr := strings.ReplaceAll(err.Error(), "\n", "")
   ```
