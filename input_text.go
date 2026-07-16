@@ -8,6 +8,7 @@ import (
 )
 
 // TextReader provides a reader for text format.
+// TextReader reads each line as a single text column without splitting.
 type TextReader struct {
 	reader *bufio.Reader
 	num    int

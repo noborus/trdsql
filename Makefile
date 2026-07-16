@@ -10,7 +10,7 @@ ifeq ($(strip $(VERSION)),)
 else
   LDFLAGS="-X github.com/noborus/$(TARGET_NAME).Version=$(VERSION)"
 endif
-GOVERSION ?= "1.21.x"
+GOVERSION ?= "latest"
 BUILDFLAG=-tags $(TAGS) -ldflags=$(LDFLAGS)
 GOBUILD=$(GOCMD) build $(BUILDFLAG)
 GOTEST=$(GOCMD) test -tags $(TAGS) ./...
@@ -87,21 +87,24 @@ dist-clean:
 	rm -Rf dist/trdsql_*
 
 build-xgo:
-	-mkdir dist
-	-mkdir dist/tmp
-	-mkdir dist/bin
-	$(XGOCMD) --targets=$(XGO_TARGETS) -dest dist/tmp github.com/noborus/trdsql/cmd/trdsql
+	mkdir -p dist dist/tmp dist/bin
+	$(XGOCMD) --targets=$(XGO_TARGETS) -dest dist/tmp -pkg cmd/$(TARGET_NAME) .
 	find dist/tmp -type f -exec cp {} $(DIST_BIN) \;
 
 dist-bin:
 	for file in $(wildcard $(DIST_BIN)/$(BINARY_FILE)-*); do \
-        OS_ARCH=`echo $$file | sed -e 's/.*-\(.*\)-\(.*\)/\1-\2/' -e 's/\.exe//'`; \
-        BINSUFFIX=`echo $$file | sed -n -e 's/.*\(\.exe\)$$/\1/p'`; \
+        OS_ARCH=`echo $$file | sed -E -e 's/\.exe$$//' -e 's#^.*/$(BINARY_FILE)-([^-]+)-(4\.0-)?(.*)$$#\1-\3#'`; \
         OS=`echo $${OS_ARCH} | cut -d '-' -f 1`; \
-        ARCH=`echo $${OS_ARCH} | cut -d '-' -f 2`; \
+        ARCH=`echo $${OS_ARCH} | cut -d '-' -f 2-`; \
         DIST_DIR=dist/trdsql_$(VERSION)_$${OS}_$${ARCH}; \
         mkdir -p $${DIST_DIR}; \
-        cp $$file $${DIST_DIR}/$(BINARY_FILE)$${BINSUFFIX}; \
+        if [ "$$OS" = "windows" ]; then \
+                cp $$file $${DIST_DIR}/$(BINARY_FILE).exe; \
+                zip -j $(DIST_BIN)/$(BINARY_FILE)-$${OS}-$${ARCH}.zip $$file; \
+                rm -f $$file; \
+        else \
+                cp $$file $${DIST_DIR}/$(BINARY_FILE); \
+        fi; \
     done
 
 dist-zip: dist-bin

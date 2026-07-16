@@ -80,6 +80,7 @@ const (
 	WIDTH
 
 	// import
+	// Reads each line as a single text column without splitting.
 	TEXT
 
 	// export

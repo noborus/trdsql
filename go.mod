@@ -7,19 +7,19 @@ require (
 	github.com/iancoleman/orderedmap v0.3.0
 	github.com/itchyny/gojq v0.12.19
 	github.com/jwalton/gchalk v1.3.0
-	github.com/klauspost/compress v1.18.6
+	github.com/klauspost/compress v1.19.0
 	github.com/lib/pq v1.12.3
-	github.com/mattn/go-runewidth v0.0.23
-	github.com/mattn/go-sqlite3 v1.14.44
+	github.com/mattn/go-runewidth v0.0.24
+	github.com/mattn/go-sqlite3 v1.14.47
 	github.com/multiprocessio/go-sqlite3-stdlib v0.0.0-20220822170115-9f6825a1cd25
-	github.com/noborus/guesswidth v0.4.0
+	github.com/noborus/guesswidth v0.5.0
 	github.com/noborus/sqlss v0.1.0
 	github.com/noborus/tbln v0.0.2
 	github.com/olekukonko/tablewriter v1.1.4
-	github.com/pierrec/lz4/v4 v4.1.26
+	github.com/pierrec/lz4/v4 v4.1.27
 	github.com/ulikunitz/xz v0.5.15
-	golang.org/x/term v0.42.0
-	modernc.org/sqlite v1.50.0
+	golang.org/x/term v0.44.0
+	modernc.org/sqlite v1.53.0
 )
 
 require (
@@ -41,11 +41,11 @@ require (
 	github.com/olekukonko/errors v1.3.0 // indirect
 	github.com/olekukonko/ll v0.1.8 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-	golang.org/x/crypto v0.50.0 // indirect
-	golang.org/x/sys v0.43.0 // indirect
-	golang.org/x/tools v0.44.0 // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
+	golang.org/x/crypto v0.53.0 // indirect
+	golang.org/x/sys v0.46.0 // indirect
 	gonum.org/v1/gonum v0.17.0 // indirect
-	modernc.org/libc v1.72.1 // indirect
+	modernc.org/libc v1.73.5 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
 )

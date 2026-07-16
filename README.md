@@ -1,5 +1,7 @@
 # trdsql
 
+<!-- markdownlint-disable MD019 MD029 MD033 MD034 MD051 -->
+
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/noborus/trdsql)](https://pkg.go.dev/github.com/noborus/trdsql)
 [![Go Report Card](https://goreportcard.com/badge/github.com/noborus/trdsql)](https://goreportcard.com/report/github.com/noborus/trdsql)
 [![Go Coverage](https://github.com/noborus/trdsql/wiki/coverage.svg)](https://raw.githack.com/wiki/noborus/trdsql/coverage.html)
@@ -88,7 +90,7 @@ make install
 
 ####  1.1.1. <a name='requirements'></a>Requirements
 
-go 1.21 or higher.
+go 1.25 or higher.
 
 ###  1.2. <a name='download-binary'></a>Download binary
 
@@ -97,7 +99,7 @@ Download binary from the [releases](https://github.com/noborus/trdsql/releases) 
 ###  1.3. <a name='homebrew'></a>Homebrew
 
 ```console
-brew install noborus/tap/trdsql
+brew install trdsql
 ```
 
 ###  1.4. <a name='macports'></a>MacPorts
@@ -202,6 +204,7 @@ trdsql -o[output format] -t [input filename]
 ###  3.3. <a name='output-formats'></a>Output formats
 
 * `-ocsv` CSV format for output. (default)
+* `-otsv` TSV format for output.
 * `-ojson` JSON format for output.
 * `-ojsonl` JSONL(JSON Lines) format for output.
 * `-oltsv` LTSV format for output.
@@ -410,10 +413,10 @@ $ trdsql -ir 3 -iltsv "SELECT * FROM test_indefinite.ltsv"
 trdsql -id "\t" "SELECT * FROM test-tab.csv"
 ```
 
-`-od "\\t"` is TSV (Tab Separated Value) output.
+`-otsv` is TSV (Tab Separated Value) output.
 
 ```console
-$ trdsql -od "\t" "SELECT * FROM test.csv"
+$ trdsql -otsv "SELECT * FROM test.csv"
 1	Orange
 2	Melon
 3	Apple
@@ -980,7 +983,7 @@ Test database has a colors table.
 
 ```console
 $ psql test -c "SELECT * FROM colors"
- id |  name  
+ id |  name
 ----+--------
   1 | orange
   2 | green
@@ -1005,7 +1008,7 @@ trdsql -driver postgres -dns "dbname=test" "CREATE TABLE fruits (id, name) AS SE
 
 ```console
 $ psql -c "SELECT * FROM fruits;"
- id |  name  
+ id |  name
 ----+--------
   1 | Orange
   2 | Melon

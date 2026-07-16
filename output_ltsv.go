@@ -4,7 +4,7 @@ import (
 	"bufio"
 )
 
-// LTSVWriter provides methods of the Writer interface.
+// LTSVWriter writes rows as LTSV (tab-separated key:value pairs).
 type LTSVWriter struct {
 	writer    *bufio.Writer
 	outNULL   string
@@ -13,7 +13,7 @@ type LTSVWriter struct {
 	needNULL  bool
 }
 
-// NewLTSVWriter returns LTSVWriter.
+// NewLTSVWriter returns an LTSVWriter configured with output options.
 func NewLTSVWriter(writeOpts *WriteOpts) *LTSVWriter {
 	w := &LTSVWriter{}
 	w.delimiter = '\t'

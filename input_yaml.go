@@ -12,7 +12,7 @@ import (
 	"github.com/itchyny/gojq"
 )
 
-// YAMLReader provides methods of the Reader interface.
+// YAMLReader parses YAML documents as tabular input.
 type YAMLReader struct {
 	reader    *yaml.Decoder
 	query     *gojq.Query
@@ -25,7 +25,7 @@ type YAMLReader struct {
 	needNULL  bool
 }
 
-// NewYAMLReader returns YAMLReader and error.
+// NewYAMLReader returns a YAMLReader configured with input options and jq filter.
 func NewYAMLReader(reader io.Reader, opts *ReadOpts) (*YAMLReader, error) {
 	r := &YAMLReader{}
 

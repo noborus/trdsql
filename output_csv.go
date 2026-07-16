@@ -7,7 +7,7 @@ import (
 	"unicode/utf8"
 )
 
-// CSVWriter provides methods of the Writer interface.
+// CSVWriter writes rows as delimiter-separated text (CSV style).
 type CSVWriter struct {
 	writer       *bufio.Writer
 	needQuotes   string
@@ -21,7 +21,7 @@ type CSVWriter struct {
 	needNULL     bool
 }
 
-// NewCSVWriter returns CSVWriter.
+// NewCSVWriter returns a CSVWriter configured with output options.
 func NewCSVWriter(writeOpts *WriteOpts) *CSVWriter {
 	w := &CSVWriter{}
 	w.writer = bufio.NewWriter(writeOpts.OutStream)

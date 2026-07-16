@@ -6,14 +6,14 @@ import (
 	"github.com/iancoleman/orderedmap"
 )
 
-// JSONLWriter provides methods of the Writer interface.
+// JSONLWriter writes result rows as newline-delimited JSON objects.
 type JSONLWriter struct {
 	writer   *json.Encoder
 	outNULL  string
 	needNULL bool
 }
 
-// NewJSONLWriter returns JSONLWriter.
+// NewJSONLWriter returns a JSONLWriter configured with output options.
 func NewJSONLWriter(writeOpts *WriteOpts) *JSONLWriter {
 	w := &JSONLWriter{}
 	w.writer = json.NewEncoder(writeOpts.OutStream)

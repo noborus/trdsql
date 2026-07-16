@@ -7,7 +7,7 @@ import (
 	"github.com/olekukonko/tablewriter/tw"
 )
 
-// TWWriter provides methods of the Writer interface.
+// TWWriter renders rows as an ASCII/Markdown table.
 type TWWriter struct {
 	writeOpts *WriteOpts
 	writer    *tablewriter.Table
@@ -17,7 +17,7 @@ type TWWriter struct {
 	markdown  bool
 }
 
-// NewTWWriter returns TWWriter.
+// NewTWWriter returns a TWWriter configured with output options.
 func NewTWWriter(writeOpts *WriteOpts, markdown bool) *TWWriter {
 	w := &TWWriter{}
 	w.writeOpts = writeOpts

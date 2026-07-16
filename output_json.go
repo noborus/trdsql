@@ -8,7 +8,7 @@ import (
 	"github.com/iancoleman/orderedmap"
 )
 
-// JSONWriter provides methods of the Writer interface.
+// JSONWriter writes result rows as a JSON array of objects.
 type JSONWriter struct {
 	writer   *json.Encoder
 	outNULL  string
@@ -16,7 +16,7 @@ type JSONWriter struct {
 	needNULL bool
 }
 
-// NewJSONWriter returns JSONWriter.
+// NewJSONWriter returns a JSONWriter configured with output options.
 func NewJSONWriter(writeOpts *WriteOpts) *JSONWriter {
 	w := &JSONWriter{}
 	w.writer = json.NewEncoder(writeOpts.OutStream)

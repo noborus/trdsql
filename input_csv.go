@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-// CSVReader provides methods of the Reader interface.
+// CSVReader parses delimiter-separated records.
 type CSVReader struct {
 	reader    *csv.Reader
 	inNULL    string
@@ -19,7 +19,7 @@ type CSVReader struct {
 	needNULL  bool
 }
 
-// NewCSVReader returns CSVReader and error.
+// NewCSVReader returns a CSVReader configured with input options.
 func NewCSVReader(reader io.Reader, opts *ReadOpts) (*CSVReader, error) {
 	r := &CSVReader{}
 	r.reader = csv.NewReader(reader)
@@ -115,7 +115,7 @@ func delimiter(sepString string) (rune, error) {
 	}
 	sepRunes, err := strconv.Unquote(`'` + sepString + `'`)
 	if err != nil {
-		return ',', fmt.Errorf("can not get separator: %w:\"%s\"", err, sepString)
+		return ',', fmt.Errorf("cannot get separator: %w:\"%s\"", err, sepString)
 	}
 	sepRune := ([]rune(sepRunes))[0]
 	return sepRune, err
@@ -138,7 +138,7 @@ func (r *CSVReader) Types() ([]string, error) {
 	return r.types, nil
 }
 
-// PreReadRow is returns only columns that store preread rows.
+// PreReadRow returns only columns that store preread rows.
 func (r *CSVReader) PreReadRow() [][]any {
 	rowNum := len(r.preRead)
 	rows := make([][]any, rowNum)
@@ -154,7 +154,7 @@ func (r *CSVReader) PreReadRow() [][]any {
 	return rows
 }
 
-// ReadRow is read the rest of the row.
+// ReadRow reads the rest of the row.
 func (r *CSVReader) ReadRow(row []any) ([]any, error) {
 	if r.limitRead {
 		return nil, io.EOF

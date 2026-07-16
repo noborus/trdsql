@@ -9,7 +9,7 @@ import (
 	"golang.org/x/term"
 )
 
-// VFWriter is Vertical Format output.
+// VFWriter renders each row in vertical format.
 type VFWriter struct {
 	writer    *bufio.Writer
 	outNULL   string
@@ -20,7 +20,7 @@ type VFWriter struct {
 	needNULL  bool
 }
 
-// NewVFWriter returns VFWriter.
+// NewVFWriter returns a VFWriter configured with output options.
 func NewVFWriter(writeOpts *WriteOpts) *VFWriter {
 	var err error
 	w := &VFWriter{}

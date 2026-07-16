@@ -17,7 +17,7 @@ import (
 	"github.com/itchyny/gojq"
 )
 
-// JSONReader provides methods of the Reader interface.
+// JSONReader parses JSON objects and arrays as tabular input.
 type JSONReader struct {
 	reader    *json.Decoder
 	query     *gojq.Query
@@ -30,7 +30,7 @@ type JSONReader struct {
 	needNULL  bool
 }
 
-// NewJSONReader returns JSONReader and error.
+// NewJSONReader returns a JSONReader configured with input options and jq filter.
 func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 	r := &JSONReader{}
 	r.reader = json.NewDecoder(reader)
