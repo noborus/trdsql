@@ -51,7 +51,7 @@ graph TD
 
 ### Design Decisions and Assumptions
 * **Database Virtualization:** Rather than evaluating SQL queries directly in-memory, `trdsql` assumes an underlying database transaction. By default, it spawns an embedded, serverless in-memory SQLite database ([modernc.org/sqlite](https://pkg.go.dev/modernc.org/sqlite) in pure Go, or CGO-based `github.com/mattn/go-sqlite3`).
-* **Table Virtualization:** Any table name referenced in the SQL statement (e.g. `SELECT * FROM test.csv`) is assumed to be a file path. The [Importer](file:///e:/data/devel/build/code/public/trdsql/importer.go) intercepts the query, parses the referenced file paths, creates corresponding temporary tables in the database, and inserts the file records before query execution.
+* **Table Virtualization:** Any table name referenced in the SQL statement (e.g. `SELECT * FROM test.csv`) is assumed to be a file path. The [Importer](importer.go) intercepts the query, parses the referenced file paths, creates corresponding temporary tables in the database, and inserts the file records before query execution.
 * **Schema Inference:** Column names are either parsed from the file headers (if enabled) or generated as ordinal columns (`c1`, `c2`, etc.). Datatypes are dynamically evaluated during pre-reading.
 
 ### Edge Cases and Handling
@@ -65,7 +65,7 @@ graph TD
 
 ### Operational Flow
 
-The life cycle of an execution is managed by the `TRDSQL` structural runner inside [trdsql.go](file:///e:/data/devel/build/code/public/trdsql/trdsql.go).
+The life cycle of an execution is managed by the `TRDSQL` structural runner inside [trdsql.go](trdsql.go).
 
 ```mermaid
 sequenceDiagram
@@ -112,10 +112,10 @@ sequenceDiagram
 ```
 
 ### Module Relations and Code Architecture
-* **[trdsql.go](file:///e:/data/devel/build/code/public/trdsql/trdsql.go):** Coordinates the execution. The central struct `TRDSQL` maintains state for `Importer`, `Exporter`, `Driver`, and `Dsn`.
-* **[database.go](file:///e:/data/devel/build/code/public/trdsql/database.go):** Abstracts sql transaction management, table creation (`CreateTableContext`), and high-performance copying methods (such as PostgreSQL's `COPY` command via `copyImport`).
-* **[reader.go](file:///e:/data/devel/build/code/public/trdsql/reader.go):** Defines the `Reader` interface. Specific implementations register their `ReaderFunc` dynamically.
-* **[writer.go](file:///e:/data/devel/build/code/public/trdsql/writer.go):** Defines the `Writer` interface to format output streams.
+* **[trdsql.go](trdsql.go):** Coordinates the execution. The central struct `TRDSQL` maintains state for `Importer`, `Exporter`, `Driver`, and `Dsn`.
+* **[database.go](database.go):** Abstracts sql transaction management, table creation (`CreateTableContext`), and high-performance copying methods (such as PostgreSQL's `COPY` command via `copyImport`).
+* **[reader.go](reader.go):** Defines the `Reader` interface. Specific implementations register their `ReaderFunc` dynamically.
+* **[writer.go](writer.go):** Defines the `Writer` interface to format output streams.
 
 ---
 
@@ -147,7 +147,7 @@ Path strings supplied as CLI arguments or read from config files are forced thro
 ### Environment Security & Privilege Model
 * **Unprivileged Context:** `trdsql` is designed to run in user-space under unprivileged contexts. It requires no elevated OS rights, root system directories, or administrative privileges.
 * **Network Isolation:** By default, when executing local SQLite transactions, the tool operates entirely offline with zero open sockets or external communication.
-* **Secret Management:** Database passwords passed via command line flags or files should be handled through environment variables or locally restricted config files ([cmd/config.go](file:///e:/data/devel/build/code/public/trdsql/cmd/config.go)).
+* **Secret Management:** Database passwords passed via command line flags or files should be handled through environment variables or locally restricted config files ([cmd/config.go](cmd/config.go)).
 
 ---
 
@@ -187,7 +187,7 @@ Reads from a local comma-separated values file and outputs a clean markdown-comp
 
 #### Command:
 ```bash
-trdsql -ih -o md "SELECT name, age, city FROM file:///e:/data/devel/build/code/public/trdsql/testdata/users.csv WHERE age > 30"
+trdsql -ih -o md "SELECT name, age, city FROM testdata/users.csv WHERE age > 30"
 ```
 
 #### Output:
@@ -203,7 +203,7 @@ Performs a relational `INNER JOIN` between a JSON data structure and a CSV file 
 
 #### Command:
 ```bash
-trdsql -ih "SELECT u.name, d.department FROM file:///e:/data/devel/build/code/public/trdsql/testdata/users.csv u JOIN file:///e:/data/devel/build/code/public/trdsql/testdata/dept.json d ON u.id = d.user_id"
+trdsql -ih "SELECT u.name, d.department FROM testdata/users.csv u JOIN testdata/dept.json d ON u.id = d.user_id"
 ```
 
 #### Output:
@@ -236,8 +236,8 @@ graph TD
 ```
 
 ### Component Test Breakdown
-* **Execution Tests ([trdsql_test.go](file:///e:/data/devel/build/code/public/trdsql/trdsql_test.go)):** Validates correct parsing of file patterns (e.g. wildcards like `tt*.csv`) and generic database actions.
-* **Golden Tests:** Compares terminal table formatting and output configurations against pre-recorded reference outputs in the [testdata](file:///e:/data/devel/build/code/public/trdsql/testdata/) directory (`at.golden`, `md.golden`).
+* **Execution Tests ([trdsql_test.go](trdsql_test.go)):** Validates correct parsing of file patterns (e.g. wildcards like `tt*.csv`) and generic database actions.
+* **Golden Tests:** Compares terminal table formatting and output configurations against pre-recorded reference outputs in the [testdata](testdata/) directory (`at.golden`, `md.golden`).
 * **Module-Specific Unit Tests:** Verify format limits (such as reading invalid nested structures in LTSV or parsing JSON streams containing empty arrays).
 
 ### Execution Procedures
