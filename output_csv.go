@@ -34,7 +34,7 @@ func NewCSVWriter(writeOpts *WriteOpts) *CSVWriter {
 
 	w.outQuote = 0
 	if len(writeOpts.OutQuote) > 0 {
-		w.outQuote = ([]rune(writeOpts.OutQuote))[0]
+		w.outQuote = []rune(writeOpts.OutQuote)[0]
 	}
 	w.outAllQuote = writeOpts.OutAllQuotes
 	w.outUseCRLF = writeOpts.OutUseCRLF

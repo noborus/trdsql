@@ -117,7 +117,7 @@ func delimiter(sepString string) (rune, error) {
 	if err != nil {
 		return ',', fmt.Errorf("cannot get separator: %w:\"%s\"", err, sepString)
 	}
-	sepRune := ([]rune(sepRunes))[0]
+	sepRune := []rune(sepRunes)[0]
 	return sepRune, err
 }
 

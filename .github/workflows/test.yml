@@ -13,9 +13,9 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
     - name: Check out code into the Go module directory
-      uses: actions/checkout@v6
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
     - name: Install Go
-      uses: actions/setup-go@v6
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
       with:
         go-version: ${{ matrix.go-version }}
     - name: Run tests
@@ -52,9 +52,9 @@ jobs:
         - 5432:5432
     steps:
     - name: Check out code into the Go module directory
-      uses: actions/checkout@v6
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
     - name: Install Go
-      uses: actions/setup-go@v6
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
       with:
         go-version-file: go.mod
     - env:
@@ -64,6 +64,6 @@ jobs:
       name: Run tests
       run: make test
     - name: Update coverage report
-      uses: ncruces/go-coverage-report@v0
+      uses: ncruces/go-coverage-report@dfc237255099f2d25066babde51253992175e365
       if: github.event_name == 'push'
       continue-on-error: true
