@@ -133,6 +133,7 @@ func (cli Cli) Run(args []string) int {
 	flags.BoolVar(&inFlag.TBLN, "itbln", false, "TBLN format for input.")
 	flags.BoolVar(&inFlag.WIDTH, "iwidth", false, "width specification format for input.")
 	flags.BoolVar(&inFlag.TEXT, "itext", false, "text format for input.")
+	flags.BoolVar(&inFlag.LOGFMT, "ilogfmt", false, "logfmt format for input.")
 
 	flags.StringVar(&outFile, "out", "", "output file name.")
 	flags.BoolVar(&outWithoutGuess, "out-without-guess", false, "output without guessing (when using -out).")
@@ -498,13 +499,14 @@ func quotedArg(arg string) string {
 
 // inputFlag represents the format of the input.
 type inputFlag struct {
-	CSV   bool
-	LTSV  bool
-	JSON  bool
-	YAML  bool
-	TBLN  bool
-	WIDTH bool
-	TEXT  bool
+	CSV    bool
+	LTSV   bool
+	JSON   bool
+	YAML   bool
+	TBLN   bool
+	WIDTH  bool
+	TEXT   bool
+	LOGFMT bool
 }
 
 // inputFormat returns format from flag.
@@ -524,6 +526,8 @@ func inputFormat(i inputFlag) trdsql.Format {
 		return trdsql.WIDTH
 	case i.TEXT:
 		return trdsql.TEXT
+	case i.LOGFMT:
+		return trdsql.LOGFMT
 	default:
 		return trdsql.GUESS
 	}
@@ -531,7 +535,7 @@ func inputFormat(i inputFlag) trdsql.Format {
 
 func isInFormat(name string) bool {
 	switch name {
-	case "ig", "icsv", "iltsv", "ijson", "iyaml", "itbln", "iwidth", "itext":
+	case "ig", "icsv", "iltsv", "ijson", "iyaml", "itbln", "iwidth", "itext", "ilogfmt":
 		return true
 	}
 	return false
