@@ -49,7 +49,7 @@ func NewCSVWriter(writeOpts *WriteOpts) *CSVWriter {
 	return w
 }
 
-// PreWrite is output of header and preparation.
+// PreWrite writes the header if needed.
 func (w *CSVWriter) PreWrite(columns []string, types []string) error {
 	if !w.outHeader {
 		return nil
@@ -68,7 +68,7 @@ func (w *CSVWriter) PreWrite(columns []string, types []string) error {
 	return err
 }
 
-// WriteRow is row write.
+// WriteRow writes a row of values to the output stream.
 func (w *CSVWriter) WriteRow(values []any, _ []string) error {
 	for n, column := range values {
 		if n > 0 {
@@ -148,7 +148,7 @@ func (w *CSVWriter) fieldNeedsQuotes(field string) bool {
 	return unicode.IsSpace(r1)
 }
 
-// PostWrite is flush.
+// PostWrite flushes the buffered output.
 func (w *CSVWriter) PostWrite() error {
 	return w.writer.Flush()
 }

@@ -6,8 +6,8 @@ import (
 	"reflect"
 )
 
-// SliceReader is a structure for reading tabular data in memory.
-// It can be used as the trdsql reader interface.
+// SliceReader reads tabular data in memory.
+// It can be used as a trdsql Reader.
 type SliceReader struct {
 	tableName string
 	names     []string
@@ -15,12 +15,10 @@ type SliceReader struct {
 	data      [][]any
 }
 
-// NewSliceReader takes a tableName and tabular data in memory
-// and returns SliceReader.
-// The tabular data that can be received is
-// a one-dimensional array,
-// a two-dimensional array,
-// a map,
+// NewSliceReader takes tableName and in-memory tabular data,
+// and returns a SliceReader.
+// Supported data types are a one-dimensional array,
+// a two-dimensional array, a map,
 // and an array of structures.
 func NewSliceReader(tableName string, args any) *SliceReader {
 	val := reflect.ValueOf(args)
@@ -188,7 +186,7 @@ func interfaceSliceReader(tableName string, val reflect.Value) *SliceReader {
 	}
 }
 
-// In sliceReader, only int type is passed to the database as int type.
+// In sliceReader, only int types are passed to the database as int.
 func typeToDBType(t reflect.Kind) string {
 	switch t {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -198,7 +196,7 @@ func typeToDBType(t reflect.Kind) string {
 	}
 }
 
-// TableName returns Table name.
+// TableName returns the table name.
 func (r *SliceReader) TableName() (string, error) {
 	return r.tableName, nil
 }
@@ -213,12 +211,12 @@ func (r *SliceReader) Types() ([]string, error) {
 	return r.types, nil
 }
 
-// PreReadRow is returns entity of the data.
+// PreReadRow returns all pre-read rows.
 func (r *SliceReader) PreReadRow() [][]any {
 	return r.data
 }
 
-// ReadRow only returns EOF.
+// ReadRow always returns io.EOF.
 func (r *SliceReader) ReadRow(row []any) ([]any, error) {
 	return nil, io.EOF
 }

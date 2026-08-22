@@ -14,11 +14,11 @@ import (
 
 // AnalyzeOpts represents the options for the operation of Analyze.
 type AnalyzeOpts struct {
-	// Command is string of the execution command.
+	// Command is the command line used for execution.
 	Command string
-	// Quote is the quote character(s) that varies depending on the sql driver.
+	// Quote is the quote character(s) that varies by SQL driver.
 	Quote string
-	// Detail is outputs detailed information.
+	// Detail indicates whether to output detailed information.
 	Detail bool
 	// OutStream is the output destination.
 	OutStream io.Writer
@@ -32,7 +32,7 @@ var (
 	colorNotes    = gchalk.Magenta
 )
 
-// NewAnalyzeOpts returns AnalyzeOpts.
+// NewAnalyzeOpts returns a default AnalyzeOpts.
 func NewAnalyzeOpts() *AnalyzeOpts {
 	return &AnalyzeOpts{
 		Command:   AppName,

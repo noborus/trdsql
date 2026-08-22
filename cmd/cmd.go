@@ -24,7 +24,7 @@ import (
 // TableQuery is a query to use instead of TABLE.
 const TableQuery = "SELECT * FROM"
 
-// Cli wraps stdout and error output specification.
+// Cli wraps stdout and stderr output destinations.
 type Cli struct {
 	// OutStream is the output destination.
 	OutStream io.Writer
@@ -36,21 +36,21 @@ type Cli struct {
 // Debug represents a flag for detailed output.
 var Debug bool
 
-// The nilString structure represents a string
+// nilString represents a string
 // that distinguishes between empty strings and nil.
 type nilString struct {
 	str   string
 	valid bool
 }
 
-// String returns a string.
-// nilString fills the flag#value interface.
+// String returns the stored string.
+// nilString implements the flag.Value interface.
 func (v *nilString) String() string {
 	return v.str
 }
 
-// Set sets the string with the valid flag set to true.
-// nilString fills the flag#value interface.
+// Set sets the stored string and marks it as valid.
+// nilString implements the flag.Value interface.
 func (v *nilString) Set(s string) error {
 	v.str = s
 	v.valid = true
@@ -58,7 +58,7 @@ func (v *nilString) Set(s string) error {
 }
 
 // Run executes the main routine.
-// The return value is the exit code.
+// It returns the exit code.
 func (cli Cli) Run(args []string) int {
 	var (
 		usage     bool
@@ -323,7 +323,7 @@ func (cli Cli) Run(args []string) int {
 	return 0
 }
 
-// Usage is outputs usage information.
+// Usage outputs usage information.
 func Usage(flags *flag.FlagSet) {
 	bold := gchalk.Bold
 	fmt.Fprintf(flags.Output(), "%s - Execute SQL queries on CSV, LTSV, JSON, YAML and TBLN.\n\n", trdsql.AppName)
@@ -509,7 +509,7 @@ type inputFlag struct {
 	LOGFMT bool
 }
 
-// inputFormat returns format from flag.
+// inputFormat returns the input format selected by flags.
 func inputFormat(i inputFlag) trdsql.Format {
 	switch {
 	case i.CSV:
@@ -556,7 +556,7 @@ type outputFlag struct {
 	TSV   bool
 }
 
-// outFormat returns format from flag.
+// outputFormat returns the output format selected by flags.
 func outputFormat(o outputFlag) trdsql.Format {
 	switch {
 	case o.LTSV:

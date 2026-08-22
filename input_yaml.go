@@ -180,7 +180,7 @@ func (r *YAMLReader) topLevel(top any) (map[string]any, []string, error) {
 	}
 }
 
-// PreReadRow is returns only columns that store preRead rows.
+// PreReadRow returns only columns that store preread rows.
 // One YAML (not YAMLl) returns all rows with preRead.
 func (r *YAMLReader) PreReadRow() [][]any {
 	rows := make([][]any, len(r.preRead))
@@ -194,7 +194,7 @@ func (r *YAMLReader) PreReadRow() [][]any {
 	return rows
 }
 
-// ReadRow is read the rest of the row.
+// ReadRow reads the rest of the row.
 // Only YAMLl requires ReadRow in YAML.
 func (r *YAMLReader) ReadRow(row []any) ([]any, error) {
 	if r.limitRead {

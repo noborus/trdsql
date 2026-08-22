@@ -27,7 +27,7 @@ type Writer interface {
 	// PreWrite is called first to write.
 	// The arguments are a list of column names and a list of type names.
 	PreWrite(columns []string, types []string) error
-	// WriteRow is row write.
+	// WriteRow writes one row.
 	WriteRow(row []any, columns []string) error
 	// PostWrite is called last in the write.
 	PostWrite() error
@@ -143,9 +143,9 @@ func ErrStream(w io.Writer) WriteOpt {
 }
 
 // NewWriter returns a Writer interface.
-// The argument is an option of Functional Option Pattern.
+// The arguments are functional options.
 //
-// usage:
+// Usage:
 //
 //	NewWriter(
 //		trdsql.OutFormat(trdsql.CSV),

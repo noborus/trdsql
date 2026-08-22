@@ -145,7 +145,7 @@ func (r *JSONReader) topLevel(top any) (map[string]any, []string, error) {
 	}
 }
 
-// PreReadRow is returns only columns that store preRead rows.
+// PreReadRow returns only columns that store preread rows.
 // One json (not jsonl) returns all rows with preRead.
 func (r *JSONReader) PreReadRow() [][]any {
 	rows := make([][]any, len(r.preRead))
@@ -161,7 +161,7 @@ func (r *JSONReader) PreReadRow() [][]any {
 	return rows
 }
 
-// ReadRow is read the rest of the row.
+// ReadRow reads the rest of the row.
 // Only jsonl requires ReadRow in json.
 func (r *JSONReader) ReadRow(row []any) ([]any, error) {
 	if r.limitRead {

@@ -8,7 +8,7 @@ type debugT bool
 // debug is a flag for detailed output.
 var debug = debugT(false)
 
-// EnableDebug is enable verbose output for debug.
+// EnableDebug enables verbose debug output.
 func EnableDebug() {
 	debug = true
 }

@@ -1,4 +1,4 @@
-// writer is an example of using a customized writer.
+// writer is an example of using a custom writer.
 package main
 
 import (

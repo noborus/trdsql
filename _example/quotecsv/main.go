@@ -1,5 +1,5 @@
-// quotecsv is an example of outputting a column quoted in double quotes.
-// Customize the writer.
+// quotecsv is an example that outputs all columns quoted in double quotes.
+// It customizes writer options.
 package main
 
 import (

@@ -25,7 +25,7 @@ func init() {
 	sqlite3_stdlib.Register("sqlite3_ext")
 }
 
-// Connect is connects to the database.
+// Connect connects to the database.
 // Currently supported drivers are sqlite3, mysql, postgres.
 // Set quote character and maxBulk depending on the driver type.
 func Connect(driver, dsn string) (*DB, error) {

@@ -26,7 +26,7 @@ func NewTWWriter(writeOpts *WriteOpts, markdown bool) *TWWriter {
 	return w
 }
 
-// PreWrite is preparation.
+// PreWrite initializes the table writer.
 func (w *TWWriter) PreWrite(columns []string, types []string) error {
 	w.writer = tablewriter.NewWriter(w.writeOpts.OutStream)
 	w.writer.SetAutoFormatHeaders(false)
@@ -41,7 +41,7 @@ func (w *TWWriter) PreWrite(columns []string, types []string) error {
 	return nil
 }
 
-// WriteRow is Addition to array.
+// WriteRow appends one row to the table.
 func (w *TWWriter) WriteRow(values []any, columns []string) error {
 	for i, col := range values {
 		str := ValString(col)
@@ -57,7 +57,7 @@ func (w *TWWriter) WriteRow(values []any, columns []string) error {
 	return nil
 }
 
-// PostWrite is actual output.
+// PostWrite renders the table.
 func (w *TWWriter) PostWrite() error {
 	w.writer.Render()
 	return nil

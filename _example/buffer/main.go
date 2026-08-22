@@ -1,5 +1,5 @@
-// buffer is an example using NewBufferImporter.
-// Import JSON string in memory instead of file.
+// buffer is an example that uses NewBufferImporter.
+// It imports a JSON string in memory instead of a file.
 package main
 
 import (

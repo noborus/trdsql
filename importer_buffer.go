@@ -5,13 +5,13 @@ import (
 	"io"
 )
 
-// BufferImporter a structure that includes tableName and Reader.
+// BufferImporter includes tableName and Reader.
 type BufferImporter struct {
 	Reader
 	tableName string
 }
 
-// NewBufferImporter returns trdsql BufferImporter.
+// NewBufferImporter returns a BufferImporter.
 func NewBufferImporter(tableName string, r io.Reader, options ...ReadOpt) (*BufferImporter, error) {
 	readOpts := NewReadOpts(options...)
 	readOpts.realFormat = readOpts.InFormat
@@ -25,13 +25,13 @@ func NewBufferImporter(tableName string, r io.Reader, options ...ReadOpt) (*Buff
 	}, nil
 }
 
-// Import is a method to import from Reader in BufferImporter.
+// Import imports data from Reader in BufferImporter.
 func (i *BufferImporter) Import(db *DB, query string) (string, error) {
 	ctx := context.Background()
 	return i.ImportContext(ctx, db, query)
 }
 
-// ImportContext is a method to import from Reader in BufferImporter.
+// ImportContext imports data from Reader in BufferImporter with context.
 func (i *BufferImporter) ImportContext(ctx context.Context, db *DB, query string) (string, error) {
 	names, err := i.Names()
 	if err != nil {

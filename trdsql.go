@@ -1,7 +1,7 @@
-// Package trdsql implements execute SQL queries on tabular data.
+// Package trdsql executes SQL queries on tabular data.
 //
 // trdsql imports tabular data into a database,
-// executes SQL queries, and executes exports.
+// executes SQL queries, and exports results.
 package trdsql
 
 import (
@@ -52,7 +52,7 @@ func NewTRDSQL(im Importer, ex Exporter) *TRDSQL {
 // Format represents the import/export format.
 type Format int
 
-// Represents Format.
+// Format values.
 const (
 	// import (guesses for import format).
 	GUESS Format = iota
@@ -157,13 +157,13 @@ func (f Format) String() string {
 	}
 }
 
-// Exec is actually executed.
+// Exec executes SQL processing.
 func (trd *TRDSQL) Exec(sql string) error {
 	ctx := context.Background()
 	return trd.ExecContext(ctx, sql)
 }
 
-// ExecContext is actually executed.
+// ExecContext executes SQL processing with context.
 func (trd *TRDSQL) ExecContext(ctx context.Context, sqlQuery string) error {
 	db, err := Connect(trd.Driver, trd.Dsn)
 	if err != nil {
