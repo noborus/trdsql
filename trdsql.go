@@ -113,6 +113,10 @@ const (
 	// import
 	// Pipe-Separated Values format. Format using go standard CSV library.
 	PSV
+
+	// import
+	// logfmt format (space-separated key=value pairs).
+	LOGFMT
 )
 
 // String returns the string representation of the Format.
@@ -144,6 +148,8 @@ func (f Format) String() string {
 		return "TSV"
 	case PSV:
 		return "PSV"
+	case LOGFMT:
+		return "LOGFMT"
 	case YAML:
 		return "YAML"
 	default:

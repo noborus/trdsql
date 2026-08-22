@@ -54,9 +54,10 @@ For usage as a library, please refer to the [godoc](https://pkg.go.dev/github.co
   * 4.13. [TBLN](#tbln)
   * 4.14. [WIDTH](#width)
   * 4.15. [TEXT](#text)
-  * 4.16. [Raw output](#raw-output)
-  * 4.17. [ASCII Table & MarkDown output](#ascii-table-&-markdown-output)
-  * 4.18. [Vertical format output](#vertical-format-output)
+  * 4.16. [logfmt](#logfmt)
+  * 4.17. [Raw output](#raw-output)
+  * 4.18. [ASCII Table & MarkDown output](#ascii-table-&-markdown-output)
+  * 4.19. [Vertical format output](#vertical-format-output)
 * 5. [SQL](#sql)
   * 5.1. [SQL function](#sql-function)
   * 5.2. [JOIN](#join)
@@ -189,6 +190,7 @@ trdsql -o[output format] -t [input filename]
 * `-itbln` TBLN format for input.
 * `-iwidth` width specification format for input.
 * `-itext` text format for input.
+* `-ilogfmt` logfmt format for input.
 
 ####  3.2.1. <a name='input-options'></a>Input options
 
@@ -831,7 +833,31 @@ $ trdsql -inum "SELECT * FROM test.text"
 5,c
 ```
 
-###  4.16. <a name='raw-output'></a>Raw output
+###  4.16. <a name='logfmt'></a>logfmt
+
+The `-ilogfmt` option or files with a “.logfmt” extension are read as [logfmt](https://brandur.org/logfmt),
+a line-based format of space-separated `key=value` pairs. Values may be bare tokens or double-quoted strings.
+
+sample.logfmt
+
+```logfmt
+level=info msg="start request" method=GET path=/ status=200
+level=info msg="request done" method=GET path=/ status=200
+```
+
+```console
+trdsql -ilogfmt "SELECT level, status, msg FROM sample.logfmt"
+```
+
+```csv
+info,200,start request
+info,200,request done
+```
+
+The columns are taken from the keys in the first row (use `-ir` to preread more rows when
+later lines add keys). A key with no `=` (a bare flag) is read as an empty value.
+
+###  4.17. <a name='raw-output'></a>Raw output
 
 `-oraw` is Raw Output.
 It is used when "escape processing is unnecessary" in CSV output.
@@ -856,7 +882,7 @@ $ trdsql -oraw -od "\t|\t" -db pdb "SELECT * FROM test.csv"
 3	|	Apple
 ```
 
-###  4.17. <a name='ascii-table-&-markdown-output'></a>ASCII Table & MarkDown output
+###  4.18. <a name='ascii-table-&-markdown-output'></a>ASCII Table & MarkDown output
 
 `-oat` is ASCII table output.
 
@@ -884,7 +910,7 @@ $ trdsql -omd "SELECT * FROM test.csv"
 
 The `-onowrap` option does not wrap long columns in `at` or `md` output.
 
-###  4.18. <a name='vertical-format-output'></a>Vertical format output
+###  4.19. <a name='vertical-format-output'></a>Vertical format output
 
 `-ovf` is Vertical format output("column name | value" vertically).
 

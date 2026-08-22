@@ -8,17 +8,18 @@ import (
 
 // extToFormat is a map of file extensions to formats.
 var extToFormat map[string]Format = map[string]Format{
-	"CSV":   CSV,
-	"LTSV":  LTSV,
-	"JSON":  JSON,
-	"JSONL": JSON,
-	"YAML":  YAML,
-	"YML":   YAML,
-	"TBLN":  TBLN,
-	"TSV":   TSV,
-	"PSV":   PSV,
-	"WIDTH": WIDTH,
-	"TEXT":  TEXT,
+	"CSV":    CSV,
+	"LTSV":   LTSV,
+	"JSON":   JSON,
+	"JSONL":  JSON,
+	"YAML":   YAML,
+	"YML":    YAML,
+	"TBLN":   TBLN,
+	"TSV":    TSV,
+	"PSV":    PSV,
+	"WIDTH":  WIDTH,
+	"TEXT":   TEXT,
+	"LOGFMT": LOGFMT,
 }
 
 // ReaderFunc is a function that creates a new Reader.
@@ -52,6 +53,9 @@ var readerFuncs = map[Format]ReaderFunc{
 	},
 	TEXT: func(reader io.Reader, opts *ReadOpts) (Reader, error) {
 		return NewTextReader(reader, opts)
+	},
+	LOGFMT: func(reader io.Reader, opts *ReadOpts) (Reader, error) {
+		return NewLogfmtReader(reader, opts)
 	},
 }
 
