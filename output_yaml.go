@@ -24,13 +24,13 @@ func NewYAMLWriter(writeOpts *WriteOpts) *YAMLWriter {
 	return w
 }
 
-// PreWrite is area preparation.
+// PreWrite initializes buffers for output.
 func (w *YAMLWriter) PreWrite(columns []string, types []string) error {
 	w.results = make([]yaml.MapSlice, 0)
 	return nil
 }
 
-// WriteRow is Addition to array.
+// WriteRow appends one row to the output buffer.
 func (w *YAMLWriter) WriteRow(values []any, columns []string) error {
 	m := make(yaml.MapSlice, len(values))
 	for i, col := range values {
@@ -67,7 +67,7 @@ func compatibleYAML(v any, needNULL bool, outNULL string) any {
 	}
 }
 
-// PostWrite is actual output.
+// PostWrite writes buffered rows as YAML.
 func (w *YAMLWriter) PostWrite() error {
 	return w.writer.Encode(w.results)
 }

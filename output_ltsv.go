@@ -23,13 +23,13 @@ func NewLTSVWriter(writeOpts *WriteOpts) *LTSVWriter {
 	return w
 }
 
-// PreWrite is area preparation.
+// PreWrite initializes buffers for output.
 func (w *LTSVWriter) PreWrite(columns []string, types []string) error {
 	w.results = make([]string, len(columns))
 	return nil
 }
 
-// WriteRow is row write to LTSV.
+// WriteRow writes one row in LTSV format.
 func (w *LTSVWriter) WriteRow(values []any, labels []string) error {
 	for n, col := range values {
 		if n > 0 {
@@ -55,7 +55,7 @@ func (w *LTSVWriter) WriteRow(values []any, labels []string) error {
 	return w.writer.WriteByte('\n')
 }
 
-// PostWrite is flush.
+// PostWrite flushes the buffered output.
 func (w *LTSVWriter) PostWrite() error {
 	return w.writer.Flush()
 }

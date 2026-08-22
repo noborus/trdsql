@@ -1,6 +1,6 @@
 package trdsql
 
-// SliceWriter is a structure to receive the result in slice.
+// SliceWriter stores query results in a slice.
 type SliceWriter struct {
 	Table [][]any
 }
@@ -10,13 +10,13 @@ func NewSliceWriter() *SliceWriter {
 	return &SliceWriter{}
 }
 
-// PreWrite prepares the area.
+// PreWrite initializes the result buffer.
 func (w *SliceWriter) PreWrite(columns []string, types []string) error {
 	w.Table = make([][]any, 0)
 	return nil
 }
 
-// WriteRow stores the result in Table.
+// WriteRow appends one row to Table.
 func (w *SliceWriter) WriteRow(values []any, columns []string) error {
 	row := make([]any, len(values))
 	copy(row, values)

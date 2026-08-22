@@ -34,7 +34,7 @@ func NewVFWriter(writeOpts *WriteOpts) *VFWriter {
 	return w
 }
 
-// PreWrite is preparation.
+// PreWrite initializes headers for vertical output.
 func (w *VFWriter) PreWrite(columns []string, types []string) error {
 	w.count = 0
 	w.header = make([]string, len(columns))
@@ -48,7 +48,7 @@ func (w *VFWriter) PreWrite(columns []string, types []string) error {
 	return nil
 }
 
-// WriteRow is actual output.
+// WriteRow writes one row in vertical format.
 func (w *VFWriter) WriteRow(values []any, columns []string) error {
 	w.count++
 	_, err := fmt.Fprintf(w.writer,
@@ -75,7 +75,7 @@ func (w *VFWriter) WriteRow(values []any, columns []string) error {
 	return nil
 }
 
-// PostWrite is flush.
+// PostWrite flushes the buffered output.
 func (w *VFWriter) PostWrite() error {
 	return w.writer.Flush()
 }

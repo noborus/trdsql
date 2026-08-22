@@ -97,12 +97,12 @@ func (r *TBLNRead) Types() ([]string, error) {
 	return d.Types(), nil
 }
 
-// PreReadRow is returns only columns that store preread rows.
+// PreReadRow returns only columns that store preread rows.
 func (r *TBLNRead) PreReadRow() [][]any {
 	return r.preRead
 }
 
-// ReadRow is read the rest of the row.
+// ReadRow reads the next row.
 func (r *TBLNRead) ReadRow(row []any) ([]any, error) {
 	if r.limitRead {
 		return nil, io.EOF

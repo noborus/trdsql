@@ -74,16 +74,15 @@ func RegisterReaderFunc(ext string, readerFunc ReaderFunc) {
 	extFormat++
 }
 
-// Reader is wrap the reader.
-// Reader reads from tabular files.
+// Reader wraps a tabular file reader.
 type Reader interface {
 	// Names returns column names.
 	Names() ([]string, error)
 	// Types returns column types.
 	Types() ([]string, error)
-	// PreReadRow is returns only columns that store preRead rows.
+	// PreReadRow returns pre-read rows.
 	PreReadRow() [][]any
-	// ReadRow is read the rest of the row.
+	// ReadRow reads the next row.
 	ReadRow(row []any) ([]any, error)
 }
 
@@ -99,21 +98,21 @@ type ReadOpts struct {
 	// InJQuery is a jq expression.
 	InJQuery string
 
-	// InFormat is read format.
+	// InFormat is the input format.
 	// The supported format is CSV/LTSV/JSON/TBLN.
 	InFormat   Format
 	realFormat Format
 
-	// InPreRead is number of rows to read ahead.
+	// InPreRead is the number of rows to read ahead.
 	// CSV/LTSV reads the specified number of rows to
 	// determine the number of columns.
 	InPreRead int
 
-	// InSkip is number of rows to skip.
+	// InSkip is the number of rows to skip.
 	// Skip reading specified number of lines.
 	InSkip int
 
-	// InLimitRead is limit read.
+	// InLimitRead limits reading to pre-read rows.
 	InLimitRead bool
 
 	// InHeader is true if there is a header.
@@ -122,15 +121,15 @@ type ReadOpts struct {
 	// InNeedNULL is true, replace InNULL with NULL.
 	InNeedNULL bool
 
-	// IsTemporary is a flag whether to make temporary table.
+	// IsTemporary indicates whether to create a temporary table.
 	// default is true.
 	IsTemporary bool
 
-	// InRowNumber is row number.
+	// InRowNumber indicates whether to add a row number column.
 	InRowNumber bool
 }
 
-// NewReadOpts Returns ReadOpts.
+// NewReadOpts returns a ReadOpts.
 func NewReadOpts(options ...ReadOpt) *ReadOpts {
 	readOpts := &ReadOpts{
 		InFormat:    GUESS,
@@ -150,18 +149,17 @@ func NewReadOpts(options ...ReadOpt) *ReadOpts {
 	return readOpts
 }
 
-// ReadOpt returns a *ReadOpts structure.
-// Used when calling NewImporter.
+// ReadOpt is a functional option for ReadOpts.
 type ReadOpt func(*ReadOpts)
 
-// InFormat is read format.
+// InFormat sets the input format.
 func InFormat(f Format) ReadOpt {
 	return func(args *ReadOpts) {
 		args.InFormat = f
 	}
 }
 
-// InPreRead is number of lines to read ahead.
+// InPreRead sets the number of rows to read ahead.
 func InPreRead(p int) ReadOpt {
 	return func(args *ReadOpts) {
 		args.InPreRead = p
@@ -174,14 +172,14 @@ func InLimitRead(p bool) ReadOpt {
 	}
 }
 
-// InJQ is jq expression.
+// InJQ sets the jq expression.
 func InJQ(p string) ReadOpt {
 	return func(args *ReadOpts) {
 		args.InJQuery = p
 	}
 }
 
-// InSkip is number of lines to skip.
+// InSkip sets the number of rows to skip.
 func InSkip(s int) ReadOpt {
 	return func(args *ReadOpts) {
 		args.InSkip = s
@@ -202,21 +200,21 @@ func InHeader(h bool) ReadOpt {
 	}
 }
 
-// InNeedNULL sets a flag as to whether it should be replaced with NULL.
+// InNeedNULL sets whether InNULL values should be replaced with NULL.
 func InNeedNULL(n bool) ReadOpt {
 	return func(args *ReadOpts) {
 		args.InNeedNULL = n
 	}
 }
 
-// In NULL is a string to replace with NULL.
+// InNULL sets the input string to replace with NULL.
 func InNULL(s string) ReadOpt {
 	return func(args *ReadOpts) {
 		args.InNULL = s
 	}
 }
 
-// IsTemporary is a flag whether to make temporary table.
+// IsTemporary sets whether to create a temporary table.
 func IsTemporary(t bool) ReadOpt {
 	return func(args *ReadOpts) {
 		args.IsTemporary = t
@@ -229,7 +227,7 @@ func InRowNumber(t bool) ReadOpt {
 	}
 }
 
-// NewReader returns an Reader interface
+// NewReader returns a Reader interface
 // depending on the file to be imported.
 func NewReader(reader io.Reader, readOpts *ReadOpts) (Reader, error) {
 	if reader == nil {

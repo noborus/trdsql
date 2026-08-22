@@ -26,13 +26,13 @@ func NewJSONWriter(writeOpts *WriteOpts) *JSONWriter {
 	return w
 }
 
-// PreWrite is area preparation.
+// PreWrite initializes buffers for output.
 func (w *JSONWriter) PreWrite(columns []string, types []string) error {
 	w.results = make([]*orderedmap.OrderedMap, 0)
 	return nil
 }
 
-// WriteRow is Addition to array.
+// WriteRow appends one row to the output buffer.
 func (w *JSONWriter) WriteRow(values []any, columns []string) error {
 	m := orderedmap.New()
 	for i, col := range values {
@@ -82,7 +82,7 @@ func isJSON(s []byte) bool {
 	return err == nil
 }
 
-// PostWrite is actual output.
+// PostWrite writes buffered rows as JSON.
 func (w *JSONWriter) PostWrite() error {
 	return w.writer.Encode(w.results)
 }

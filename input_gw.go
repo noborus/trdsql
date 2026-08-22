@@ -75,7 +75,7 @@ func (r *GWReader) Types() ([]string, error) {
 	return r.types, nil
 }
 
-// PreReadRow is returns only columns that store preread rows.
+// PreReadRow returns only columns that store preread rows.
 func (r *GWReader) PreReadRow() [][]any {
 	rows := make([][]any, r.preRead)
 	for n := 0; n < r.preRead; n++ {
@@ -94,7 +94,7 @@ func (r *GWReader) PreReadRow() [][]any {
 	return rows
 }
 
-// ReadRow is read the rest of the row.
+// ReadRow reads the rest of the row.
 func (r *GWReader) ReadRow(row []any) ([]any, error) {
 	if r.limitRead {
 		return nil, io.EOF

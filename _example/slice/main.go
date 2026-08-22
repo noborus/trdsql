@@ -1,4 +1,4 @@
-// slice is to import data using NewSliceImporter.
+// slice is an example that imports data using NewSliceImporter.
 package main
 
 import (

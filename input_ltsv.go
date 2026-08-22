@@ -80,7 +80,7 @@ func (r *LTSVReader) Types() ([]string, error) {
 	return r.types, nil
 }
 
-// PreReadRow is returns only columns that store preread rows.
+// PreReadRow returns only columns that store preread rows.
 func (r *LTSVReader) PreReadRow() [][]any {
 	rowNum := len(r.preRead)
 	rows := make([][]any, rowNum)
@@ -96,7 +96,7 @@ func (r *LTSVReader) PreReadRow() [][]any {
 	return rows
 }
 
-// ReadRow is read the rest of the row.
+// ReadRow reads the rest of the row.
 func (r *LTSVReader) ReadRow(row []any) ([]any, error) {
 	if r.limitRead {
 		return nil, io.EOF

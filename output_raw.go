@@ -35,7 +35,7 @@ func NewRAWWriter(writeOpts *WriteOpts) *RAWWriter {
 	return w
 }
 
-// PreWrite is output of header and preparation.
+// PreWrite writes the header if needed.
 func (w *RAWWriter) PreWrite(columns []string, types []string) error {
 	if !w.outHeader {
 		return nil
@@ -54,7 +54,7 @@ func (w *RAWWriter) PreWrite(columns []string, types []string) error {
 	return err
 }
 
-// WriteRow is row write.
+// WriteRow writes one raw row.
 func (w *RAWWriter) WriteRow(values []any, _ []string) error {
 	for n, col := range values {
 		if n > 0 {
@@ -73,7 +73,7 @@ func (w *RAWWriter) WriteRow(values []any, _ []string) error {
 	return w.writer.WriteByte('\n')
 }
 
-// PostWrite is flush.
+// PostWrite flushes the buffered output.
 func (w *RAWWriter) PostWrite() error {
 	return w.writer.Flush()
 }

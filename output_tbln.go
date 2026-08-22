@@ -23,7 +23,7 @@ func NewTBLNWriter(writeOpts *WriteOpts) *TBLNWriter {
 	return w
 }
 
-// PreWrite is prepare tbln definition body.
+// PreWrite writes the TBLN definition header.
 func (w *TBLNWriter) PreWrite(columns []string, types []string) error {
 	d := tbln.NewDefinition()
 
@@ -40,7 +40,7 @@ func (w *TBLNWriter) PreWrite(columns []string, types []string) error {
 	return nil
 }
 
-// WriteRow is row write.
+// WriteRow writes one row in TBLN format.
 func (w *TBLNWriter) WriteRow(values []any, columns []string) error {
 	for i, col := range values {
 		str := ValString(col)
@@ -52,12 +52,12 @@ func (w *TBLNWriter) WriteRow(values []any, columns []string) error {
 	return w.writer.WriteRow(w.results)
 }
 
-// PostWrite is nil.
+// PostWrite does nothing.
 func (w *TBLNWriter) PostWrite() error {
 	return nil
 }
 
-// ConvertTypes is converts database types to common types.
+// ConvertTypes converts database types to common types.
 func ConvertTypes(dbTypes []string) []string {
 	ret := make([]string, len(dbTypes))
 	for i, t := range dbTypes {

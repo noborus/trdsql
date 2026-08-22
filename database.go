@@ -26,15 +26,15 @@ var (
 
 // DB represents database information.
 type DB struct {
-	// driver holds the sql driver as a string.
+	// driver holds the SQL driver name.
 	driver string
-	// dsn holds dsn of sql as a character string.
+	// dsn holds the SQL data source name.
 	dsn string
-	// quote is the quote character(s) that varies depending on the sql driver.
+	// quote is the quote character(s) that varies by SQL driver.
 	// PostgreSQL is ("), sqlite3 and mysql is (`).
 	quote string
-	// maxBulk is the maximum number of bundles for bulk insert.
-	// The number of columns x rows is less than maxBulk.
+	// maxBulk is the maximum number of values for bulk insert.
+	// The number of columns multiplied by rows is less than maxBulk.
 	maxBulk int
 	// *sql.DB represents the database connection.
 	*sql.DB
@@ -44,18 +44,18 @@ type DB struct {
 	importCount int
 }
 
-// Disconnect is disconnect the database.
+// Disconnect disconnects the database.
 func (db *DB) Disconnect() error {
 	return db.Close()
 }
 
-// CreateTable is create a (temporary) table in the database.
+// CreateTable creates a (temporary) table in the database.
 // The arguments are the table name, column name, column type, and temporary flag.
 func (db *DB) CreateTable(tableName string, columnNames []string, columnTypes []string, isTemporary bool) error {
 	return db.CreateTableContext(context.Background(), tableName, columnNames, columnTypes, isTemporary)
 }
 
-// CreateTableContext is create a (temporary) table in the database.
+// CreateTableContext creates a (temporary) table in the database with context.
 // The arguments are the table name, column name, column type, and temporary flag.
 func (db *DB) CreateTableContext(ctx context.Context, tableName string, columnNames []string, columnTypes []string, isTemporary bool) error {
 	if db.Tx == nil {
@@ -106,12 +106,12 @@ type importTable struct {
 	count     int
 }
 
-// Import is imports data into a table.
+// Import imports data into a table.
 func (db *DB) Import(tableName string, columnNames []string, reader Reader) error {
 	return db.ImportContext(context.Background(), tableName, columnNames, reader)
 }
 
-// ImportContext is imports data into a table.
+// ImportContext imports data into a table with context.
 func (db *DB) ImportContext(ctx context.Context, tableName string, columnNames []string, reader Reader) error {
 	if db.Tx == nil {
 		return ErrNoTransaction
@@ -339,7 +339,7 @@ func queryInsert(table *importTable) string {
 }
 
 // QuotedName returns the table name quoted.
-// Returns as is, if already quoted.
+// It returns the name as is if it is already quoted.
 func (db *DB) QuotedName(orgName string) string {
 	if orgName == "" {
 		return ""
@@ -355,12 +355,12 @@ func (db *DB) QuotedName(orgName string) string {
 	return buf.String()
 }
 
-// Select is executes SQL select statements.
+// Select executes SQL SELECT statements.
 func (db *DB) Select(query string) (*sql.Rows, error) {
 	return db.SelectContext(context.Background(), query)
 }
 
-// SelectContext is executes SQL select statements with context.
+// SelectContext executes SQL SELECT statements with context.
 // SelectContext is a wrapper for QueryContext.
 func (db *DB) SelectContext(ctx context.Context, query string) (*sql.Rows, error) {
 	rows, err := db.Tx.QueryContext(ctx, query)

@@ -27,7 +27,7 @@ func (w *JSONLWriter) PreWrite(columns []string, types []string) error {
 	return nil
 }
 
-// WriteRow is write one JSONL.
+// WriteRow writes one JSONL object.
 func (w *JSONLWriter) WriteRow(values []any, columns []string) error {
 	m := orderedmap.New()
 	for i, col := range values {

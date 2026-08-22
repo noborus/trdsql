@@ -42,23 +42,23 @@ var (
 	ErrInvalidYAML = errors.New("invalid YAML")
 )
 
-// Importer is the interface import data into the database.
-// Importer parses sql query to decide which file to Import.
+// Importer is the interface for importing data into the database.
+// Importer parses SQL queries to decide which files to import.
 // Therefore, the reader does not receive it directly.
 type Importer interface {
 	Import(db *DB, query string) (string, error)
 	ImportContext(ctx context.Context, db *DB, query string) (string, error)
 }
 
-// ReadFormat represents a structure that satisfies the Importer.
+// ReadFormat implements the Importer interface.
 type ReadFormat struct {
 	*ReadOpts
 }
 
-// NewImporter returns trdsql default Importer.
-// The argument is an option of Functional Option Pattern.
+// NewImporter returns the default Importer.
+// The arguments are functional options.
 //
-// usage:
+// Usage:
 //
 //	trdsql.NewImporter(
 //		trdsql.InFormat(trdsql.CSV),
@@ -72,21 +72,21 @@ func NewImporter(options ...ReadOpt) *ReadFormat {
 	}
 }
 
-// DefaultDBType is default type.
+// DefaultDBType is the default column type.
 const DefaultDBType = "text"
 
-// Import is parses the SQL statement and imports one or more tables.
+// Import parses the SQL statement and imports one or more tables.
 // Import is called from Exec.
-// Return the rewritten SQL and error.
+// It returns the rewritten SQL and an error.
 // No error is returned if there is no table to import.
 func (i *ReadFormat) Import(db *DB, query string) (string, error) {
 	ctx := context.Background()
 	return i.ImportContext(ctx, db, query)
 }
 
-// ImportContext is parses the SQL statement and imports one or more tables.
+// ImportContext parses the SQL statement and imports one or more tables.
 // ImportContext is called from ExecContext.
-// Return the rewritten SQL and error.
+// It returns the rewritten SQL and an error.
 // No error is returned if there is no table to import.
 func (i *ReadFormat) ImportContext(ctx context.Context, db *DB, query string) (string, error) {
 	parsedQuery := SQLFields(query)
@@ -219,17 +219,17 @@ func isSQLKeyWords(str string) bool {
 	return false
 }
 
-// ImportFile is imports a file.
-// Return the quoted table name and error.
-// Do not import if file not found (no error).
+// ImportFile imports a file.
+// It returns the quoted table name and an error.
+// If the file is not found, it does not import and returns no error.
 // Wildcards can be passed as fileName.
 func ImportFile(db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 	return ImportFileContext(context.Background(), db, fileName, readOpts)
 }
 
-// ImportFileContext is imports a file.
-// Return the quoted table name and error.
-// Do not import if file not found (no error).
+// ImportFileContext imports a file with context.
+// It returns the quoted table name and an error.
+// If the file is not found, it does not import and returns no error.
 // Wildcards can be passed as fileName.
 func ImportFileContext(ctx context.Context, db *DB, fileName string, readOpts *ReadOpts) (string, error) {
 	opts, fileName := GuessOpts(readOpts, fileName)
@@ -306,7 +306,7 @@ func GuessOpts(readOpts *ReadOpts, fileName string) (*ReadOpts, string) {
 	return readOpts, fileName
 }
 
-// guessFormat is guess format from the file name extension.
+// guessFormat guesses the format from the file name extension.
 // Format extensions are searched recursively to remove
 // compression extensions such as .gz.
 func guessFormat(fileName string) Format {

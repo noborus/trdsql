@@ -81,7 +81,7 @@ func (r *LogfmtReader) Types() ([]string, error) {
 	return r.types, nil
 }
 
-// PreReadRow is returns only columns that store preread rows.
+// PreReadRow returns only columns that store preread rows.
 func (r *LogfmtReader) PreReadRow() [][]any {
 	rowNum := len(r.preRead)
 	rows := make([][]any, rowNum)
@@ -97,7 +97,7 @@ func (r *LogfmtReader) PreReadRow() [][]any {
 	return rows
 }
 
-// ReadRow is read the rest of the row.
+// ReadRow reads the next row.
 func (r *LogfmtReader) ReadRow(row []any) ([]any, error) {
 	if r.limitRead {
 		return nil, io.EOF

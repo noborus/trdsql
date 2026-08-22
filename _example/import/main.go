@@ -1,4 +1,4 @@
-// import is an example of using a customized import.
+// import is an example of using a custom importer.
 package main
 
 import (
