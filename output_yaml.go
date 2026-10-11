@@ -59,10 +59,12 @@ func compatibleYAML(v any, needNULL bool, outNULL string) any {
 			return yl
 		}
 		return v
-	default:
+	case nil:
 		if needNULL {
 			return outNULL
 		}
+		return nil
+	default:
 		return v
 	}
 }
