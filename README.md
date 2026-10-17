@@ -401,6 +401,15 @@ $ trdsql -ir 3 -iltsv "SELECT * FROM test_indefinite.ltsv"
 3,Apple,100,aomori,red
 ```
 
+For CSV files where rows vary in column count, increasing `-ir` allows trdsql to detect wider rows during pre-read and define table columns accordingly. Rows with extra columns appearing after the pre-read window have those extra columns truncated to match the fixed schema.
+
+```console
+$ trdsql -ir 3 "SELECT * FROM test_indefinite.csv"
+1,Orange,,
+2,Melon,ibraki,
+3,Apple,aomori,red
+```
+
 ###  4.8. <a name='tsv-(tab-separated-value)'></a>TSV (Tab Separated Value)
 
 `-id "\\t"` is input from TSV (Tab Separated Value)
