@@ -58,10 +58,12 @@ func compatibleJSON(v any, needNULL bool, outNULL string) any {
 			return json.RawMessage(t)
 		}
 		return v
-	default:
+	case nil:
 		if needNULL {
 			return outNULL
 		}
+		return nil
+	default:
 		return v
 	}
 }
