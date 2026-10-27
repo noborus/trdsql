@@ -95,7 +95,6 @@ func (r *JSONReader) readAhead(top any) error {
 	switch m := top.(type) {
 	case []any:
 		// []
-		r.preRead = make([]map[string]any, 0, len(m))
 		if r.reader.More() {
 			pre, names, err := r.etcRow(m)
 			if err != nil {

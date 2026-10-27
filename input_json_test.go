@@ -260,6 +260,39 @@ func TestNewJSONReader(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "testJQMultipleArrays",
+			args: args{
+				reader: strings.NewReader(`[[{"id":1},{"id":2}],[{"id":3}]]`),
+				opts:   NewReadOpts(InJQ(".[]")),
+			},
+			want: &JSONReader{
+				names: []string{"id"},
+				preRead: []map[string]any{
+					{"id": "1"},
+					{"id": "2"},
+					{"id": "3"},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "testPreReadObjectThenArray",
+			args: args{
+				reader: strings.NewReader(`{"id":1}
+[{"id":2},{"id":3}]`),
+				opts: NewReadOpts(InPreRead(2)),
+			},
+			want: &JSONReader{
+				names: []string{"id"},
+				preRead: []map[string]any{
+					{"id": "1"},
+					{"id": "2"},
+					{"id": "3"},
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
