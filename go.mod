@@ -2,44 +2,44 @@ module github.com/noborus/trdsql
 
 require (
 	github.com/dsnet/compress v0.0.1
-	github.com/go-sql-driver/mysql v1.10.0
+	github.com/go-sql-driver/mysql v1.10.1
 	github.com/goccy/go-yaml v1.19.2
 	github.com/iancoleman/orderedmap v0.3.0
 	github.com/itchyny/gojq v0.12.19
 	github.com/jwalton/gchalk v1.3.0
-	github.com/klauspost/compress v1.19.2
+	github.com/klauspost/compress v1.20.3
 	github.com/lib/pq v1.12.3
-	github.com/mattn/go-runewidth v0.0.28
-	github.com/mattn/go-sqlite3 v1.14.50
+	github.com/mattn/go-runewidth v0.0.31
+	github.com/mattn/go-sqlite3 v1.14.52
 	github.com/multiprocessio/go-sqlite3-stdlib v0.0.0-20220822170115-9f6825a1cd25
-	github.com/noborus/guesswidth v0.5.0
+	github.com/noborus/guesswidth v0.6.0
 	github.com/noborus/sqlss v0.1.0
 	github.com/noborus/tbln v0.0.2
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/pierrec/lz4/v4 v4.1.29
-	github.com/ulikunitz/xz v0.5.16
-	golang.org/x/term v0.45.0
-	modernc.org/sqlite v1.57.0
+	github.com/pierrec/lz4/v4 v4.1.33
+	github.com/ulikunitz/xz v0.5.17
+	golang.org/x/term v0.47.0
+	modernc.org/sqlite v1.61.0
 )
 
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
-	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/dustin/go-humanize v1.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/itchyny/timefmt-go v0.1.8 // indirect
+	github.com/itchyny/timefmt-go v0.1.9 // indirect
 	github.com/jwalton/go-supportscolor v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
-	github.com/ncruces/go-strftime v1.0.0 // indirect
+	github.com/ncruces/go-strftime v1.1.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	golang.org/x/crypto v0.55.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/crypto v0.58.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
 	gonum.org/v1/gonum v0.17.0 // indirect
-	modernc.org/libc v1.75.6 // indirect
+	modernc.org/libc v1.79.1 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect
 )
 
-go 1.25.0
+go 1.26.0
