@@ -155,6 +155,9 @@ func (r *CSVReader) PreReadRow() [][]any {
 }
 
 // ReadRow reads the rest of the row.
+// If a record has more columns than the schema (row), the extra columns
+// are truncated and a debug warning is logged.
+// To include wider rows in the schema, increase InPreRead.
 func (r *CSVReader) ReadRow(row []any) ([]any, error) {
 	if r.limitRead {
 		return nil, io.EOF
@@ -162,6 +165,9 @@ func (r *CSVReader) ReadRow(row []any) ([]any, error) {
 	record, err := r.reader.Read()
 	if err != nil {
 		return row, err
+	}
+	if len(row) > 0 && len(record) > len(row) {
+		debug.Printf("row has %d columns, but table schema has %d columns (extra columns truncated)", len(record), len(row))
 	}
 	for i := 0; len(row) > i; i++ {
 		if len(record) > i {

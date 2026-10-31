@@ -1,7 +1,9 @@
 package trdsql
 
 import (
+	"bytes"
 	"io"
+	"log"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -418,6 +420,20 @@ func TestCSVReader_ReadRow(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name:     "test_indefinite.csv truncation",
+			fileName: "test_indefinite.csv",
+			opts:     NewReadOpts(),
+			args: args{
+				[]any{
+					"", "",
+				},
+			},
+			want: []any{
+				"2", "Melon",
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -438,5 +454,149 @@ func TestCSVReader_ReadRow(t *testing.T) {
 				t.Errorf("CSVReader.ReadRow() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestCSVReader_ReadRow_TruncationWarning(t *testing.T) {
+	origDebug := debug
+	defer func() { debug = origDebug }()
+
+	tests := []struct {
+		name        string
+		csvData     string
+		opts        *ReadOpts
+		row         []any
+		enableDebug bool
+		wantRow     []any
+		wantWarn    bool
+		warnSnippet string
+	}{
+		{
+			name:        "truncated row with debug enabled logs warning",
+			csvData:     "id,name\n2,beta,extraA,extraB\n",
+			opts:        NewReadOpts(InHeader(true)),
+			row:         make([]any, 2),
+			enableDebug: true,
+			wantRow:     []any{"2", "beta"},
+			wantWarn:    true,
+			warnSnippet: "row has 4 columns, but table schema has 2 columns (extra columns truncated)",
+		},
+		{
+			name:        "truncated row with debug disabled logs nothing",
+			csvData:     "id,name\n2,beta,extraA,extraB\n",
+			opts:        NewReadOpts(InHeader(true)),
+			row:         make([]any, 2),
+			enableDebug: false,
+			wantRow:     []any{"2", "beta"},
+			wantWarn:    false,
+		},
+		{
+			name:        "matching columns with debug enabled logs no warning",
+			csvData:     "id,name\n2,beta\n",
+			opts:        NewReadOpts(InHeader(true)),
+			row:         make([]any, 2),
+			enableDebug: true,
+			wantRow:     []any{"2", "beta"},
+			wantWarn:    false,
+		},
+		{
+			name:        "fewer columns with debug enabled logs no warning and fills nil",
+			csvData:     "id,name,extra\n2,beta\n",
+			opts:        NewReadOpts(InHeader(true)),
+			row:         make([]any, 3),
+			enableDebug: true,
+			wantRow:     []any{"2", "beta", nil},
+			wantWarn:    false,
+		},
+		{
+			name:        "empty row slice for skipRead logs no warning",
+			csvData:     "1,2,3,4\n5,6,7,8\n",
+			opts:        NewReadOpts(),
+			row:         nil,
+			enableDebug: true,
+			wantRow:     nil,
+			wantWarn:    false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			debug = debugT(tt.enableDebug)
+			var buf bytes.Buffer
+			origOutput := log.Writer()
+			origFlags := log.Flags()
+			log.SetOutput(&buf)
+			log.SetFlags(0)
+			defer func() {
+				log.SetOutput(origOutput)
+				log.SetFlags(origFlags)
+			}()
+
+			r, err := NewCSVReader(strings.NewReader(tt.csvData), tt.opts)
+			if err != nil {
+				t.Fatalf("unexpected NewCSVReader error: %v", err)
+			}
+
+			got, err := r.ReadRow(tt.row)
+			if err != nil {
+				t.Fatalf("unexpected ReadRow error: %v", err)
+			}
+			if !reflect.DeepEqual(got, tt.wantRow) {
+				t.Errorf("ReadRow() = %v, want %v", got, tt.wantRow)
+			}
+
+			logged := buf.String()
+			if tt.wantWarn {
+				if !strings.Contains(logged, tt.warnSnippet) {
+					t.Errorf("expected warning snippet %q in log output, got %q", tt.warnSnippet, logged)
+				}
+			} else {
+				if strings.Contains(logged, "extra columns truncated") {
+					t.Errorf("expected no truncation warning, got %q", logged)
+				}
+			}
+		})
+	}
+}
+
+func TestCSVReader_ReadRow_PreReadParity(t *testing.T) {
+	csvData := "1,Orange\n2,Melon,ibaraki\n3,Apple,aomori,red\n"
+
+	// With InPreRead = 1, row 2 and 3 are read via ReadRow with schema width 2 (truncated).
+	r1, err := NewCSVReader(strings.NewReader(csvData), NewReadOpts(InPreRead(1)))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	names1, _ := r1.Names()
+	if len(names1) != 2 {
+		t.Errorf("expected 2 columns with InPreRead(1), got %d", len(names1))
+	}
+	row1 := make([]any, len(names1))
+	got1, err := r1.ReadRow(row1)
+	if err != nil {
+		t.Fatalf("unexpected ReadRow error: %v", err)
+	}
+	if !reflect.DeepEqual(got1, []any{"2", "Melon"}) {
+		t.Errorf("expected truncated row %v, got %v", []any{"2", "Melon"}, got1)
+	}
+
+	// With InPreRead = 3, all rows are pre-read and expand the schema to 4 columns.
+	r3, err := NewCSVReader(strings.NewReader(csvData), NewReadOpts(InPreRead(3)))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	names3, _ := r3.Names()
+	if len(names3) != 4 {
+		t.Errorf("expected 4 columns with InPreRead(3), got %d", len(names3))
+	}
+	preRows := r3.PreReadRow()
+	if len(preRows) != 3 {
+		t.Fatalf("expected 3 pre-read rows, got %d", len(preRows))
+	}
+	if !reflect.DeepEqual(preRows[1], []any{"2", "Melon", "ibaraki", nil}) {
+		t.Errorf("expected expanded pre-read row %v, got %v", []any{"2", "Melon", "ibaraki", nil}, preRows[1])
+	}
+	if !reflect.DeepEqual(preRows[2], []any{"3", "Apple", "aomori", "red"}) {
+		t.Errorf("expected expanded pre-read row %v, got %v", []any{"3", "Apple", "aomori", "red"}, preRows[2])
 	}
 }
