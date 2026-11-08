@@ -45,19 +45,6 @@ func NewYAMLReader(reader io.Reader, opts *ReadOpts) (*YAMLReader, error) {
 	return r, nil
 }
 
-// jqParse parses a string and returns a *gojq.Query.
-func jqParse(q string) (*gojq.Query, error) {
-	if q == "" {
-		return nil, nil
-	}
-	str := trimQuoteAll(q)
-	query, err := gojq.Parse(str)
-	if err != nil {
-		return nil, fmt.Errorf("%w gojq:(%s)", err, str)
-	}
-	return query, nil
-}
-
 // yamlParse parses YAML and stores it in preRead.
 func (r *YAMLReader) yamlParse(opts *ReadOpts) error {
 	r.limitRead = opts.InLimitRead

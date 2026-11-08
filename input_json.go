@@ -39,10 +39,9 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 	var top any
 
 	if opts.InJQuery != "" {
-		str := trimQuoteAll(opts.InJQuery)
-		query, err := gojq.Parse(str)
+		query, err := jqParse(opts.InJQuery)
 		if err != nil {
-			return nil, fmt.Errorf("%w gojq:(%s)", err, opts.InJQuery)
+			return nil, err
 		}
 		r.query = query
 	}
@@ -73,6 +72,20 @@ func NewJSONReader(reader io.Reader, opts *ReadOpts) (*JSONReader, error) {
 	}
 
 	return r, nil
+}
+
+// jqParse parses a string and returns a *gojq.Query.
+func jqParse(q string) (*gojq.Query, error) {
+	if q == "" {
+		return nil, nil
+	}
+	str := trimQuoteAll(q)
+	query, err := gojq.Parse(str)
+	if err != nil {
+		return nil, fmt.Errorf("%w gojq:(%s)", err, str)
+	}
+	debug.Print("Parsed gojq query: ", str)
+	return query, nil
 }
 
 // Names returns column names.
